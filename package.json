@@ -2,9 +2,8 @@
   "name": "proxyfox",
   "version": "0.0.1",
   "description": "A proxy bot",
-  "main": "start.js",
   "scripts": {
-    "test": "node start.js"
+    "build": "npx tsc & node ./build/main.js"
   },
   "repository": {
     "type": "git",
