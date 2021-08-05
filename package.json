@@ -3,7 +3,7 @@
   "version": "0.0.1",
   "description": "A proxy bot",
   "scripts": {
-    "build": "npx tsc & node ./build/main.js"
+    "build": "npx tsc & node ./build/index.js"
   },
   "repository": {
     "type": "git",
