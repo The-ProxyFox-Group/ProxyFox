@@ -2,9 +2,6 @@ import { parse as parseMessage } from "./commandProcessor";
 import { tree } from "./commandTree";
 import * as discord from "discord.js";
 import * as fs from "fs";
-import { Member } from "./memberClass";
-import { System } from "./systemClass";
-import { getData } from "./systemCommands";
 import { webhook } from "./sendMessage";
 export const client = new discord.Client();
 
@@ -24,20 +21,16 @@ function handleMessage(msg: discord.Message): boolean {
             switch (typeof currTree) {
                 case "string":
                     msg.channel.send(currTree);
-                    breakCond = true;
-                    break;
+                    return true;
                 case "function":
                     //@ts-ignore
                     let output: string = currTree(msg,parsedMsg);
                     if (output != undefined && output != null && output != "")
                         msg.channel.send(output);
-                    breakCond = true;
-                    break;
+                    return true;
                 case "object":
                     break;
             }
-
-            if (breakCond) break;
         }
         return true;
     }
