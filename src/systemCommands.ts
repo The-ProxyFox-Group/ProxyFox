@@ -1,6 +1,7 @@
 import * as discord from "discord.js";
 import * as fs from "fs";
 import * as https from "https";
+import { exists, load, save } from "./saveLoad";
 
 export function accessSystem(msg: discord.Message, parsedMessage: string[]) {
     
@@ -45,7 +46,7 @@ export function importSystem(msg:discord.Message, parsedMessage: string[]):strin
 }
 
 function getSysExportMessage(id:string):discord.MessageAttachment {
-    return new discord.MessageAttachment("./systems/"+id+".json");
+    return new discord.MessageAttachment("./systems/"+id+".json", "system.json");
 }
 
 function getSys(id:string):string {
@@ -61,4 +62,20 @@ export function getData(url:string,path:string) {
     }).on("close", () => {
         fs.writeFileSync(path,output);
     });
+}
+
+export function autoOn(msg: discord.Message, parsedMessage: string[]) {
+    if (exists(msg.author.id.toString())) {
+        let system = load(msg.author.id.toString());
+        system.autobool = true;
+        save(msg.author.id.toString(),system);
+    }
+}
+
+export function autoOff(msg: discord.Message, parsedMessage: string[]) {
+    if (exists(msg.author.id.toString())) {
+        let system = load(msg.author.id.toString());
+        system.autobool = false;
+        save(msg.author.id.toString(),system);
+    }
 }

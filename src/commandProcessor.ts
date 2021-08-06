@@ -32,9 +32,7 @@ export function parse(msg: string): string[] {
         out.push(currStr);
     }
 
-    out = out.filter(function(str) {
-        return str != "";
-    });
+    out = out.filter(str => str != "");
 
     return out;
 }

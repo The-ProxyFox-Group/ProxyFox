@@ -9,6 +9,8 @@ export class System {
     timezone: string;
     members: Member[] = [];
     created: string;
+    auto: string;
+    autobool: boolean = false;
 
     constructor(name:string) {
         this.name = name;
@@ -24,7 +26,42 @@ export class System {
     }
 
     toString():string {
-        return `{"version":1,"id":"${this.id}","name":"${this.name}","description":"${this.description}","tag":"${this.tag}","avatar_url":"${this.avatar}","timezone":"${this.timezone}","members":${Member.getArrString(this.members)},"created":"${this.created}"}`.replace(/\"undefined\"/g,"null").replace(/\"\"/g,"null").replace(/\"null\"/g,"null");
+        return `{"version":1,"id":"${this.id}","name":"${this.name}","description":"${this.description}","tag":"${this.tag}","avatar_url":"${this.avatar}","timezone":"${this.timezone}","members":${Member.getArrString(this.members)},"created":"${this.created}","auto":"${this.auto}","auto_bool":${this.autobool}}`.replace(/\"undefined\"/g,"null").replace(/\"\"/g,"null").replace(/\"null\"/g,"null");
+    }
+
+    memberFromMessage(message: string): Member {
+        for (let i in this.members)
+            if (this.members[i].containsProxy(message)) return this.members[i];
+        return null;
+    }
+
+    memberFromAP():Member {
+        if (!this.autobool) return null;
+        for (let i in this.members)
+            if (this.members[i].id == this.auto) return this.members[i];
+        return null;
+    }
+
+    memberFromName(message: string): Member {
+        for (let i in this.members)
+            if (this.members[i].name.toLowerCase() == message.toLowerCase()) return this.members[i];
+        return null;
+    }
+    
+    addMember(name:string):Member {
+        if (this.memberFromName(name) != null) return null;
+        let member = new Member(name);
+        this.members.push(member);
+        return member;
+    }
+
+    removeMember(name:string) {
+        for (let i in this.members)
+            if (this.members[i].name.toLowerCase() == name.toLowerCase()) {
+                this.members[i] = null;
+                this.members = this.members.filter(mem => mem != null);
+                console.log(this.members[i]);
+            }
     }
 
     static fromStr(str:string):System {
@@ -36,6 +73,8 @@ export class System {
         system.timezone = json.timezone;
         system.members = Member.fromArr(json.members);
         system.created = json.created;
+        system.auto = json.auto;
+        system.autobool = json.auto_bool;
         return system;
     }
 

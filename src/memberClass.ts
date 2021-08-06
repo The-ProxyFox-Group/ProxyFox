@@ -37,7 +37,8 @@ export class Member {
             out += members[i].toString();
             out += ",";
         }
-        out += "]";
+        out = out.substr(0,out.length-1) + "]";
+        if (out.length == 1) out = "[]";
         return out;
     }
 
@@ -49,8 +50,8 @@ export class Member {
     }
 
     static from(obj:any):Member {
-        let out = new Member("");
-        out.name = obj.name;
+        let out = new Member(obj.name);
+        out.id = obj.id;
         out.displayname = obj.display_name;
         out.description = obj.description;
         out.birthday = obj.birthday;
@@ -59,11 +60,12 @@ export class Member {
         out.proxies = ProxyTag.fromArr(obj.proxy_tags);
         out.messageCount = obj.message_count;
         out.created = obj.created;
+        out.avatar = obj.avatar_url;
         return out;
     }
 
     getName(tag: string) {
-        return (this.displayname == null? this.name: this.displayname) + tag;
+        return (this.displayname == null? this.name: this.displayname) + " " + (tag != undefined || tag != null? tag: "");
     }
 
     setName(newname:string) {
@@ -72,5 +74,17 @@ export class Member {
 
     setDisplayName(newname:string) {
         this.displayname = newname;
+    }
+
+    containsProxy(message:string):boolean {
+        for (let i in this.proxies)
+            if (this.proxies[i].containsProxy(message)) return true;
+        return false;
+    }
+
+    getProxy(message:string):ProxyTag {
+        for (let i in this.proxies)
+            if (this.proxies[i].containsProxy(message)) return this.proxies[i];
+        return null;
     }
 }

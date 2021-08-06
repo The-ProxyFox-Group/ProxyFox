@@ -1,5 +1,5 @@
 import {accessMember, createMember, deleteMember} from "./memberCommands";
-import {accessSystem, createSystem, deleteSystem, exportSystem, importSystem, listSystem} from "./systemCommands";
+import {accessSystem, autoOff, autoOn, createSystem, deleteSystem, exportSystem, importSystem, listSystem} from "./systemCommands";
 
 let memberTree = {
     "default": accessMember,
@@ -20,6 +20,12 @@ let systemTree = {
     "list": listSystem,
 }
 
+let autoTree = {
+    "default": "Please specify weather you want autoproxy on or off.",
+    "on": autoOn,
+    "off": autoOff
+}
+
 export const tree = {
     "default": "Unknown command.",
     "member": memberTree,
@@ -29,4 +35,7 @@ export const tree = {
     "list": listSystem,
     "import": importSystem,
     "export": exportSystem,
+    "auto": autoTree,
+    "ap": autoTree,
+    "autoproxy": autoTree
 };

@@ -5,13 +5,12 @@ import * as fs from "fs";
 import { Member } from "./memberClass";
 import { System } from "./systemClass";
 import { getData } from "./systemCommands";
+import { webhook } from "./sendMessage";
 export const client = new discord.Client();
 
 const keys = JSON.parse(fs.readFileSync("./key.json").toString());
 
-function handleMessage(msg: discord.Message) {
-    if (msg.author.system || msg.author.bot) return;
-
+function handleMessage(msg: discord.Message): boolean {
     let parsedMsg = parseMessage(msg.content);
     if (parsedMsg.length > 0) {
         let currTree = tree;
@@ -19,11 +18,6 @@ function handleMessage(msg: discord.Message) {
             //@ts-ignore
             if (currTree[parsedMsg[i]] == null) currTree = currTree.default;
             else currTree = currTree[parsedMsg[i]];
-            
-            if (currTree == null) {
-                msg.channel.send("Unknown error occured.");
-                break;
-            };
             
             let breakCond: boolean = false;
 
@@ -45,13 +39,17 @@ function handleMessage(msg: discord.Message) {
 
             if (breakCond) break;
         }
-        return;
+        return true;
     }
+    return false;
 }
 
 client.on('message', msg => {
+    if (msg.author.system || msg.author.bot) return;
     try {
-        handleMessage(msg);
+        if (!handleMessage(msg)) {
+            webhook(msg);
+        }
     } catch (err) {
         let timestamp: Date = new Date();
         let timestampString = "\n`===TIMESTAMP="+timestamp.getTime().toString().trim() + "===`\n";

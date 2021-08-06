@@ -6,5 +6,9 @@ export function load(id:string):System {
 }
 
 export function save(id:string, system:System) {
-    fs.writeFileSync("./systems/"+id+".json",system.toString());
+    fs.writeFileSync("./systems/"+id+".json",system.toString().replace(/\n/g,"\\n"));
+}
+
+export function exists(id:string):boolean {
+    return fs.existsSync("./systems/"+id+".json");
 }
