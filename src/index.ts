@@ -53,4 +53,4 @@ client.on('message', msg => {
     }**/
 });
 
-client.login(keys.dev);
+client.login(keys.main);
