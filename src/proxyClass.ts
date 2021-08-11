@@ -11,6 +11,14 @@ export class ProxyTag {
         return `{"prefix":"${this.prefix}","suffix":"${this.suffix}"}`;
     }
 
+    toProxyString():string {
+        let str:string = "";
+        if (this.containsPrefix()) str += this.prefix;
+        str += "text";
+        if (this.containsSuffix()) str += this.suffix;
+        return str;
+    }
+
     containsSuffix(): boolean {
         return !(this.suffix == "" || this.suffix == null || this.suffix == undefined);
     }
@@ -30,6 +38,22 @@ export class ProxyTag {
 
         if (this.containsSuffix()) {
             if (message.endsWith(this.suffix)) hasSuffix = true;
+        } else hasSuffix = true;
+
+        return hasPrefix && hasSuffix;
+    }
+
+    containsProxyTag(prefix:string, suffix:string):boolean {
+        if (!this.containsPrefix() && !this.containsSuffix()) return false;
+        let hasPrefix = false;
+        let hasSuffix = false;
+
+        if (this.containsPrefix()) {
+            if (prefix == this.prefix) hasPrefix = true;
+        } else hasPrefix = true;
+
+        if (this.containsSuffix()) {
+            if (suffix == this.suffix) hasSuffix = true;
         } else hasSuffix = true;
 
         return hasPrefix && hasSuffix;

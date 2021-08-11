@@ -31,6 +31,27 @@ export class Member {
         return `{"id":"${this.id}","name":"${this.name}","display_name":"${this.displayname}","description":"${this.description}","birthday":"${this.birthday}","pronouns":"${this.pronouns}","color":"${this.color}","avatar_url":"${this.avatar}","proxy_tags":${ProxyTag.getArrString(this.proxies)},"keep_proxy":false,"message_count":${this.messageCount},"created":"${this.created}"}`
     }
 
+    addProxy(str:string):boolean {
+        if (str.indexOf("text") == -1) return false;
+        let arr: string[] = str.split(/text/);
+        this.proxies.push(new ProxyTag(arr[0],arr[1]));
+        return true;
+    }
+
+    remProxy(str:string):number {
+        if (str.indexOf("text") == -1) return 0;
+        let arr: string[] = str.split(/text/);
+        for (let i in this.proxies) {
+            let proxy: ProxyTag = this.proxies[i];
+            if (proxy.containsProxyTag(arr[0], arr[1])) {
+                this.proxies[i] = null;
+                this.proxies = this.proxies.filter(pro => pro != null);
+                return 2;
+            }
+        }
+        return 1;
+    }
+
     static getArrString(members:Member[]):string {
         let out = "[";
         for (let i in members) {

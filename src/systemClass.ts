@@ -26,7 +26,11 @@ export class System {
     }
 
     toString():string {
-        return `{"version":1,"id":"${this.id}","name":"${this.name}","description":"${this.description}","tag":"${this.tag}","avatar_url":"${this.avatar}","timezone":"${this.timezone}","members":${Member.getArrString(this.members)},"created":"${this.created}","auto":"${this.auto}","auto_bool":${this.autobool}}`.replace(/\"undefined\"/g,"null").replace(/\"\"/g,"null").replace(/\"null\"/g,"null");
+        return `{"version":1,"id":"${this.id}","name":"${this.name}","description":"${this.description}","tag":"${this.tag}","avatar_url":"${this.avatar}","timezone":"${this.timezone}","members":${Member.getArrString(this.members)},"switches":[],"created":"${this.created}","auto":"${this.auto}","auto_bool":${this.autobool}}`.replace(/\"undefined\"/g,"null").replace(/\"\"/g,"null").replace(/\"null\"/g,"null");
+    }
+
+    toExportString():string {
+        return `{"version":1,"id":"${this.id}","name":"${this.name}","description":"${this.description}","tag":"${this.tag}","avatar_url":"${this.avatar}","timezone":"${this.timezone}","members":${Member.getArrString(this.members)},"switches":[],"created":"${this.created}"}`.replace(/\"undefined\"/g,"null").replace(/\"\"/g,"null").replace(/\"null\"/g,"null");
     }
 
     memberFromMessage(message: string): Member {
@@ -60,13 +64,14 @@ export class System {
             if (this.members[i].name.toLowerCase() == name.toLowerCase()) {
                 this.members[i] = null;
                 this.members = this.members.filter(mem => mem != null);
-                console.log(this.members[i]);
+                return;
             }
     }
 
     static fromStr(str:string):System {
         let json = JSON.parse(str);
         let system = new System(json.name);
+        system.id = json.id;
         system.description = json.description;
         system.tag = json.tag;
         system.avatar = json.avatar_url;
