@@ -41,16 +41,16 @@ function handleMessage(msg: discord.Message): boolean {
 
 client.on('message', msg => {
     if (msg.author.system || msg.author.bot) return;
-    //try {
+    try {
         if (!handleMessage(msg)) {
             webhook(msg);
         }
-    /*} catch (err) {
+    } catch (err) {
         let timestamp: Date = new Date();
         let timestampString = "\n`===TIMESTAMP="+timestamp.getTime().toString().trim() + "===`\n";
         console.log(timestampString + err);
         msg.channel.send("Unexpected error" + timestampString);
-    }**/
+    }
 });
 
 client.login(keys.main);
