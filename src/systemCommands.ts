@@ -129,18 +129,22 @@ export function getData(url:string,path:string) {
     });
 }
 
-export function autoOn(msg: discord.Message, parsedMessage: string[]) {
+export function autoOn(msg: discord.Message, parsedMessage: string[]): string {
     if (exists(msg.author.id.toString())) {
         let system = load(msg.author.id.toString());
         system.autobool = true;
         save(msg.author.id.toString(),system);
+        return "Autoproxy enabled.";
     }
+    return "System doesn't exist.";
 }
 
-export function autoOff(msg: discord.Message, parsedMessage: string[]) {
+export function autoOff(msg: discord.Message, parsedMessage: string[]): string {
     if (exists(msg.author.id.toString())) {
         let system = load(msg.author.id.toString());
         system.autobool = false;
         save(msg.author.id.toString(),system);
+        return "Autoproxy disabled.";
     }
+    return "System doesn't exist.";
 }
