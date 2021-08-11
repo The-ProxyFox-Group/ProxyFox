@@ -1,7 +1,6 @@
 import {accessMember, createMember, deleteMember} from "./memberCommands";
 import {accessSystem, autoOff, autoOn, createSystem, deleteSystem, exportSystem, importSystem, listSystem} from "./systemCommands";
 import * as discord from "discord.js";
-import { time } from "console";
 
 function getTime(msg: discord.Message, parsedMessage: string[]):string {
     let time: number = new Date().valueOf()/1000;
@@ -33,6 +32,18 @@ let autoTree = {
     "off": autoOff
 }
 
+let help = `To get your system started:
+- pf>system new <name>
+  - Creates a system with <name> as the name.
+- pf>member new <name>
+  - Creates a member with <name> as the name
+- pf>member <name> proxy <proxy>
+  - Sets <name>'s proxy to <proxy>
+- pf>member <name> avatar
+  - Attach an image to set <name>'s avatar
+**Or**
+Use pf>import to import a system from PluralKit or any other proxy bot.`;
+
 export const tree = {
     "default": "Unknown command.",
     "member": memberTree,
@@ -45,5 +56,6 @@ export const tree = {
     "auto": autoTree,
     "ap": autoTree,
     "autoproxy": autoTree,
-    "time": getTime
+    "time": getTime,
+    "help": help
 };

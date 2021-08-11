@@ -26,7 +26,7 @@ export class System {
     }
 
     toString():string {
-        return `{"version":1,"id":"${this.id}","name":"${this.name}","description":"${this.description}","tag":"${this.tag}","avatar_url":"${this.avatar}","timezone":"${this.timezone}","members":${Member.getArrString(this.members)},"switches":[],"created":"${this.created}","auto":"${this.auto}","auto_bool":${this.autobool}}`.replace(/\"undefined\"/g,"null").replace(/\"\"/g,"null").replace(/\"null\"/g,"null");
+        return `{"version":1,"id":"${this.id}","name":"${this.name}","description":"${this.description}","tag":"${this.tag}","avatar_url":"${this.avatar}","timezone":"${this.timezone}","members":${Member.getArrString(this.members)},"switches":[],"created":"${this.created}","auto":"${this.auto}","auto_bool":${(this.autobool?true:false)}}`.replace(/\"undefined\"/g,"null").replace(/\"\"/g,"null").replace(/\"null\"/g,"null");
     }
 
     toExportString():string {

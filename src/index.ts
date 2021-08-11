@@ -15,7 +15,7 @@ function handleMessage(msg: discord.Message): boolean {
             //@ts-ignore
             if (parsedMsg[i] == null || parsedMsg[i] == undefined || parsedMsg == "") currTree = currTree.default;
             //@ts-ignore
-            if (currTree[parsedMsg[i].toLowerCase()] == null) currTree = currTree.default;
+            else if (currTree[parsedMsg[i].toLowerCase()] == null) currTree = currTree.default;
             else currTree = currTree[parsedMsg[i].toLowerCase()];
             
             let breakCond: boolean = false;
@@ -51,6 +51,23 @@ client.on('message', msg => {
         console.log(timestampString + err);
         msg.channel.send("Unexpected error" + timestampString);
     }
+});
+
+function setPres(text: string) {
+    client.user.setPresence({
+        activity: {
+            name: text
+        },
+        status: "online"
+    });
+}
+
+client.on("ready", () => {
+    setPres("Run pf>help for help!");
+    setInterval(() => {
+        setPres("Run pf>help for help!");
+    }, 30000);
+    console.log("online");
 });
 
 client.login(keys.main);

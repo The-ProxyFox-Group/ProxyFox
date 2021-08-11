@@ -16,7 +16,7 @@ export function sendMessageAsWebhook(msg: discord.Message, member: Member, syste
                 let user: Object | discord.User = hookArr[i].owner;
 
                 //@ts-ignore
-                if (user.id == client.user.id) {
+                if (user != null && user != undefined && user.id == client.user.id) {
                     hookArr[i].edit({
                         name,
                         avatar: url
