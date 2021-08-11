@@ -18,7 +18,7 @@ export function accessSystem(msg: discord.Message, parsedMessage: string[]) {
         let system:System = load(msg.author.id.toString());
         let embed: discord.MessageEmbed  = new discord.MessageEmbed();
 
-        embed.setTitle(system.name);
+        embed.setTitle(system.name + " [`"+system.id+"`]");
         embed.setThumbnail(system.avatar);
         if (!isEmpty(system.tag)) embed.addField("Tag",system.tag,true);
         if (!isArrEmpty(system.members)) embed.addField("Members (" + system.members.length + ")","(see `pf>systen list`)",true);
@@ -60,7 +60,7 @@ export function listSystem(msg: discord.Message, parsedMessage: string[]) {
         let system:System = load(msg.author.id.toString());
         let embed: discord.MessageEmbed  = new discord.MessageEmbed();
 
-        embed.setTitle(system.name);
+        embed.setTitle(system.name + " [`"+system.id+"`]");
         if (!isArrEmpty(system.members)) {
             system.members = system.members.sort();
             let str:string = "";

@@ -28,7 +28,7 @@ export class Member {
     }
     
     toString():string {
-        return `{"id":"${this.id}","name":"${this.name}","display_name":"${this.displayname}","description":"${this.description}","birthday":"${this.birthday}","pronouns":"${this.pronouns}","color":"${this.color}","avatar_url":"${this.avatar}","proxy_tags":${ProxyTag.getArrString(this.proxies)},"keep_proxy":false,"message_count":${this.messageCount},"created":"${this.created}"}`
+        return `{"id":"${this.id}","name":"${this.name.replace(/"/g,"\\\"")}","display_name":"${this.displayname?this.displayname.replace(/"/g,"\\\""):null}","description":"${this.description? this.description.replace(/"/g,"\\\""):null}","birthday":"${this.birthday?this.birthday.replace(/"/g,"\\\""):null}","pronouns":"${this.pronouns?this.pronouns.replace(/"/g,"\\\""):null}","color":"${this.color?this.color.replace(/"/g,"\\\""):null}","avatar_url":"${this.avatar?this.avatar.replace(/"/g,"\\\""):null}","proxy_tags":${ProxyTag.getArrString(this.proxies)},"keep_proxy":false,"message_count":${this.messageCount},"created":"${this.created.replace(/"/g,"\\\"")}"}`
     }
 
     addProxy(str:string):boolean {

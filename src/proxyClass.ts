@@ -8,7 +8,7 @@ export class ProxyTag {
     }
 
     toString() {
-        return `{"prefix":"${this.prefix}","suffix":"${this.suffix}"}`;
+        return `{"prefix":"${this.prefix? this.prefix.replace(/"/g,"\\\""):null}","suffix":"${this.suffix? this.suffix.replace(/"/g,"\\\""):null}"}`;
     }
 
     toProxyString():string {

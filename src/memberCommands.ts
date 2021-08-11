@@ -26,7 +26,7 @@ export function accessMember(msg: discord.Message, parsedMessage: string[]):stri
                 let attach: discord.MessageEmbed = new discord.MessageEmbed();
                 if (!isEmpty(member.avatar)) attach.setThumbnail(member.avatar);
                 else if (!isEmpty(system.avatar)) attach.setThumbnail(system.avatar);
-                attach.setTitle(member.name + " ("+system.name+")");
+                attach.setTitle(member.name + " ("+system.name+")" + " [`"+member.id+"`]");
                 if (!isEmpty(member.displayname)) attach.addField("Display Name",member.displayname,true);
                 attach.addField("Message Count",member.messageCount,true);
                 if (!isArrEmpty(member.proxies)) {
