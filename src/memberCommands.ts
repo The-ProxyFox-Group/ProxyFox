@@ -52,7 +52,7 @@ export function accessMember(msg: discord.Message, parsedMessage: string[]):stri
                 }
                 msg.channel.send({
                     //@ts-ignore
-                    embeds: embed
+                    embeds: [attach]
                 }).catch(err => {
                     sendError(msg,err);
                 });;

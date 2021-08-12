@@ -17,7 +17,7 @@ export function sendMessageAsWebhook(msg: discord.Message, member: Member, syste
 
                     //@ts-ignore
                     if (user != null && user != undefined && user.id == client.user.id)
-                        return sendAsHook(hookArr[i],msg,url,name);
+                        return sendAsHook(hookArr[i],msg,url,name,member);
                 }
                 channel.createWebhook("ProxyFox webhook").then(a => {
                     sendMessageAsWebhook(msg,member,system);
@@ -35,7 +35,7 @@ export function sendMessageAsWebhook(msg: discord.Message, member: Member, syste
 
                     //@ts-ignore
                     if (user != null && user != undefined && user.id == client.user.id)
-                        return sendAsHook(hookArr[i],msg,url,name,channel.id);
+                        return sendAsHook(hookArr[i],msg,url,name,member,channel.id);
                 }
                 baseChannel.createWebhook("ProxyFox webhook").then(a => {
                     sendMessageAsWebhook(msg,member,system);
@@ -48,6 +48,7 @@ export function sendMessageAsWebhook(msg: discord.Message, member: Member, syste
 }
 
 export function webhook(msg: discord.Message) {
+    if (msg.channel instanceof discord.DMChannel) return;
     if (exists(msg.author.id.toString())) {
         let system = load(msg.author.id.toString());
         let member = system.memberFromMessage(msg.content);
@@ -65,13 +66,27 @@ export function webhook(msg: discord.Message) {
     }
 }
 
-function sendAsHook(hook: discord.Webhook, msg: discord.Message, url: string, name: string, thread?: string) {
+function sendAsHook(hook: discord.Webhook, msg: discord.Message, url: string, name: string, member: Member, thread?: string) {
     hook.edit({
         name: "ProxyFox proxy",
         avatar: ""
     }).then(hook => {
         let attach = msg.attachments.map(a=>a);
-        let newMsg = hook.send({
+        if (msg.reference != null) {
+            msg.fetchReference().then(m => {
+                hook.send({
+                    avatarURL:url,
+                    username:name,
+                    //@ts-ignore
+                    content: "["+m.author.username+":](<"+m.url+">)\n> " + m.content.replace(/\n/g,"\n> "),
+                }).then($ => {
+                    msg.reference = null;
+                    sendAsHook(hook,msg,url,name,member,thread);
+                });
+            });
+            return;
+        }
+        hook.send({
             avatarURL:url,
             username:name,
             //@ts-ignore
@@ -79,8 +94,32 @@ function sendAsHook(hook: discord.Webhook, msg: discord.Message, url: string, na
             //@ts-ignore
             files: attach,
             threadId: thread
-        });
-        newMsg.then(a => {
+        }).then(a => {
+            const filter = (reaction) => '❌❗❓'.indexOf(reaction.emoji.name) != -1;
+            let mess = <discord.Message> a;
+            mess.createReactionCollector({
+                filter
+            }).on("collect", (react, user) => {
+                switch (react.emoji.name) {
+                    case "❌":
+                        if (user.id == msg.author.id)
+                            mess.delete();
+                        return;
+                    case "❗":
+                        let embed = new discord.MessageEmbed();
+                        embed.setDescription("**[Jump to message]("+mess.url+")**");
+                        mess.channel.send({
+                            content: "Psst! **" + member.getName("") + "**(<@"+msg.author.id+">)\nYou have been pinged by <@"+user.id+">!",
+                            embeds: [embed]
+                        });
+                        break;
+                    case "❓":
+                        user.createDM().then(a => {
+                            user.send("Proxy owner: `"+msg.author.username+"#"+msg.author.discriminator+"`, `"+msg.author.id+"`");
+                        });
+                        break;
+                }
+            })
             msg.delete();
         }).catch(err => {
             sendError(msg,err);
