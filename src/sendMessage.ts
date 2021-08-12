@@ -35,7 +35,7 @@ export function sendMessageAsWebhook(msg: discord.Message, member: Member, syste
 
                     //@ts-ignore
                     if (user != null && user != undefined && user.id == client.user.id)
-                        return sendAsHook(hookArr[i],msg,url,name,member,channel.id);
+                        return sendAsHook(hookArr[i],msg,url,name,member,null,channel.id);
                 }
                 baseChannel.createWebhook("ProxyFox webhook").then(a => {
                     sendMessageAsWebhook(msg,member,system);
@@ -66,7 +66,7 @@ export function webhook(msg: discord.Message) {
     }
 }
 
-function sendAsHook(hook: discord.Webhook, msg: discord.Message, url: string, name: string, member: Member, thread?: string) {
+function sendAsHook(hook: discord.Webhook, msg: discord.Message, url: string, name: string, member: Member, embed?:discord.MessageEmbed, thread?: string) {
     hook.edit({
         name: "ProxyFox proxy",
         avatar: ""
@@ -74,18 +74,17 @@ function sendAsHook(hook: discord.Webhook, msg: discord.Message, url: string, na
         let attach = msg.attachments.map(a=>a);
         if (msg.reference != null) {
             msg.fetchReference().then(m => {
-                hook.send({
-                    avatarURL:url,
-                    username:name,
-                    //@ts-ignore
-                    content: "["+m.author.username+":](<"+m.url+">)\n> " + m.content.replace(/\n/g,"\n> "),
-                }).then($ => {
-                    msg.reference = null;
-                    sendAsHook(hook,msg,url,name,member,thread);
-                });
+                let embed = new discord.MessageEmbed();
+                embed.setAuthor(m.author.username + " ↩️",m.author.avatarURL());
+                embed.setDescription("[Reply to:](<"+m.url+">) "+ (m.content.length > 100? m.content.substr(0,97)+"...": m.content));
+                msg.reference = null;
+                sendAsHook(hook,msg,url,name,member,embed,thread);
             });
             return;
         }
+        let embeds = null;
+        if (embed != null)
+            embeds = [embed];
         hook.send({
             avatarURL:url,
             username:name,
@@ -93,7 +92,8 @@ function sendAsHook(hook: discord.Webhook, msg: discord.Message, url: string, na
             content: msg.content,
             //@ts-ignore
             files: attach,
-            threadId: thread
+            threadId: thread,
+            embeds
         }).then(a => {
             const filter = (reaction) => '❌❗❓'.indexOf(reaction.emoji.name) != -1;
             let mess = <discord.Message> a;
