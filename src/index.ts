@@ -55,7 +55,7 @@ function handleMessage(msg: discord.Message): boolean {
 }
 
 client.on('messageCreate', msg => {
-    if (msg.author.system || msg.author.bot || msg.system) return;
+    if (msg.author.system || msg.author.bot || msg.system || msg.webhookId) return;
     try {
         if (!handleMessage(msg))
             webhook(msg);
@@ -87,4 +87,5 @@ client.on("ready", () => {
     console.log("online");
 });
 
+console.log("starting");
 client.login(keys.main);
