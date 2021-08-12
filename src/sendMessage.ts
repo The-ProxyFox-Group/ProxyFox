@@ -1,5 +1,4 @@
 import * as discord from "discord.js";
-import { send } from "process";
 import { client, sendError } from ".";
 import { Member } from "./memberClass";
 import { exists, load, save } from "./saveLoad";
@@ -17,30 +16,8 @@ export function sendMessageAsWebhook(msg: discord.Message, member: Member, syste
                     let user: Object | discord.User = hookArr[i].owner;
 
                     //@ts-ignore
-                    if (user != null && user != undefined && user.id == client.user.id) {
-                        hookArr[i].edit({
-                            name: "ProxyFox proxy",
-                            avatar: ""
-                        }).then(hook => {
-                            let attach = msg.attachments.map(a=>a);
-                            let newMsg = hook.send({
-                                avatarURL:url,
-                                username:name,
-                                //@ts-ignore
-                                content: msg.content,
-                                //@ts-ignore
-                                files: attach
-                            });
-                            newMsg.then(a => {
-                                msg.delete();
-                            }).catch(err => {
-                                sendError(msg,err);
-                            });
-                        }).catch(err => {
-                            sendError(msg,err);
-                        });;
-                        return;
-                    }
+                    if (user != null && user != undefined && user.id == client.user.id)
+                        return sendAsHook(hookArr[i],msg,url,name);
                 }
                 channel.createWebhook("ProxyFox webhook").then(a => {
                     sendMessageAsWebhook(msg,member,system);
@@ -57,31 +34,8 @@ export function sendMessageAsWebhook(msg: discord.Message, member: Member, syste
                     let user: Object | discord.User = hookArr[i].owner;
 
                     //@ts-ignore
-                    if (user != null && user != undefined && user.id == client.user.id) {
-                        hookArr[i].edit({
-                            name: "ProxyFox proxy",
-                            avatar: ""
-                        }).then(hook => {
-                            let attach = msg.attachments.map(a=>a);
-                            let newMsg = hook.send({
-                                avatarURL:url,
-                                username:name,
-                                //@ts-ignore
-                                content: msg.content,
-                                //@ts-ignore
-                                files: attach,
-                                threadId: channel.id
-                            });
-                            newMsg.then(a => {
-                                msg.delete();
-                            }).catch(err => {
-                                sendError(msg,err);
-                            });
-                        }).catch(err => {
-                            sendError(msg,err);
-                        });
-                        return;
-                    }
+                    if (user != null && user != undefined && user.id == client.user.id)
+                        return sendAsHook(hookArr[i],msg,url,name,channel.id);
                 }
                 baseChannel.createWebhook("ProxyFox webhook").then(a => {
                     sendMessageAsWebhook(msg,member,system);
@@ -109,4 +63,29 @@ export function webhook(msg: discord.Message) {
         if (member != null)
             sendMessageAsWebhook(msg,member,system);
     }
+}
+
+function sendAsHook(hook: discord.Webhook, msg: discord.Message, url: string, name: string, thread?: string) {
+    hook.edit({
+        name: "ProxyFox proxy",
+        avatar: ""
+    }).then(hook => {
+        let attach = msg.attachments.map(a=>a);
+        let newMsg = hook.send({
+            avatarURL:url,
+            username:name,
+            //@ts-ignore
+            content: msg.content,
+            //@ts-ignore
+            files: attach,
+            threadId: thread
+        });
+        newMsg.then(a => {
+            msg.delete();
+        }).catch(err => {
+            sendError(msg,err);
+        });
+    }).catch(err => {
+        sendError(msg,err);
+    });
 }
