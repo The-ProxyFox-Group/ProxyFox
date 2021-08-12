@@ -29,7 +29,7 @@ export function accessMember(msg: discord.Message, parsedMessage: string[]):stri
                 else if (!isEmpty(system.avatar)) attach.setThumbnail(system.avatar);
                 attach.setTitle(member.name + " ("+system.name+")" + " [`"+member.id+"`]");
                 if (!isEmpty(member.displayname)) attach.addField("Display Name",member.displayname,true);
-                attach.addField("Message Count",member.messageCount,true);
+                attach.addField("Message Count",member.messageCount.toString(),true);
                 if (!isArrEmpty(member.proxies)) {
                     let str: string = "";
                     for (let i in member.proxies) {
@@ -50,7 +50,10 @@ export function accessMember(msg: discord.Message, parsedMessage: string[]):stri
                     let time:number = Date.parse(member.created);
                     attach.setFooter("Created on " + new Date(time).toUTCString());
                 }
-                msg.channel.send(attach);
+                msg.channel.send({
+                    //@ts-ignore
+                    embeds: embed
+                });
                 return;
             }
             if (["delete","remove"].indexOf(parsedMessage[2].toLowerCase()) != -1) {
@@ -92,7 +95,7 @@ export function accessMember(msg: discord.Message, parsedMessage: string[]):stri
                 parsedMessage.shift();
                 let avatar:string;
                 if (parsedMessage.length == 0 && (msg.attachments != null && msg.attachments != undefined))
-                    avatar = msg.attachments.array()[0].url;
+                    avatar = msg.attachments.map(a=>a)[0].url;
                 else if (parsedMessage.length >= 1)
                     avatar = parsedMessage[0];
                 else return "Invalid avatar given.";

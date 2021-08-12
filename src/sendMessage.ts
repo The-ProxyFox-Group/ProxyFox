@@ -11,7 +11,7 @@ export function sendMessageAsWebhook(msg: discord.Message, member: Member, syste
     if (msg.channel.isText) {
         let channel = <discord.TextChannel>msg.channel;
         channel.fetchWebhooks().then(hooks => {
-            let hookArr = hooks.array();
+            let hookArr = hooks.map(a=>a);
             for (let i in hookArr) {
                 let user: Object | discord.User = hookArr[i].owner;
 
@@ -21,7 +21,7 @@ export function sendMessageAsWebhook(msg: discord.Message, member: Member, syste
                         name: "ProxyFox proxy",
                         avatar: ""
                     }).then(hook => {
-                        let attach = msg.attachments.array();
+                        let attach = msg.attachments.map(a=>a);
                         let newMsg = hook.send({
                             avatarURL:url,
                             username:name,

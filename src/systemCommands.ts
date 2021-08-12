@@ -28,7 +28,10 @@ export function accessSystem(msg: discord.Message, parsedMessage: string[]) {
             let time:number = Date.parse(system.created);
             embed.setFooter("Created on " + new Date(time).toUTCString());
         }
-        msg.channel.send(embed);
+        msg.channel.send({
+            //@ts-ignore
+            embeds: embed
+        });
         return;
     }
     msg.channel.send("No system found. Make one with `pf>s`");
@@ -80,7 +83,10 @@ export function listSystem(msg: discord.Message, parsedMessage: string[]) {
             }
             embed.addField("Page "+(isNaN(parseInt(parsedMessage[parsedMessage.length-1]))? 1: parsedMessage[parsedMessage.length-1])+"/"+Math.ceil(system.members.length/25)+"",str);
         }
-        msg.channel.send(embed);
+        msg.channel.send({
+            //@ts-ignore
+            embeds: embed
+        });
     }
 }
 
@@ -88,8 +94,11 @@ export function exportSystem(msg:discord.Message, parsedMessage: string[]) {
     if (fs.existsSync("./systems/"+msg.author.id+".json")) {
         msg.channel.send("Check your DMs :>");
         msg.author.createDM().then(channel => {
-            channel.send(getSysExportMessage(msg.author.id.toString())).then(message => {
-                channel.send(message.attachments.array()[0].url);
+            //@ts-ignore
+            channel.send({
+                files: [getSysExportMessage(msg.author.id.toString())]
+            }).then(message => {
+                channel.send(message.attachments.map(a=>a)[0].url);
                 fs.unlinkSync("./systems/"+msg.author.id+"_export.json");
             }).catch(err => {
                 sendError(msg,err);
@@ -107,8 +116,8 @@ export function importSystem(msg:discord.Message, parsedMessage: string[]):strin
         getData(parsedMessage[parsedMessage.length-1],"./systems/"+msg.author.id+".json");
         return "System imported.";
     }
-    if (msg.attachments.array().length > 0) {
-        let url = msg.attachments.array()[0].url;
+    if (msg.attachments.map(a=>a).length > 0) {
+        let url = msg.attachments.map(a=>a)[0].url;
         getData(url,"./systems/"+msg.author.id+".json");
         return "System imported.";
     }

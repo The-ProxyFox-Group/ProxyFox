@@ -3,7 +3,18 @@ import { tree } from "./commandTree";
 import * as discord from "discord.js";
 import * as fs from "fs";
 import { webhook } from "./sendMessage";
-export const client = new discord.Client();
+export const client = new discord.Client({
+    //@ts-ignore
+    intents: [
+        discord.Intents.FLAGS.GUILDS,
+        discord.Intents.FLAGS.GUILD_MESSAGES,
+        discord.Intents.FLAGS.GUILD_WEBHOOKS,
+        discord.Intents.FLAGS.DIRECT_MESSAGES,
+        discord.Intents.FLAGS.GUILD_MESSAGE_REACTIONS,
+        discord.Intents.FLAGS.DIRECT_MESSAGE_REACTIONS,
+        discord.Intents.FLAGS.GUILD_INTEGRATIONS
+    ]
+});
 
 const keys = JSON.parse(fs.readFileSync("./key.json").toString());
 
@@ -39,22 +50,20 @@ function handleMessage(msg: discord.Message): boolean {
     return false;
 }
 
-client.on('message', msg => {
-    if (msg.author.system || msg.author.bot) return;
+client.on('messageCreate', msg => {
+    if (msg.author.system || msg.author.bot || msg.system) return;
     try {
-        if (!handleMessage(msg)) {
+        if (!handleMessage(msg))
             webhook(msg);
-        }
     } catch (err) {
-        
+        sendError(msg,err);
     }
 });
 
 function setPres(text: string) {
     client.user.setPresence({
-        activity: {
-            name: text
-        },
+        //@ts-ignore
+        activities: [{name: text}],
         status: "online"
     });
 }
