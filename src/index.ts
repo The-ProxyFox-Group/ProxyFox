@@ -3,6 +3,7 @@ import { tree } from "./commandTree";
 import * as discord from "discord.js";
 import * as fs from "fs";
 import { webhook } from "./sendMessage";
+import { start } from "./webServer";
 export const client = new discord.Client({
     //@ts-ignore
     intents: [
@@ -88,4 +89,5 @@ client.on("ready", () => {
 });
 
 console.log("starting");
+start();
 client.login(keys.main);
