@@ -31,10 +31,14 @@ export function accessSystem(msg: discord.Message, parsedMessage: string[]) {
         msg.channel.send({
             //@ts-ignore
             embeds: embed
-        });
+        }).catch(err => {
+            sendError(msg,err);
+        });;
         return;
     }
-    msg.channel.send("No system found. Make one with `pf>s`");
+    msg.channel.send("No system found. Make one with `pf>s`").catch(err => {
+        sendError(msg,err);
+    });;
 }
 
 export function createSystem(msg: discord.Message, parsedMessage: string[]):string {
@@ -54,7 +58,9 @@ export function deleteSystem(msg: discord.Message, parsedMessage: string[]):stri
         let c = (<discord.TextChannel>(a.channel)).createMessageCollector(a => a.content == system.id && a.author.id == msg.author.id,{time:30000}).on("collect", b => {
             c.stop();
             fs.unlinkSync("./systems/"+msg.author.id.toString()+".json");
-            msg.channel.send("System deleted.");
+            msg.channel.send("System deleted.").catch(err => {
+                sendError(msg,err);
+            });;
         });
     }).catch(err => {
         sendError(msg,err);
