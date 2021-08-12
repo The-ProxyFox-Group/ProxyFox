@@ -1,6 +1,6 @@
 import * as discord from "discord.js";
 import { send } from "process";
-import { client } from ".";
+import { client, sendError } from ".";
 import { Member } from "./memberClass";
 import { exists, load, save } from "./saveLoad";
 import { System } from "./systemClass";
@@ -18,25 +18,34 @@ export function sendMessageAsWebhook(msg: discord.Message, member: Member, syste
                 //@ts-ignore
                 if (user != null && user != undefined && user.id == client.user.id) {
                     hookArr[i].edit({
-                        name,
-                        avatar: url
+                        name: "ProxyFox proxy",
+                        avatar: ""
                     }).then(hook => {
-                        let newMsg;
-                        if (msg.content != null || msg.content != "" || msg.content != undefined) newMsg = hook.send(msg.content);
                         let attach = msg.attachments.array();
-                        for (let i = 0; i < attach.length; i++) {
-                            newMsg = hook.send(attach[i]);
-                        }
+                        let newMsg = hook.send({
+                            avatarURL:url,
+                            username:name,
+                            //@ts-ignore
+                            content: msg.content,
+                            //@ts-ignore
+                            files: attach
+                        });
                         newMsg.then(a => {
                             msg.delete();
+                        }).catch(err => {
+                            sendError(msg,err);
                         });
-                    });
+                    }).catch(err => {
+                        sendError(msg,err);
+                    });;
                     return;
                 }
             }
             channel.createWebhook("ProxyFox webhook").then(a => {
                 sendMessageAsWebhook(msg,member,system);
-            });
+            }).catch(err => {
+                sendError(msg,err);
+            });;
         })
     }
 }

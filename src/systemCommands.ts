@@ -1,6 +1,7 @@
 import * as discord from "discord.js";
 import * as fs from "fs";
 import * as https from "https";
+import { sendError } from ".";
 import { Member } from "./memberClass";
 import { exists, load, save, saveExport } from "./saveLoad";
 import { System } from "./systemClass";
@@ -52,6 +53,8 @@ export function deleteSystem(msg: discord.Message, parsedMessage: string[]):stri
             fs.unlinkSync("./systems/"+msg.author.id.toString()+".json");
             msg.channel.send("System deleted.");
         });
+    }).catch(err => {
+        sendError(msg,err);
     });
 }
 
@@ -88,8 +91,12 @@ export function exportSystem(msg:discord.Message, parsedMessage: string[]) {
             channel.send(getSysExportMessage(msg.author.id.toString())).then(message => {
                 channel.send(message.attachments.array()[0].url);
                 fs.unlinkSync("./systems/"+msg.author.id+"_export.json");
-            })
-        });
+            }).catch(err => {
+                sendError(msg,err);
+            });
+        }).catch(err => {
+            sendError(msg,err);
+        });;
         return;
     }
     msg.channel.send("No system registered.");

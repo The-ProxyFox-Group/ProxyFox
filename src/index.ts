@@ -46,10 +46,7 @@ client.on('message', msg => {
             webhook(msg);
         }
     } catch (err) {
-        let timestamp: Date = new Date();
-        let timestampString = "\n`===TIMESTAMP="+timestamp.getTime().toString().trim() + "===`\n";
-        console.log(timestampString + err);
-        msg.channel.send("Unexpected error" + timestampString);
+        sendError(msg,err);
     }
 });
 
@@ -60,6 +57,13 @@ function setPres(text: string) {
         },
         status: "online"
     });
+}
+
+export function sendError(msg: discord.Message, err: any) {
+    let timestamp: Date = new Date();
+    let timestampString = "\n`===TIMESTAMP="+timestamp.getTime().toString().trim() + "===`\n";
+    console.log(timestampString + err);
+    msg.channel.send("Unexpected error" + timestampString);
 }
 
 client.on("ready", () => {

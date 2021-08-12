@@ -1,4 +1,5 @@
 import * as discord from "discord.js";
+import { sendError } from ".";
 import { Member } from "./memberClass";
 import { ProxyTag } from "./proxyClass";
 import { exists, load, save } from "./saveLoad";
@@ -182,7 +183,9 @@ function deleteMem(system: System, name:string, user: discord.User, msg:discord.
                 system.removeMember(name);
                 save(user.id,system);
                 msg.channel.send("Member deleted.");
-            });
+            })
+        }).catch((err) => {
+            sendError(msg,err);
         });
     }
 }
