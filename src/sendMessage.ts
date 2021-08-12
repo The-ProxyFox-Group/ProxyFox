@@ -21,7 +21,6 @@ export function sendMessageAsWebhook(msg: discord.Message, member: Member, syste
                         name: "ProxyFox proxy",
                         avatar: ""
                     }).then(hook => {
-                        
                         let attach = msg.attachments.array();
                         let newMsg = hook.send({
                             avatarURL:url,
