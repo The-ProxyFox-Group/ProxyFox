@@ -46,7 +46,7 @@ export function sendMessageAsWebhook(msg: discord.Message, member: Member, syste
                     sendMessageAsWebhook(msg,member,system);
                 }).catch(err => {
                     sendError(msg,err);
-                });;
+                });
             });
         else {
             let channel = <discord.ThreadChannel> msg.channel;
@@ -79,7 +79,7 @@ export function sendMessageAsWebhook(msg: discord.Message, member: Member, syste
                             });
                         }).catch(err => {
                             sendError(msg,err);
-                        });;
+                        });
                         return;
                     }
                 }
