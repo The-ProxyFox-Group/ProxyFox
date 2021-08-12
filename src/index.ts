@@ -40,7 +40,7 @@ function handleMessage(msg: discord.Message): boolean {
 }
 
 client.on('message', msg => {
-    if (msg.author.system || msg.author.bot) return;
+    if (msg.author.system || msg.author.bot || msg.system) return;
     try {
         if (!handleMessage(msg)) {
             webhook(msg);
