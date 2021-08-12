@@ -53,7 +53,9 @@ export function accessMember(msg: discord.Message, parsedMessage: string[]):stri
                 msg.channel.send({
                     //@ts-ignore
                     embeds: embed
-                });
+                }).catch(err => {
+                    sendError(msg,err);
+                });;
                 return;
             }
             if (["delete","remove"].indexOf(parsedMessage[2].toLowerCase()) != -1) {
@@ -185,7 +187,9 @@ function deleteMem(system: System, name:string, user: discord.User, msg:discord.
                 c.stop();
                 system.removeMember(name);
                 save(user.id,system);
-                msg.channel.send("Member deleted.");
+                msg.channel.send("Member deleted.").catch(err => {
+                    sendError(msg,err);
+                });;
             })
         }).catch((err) => {
             sendError(msg,err);

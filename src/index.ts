@@ -33,13 +33,17 @@ function handleMessage(msg: discord.Message): boolean {
 
             switch (typeof currTree) {
                 case "string":
-                    msg.channel.send(currTree);
+                    msg.channel.send(currTree).catch(err => {
+                        sendError(msg,err);
+                    });;
                     return true;
                 case "function":
                     //@ts-ignore
                     let output: string = currTree(msg,parsedMsg);
                     if (output != undefined && output != null && output != "")
-                        msg.channel.send(output);
+                        msg.channel.send(output).catch(err => {
+                            sendError(msg,err);
+                        });;
                     return true;
                 case "object":
                     break;
