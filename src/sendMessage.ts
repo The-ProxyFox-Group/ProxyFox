@@ -62,6 +62,7 @@ export function webhook(msg: discord.Message) {
             return;
         }
         member = system.memberFromAP();
+        if (msg.content.startsWith("\\")) return;
         if (member != null)
             sendMessageAsWebhook(msg,member,system);
     }
