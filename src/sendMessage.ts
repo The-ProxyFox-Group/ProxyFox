@@ -10,43 +10,86 @@ export function sendMessageAsWebhook(msg: discord.Message, member: Member, syste
     let url = member.avatar == null ? system.avatar : member.avatar;
     if (msg.channel.isText) {
         let channel = <discord.TextChannel>msg.channel;
-        channel.fetchWebhooks().then(hooks => {
-            let hookArr = hooks.map(a=>a);
-            for (let i in hookArr) {
-                let user: Object | discord.User = hookArr[i].owner;
+        if (!channel.isThread())
+            channel.fetchWebhooks().then(hooks => {
+                let hookArr = hooks.map(a=>a);
+                for (let i in hookArr) {
+                    let user: Object | discord.User = hookArr[i].owner;
 
-                //@ts-ignore
-                if (user != null && user != undefined && user.id == client.user.id) {
-                    hookArr[i].edit({
-                        name: "ProxyFox proxy",
-                        avatar: ""
-                    }).then(hook => {
-                        let attach = msg.attachments.map(a=>a);
-                        let newMsg = hook.send({
-                            avatarURL:url,
-                            username:name,
-                            //@ts-ignore
-                            content: msg.content,
-                            //@ts-ignore
-                            files: attach
-                        });
-                        newMsg.then(a => {
-                            msg.delete();
+                    //@ts-ignore
+                    if (user != null && user != undefined && user.id == client.user.id) {
+                        hookArr[i].edit({
+                            name: "ProxyFox proxy",
+                            avatar: ""
+                        }).then(hook => {
+                            let attach = msg.attachments.map(a=>a);
+                            let newMsg = hook.send({
+                                avatarURL:url,
+                                username:name,
+                                //@ts-ignore
+                                content: msg.content,
+                                //@ts-ignore
+                                files: attach
+                            });
+                            newMsg.then(a => {
+                                msg.delete();
+                            }).catch(err => {
+                                sendError(msg,err);
+                            });
                         }).catch(err => {
                             sendError(msg,err);
-                        });
-                    }).catch(err => {
-                        sendError(msg,err);
-                    });;
-                    return;
+                        });;
+                        return;
+                    }
                 }
-            }
-            channel.createWebhook("ProxyFox webhook").then(a => {
-                sendMessageAsWebhook(msg,member,system);
-            }).catch(err => {
-                sendError(msg,err);
-            });;
-        })
+                channel.createWebhook("ProxyFox webhook").then(a => {
+                    sendMessageAsWebhook(msg,member,system);
+                }).catch(err => {
+                    sendError(msg,err);
+                });;
+            });
+        else {
+            let channel = <discord.ThreadChannel> msg.channel;
+            let baseChannel = <discord.TextChannel> channel.parent;
+            baseChannel.fetchWebhooks().then(hooks => {
+                let hookArr = hooks.map(a=>a);
+                for (let i in hookArr) {
+                    let user: Object | discord.User = hookArr[i].owner;
+
+                    //@ts-ignore
+                    if (user != null && user != undefined && user.id == client.user.id) {
+                        hookArr[i].edit({
+                            name: "ProxyFox proxy",
+                            avatar: ""
+                        }).then(hook => {
+                            let attach = msg.attachments.map(a=>a);
+                            let newMsg = hook.send({
+                                avatarURL:url,
+                                username:name,
+                                //@ts-ignore
+                                content: msg.content,
+                                //@ts-ignore
+                                files: attach,
+                                threadId: channel.id
+                            });
+                            newMsg.then(a => {
+                                msg.delete();
+                            }).catch(err => {
+                                sendError(msg,err);
+                            });
+                        }).catch(err => {
+                            sendError(msg,err);
+                        });;
+                        return;
+                    }
+                }
+                baseChannel.createWebhook("ProxyFox webhook").then(a => {
+                    sendMessageAsWebhook(msg,member,system);
+                }).catch(err => {
+                    sendError(msg,err);
+                });;
+            });
+        }
     }
 }
 
