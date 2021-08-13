@@ -81,9 +81,10 @@ export function sendError(msg: discord.Message, err: any) {
 }
 
 client.on("ready", () => {
-    setPres("Run pf>help for help!");
+    let uptime = 0;
+    setPres("Run pf>help for help! Online for: 0 seconds.");
     setInterval(() => {
-        setPres("Run pf>help for help!");
+        setPres("Run pf>help for help! Online for: "+(++uptime*30)+" seconds.");
     }, 30000);
     console.log("online");
 });

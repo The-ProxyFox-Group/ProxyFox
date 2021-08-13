@@ -71,6 +71,7 @@ function sendAsHook(hook: discord.Webhook, msg: discord.Message, url: string, na
         name: "ProxyFox proxy",
         avatar: ""
     }).then(hook => {
+        if (msg.content.length == 0) msg.content = null;
         let attach = msg.attachments.map(a=>a);
         if (msg.reference != null) {
             msg.fetchReference().then(m => {
