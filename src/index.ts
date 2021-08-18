@@ -80,11 +80,23 @@ export function sendError(msg: discord.Message, err: any) {
     msg.channel.send("Unexpected error" + timestampString);
 }
 
+function toTime(time: number):string {
+    let minutes = Math.floor(time/60);
+    let seconds = time-(minutes*60);
+    let hours = Math.floor(minutes/60);
+    minutes %= 60;
+    let hStr = hours.toString();
+    let mStr = minutes.toString().length == 1? "0"+minutes.toString(): minutes.toString();
+    let sStr = seconds.toString().length == 1? "0"+seconds.toString(): seconds.toString();
+
+    return hStr + ":" + mStr + ":" + sStr;
+}
+
 client.on("ready", () => {
     let uptime = 0;
-    setPres("Run pf>help for help! Online for: 0 seconds.");
+    setPres("Run pf>help for help! Online for: 0:00:00");
     setInterval(() => {
-        setPres("Run pf>help for help! Online for: "+(++uptime*30)+" seconds.");
+        setPres("Run pf>help for help! Online for: " +toTime(++uptime*30));
     }, 30000);
     console.log("online");
 });

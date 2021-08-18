@@ -123,9 +123,13 @@ function sendAsHook(hook: discord.Webhook, msg: discord.Message, url: string, na
             })
             msg.delete();
         }).catch(err => {
+            if (err.toString().indexOf("Request entity too large"))
+                return msg.channel.send("File too large to proxy.")
             sendError(msg,err);
         });
     }).catch(err => {
+        if (err.toString().indexOf("Request entity too large"))
+            return msg.channel.send("File too large to proxy.")
         sendError(msg,err);
     });
 }
