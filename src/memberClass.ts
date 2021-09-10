@@ -1,3 +1,4 @@
+import { throws } from "assert";
 import { ProxyTag } from "./proxyClass";
 
 export class Member {
@@ -27,8 +28,23 @@ export class Member {
         return out;
     }
     
-    toString():string {
-        return `{"id":"${this.id}","name":"${this.name.replace(/"/g,"\\\"")}","display_name":"${this.displayname?this.displayname.replace(/"/g,"\\\""):null}","description":"${this.description? this.description.replace(/"/g,"\\\""):null}","birthday":"${this.birthday?this.birthday.replace(/"/g,"\\\""):null}","pronouns":"${this.pronouns?this.pronouns.replace(/"/g,"\\\""):null}","color":"${this.color?this.color.replace(/"/g,"\\\""):null}","avatar_url":"${this.avatar?this.avatar.replace(/"/g,"\\\""):null}","proxy_tags":${ProxyTag.getArrString(this.proxies)},"keep_proxy":false,"message_count":${this.messageCount},"created":"${this.created.replace(/"/g,"\\\"")}"}`
+    toJson():object {
+        let json = {
+            id: this.id,
+            name: this.name,
+            display_name: this.displayname,
+            description: this.description,
+            birthday: this.birthday,
+            pronouns: this.pronouns,
+            color: this.color,
+            avatar_url: this.avatar,
+            proxy_tags: ProxyTag.getArr(this.proxies),
+            keep_proxy: false,
+            message_count: this.messageCount,
+            created: this.created,
+
+        };
+        return json;
     }
 
     addProxy(str:string):boolean {
@@ -52,14 +68,10 @@ export class Member {
         return 1;
     }
 
-    static getArrString(members:Member[]):string {
-        let out = "[";
-        for (let i in members) {
-            out += members[i].toString();
-            out += ",";
-        }
-        out = out.substr(0,out.length-1) + "]";
-        if (out.length == 1) out = "[]";
+    static getArr(members:Member[]):any {
+        let out = []
+        for (let i in members)
+            out.push(members[i].toJson());
         return out;
     }
 

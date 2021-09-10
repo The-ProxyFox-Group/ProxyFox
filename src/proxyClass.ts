@@ -7,8 +7,12 @@ export class ProxyTag {
         this.suffix = suffix;
     }
 
-    toString() {
-        return `{"prefix":"${this.prefix? this.prefix.replace(/"/g,"\\\""):null}","suffix":"${this.suffix? this.suffix.replace(/"/g,"\\\""):null}"}`;
+    toJson(): object {
+        let json = {
+            prefix: this.prefix,
+            suffix: this.suffix
+        }
+        return json;
     }
 
     toProxyString():string {
@@ -67,14 +71,10 @@ export class ProxyTag {
         return message;
     }
 
-    static getArrString(proxies:ProxyTag[]):string {
-        let out = "[";
-        for (let i in proxies) {
-            out += proxies[i].toString();
-            out += ",";
-        }
-        out = out.substr(0,out.length-1) + "]";
-        if (out.length == 1) out = "[]";
+    static getArr(proxies:ProxyTag[]): any {
+        let out = [];
+        for (let i in proxies)
+            out.push(proxies[i].toJson());
         return out;
     }
 

@@ -30,7 +30,7 @@ export function accessSystem(msg: discord.Message, parsedMessage: string[]) {
         }
         msg.channel.send({
             //@ts-ignore
-            embeds: embed
+            embeds: [embed]
         }).catch(err => {
             sendError(msg,err);
         });;
@@ -91,7 +91,7 @@ export function listSystem(msg: discord.Message, parsedMessage: string[]) {
         }
         msg.channel.send({
             //@ts-ignore
-            embeds: embed
+            embeds: [embed]
         });
     }
 }
