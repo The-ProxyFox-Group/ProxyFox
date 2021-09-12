@@ -44,7 +44,9 @@ function handleMessage(msg: discord.Message): boolean {
                     if (output != undefined && output != null && output != "")
                         msg.channel.send(output).catch(err => {
                             sendError(msg,err);
-                        });;
+                        }).catch(err => {
+                            sendError(msg,err);
+                        });
                     return true;
                 case "object":
                     break;
@@ -77,7 +79,7 @@ export function sendError(msg: discord.Message, err: any) {
     let timestamp: Date = new Date();
     let timestampString = "\n`===TIMESTAMP="+timestamp.getTime().toString().trim() + "===`\n";
     console.log(timestampString + err);
-    msg.channel.send("Unexpected error" + timestampString);
+    msg.channel.send("Unexpected error" + timestampString).catch(() => {});
 }
 
 function toTime(time: number):string {

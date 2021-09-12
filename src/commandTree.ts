@@ -61,6 +61,6 @@ export const tree = {
     "invite": "Use https://discord.com/oauth2/authorize?client_id=872276960951296051&scope=bot&permissions=258302340160 to invite ProxyFox to your server!\nTo get support, head on over to https://discord.gg/q3yF8ay9V7",
     "source": "Source code for ProxyFox is available at <http://olivermakesco.de/git/ProxyFox>!",
     "explain": `ProxyFox is a bot to help those with DID/OSDD-1 communicate
-    It uses discord's webhooks to generate "pseudo-users" which different members of the system can use.
-    https://did-research.org/origin/structural_dissociation/ explains why and how DID/OSDD forms`
+It uses discord's webhooks to generate "pseudo-users" which different members of the system can use.
+https://did-research.org/origin/structural_dissociation/ explains why and how DID/OSDD forms`
 };
