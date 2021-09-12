@@ -16,6 +16,16 @@ export const client = new discord.Client({
         discord.Intents.FLAGS.GUILD_INTEGRATIONS
     ]
 });
+import process from 'process';
+
+process.on('unhandledRejection', (reason, promise) => {
+  console.log('Unhandled Rejection at:', promise, 'reason:', reason);
+});
+
+process.on("uncaughtException", error => {
+    console.log(error.name);
+    console.log(error.message);
+})
 
 const keys = JSON.parse(fs.readFileSync("./key.json").toString());
 
