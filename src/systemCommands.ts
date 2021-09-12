@@ -79,14 +79,17 @@ export function listSystem(msg: discord.Message, parsedMessage: string[]) {
             let len = parseInt(parsedMessage[parsedMessage.length-1]);
             if (isNaN(len)) len = 1;
             len--;
-            len = len*25;
+            len = len*20;
             if (len > system.members.length) return "Page number too big.";
-            for (let i = len; i < len + 25; i++) {
-                let member: Member = system.members[i];
-                str += "[`"+member.id+"`] **"+member.name+"**";
-                if (!isArrEmpty(member.proxies)) str += " ()`"+member.proxies[0].toProxyString()+"`)";
-                str += "\n";
+            for (let i = len; i < len + 20; i++) {
+                if (i < system.members.length) {
+                    let member: Member = system.members[i];
+                    str += "[`"+member.id+"`] **"+member.name+"**";
+                    if (!isArrEmpty(member.proxies)) str += " (`"+member.proxies[0].toProxyString()+"`)";
+                    str += "\n";
+                }
             }
+            str.trim();
             embed.addField("Page "+(isNaN(parseInt(parsedMessage[parsedMessage.length-1]))? 1: parsedMessage[parsedMessage.length-1])+"/"+Math.ceil(system.members.length/25)+"",str);
         }
         msg.channel.send({

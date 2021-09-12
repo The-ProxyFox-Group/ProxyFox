@@ -96,6 +96,7 @@ function sendAsHook(hook: discord.Webhook, msg: discord.Message, url: string, na
             threadId: thread,
             embeds
         }).then(a => {
+            member.messageCount++;
             const filter = (reaction) => '❌❗❓'.indexOf(reaction.emoji.name) != -1;
             let mess = <discord.Message> a;
             mess.createReactionCollector({

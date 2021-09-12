@@ -20,7 +20,7 @@ export function accessMember(msg: discord.Message, parsedMessage: string[]):stri
     let user: discord.User = msg.author;
     let memberName: string = parsedMessage[1];
     if (exists(user.id)) {
-        let system = load(user.id.toString());
+        let system = load(user.id);
         if (system.memberFromName(memberName) != null) {
             if (isEmpty(parsedMessage[2])) {
                 let member: Member = system.memberFromName(memberName);
@@ -29,6 +29,7 @@ export function accessMember(msg: discord.Message, parsedMessage: string[]):stri
                 else if (!isEmpty(system.avatar)) attach.setThumbnail(system.avatar);
                 attach.setTitle(member.name + " ("+system.name+")" + " [`"+member.id+"`]");
                 if (!isEmpty(member.displayname)) attach.addField("Display Name",member.displayname,true);
+                if (!member.messageCount) member.messageCount = 0;
                 attach.addField("Message Count",member.messageCount.toString(),true);
                 if (!isArrEmpty(member.proxies)) {
                     let str: string = "";
@@ -55,7 +56,7 @@ export function accessMember(msg: discord.Message, parsedMessage: string[]):stri
                     embeds: [attach]
                 }).catch(err => {
                     sendError(msg,err);
-                });;
+                })
                 return;
             }
             if (["delete","remove"].indexOf(parsedMessage[2].toLowerCase()) != -1) {
@@ -69,28 +70,28 @@ export function accessMember(msg: discord.Message, parsedMessage: string[]):stri
                 parsedMessage.shift();
                 let name: string = parsedMessage.join(" ");
                 member.displayname = name;
-                save(user.id.toString(),system);
+                save(user.id,system);
                 return "Member's name changed to `"+name+"`";
             }
             if (parsedMessage[0].toLowerCase() == "pronouns") {
                 parsedMessage.shift();
                 let pronouns: string = parsedMessage.join(" ");
                 member.pronouns = pronouns;
-                save(user.id.toString(),system);
+                save(user.id,system);
                 return "Member's pronouns changed to `"+pronouns+"`";
             }
             if (parsedMessage[0].toLowerCase() == "birthday") {
                 parsedMessage.shift();
                 let birthday: string = parsedMessage.join(" ");
                 member.birthday = birthday;
-                save(user.id.toString(),system);
+                save(user.id,system);
                 return "Member's birthday changed to `"+birthday+"`";
             }
             if (parsedMessage[0].toLowerCase() == "color") {
                 parsedMessage.shift();
                 let color: string = parsedMessage.join(" ");
                 member.color = color;
-                save(user.id.toString(),system);
+                save(user.id,system);
                 return "Member's color changed to `"+color+"`";
             }
             if (parsedMessage[0].toLowerCase() == "avatar") {
@@ -102,7 +103,7 @@ export function accessMember(msg: discord.Message, parsedMessage: string[]):stri
                     avatar = parsedMessage[0];
                 else return "Invalid avatar given.";
                 member.avatar = avatar;
-                save(user.id.toString(),system);
+                save(user.id,system);
                 return "Member's avatar changed to `"+avatar+"`";
             }
             if (parsedMessage[0].toLowerCase() == "proxy") {
@@ -110,7 +111,7 @@ export function accessMember(msg: discord.Message, parsedMessage: string[]):stri
                 if (parsedMessage[0].toLowerCase() == "add") {
                     parsedMessage.shift();
                     if (member.addProxy(parsedMessage.join(" "))) {
-                        save(user.id.toString(),system);
+                        save(user.id,system);
                         return "Proxy `"+parsedMessage.join(" ")+"` added!";
                     }
                     return "Invalid proxy, make sure to include `text` in it somewhere!";
@@ -122,11 +123,11 @@ export function accessMember(msg: discord.Message, parsedMessage: string[]):stri
                         return "Invalid proxy, make sure to include `text` in it somewhere!";
                     if (num == 1)
                         return "Proxy doesn't exist";
-                    save(user.id.toString(),system);
+                    save(user.id,system);
                     return "Proxy removed.";
                 }
                 if (member.addProxy(parsedMessage.join(" "))) {
-                    save(user.id.toString(),system);
+                    save(user.id,system);
                     return "Proxy `"+parsedMessage.join(" ")+"` added!";
                 }
                 return "Invalid proxy, make sure to include `text` in it somewhere!";
@@ -148,12 +149,12 @@ export function createMember(msg: discord.Message, parsedMessage: string[]):stri
     parsedMessage.shift();
     let memberName: string = parsedMessage.join(" ");
 
-    if (exists(user.id.toString())) {
-        let system = load(user.id.toString());
+    if (exists(user.id)) {
+        let system = load(user.id);
         let member = system.addMember(memberName);
         if (member == null)
             return "Member with the same name already exists. Please provide a different name.";
-        save(user.id.toString(),system);
+        save(user.id,system);
         return "Member '"+memberName+"' created!";
     }
     return "System doesn't exist. Please create one with `pf>system new`";
@@ -168,8 +169,8 @@ export function deleteMember(msg: discord.Message, parsedMessage: string[]):stri
     parsedMessage.shift();
     let memberName: string = parsedMessage.join(" ");
 
-    if (exists(user.id.toString())) {
-        let system = load(user.id.toString());
+    if (exists(user.id)) {
+        let system = load(user.id);
         if (system.memberFromName(memberName) != null) {
             deleteMem(system,memberName,user,msg);
             return;

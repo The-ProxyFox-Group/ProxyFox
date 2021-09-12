@@ -57,5 +57,6 @@ export const tree = {
     "ap": autoTree,
     "autoproxy": autoTree,
     "time": getTime,
-    "help": help
+    "help": help,
+    "invite": "Use https://discord.com/oauth2/authorize?client_id=872276960951296051&scope=bot&permissions=258302340160 to invite ProxyFox to your server!\nTo get support, head on over to https://discord.gg/q3yF8ay9V7",
 };
