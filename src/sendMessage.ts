@@ -9,8 +9,12 @@ export function sendMessageAsWebhook(msg: discord.Message, member: Member, syste
     let url = member.avatar == null ? system.avatar : member.avatar;
     if (msg.channel.isText) {
         let channel = <discord.TextChannel>msg.channel;
+        let time = new Date().getTime();
         if (!channel.isThread())
             channel.fetchWebhooks().then(hooks => {
+                let time2 = new Date().getTime();
+                if (time2 > time + 30000)
+                    return
                 let hookArr = hooks.map(a=>a);
                 for (let i in hookArr) {
                     let user: Object | discord.User = hookArr[i].owner;
@@ -29,10 +33,12 @@ export function sendMessageAsWebhook(msg: discord.Message, member: Member, syste
             let channel = <discord.ThreadChannel> msg.channel;
             let baseChannel = <discord.TextChannel> channel.parent;
             baseChannel.fetchWebhooks().then(hooks => {
+                let time2 = new Date().getTime();
+                if (time2 > time + 30000)
+                    return
                 let hookArr = hooks.map(a=>a);
                 for (let i in hookArr) {
                     let user: Object | discord.User = hookArr[i].owner;
-
                     //@ts-ignore
                     if (user != null && user != undefined && user.id == client.user.id)
                         return sendAsHook(hookArr[i],msg,url,name,member,null,channel.id);
