@@ -57,7 +57,7 @@ export function sendMessageAsWebhook(msg: discord.Message, member: Member, syste
                         sendError(msg,err);
                     });
                 });
-            else sendAsHook(webhooks[channel.id],msg,url,name,member);
+            else sendAsHook(webhooks[channel.id],msg,url,name,member,null,channel.id);
         }
     }
 }
