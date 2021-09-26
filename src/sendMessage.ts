@@ -3,6 +3,9 @@ import { client, sendError } from ".";
 import { Member } from "./memberClass";
 import { exists, load, save } from "./saveLoad";
 import { System } from "./systemClass";
+import { webhookStorage } from "./webhookManager";
+
+let webhooks: webhookStorage = {};
 
 export function sendMessageAsWebhook(msg: discord.Message, member: Member, system: System) {
     let name = member.getName(system.tag);
@@ -11,44 +14,50 @@ export function sendMessageAsWebhook(msg: discord.Message, member: Member, syste
         let channel = <discord.TextChannel>msg.channel;
         let time = new Date().getTime();
         if (!channel.isThread())
-            channel.fetchWebhooks().then(hooks => {
-                let time2 = new Date().getTime();
-                if (time2 > time + 30000)
-                    return
-                let hookArr = hooks.map(a=>a);
-                for (let i in hookArr) {
-                    let user: Object | discord.User = hookArr[i].owner;
+            if (!webhooks[channel.id])
+                channel.fetchWebhooks().then(hooks => {
+                    let time2 = new Date().getTime();
+                    if (time2 > time + 30000)
+                        return;
+                    console.log("No webhook storage made for " + channel.id + ". Generating one.");
+                    let hookArr = hooks.map(a=>a);
+                    for (let i in hookArr) {
+                        let user: Object | discord.User = hookArr[i].owner;
 
-                    //@ts-ignore
-                    if (user != null && user != undefined && user.id == client.user.id)
-                        return sendAsHook(hookArr[i],msg,url,name,member);
-                }
-                channel.createWebhook("ProxyFox webhook").then(a => {
-                    sendMessageAsWebhook(msg,member,system);
-                }).catch(err => {
-                    sendError(msg,err);
+                        //@ts-ignore
+                        if (user != null && user != undefined && user.id == client.user.id)
+                            return sendAsHook(hookArr[i],msg,url,name,member);
+                    }
+                    channel.createWebhook("ProxyFox webhook").then(a => {
+                        sendMessageAsWebhook(msg,member,system);
+                    }).catch(err => {
+                        sendError(msg,err);
+                    });
                 });
-            });
+            else sendAsHook(webhooks[channel.id],msg,url,name,member);
         else {
             let channel = <discord.ThreadChannel> msg.channel;
             let baseChannel = <discord.TextChannel> channel.parent;
-            baseChannel.fetchWebhooks().then(hooks => {
-                let time2 = new Date().getTime();
-                if (time2 > time + 30000)
-                    return
-                let hookArr = hooks.map(a=>a);
-                for (let i in hookArr) {
-                    let user: Object | discord.User = hookArr[i].owner;
-                    //@ts-ignore
-                    if (user != null && user != undefined && user.id == client.user.id)
-                        return sendAsHook(hookArr[i],msg,url,name,member,null,channel.id);
-                }
-                baseChannel.createWebhook("ProxyFox webhook").then(a => {
-                    sendMessageAsWebhook(msg,member,system);
-                }).catch(err => {
-                    sendError(msg,err);
-                });;
-            });
+            if (!webhooks[channel.id])
+                baseChannel.fetchWebhooks().then(hooks => {
+                    let time2 = new Date().getTime();
+                    if (time2 > time + 30000)
+                        return;
+                    console.log("No webhook storage made for " + channel.id + ". Generating one.");
+                    let hookArr = hooks.map(a=>a);
+                    for (let i in hookArr) {
+                        let user: Object | discord.User = hookArr[i].owner;
+                        //@ts-ignore
+                        if (user != null && user != undefined && user.id == client.user.id)
+                            return sendAsHook(hookArr[i],msg,url,name,member,null,channel.id);
+                    }
+                    baseChannel.createWebhook("ProxyFox webhook").then(a => {
+                        sendMessageAsWebhook(msg,member,system);
+                    }).catch(err => {
+                        sendError(msg,err);
+                    });
+                });
+            else sendAsHook(webhooks[channel.id],msg,url,name,member);
         }
     }
 }
@@ -73,6 +82,7 @@ export function webhook(msg: discord.Message) {
 }
 
 function sendAsHook(hook: discord.Webhook, msg: discord.Message, url: string, name: string, member: Member, embed?:discord.MessageEmbed, thread?: string) {
+    webhooks[msg.channel.id] = hook;
     hook.edit({
         name: "ProxyFox proxy",
         avatar: ""
