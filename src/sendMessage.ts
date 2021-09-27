@@ -3,9 +3,9 @@ import { client, sendError } from ".";
 import { Member } from "./memberClass";
 import { exists, load, save } from "./saveLoad";
 import { System } from "./systemClass";
-import { webhookStorage } from "./webhookManager";
+import { webhookManager, webhookStorage } from "./webhookManager";
 
-let webhooks: webhookStorage = {};
+let webhooks: webhookManager = new webhookManager();
 
 export function sendMessageAsWebhook(msg: discord.Message, member: Member, system: System) {
     let name = member.getName(system.tag);
@@ -14,7 +14,7 @@ export function sendMessageAsWebhook(msg: discord.Message, member: Member, syste
         let channel = <discord.TextChannel>msg.channel;
         let time = new Date().getTime();
         if (!channel.isThread())
-            if (!webhooks[channel.id])
+            if (!webhooks.has(channel.id))
                 channel.fetchWebhooks().then(hooks => {
                     let time2 = new Date().getTime();
                     if (time2 > time + 30000)
@@ -38,7 +38,7 @@ export function sendMessageAsWebhook(msg: discord.Message, member: Member, syste
         else {
             let channel = <discord.ThreadChannel> msg.channel;
             let baseChannel = <discord.TextChannel> channel.parent;
-            if (!webhooks[channel.id])
+            if (!webhooks.has(channel.id))
                 baseChannel.fetchWebhooks().then(hooks => {
                     let time2 = new Date().getTime();
                     if (time2 > time + 30000)
@@ -82,7 +82,7 @@ export function webhook(msg: discord.Message) {
 }
 
 function sendAsHook(hook: discord.Webhook, msg: discord.Message, url: string, name: string, member: Member, embed?:discord.MessageEmbed, thread?: string) {
-    webhooks[msg.channel.id] = hook;
+    webhooks.put(msg.channel.id, hook);
     if (msg.content.length == 0) msg.content = null;
     let attach = msg.attachments.map(a=>a);
     if (msg.reference != null) {
