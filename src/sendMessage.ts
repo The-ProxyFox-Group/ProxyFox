@@ -83,67 +83,60 @@ export function webhook(msg: discord.Message) {
 
 function sendAsHook(hook: discord.Webhook, msg: discord.Message, url: string, name: string, member: Member, embed?:discord.MessageEmbed, thread?: string) {
     webhooks[msg.channel.id] = hook;
-    hook.edit({
-        name: "ProxyFox proxy",
-        avatar: ""
-    }).then(hook => {
-        if (msg.content.length == 0) msg.content = null;
-        let attach = msg.attachments.map(a=>a);
-        if (msg.reference != null) {
-            msg.fetchReference().then(m => {
-                let embed = new discord.MessageEmbed();
-                embed.setAuthor(m.author.username + " ↩️",m.author.avatarURL());
-                embed.setDescription("[Reply to:](<"+m.url+">) "+ (m.content.length > 100? m.content.substr(0,97)+"...": m.content));
-                msg.reference = null;
-                sendAsHook(hook,msg,url,name,member,embed,thread);
-            });
-            return;
-        }
-        let embeds = null;
-        if (embed != null)
-            embeds = [embed];
-        hook.send({
-            avatarURL:url,
-            username:name,
-            //@ts-ignore
-            content: msg.content,
-            //@ts-ignore
-            files: attach,
-            threadId: thread,
-            embeds
-        }).then(a => {
-            member.messageCount++;
-            const filter = (reaction) => '❌❗❓'.indexOf(reaction.emoji.name) != -1;
-            let mess = <discord.Message> a;
-            mess.createReactionCollector({
-                filter
-            }).on("collect", (react, user) => {
-                switch (react.emoji.name) {
-                    case "❌":
-                        if (user.id == msg.author.id)
-                            mess.delete();
-                        return;
-                    case "❗":
-                        let embed = new discord.MessageEmbed();
-                        embed.setDescription("**[Jump to message]("+mess.url+")**");
-                        mess.channel.send({
-                            content: "Psst! **" + member.getName("") + "**(<@"+msg.author.id+">)\nYou have been pinged by <@"+user.id+">!",
-                            embeds: [embed]
-                        });
-                        break;
-                    case "❓":
-                        user.createDM().then(a => {
-                            user.send("Proxy owner: `"+msg.author.username+"#"+msg.author.discriminator+"`, `"+msg.author.id+"`");
-                        });
-                        break;
-                }
-            })
-            msg.delete();
-        }).catch(err => {
-            if (err.toString().indexOf("Request entity too large"))
-                return msg.channel.send("File too large to proxy.")
-            sendError(msg,err);
+    if (msg.content.length == 0) msg.content = null;
+    let attach = msg.attachments.map(a=>a);
+    if (msg.reference != null) {
+        msg.fetchReference().then(m => {
+            let embed = new discord.MessageEmbed();
+            embed.setAuthor(m.author.username + " ↩️",m.author.avatarURL());
+            embed.setDescription("[Reply to:](<"+m.url+">) "+ (m.content.length > 100? m.content.substr(0,97)+"...": m.content));
+            msg.reference = null;
+            sendAsHook(hook,msg,url,name,member,embed,thread);
         });
+        return;
+    }
+    let embeds = null;
+    if (embed != null)
+        embeds = [embed];
+    hook.send({
+        avatarURL:url,
+        username:name,
+        //@ts-ignore
+        content: msg.content,
+        //@ts-ignore
+        files: attach,
+        threadId: thread,
+        embeds
+    }).then(a => {
+        member.messageCount++;
+        const filter = (reaction) => '❌❗❓'.indexOf(reaction.emoji.name) != -1;
+        let mess = <discord.Message> a;
+        mess.createReactionCollector({
+            filter
+        }).on("collect", (react, user) => {
+            switch (react.emoji.name) {
+                case "❌":
+                    if (user.id == msg.author.id)
+                        mess.delete();
+                    return;
+                case "❗":
+                    let embed = new discord.MessageEmbed();
+                    embed.setDescription("**[Jump to message]("+mess.url+")**");
+                    mess.channel.send({
+                        content: "Psst! **" + member.getName("") + "**(<@"+msg.author.id+">)\nYou have been pinged by <@"+user.id+">!",
+                        embeds: [embed]
+                    });
+                    react.remove();
+                    break;
+                case "❓":
+                    user.createDM().then(a => {
+                        user.send("Proxy owner: `"+msg.author.username+"#"+msg.author.discriminator+"`, `"+msg.author.id+"`");
+                    });
+                    react.remove();
+                    break;
+            }
+        })
+        msg.delete();
     }).catch(err => {
         if (err.toString().indexOf("Request entity too large"))
             return msg.channel.send("File too large to proxy.")
