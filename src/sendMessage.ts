@@ -3,7 +3,7 @@ import { client, sendError } from ".";
 import { Member } from "./memberClass";
 import { exists, load, save } from "./saveLoad";
 import { System } from "./systemClass";
-import { webhookManager, webhookStorage } from "./webhookManager";
+import { webhookManager } from "./webhookManager";
 
 let webhooks: webhookManager = new webhookManager();
 
