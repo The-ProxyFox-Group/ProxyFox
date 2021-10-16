@@ -2,17 +2,17 @@ import { throws } from "assert";
 import { ProxyTag } from "./proxyClass";
 
 export class Member {
-    id: string;
-    name: string;
-    displayname: string;
-    description: string;
-    birthday: string;
-    pronouns: string;
-    color: string;
-    avatar: string;
+    id: string = null;
+    name: string = null;
+    displayname: string = null;
+    description: string = null;
+    birthday: string = null;
+    pronouns: string = null;
+    color: string = null;
+    avatar: string = null;
     proxies: ProxyTag[] = [];
     messageCount: number = 0;
-    created: string;
+    created: string = null;
 
     constructor(name:string) {
         this.name = name;

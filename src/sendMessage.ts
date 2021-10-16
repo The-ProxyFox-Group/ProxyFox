@@ -34,7 +34,7 @@ export function sendMessageAsWebhook(msg: discord.Message, member: Member, syste
                         sendError(msg,err);
                     });
                 });
-            else sendAsHook(webhooks[channel.id],msg,url,name,member);
+            else sendAsHook(webhooks.get(channel.id),msg,url,name,member);
         else {
             let channel = <discord.ThreadChannel> msg.channel;
             let baseChannel = <discord.TextChannel> channel.parent;
@@ -57,7 +57,7 @@ export function sendMessageAsWebhook(msg: discord.Message, member: Member, syste
                         sendError(msg,err);
                     });
                 });
-            else sendAsHook(webhooks[channel.id],msg,url,name,member,null,channel.id);
+            else sendAsHook(webhooks.get(channel.id),msg,url,name,member,null,channel.id);
         }
     }
 }
@@ -82,7 +82,8 @@ export function webhook(msg: discord.Message) {
 }
 
 function sendAsHook(hook: discord.Webhook, msg: discord.Message, url: string, name: string, member: Member, embed?:discord.MessageEmbed, thread?: string) {
-    webhooks.put(msg.channel.id, hook);
+    if (!webhooks.has(msg.channel.id))
+        webhooks.put(msg.channel.id, hook);
     if (msg.content.length == 0) msg.content = null;
     let attach = msg.attachments.map(a=>a);
     if (msg.reference != null) {
@@ -136,7 +137,7 @@ function sendAsHook(hook: discord.Webhook, msg: discord.Message, url: string, na
                     break;
             }
         })
-        msg.delete();
+        setTimeout(() => {msg.delete();}, 100);
     }).catch(err => {
         if (err.toString().indexOf("Request entity too large"))
             return msg.channel.send("File too large to proxy.")

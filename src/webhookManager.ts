@@ -13,7 +13,7 @@ export class webhookManager {
         this.webhooks[key] = value;
     }
     public has(key: string): boolean {
-        return !!this.webhooks[key];
+        return this.webhooks[key] != undefined;
     }
     public get(key: string): Webhook {
         if (!this.has(key)) return null;

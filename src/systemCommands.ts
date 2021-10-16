@@ -43,6 +43,7 @@ export function accessSystem(msg: discord.Message, parsedMessage: string[]) {
 
 export function createSystem(msg: discord.Message, parsedMessage: string[]):string {
     parsedMessage.shift();
+    parsedMessage.shift();
     let name: string = parsedMessage.join(" ");
     if (exists(msg.author.id.toString())) return "You already have a system registered!";
     let system: System = new System(name);
@@ -55,12 +56,13 @@ export function deleteSystem(msg: discord.Message, parsedMessage: string[]):stri
     let system: System = load(msg.author.id.toString());
     msg.channel.send("Are you sure you want to delete your system?? Reply with the system id ("+system.id+") to delete.").then(a => {
         //@ts-ignore
-        let c = (<discord.TextChannel>(a.channel)).createMessageCollector(a => a.content == system.id && a.author.id == msg.author.id,{time:30000}).on("collect", b => {
+        let c = (<discord.TextChannel>(a.channel)).createMessageCollector(a => a.author.id == msg.author.id,{time:30000}).on("collect", b => {
             c.stop();
+            if (b.content != system.id) return;
             fs.unlinkSync("./systems/"+msg.author.id.toString()+".json");
             msg.channel.send("System deleted.").catch(err => {
                 sendError(msg,err);
-            });;
+            });
         });
     }).catch(err => {
         sendError(msg,err);
@@ -74,7 +76,9 @@ export function listSystem(msg: discord.Message, parsedMessage: string[]) {
 
         embed.setTitle(system.name + " [`"+system.id+"`]");
         if (!isArrEmpty(system.members)) {
-            system.members = system.members.sort();
+            system.members = system.members.sort((a,b) => {
+                return (a.name > b.name)? 1: ((b.name > a.name)? -1: 0);
+            });
             let str:string = "";
             let len = parseInt(parsedMessage[parsedMessage.length-1]);
             if (isNaN(len)) len = 1;
@@ -172,4 +176,14 @@ export function autoOff(msg: discord.Message, parsedMessage: string[]): string {
         return "Autoproxy disabled.";
     }
     return "System doesn't exist.";
+}
+
+export function setTag(msg: discord.Message, parsedMessage: string[]): string {
+    parsedMessage.shift();
+    parsedMessage.shift();
+    let tag = parsedMessage.join(" ");
+    if (!exists(msg.author.id.toString())) return "System doesn't exist.";
+    let system: System = load(msg.author.id.toString());
+    system.tag = tag;
+    save(msg.author.id.toString(),system);
 }

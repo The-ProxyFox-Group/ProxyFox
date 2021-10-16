@@ -1,6 +1,6 @@
 export class ProxyTag {
-    prefix: string;
-    suffix: string;
+    prefix: string = null;
+    suffix: string = null;
 
     constructor(prefix:string, suffix:string) {
         this.prefix = prefix;

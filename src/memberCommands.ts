@@ -184,8 +184,9 @@ function deleteMem(system: System, name:string, user: discord.User, msg:discord.
     if (system.memberFromName(name) != null) {
         msg.channel.send("Are you sure you want to delete is member? Reply with the member name again to delete.").then(a => {
             //@ts-ignore
-            let c = (<discord.TextChannel>(a.channel)).createMessageCollector(a => a.content == name && a.author.id == user.id,{time:30000}).on("collect", b => {
+            let c = (<discord.TextChannel>(a.channel)).createMessageCollector(a => a.author.id == user.id,{time:30000}).on("collect", b => {
                 c.stop();
+                if (b.content != name) return;
                 system.removeMember(name);
                 save(user.id,system);
                 msg.channel.send("Member deleted.").catch(err => {

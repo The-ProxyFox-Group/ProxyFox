@@ -2,15 +2,15 @@ import { throws } from "assert";
 import { Member } from "./memberClass";
 
 export class System {
-    id: string;
-    name: string;
-    description: string;
-    tag: string;
-    avatar: string;
-    timezone: string;
+    id: string = null;
+    name: string = null;
+    description: string = null;
+    tag: string = null;
+    avatar: string = null;
+    timezone: string = null;
     members: Member[] = [];
-    created: string;
-    auto: string;
+    created: string = null;
+    auto: string = null;
     autobool: boolean = false;
 
     constructor(name:string) {
