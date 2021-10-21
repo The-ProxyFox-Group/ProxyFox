@@ -143,10 +143,6 @@ function getSysExportMessage(id:string):discord.MessageAttachment {
     return new discord.MessageAttachment("./systems/"+id+"_export.json", "system.json");
 }
 
-function getSys(id:string):string {
-    return fs.readFileSync("./systems/"+id+".json").toString();
-}
-
 export function getData(url:string,path:string) {
     let output = ""
     https.get(url,res => {
@@ -186,4 +182,18 @@ export function setTag(msg: discord.Message, parsedMessage: string[]): string {
     let system: System = load(msg.author.id.toString());
     system.tag = tag;
     save(msg.author.id.toString(),system);
+}
+
+export function setAvatar(msg: discord.Message, parsedMessage: string[]): string {
+    if (!exists(msg.author.id.toString())) return "System doesn't exist.";
+    let system: System = load(msg.author.id.toString());
+    let url: string;
+    if (parsedMessage.length > 2)
+        url = parsedMessage[parsedMessage.length-1]
+    if (msg.attachments.map(a=>a).length > 0)
+        url = msg.attachments.map(a=>a)[0].url;
+    if (!url) return "No avatar to set.";
+    system.avatar = url;
+    save(msg.author.id.toString(),system);
+    return "System avatar changed to `"+url+"`!";
 }

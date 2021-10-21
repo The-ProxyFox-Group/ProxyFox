@@ -1,5 +1,5 @@
 import {accessMember, createMember, deleteMember} from "./memberCommands";
-import {accessSystem, autoOff, autoOn, createSystem, deleteSystem, exportSystem, importSystem, listSystem} from "./systemCommands";
+import {accessSystem, autoOff, autoOn, createSystem, deleteSystem, exportSystem, importSystem, listSystem, setAvatar, setTag} from "./systemCommands";
 import * as discord from "discord.js";
 
 function getTime(msg: discord.Message, parsedMessage: string[]):string {
@@ -24,6 +24,9 @@ let systemTree = {
     "delete": deleteSystem,
     "remove": deleteSystem,
     "list": listSystem,
+    "tag": setTag,
+    "avatar": setAvatar,
+    "picture": setAvatar,
 }
 
 let autoTree = {
