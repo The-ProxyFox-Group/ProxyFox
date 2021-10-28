@@ -14,10 +14,10 @@
   "devDependencies": {
     "install": "^0.13.0",
     "npm": "^7.20.3",
-    "typescript": "^4.3.5"
+    "typescript": "^4.4.4"
   },
   "dependencies": {
-    "discord.js": "^13.0.1",
+    "discord.js": "^13.2.0",
     "node": "^16.6.1"
   }
 }
