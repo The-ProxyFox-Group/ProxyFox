@@ -10,7 +10,7 @@
     "url": "git+https://github.com/Oliver-makes-code/ProxyFox.git"
   },
   "author": "Oliver-makes-code",
-  "license": "ARR",
+  "license": "MIT",
   "devDependencies": {
     "install": "^0.13.0",
     "npm": "^7.20.3",

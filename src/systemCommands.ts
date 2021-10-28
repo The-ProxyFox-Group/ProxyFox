@@ -22,7 +22,7 @@ export function accessSystem(msg: discord.Message, parsedMessage: string[]) {
         embed.setTitle(system.name + " [`"+system.id+"`]");
         embed.setThumbnail(system.avatar);
         if (!isEmpty(system.tag)) embed.addField("Tag",system.tag,true);
-        if (!isArrEmpty(system.members)) embed.addField("Members (" + system.members.length + ")","(see `pf>systen list`)",true);
+        if (!isArrEmpty(system.members)) embed.addField("Members (" + system.members.length + ")","(see `pf>system list`)",true);
         if (!isEmpty(system.description)) embed.addField("Description",system.description,false);
         if (!isEmpty(system.created)) {
             let time:number = Date.parse(system.created);
@@ -182,6 +182,7 @@ export function setTag(msg: discord.Message, parsedMessage: string[]): string {
     let system: System = load(msg.author.id.toString());
     system.tag = tag;
     save(msg.author.id.toString(),system);
+    return "System tag changed to `"+tag+"`!";
 }
 
 export function setAvatar(msg: discord.Message, parsedMessage: string[]): string {
