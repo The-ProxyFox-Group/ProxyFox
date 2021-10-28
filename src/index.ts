@@ -46,7 +46,7 @@ function handleMessage(msg: discord.Message): boolean {
                 case "string":
                     msg.channel.send(currTree).catch(err => {
                         sendError(msg,err);
-                    });;
+                    });
                     return true;
                 case "function":
                     //@ts-ignore
