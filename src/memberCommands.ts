@@ -1,5 +1,6 @@
 import * as discord from "discord.js";
 import { sendError } from ".";
+import { GuildSpecific } from "./guildSpecific";
 import { Member } from "./memberClass";
 import { ProxyTag } from "./proxyClass";
 import { exists, load, save } from "./saveLoad";
@@ -73,12 +74,52 @@ export function accessMember(msg: discord.Message, parsedMessage: string[]):stri
                 save(user.id,system);
                 return "Member's name changed to `"+name+"`";
             }
+            if (["serverdisplayname","servernickname","servernick","guilddisplayname","guildnickname","guildnick"].indexOf(parsedMessage[0].toLowerCase()) != -1) {
+                parsedMessage.shift();
+                let name: string = parsedMessage.join(" ");
+                if (["-reset","-clear","-remove"].indexOf(name) != -1) {
+                    member.serverNick.put(msg.guildId,null);
+                    save(user.id,system);
+                    return "Member's server name reset";
+                }
+                member.serverNick.put(msg.guildId,name);
+                save(user.id,system);
+                return "Member's server name changed to `"+name+"`";
+            }
+            if (["serveravatar","guildavatar","serverpfp","guildpfp"].indexOf(parsedMessage[0].toLowerCase()) != -1) {
+                parsedMessage.shift();
+                let avatar:string;
+                if (parsedMessage.length == 0 && !!msg.attachments)
+                    try {
+                        avatar = msg.attachments.map(a=>a)[0].url;
+                    } catch(e) {
+                        return member.getAvatar(msg.guildId);
+                    }
+                else if (parsedMessage.length >= 1)
+                    avatar = parsedMessage[0];
+                else return member.getAvatar(msg.guildId);
+                if (["reset","remove","delete"].indexOf(avatar.toLowerCase()) != -1) {
+                    member.serverAvatar.put(msg.guildId,null);
+                    save(user.id,system);
+                    return "Member's server avatar reset!";
+                }
+                member.serverAvatar.put(msg.guildId,avatar);
+                save(user.id,system);
+                return "Member's server avatar changed to `"+avatar+"`";
+            }
             if (parsedMessage[0].toLowerCase() == "pronouns") {
                 parsedMessage.shift();
                 let pronouns: string = parsedMessage.join(" ");
                 member.pronouns = pronouns;
                 save(user.id,system);
                 return "Member's pronouns changed to `"+pronouns+"`";
+            }
+            if (parsedMessage[0].toLowerCase() == "description") {
+                parsedMessage.shift();
+                let desc: string = parsedMessage.join(" ");
+                member.description = desc;
+                save(user.id,system);
+                return "Member's description changed to `"+desc+"`";
             }
             if (parsedMessage[0].toLowerCase() == "birthday") {
                 parsedMessage.shift();
@@ -97,11 +138,15 @@ export function accessMember(msg: discord.Message, parsedMessage: string[]):stri
             if (parsedMessage[0].toLowerCase() == "avatar") {
                 parsedMessage.shift();
                 let avatar:string;
-                if (parsedMessage.length == 0 && (msg.attachments != null && msg.attachments != undefined))
-                    avatar = msg.attachments.map(a=>a)[0].url;
+                if (parsedMessage.length == 0 && !!msg.attachments)
+                    try {
+                        avatar = msg.attachments.map(a=>a)[0].url;
+                    } catch(e) {
+                        return member.avatar;
+                    }
                 else if (parsedMessage.length >= 1)
                     avatar = parsedMessage[0];
-                else return "Invalid avatar given.";
+                else return member.avatar;
                 member.avatar = avatar;
                 save(user.id,system);
                 return "Member's avatar changed to `"+avatar+"`";

@@ -1,6 +1,5 @@
-import { throws } from "assert";
 import { ProxyTag } from "./proxyClass";
-
+import { GuildSpecific } from "./guildSpecific";
 export class Member {
     id: string = null;
     name: string = null;
@@ -13,6 +12,8 @@ export class Member {
     proxies: ProxyTag[] = [];
     messageCount: number = 0;
     created: string = null;
+    serverAvatar: GuildSpecific = new GuildSpecific();
+    serverNick: GuildSpecific = new GuildSpecific();
 
     constructor(name:string) {
         this.name = name;
@@ -42,7 +43,26 @@ export class Member {
             keep_proxy: false,
             message_count: this.messageCount,
             created: this.created,
+            server_avatar: this.serverAvatar.toJson(),
+            server_nick: this.serverNick.toJson(),
+        };
+        return json;
+    }
 
+    toJsonExport():object {
+        let json = {
+            id: this.id,
+            name: this.name,
+            display_name: this.displayname,
+            description: this.description,
+            birthday: this.birthday,
+            pronouns: this.pronouns,
+            color: this.color,
+            avatar_url: this.avatar,
+            proxy_tags: ProxyTag.getArr(this.proxies),
+            keep_proxy: false,
+            message_count: this.messageCount,
+            created: this.created,
         };
         return json;
     }
@@ -74,6 +94,13 @@ export class Member {
             out.push(members[i].toJson());
         return out;
     }
+    
+    static getArrExport(members:Member[]):any {
+        let out = []
+        for (let i in members)
+            out.push(members[i].toJsonExport());
+        return out;
+    }
 
     static fromArr(obj:any):Member[] {
         let out: Member[] = [];
@@ -94,11 +121,17 @@ export class Member {
         out.messageCount = obj.message_count;
         out.created = obj.created;
         out.avatar = obj.avatar_url;
+        out.serverAvatar = GuildSpecific.fromJson(obj.server_avatar);
+        out.serverNick = GuildSpecific.fromJson(obj.server_nick);
         return out;
     }
+    getDisplayName(id?:string): string {
+        if (this.serverNick.get(id)) return this.serverNick.get(id);
+        return this.displayname;
+    }
 
-    getName(tag: string) {
-        return (this.displayname == null? this.name: this.displayname) + " " + (tag != undefined || tag != null? tag: "");
+    getName(tag: string, id?: string) {
+        return (this.getDisplayName(id) == null? this.name: this.getDisplayName(id)) + " " + (tag != undefined || tag != null? tag: "");
     }
 
     setName(newname:string) {
@@ -107,6 +140,12 @@ export class Member {
 
     setDisplayName(newname:string) {
         this.displayname = newname;
+    }
+
+    getAvatar(id:string) {
+        if (this.serverAvatar.get(id))
+            return this.serverAvatar.get(id);
+        else return this.avatar;
     }
 
     containsProxy(message:string):boolean {

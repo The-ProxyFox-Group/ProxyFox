@@ -174,6 +174,26 @@ export function autoOff(msg: discord.Message, parsedMessage: string[]): string {
     return "System doesn't exist.";
 }
 
+export function spOn(msg: discord.Message, parsedMessage: string[]): string {
+    if (exists(msg.author.id.toString())) {
+        let system = load(msg.author.id.toString());
+        system.serverProxy.put(msg.guildId,true);
+        save(msg.author.id.toString(),system);
+        return "Proxy has been enabled for this server.";
+    }
+    return "System doesn't exist.";
+}
+
+export function spOff(msg: discord.Message, parsedMessage: string[]): string {
+    if (exists(msg.author.id.toString())) {
+        let system = load(msg.author.id.toString());
+        system.serverProxy.put(msg.guildId,false);
+        save(msg.author.id.toString(),system);
+        return "Proxy has been disabled for this server.";
+    }
+    return "System doesn't exist.";
+}
+
 export function setTag(msg: discord.Message, parsedMessage: string[]): string {
     parsedMessage.shift();
     parsedMessage.shift();

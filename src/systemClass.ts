@@ -1,4 +1,5 @@
 import { throws } from "assert";
+import { GuildSpecific } from "./guildSpecific";
 import { Member } from "./memberClass";
 
 export class System {
@@ -12,6 +13,7 @@ export class System {
     created: string = null;
     auto: string = null;
     autobool: boolean = false;
+    serverProxy: GuildSpecific = new GuildSpecific();
 
     constructor(name:string) {
         this.name = name;
@@ -39,7 +41,8 @@ export class System {
             switches: [],
             created: this.created,
             auto: this.auto,
-            auto_bool: this.autobool
+            auto_bool: this.autobool,
+            server_proxy: this.serverProxy.toJson(),
         };
         return JSON.stringify(json);
     }
@@ -53,7 +56,7 @@ export class System {
             tag: this.tag,
             avatar_url: this.avatar,
             timezone: this.timezone,
-            members: Member.getArr(this.members),
+            members: Member.getArrExport(this.members),
             switches: [],
             created: this.created,
         };
@@ -107,6 +110,7 @@ export class System {
         system.created = json.created;
         system.auto = json.auto;
         system.autobool = json.auto_bool;
+        system.serverProxy = GuildSpecific.fromJson(json.server_proxy);
         return system;
     }
 

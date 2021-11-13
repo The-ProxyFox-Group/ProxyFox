@@ -1,5 +1,5 @@
 import {accessMember, createMember, deleteMember} from "./memberCommands";
-import {accessSystem, autoOff, autoOn, createSystem, deleteSystem, exportSystem, importSystem, listSystem, setAvatar, setTag} from "./systemCommands";
+import {accessSystem, autoOff, autoOn, spOff, spOn, createSystem, deleteSystem, exportSystem, importSystem, listSystem, setAvatar, setTag} from "./systemCommands";
 import * as discord from "discord.js";
 
 function getTime(msg: discord.Message, parsedMessage: string[]):string {
@@ -35,6 +35,12 @@ let autoTree = {
     "off": autoOff
 }
 
+let spTree = {
+  "default": "Please specify weather you want autoproxy on or off.",
+  "on": spOn,
+  "off": spOff
+}
+
 let help = `To get your system started:
 - pf>system new <name>
   - Creates a system with <name> as the name.
@@ -59,6 +65,8 @@ export const tree = {
     "auto": autoTree,
     "ap": autoTree,
     "autoproxy": autoTree,
+    "proxy": spTree,
+    "serverproxy": spTree,
     "time": getTime,
     "help": help,
     "invite": "Use https://discord.com/oauth2/authorize?client_id=872276960951296051&scope=bot&permissions=258302340160 to invite ProxyFox to your server!\nTo get support, head on over to https://discord.gg/q3yF8ay9V7",

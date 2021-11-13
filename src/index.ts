@@ -17,6 +17,7 @@ export const client = new discord.Client({
     ]
 });
 import process from 'process';
+console.log("starting");
 
 process.on('unhandledRejection', (reason, promise) => {
   console.log('Unhandled Rejection at:', promise, 'reason:', reason);
@@ -77,11 +78,10 @@ client.on('messageCreate', msg => {
     }
 });
 
-function setPres(text: string) {
+function setPres(text: string, since?: number): void {
     client.user.setPresence({
-        //@ts-ignore
-        activities: [{name: text}],
-        status: "online"
+        status: "online",
+        activities: [{name: text + " In " + client.guilds.cache.size + " servers"}]
     });
 }
 
@@ -92,27 +92,13 @@ export function sendError(msg: discord.Message, err: any) {
     msg.channel.send("Unexpected error" + timestampString).catch(() => {});
 }
 
-function toTime(time: number):string {
-    let minutes = Math.floor(time/60);
-    let seconds = time-(minutes*60);
-    let hours = Math.floor(minutes/60);
-    minutes %= 60;
-    let hStr = hours.toString();
-    let mStr = minutes.toString().length == 1? "0"+minutes.toString(): minutes.toString();
-    let sStr = seconds.toString().length == 1? "0"+seconds.toString(): seconds.toString();
-
-    return hStr + ":" + mStr + ":" + sStr;
-}
-
 client.on("ready", () => {
-    let uptime = 0;
-    setPres("Run pf>help for help! Online for: 0:00:00");
+    let since = Date.now();
+    setPres("Run pf>help for help!",since);
     setInterval(() => {
-        setPres("Run pf>help for help! Online for: " +toTime(++uptime*30));
+        setPres("Run pf>help for help!",since);
     }, 30000);
     console.log("online");
 });
-
-console.log("starting");
 start();
 client.login(keys.main);

@@ -8,8 +8,8 @@ import { webhookManager } from "./webhookManager";
 let webhooks: webhookManager = new webhookManager();
 
 export function sendMessageAsWebhook(msg: discord.Message, member: Member, system: System) {
-    let name = member.getName(system.tag);
-    let url = member.avatar == null ? system.avatar : member.avatar;
+    let name = member.getName(system.tag,msg.guildId);
+    let url = member.getAvatar(msg.guildId) == null ? system.avatar : member.getAvatar(msg.guildId);
     if (msg.channel.isText) {
         let channel = <discord.TextChannel>msg.channel;
         let time = new Date().getTime();
@@ -66,6 +66,8 @@ export function webhook(msg: discord.Message) {
     if (msg.channel instanceof discord.DMChannel) return;
     if (exists(msg.author.id.toString())) {
         let system = load(msg.author.id.toString());
+        let serverProxy = system.serverProxy.get(msg.guildId)
+        if (serverProxy === false) return;
         let member = system.memberFromMessage(msg.content);
         if (member != null) {
             system.auto = member.id;
@@ -90,7 +92,7 @@ function sendAsHook(hook: discord.Webhook, msg: discord.Message, url: string, na
         msg.fetchReference().then(m => {
             let embed = new discord.MessageEmbed();
             embed.setAuthor(m.author.username + " ↩️",m.author.avatarURL());
-            embed.setDescription("[Reply to:](<"+m.url+">) "+ (m.content.length > 100? m.content.substr(0,97)+"...": m.content));
+            embed.setDescription("**[Reply to:](<"+m.url+">)** "+ (m.content.length > 100? m.content.substr(0,97)+"...": m.content) + (m.attachments.hasAny()? "📎": ""));
             msg.reference = null;
             sendAsHook(hook,msg,url,name,member,embed,thread);
         });
