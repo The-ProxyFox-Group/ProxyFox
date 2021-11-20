@@ -35,6 +35,12 @@ export class ServerRoles {
     }
 
     hasRole(user:discord.GuildMember,server:string) {
+        if (!this.roleStorage) {
+            this.roleStorage = {};
+            if (fs.existsSync("./roles.json"))
+                this.roleStorage = <RoleStorage>JSON.parse(fs.readFileSync("./roles.json").toString());
+            return true;
+        }
         if (!this.roleStorage[server]) return true;
         return !!user.roles.cache.find(r=>r.id == this.roleStorage[server]);
     }
