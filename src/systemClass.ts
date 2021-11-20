@@ -78,7 +78,7 @@ export class System {
 
     memberFromName(message: string): Member {
         for (let i in this.members)
-            if (this.members[i].name.toLowerCase() == message.toLowerCase()) return this.members[i];
+            if (this.members[i].name.toLowerCase() == message.toLowerCase() || this.members[i].id == message.toLowerCase()) return this.members[i];
         return null;
     }
     
