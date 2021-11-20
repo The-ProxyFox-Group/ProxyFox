@@ -51,7 +51,8 @@ let help = `To get your system started:
 - pf>member <name> avatar
   - Attach an image to set <name>'s avatar
 **Or**
-Use pf>import to import a system from PluralKit or any other proxy bot.`;
+Use pf>import to import a system from PluralKit or any other proxy bot.
+**Note: Currently, TupperBox is NOT supported for imports`;
 
 export const tree = {
     "default": "Unknown command.",
@@ -70,7 +71,7 @@ export const tree = {
     "time": getTime,
     "help": help,
     "invite": "Use https://discord.com/oauth2/authorize?client_id=872276960951296051&scope=bot&permissions=258302340160 to invite ProxyFox to your server!\nTo get support, head on over to https://discord.gg/q3yF8ay9V7",
-    "source": "Source code for ProxyFox is available at <http://olivermakesco.de/git/ProxyFox>!",
+    "source": "Source code for ProxyFox is available at <https://github.com/Oliver-makes-code/ProxyFox>!",
     "explain": `ProxyFox is a bot to help those with DID/OSDD-1 communicate
 It uses discord's webhooks to generate "pseudo-users" which different members of the system can use.
 https://did-research.org/origin/structural_dissociation/ explains why and how DID/OSDD forms`
