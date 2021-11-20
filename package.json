@@ -18,6 +18,6 @@
   "dependencies": {
     "discord.js": "^13.2.0",
     "node": "^17.0.0",
-    "typescript": "^4.4.4"
+    "typescript": "^4.5.2"
   }
 }
