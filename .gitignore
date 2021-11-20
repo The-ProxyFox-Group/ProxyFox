@@ -1,5 +1,7 @@
 /node_modules
 /build
-key.json
 /systems
+/.vscode
+roles.json
+key.json
 *.tsbuildinfo

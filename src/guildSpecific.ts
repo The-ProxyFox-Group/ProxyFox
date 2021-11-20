@@ -15,10 +15,7 @@ export class GuildSpecific {
         return JSON.stringify(this.toJson());
     }
     toJson():object {
-        let json: object = {};
-        for (let k in this.data)
-            json[k] = this.data[k];
-        return json;
+        return this.data;
     }
     static fromString(data:string):GuildSpecific {
         let json: object = JSON.parse(data);
@@ -26,8 +23,7 @@ export class GuildSpecific {
     }
     static fromJson(json:object):GuildSpecific {
         let guildSpecific: GuildSpecific = new GuildSpecific();
-        for (let k in json) 
-            guildSpecific.put(k,json[k]);
+        guildSpecific.data = <Specific>json;
         return guildSpecific;
     }
 }

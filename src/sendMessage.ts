@@ -2,6 +2,7 @@ import * as discord from "discord.js";
 import { client, sendError } from ".";
 import { Member } from "./memberClass";
 import { exists, load, save } from "./saveLoad";
+import { serverRoles } from "./serverRole";
 import { System } from "./systemClass";
 import { webhookManager } from "./webhookManager";
 
@@ -63,6 +64,7 @@ export function sendMessageAsWebhook(msg: discord.Message, member: Member, syste
 }
 
 export function webhook(msg: discord.Message) {
+    if (!serverRoles.hasRole(msg.member,msg.guildId)) return;
     if (msg.channel instanceof discord.DMChannel) return;
     if (exists(msg.author.id.toString())) {
         let system = load(msg.author.id.toString());

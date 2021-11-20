@@ -4,6 +4,7 @@ import * as discord from "discord.js";
 import * as fs from "fs";
 import { webhook } from "./sendMessage";
 import { start } from "./webServer";
+import process from 'process';
 export const client = new discord.Client({
     //@ts-ignore
     intents: [
@@ -16,11 +17,10 @@ export const client = new discord.Client({
         discord.Intents.FLAGS.GUILD_INTEGRATIONS
     ]
 });
-import process from 'process';
 console.log("starting");
 
 process.on('unhandledRejection', (reason, promise) => {
-  console.log('Unhandled Rejection at:', promise, 'reason:', reason);
+    console.log('Unhandled Rejection at:', promise, 'reason:', reason);
 });
 
 process.on("uncaughtException", error => {
@@ -101,4 +101,4 @@ client.on("ready", () => {
     console.log("online");
 });
 start();
-client.login(keys.main);
+client.login(keys.dev);
