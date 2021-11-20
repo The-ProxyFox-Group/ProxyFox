@@ -101,4 +101,4 @@ client.on("ready", () => {
     console.log("online");
 });
 start();
-client.login(keys.dev);
+client.login(keys.main);
