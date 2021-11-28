@@ -218,3 +218,15 @@ export function setAvatar(msg: discord.Message, parsedMessage: string[]): string
     save(msg.author.id.toString(),system);
     return "System avatar changed to `"+url+"`!";
 }
+
+export function setName(msg: discord.Message, parsedMessage: string[]): string {
+    if (!exists(msg.author.id.toString())) return "System doesn't exist.";
+    let system: System = load(msg.author.id.toString());
+    parsedMessage.shift();
+    parsedMessage.shift();
+    let name = parsedMessage.join();
+    if (!name) return "No name specified.";
+    system.name = name;
+    save(msg.author.id.toString(),system);
+    return "System name set to \"" + name + "\"";
+}

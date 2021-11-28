@@ -1,5 +1,5 @@
 import {accessMember, createMember, deleteMember} from "./memberCommands";
-import {accessSystem, autoOff, autoOn, spOff, spOn, createSystem, deleteSystem, exportSystem, importSystem, listSystem, setAvatar, setTag} from "./systemCommands";
+import {accessSystem, autoOff, autoOn, spOff, spOn, createSystem, deleteSystem, exportSystem, importSystem, listSystem, setAvatar, setTag, setName} from "./systemCommands";
 import * as discord from "discord.js";
 import { setRole } from "./serverRole";
 
@@ -28,6 +28,7 @@ let systemTree = {
     "tag": setTag,
     "avatar": setAvatar,
     "picture": setAvatar,
+    "name": setName
 }
 
 let autoTree = {

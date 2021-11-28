@@ -9,7 +9,9 @@ export class GuildSpecific {
         this.data[id] = value;
     }
     get(id:string):any {
-        return this.data[id]
+        if (!this.data)
+            this.data = {};
+        return this.data[id];
     }
     toString():string {
         return JSON.stringify(this.toJson());
