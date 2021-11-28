@@ -224,9 +224,21 @@ export function setName(msg: discord.Message, parsedMessage: string[]): string {
     let system: System = load(msg.author.id.toString());
     parsedMessage.shift();
     parsedMessage.shift();
-    let name = parsedMessage.join();
+    let name = parsedMessage.join(" ");
     if (!name) return "No name specified.";
     system.name = name;
     save(msg.author.id.toString(),system);
     return "System name set to \"" + name + "\"";
+}
+
+export function setDesc(msg: discord.Message, parsedMessage: string[]): string {
+    if (!exists(msg.author.id.toString())) return "System doesn't exist.";
+    let system: System = load(msg.author.id.toString());
+    parsedMessage.shift();
+    parsedMessage.shift();
+    let name = parsedMessage.join(" ");
+    if (!name) return "No description specified.";
+    system.description = name;
+    save(msg.author.id.toString(),system);
+    return "System description set to \"" + name + "\"";
 }
