@@ -20,7 +20,7 @@ export function accessMember(msg: discord.Message, parsedMessage: string[]):stri
     
     let user: discord.User = msg.author;
     let memberName: string = parsedMessage[1];
-    if (exists(user.id)) {
+    if (exists(user.id,msg)) {
         let system = load(user.id);
         if (system.memberFromName(memberName) != null) {
             if (isEmpty(parsedMessage[2])) {
@@ -194,7 +194,7 @@ export function createMember(msg: discord.Message, parsedMessage: string[]):stri
     parsedMessage.shift();
     let memberName: string = parsedMessage.join(" ");
 
-    if (exists(user.id)) {
+    if (exists(user.id,msg)) {
         let system = load(user.id);
         let member = system.addMember(memberName);
         if (member == null)
@@ -214,7 +214,7 @@ export function deleteMember(msg: discord.Message, parsedMessage: string[]):stri
     parsedMessage.shift();
     let memberName: string = parsedMessage.join(" ");
 
-    if (exists(user.id)) {
+    if (exists(user.id,msg)) {
         let system = load(user.id);
         if (system.memberFromName(memberName) != null) {
             deleteMem(system,memberName,user,msg);

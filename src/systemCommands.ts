@@ -15,7 +15,7 @@ function isArrEmpty(array: Array<any>):boolean {
 }
 
 export function accessSystem(msg: discord.Message, parsedMessage: string[]) {
-    if (exists(msg.author.id)) {
+    if (exists(msg.author.id,msg)) {
         let system:System = load(msg.author.id.toString());
         let embed: discord.MessageEmbed  = new discord.MessageEmbed();
 
@@ -45,14 +45,14 @@ export function createSystem(msg: discord.Message, parsedMessage: string[]):stri
     parsedMessage.shift();
     parsedMessage.shift();
     let name: string = parsedMessage.join(" ");
-    if (exists(msg.author.id.toString())) return "You already have a system registered!";
+    if (exists(msg.author.id.toString(),msg)) return "You already have a system registered!";
     let system: System = new System(name);
     save(msg.author.id.toString(),system);
     return "System created!";
 }
 
 export function deleteSystem(msg: discord.Message, parsedMessage: string[]):string {
-    if (!exists(msg.author.id.toString())) return "You don't have a system registered.";
+    if (!exists(msg.author.id.toString(),msg)) return "You don't have a system registered.";
     let system: System = load(msg.author.id.toString());
     msg.channel.send("Are you sure you want to delete your system?? Reply with the system id ("+system.id+") to delete.").then(a => {
         //@ts-ignore
@@ -70,7 +70,7 @@ export function deleteSystem(msg: discord.Message, parsedMessage: string[]):stri
 }
 
 export function listSystem(msg: discord.Message, parsedMessage: string[]) {
-    if (exists(msg.author.id)) {
+    if (exists(msg.author.id,msg)) {
         let system:System = load(msg.author.id.toString());
         let embed: discord.MessageEmbed  = new discord.MessageEmbed();
 
@@ -155,7 +155,7 @@ export function getData(url:string,path:string) {
 }
 
 export function autoOn(msg: discord.Message, parsedMessage: string[]): string {
-    if (exists(msg.author.id.toString())) {
+    if (exists(msg.author.id.toString(),msg)) {
         let system = load(msg.author.id.toString());
         system.autobool = true;
         save(msg.author.id.toString(),system);
@@ -165,7 +165,7 @@ export function autoOn(msg: discord.Message, parsedMessage: string[]): string {
 }
 
 export function autoOff(msg: discord.Message, parsedMessage: string[]): string {
-    if (exists(msg.author.id.toString())) {
+    if (exists(msg.author.id.toString(),msg)) {
         let system = load(msg.author.id.toString());
         system.autobool = false;
         save(msg.author.id.toString(),system);
@@ -175,7 +175,7 @@ export function autoOff(msg: discord.Message, parsedMessage: string[]): string {
 }
 
 export function spOn(msg: discord.Message, parsedMessage: string[]): string {
-    if (exists(msg.author.id.toString())) {
+    if (exists(msg.author.id.toString(),msg)) {
         let system = load(msg.author.id.toString());
         system.serverProxy.put(msg.guildId,true);
         save(msg.author.id.toString(),system);
@@ -185,7 +185,7 @@ export function spOn(msg: discord.Message, parsedMessage: string[]): string {
 }
 
 export function spOff(msg: discord.Message, parsedMessage: string[]): string {
-    if (exists(msg.author.id.toString())) {
+    if (exists(msg.author.id.toString(),msg)) {
         let system = load(msg.author.id.toString());
         system.serverProxy.put(msg.guildId,false);
         save(msg.author.id.toString(),system);
@@ -198,7 +198,7 @@ export function setTag(msg: discord.Message, parsedMessage: string[]): string {
     parsedMessage.shift();
     parsedMessage.shift();
     let tag = parsedMessage.join(" ");
-    if (!exists(msg.author.id.toString())) return "System doesn't exist.";
+    if (!exists(msg.author.id.toString(),msg)) return "System doesn't exist.";
     let system: System = load(msg.author.id.toString());
     system.tag = tag;
     save(msg.author.id.toString(),system);
@@ -206,7 +206,7 @@ export function setTag(msg: discord.Message, parsedMessage: string[]): string {
 }
 
 export function setAvatar(msg: discord.Message, parsedMessage: string[]): string {
-    if (!exists(msg.author.id.toString())) return "System doesn't exist.";
+    if (!exists(msg.author.id.toString(),msg)) return "System doesn't exist.";
     let system: System = load(msg.author.id.toString());
     let url: string;
     if (parsedMessage.length > 2)
@@ -220,7 +220,7 @@ export function setAvatar(msg: discord.Message, parsedMessage: string[]): string
 }
 
 export function setName(msg: discord.Message, parsedMessage: string[]): string {
-    if (!exists(msg.author.id.toString())) return "System doesn't exist.";
+    if (!exists(msg.author.id.toString(),msg)) return "System doesn't exist.";
     let system: System = load(msg.author.id.toString());
     parsedMessage.shift();
     parsedMessage.shift();
@@ -232,7 +232,7 @@ export function setName(msg: discord.Message, parsedMessage: string[]): string {
 }
 
 export function setDesc(msg: discord.Message, parsedMessage: string[]): string {
-    if (!exists(msg.author.id.toString())) return "System doesn't exist.";
+    if (!exists(msg.author.id.toString(),msg)) return "System doesn't exist.";
     let system: System = load(msg.author.id.toString());
     parsedMessage.shift();
     parsedMessage.shift();
