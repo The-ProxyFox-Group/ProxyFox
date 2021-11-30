@@ -78,10 +78,33 @@ client.on('messageCreate', msg => {
     }
 });
 
+let count = 0;
+
+function getTime(duration) {
+    var seconds: any = Math.floor((duration / 1000) % 60),
+        minutes: any = Math.floor((duration / (1000 * 60)) % 60),
+        hours: any = Math.floor((duration / (1000 * 60 * 60)) % 24);
+    
+    hours = (hours < 10) ? "0" + hours : hours;
+    minutes = (minutes < 10) ? "0" + minutes : minutes;
+    seconds = (seconds < 10) ? "0" + seconds : seconds;
+    
+    return hours + ":" + minutes + ":" + seconds ;
+}
+
 function setPres(text: string, since?: number): void {
+    let activity: string;
+    if (count == 0)
+        activity = text + " In " + client.guilds.cache.size + " servers";
+    else {
+        let now = Date.now();
+        let time = now - since;
+        activity = text + " Uptime: "+getTime(time);
+    }
+
     client.user.setPresence({
         status: "online",
-        activities: [{name: text + " In " + client.guilds.cache.size + " servers"}]
+        activities: [{name: activity}]
     });
 }
 
@@ -95,8 +118,12 @@ export function sendError(msg: discord.Message, err: any) {
 client.on("ready", () => {
     let since = Date.now();
     setPres("Run pf>help for help!",since);
+    count++;
+    count %= 2;
     setInterval(() => {
         setPres("Run pf>help for help!",since);
+        count++;
+        count %= 2;
     }, 30000);
     console.log("online");
 });

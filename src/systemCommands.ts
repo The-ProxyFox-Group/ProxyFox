@@ -59,8 +59,20 @@ export function deleteSystem(msg: discord.Message, parsedMessage: string[]):stri
         let c = (<discord.TextChannel>(a.channel)).createMessageCollector(a => a.author.id == msg.author.id,{time:30000}).on("collect", b => {
             c.stop();
             if (b.content != system.id) return;
-            fs.unlinkSync("./systems/"+msg.author.id.toString()+".json");
-            msg.channel.send("System deleted.").catch(err => {
+            msg.author.createDM().then(dm => {
+                dm.send({
+                    files: [getSysExportMessage(msg.author.id)]
+                }).then(message => {
+                    dm.send(message.attachments.map(a=>a)[0].url);
+                    fs.unlinkSync("./systems/"+msg.author.id+"_export.json");
+                    fs.unlinkSync("./systems/"+msg.author.id+".json");
+                    msg.channel.send("System deleted.").catch(err => {
+                        sendError(msg,err);
+                    });
+                }).catch(err => {
+                    sendError(msg,err);
+                });
+            }).catch(err => {
                 sendError(msg,err);
             });
         });
