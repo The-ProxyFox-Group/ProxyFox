@@ -6,11 +6,11 @@ export class GuildSpecific {
     data: Specific = {};
     
     put(id:string,value:any) {
+        if (!this.data) this.data = {};
         this.data[id] = value;
     }
     get(id:string):any {
-        if (!this.data)
-            this.data = {};
+        if (!this.data) this.data = {};
         return this.data[id];
     }
     toString():string {
