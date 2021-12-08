@@ -6,7 +6,7 @@ import { Member } from "./memberClass";
 import { exists, load, save, saveExport } from "./saveLoad";
 import { Switch } from "./switchClass";
 import { System } from "./systemClass";
-
+ 
 function isEmpty(string:string):boolean {
     return string == "" || string == undefined || string == null;
 }
