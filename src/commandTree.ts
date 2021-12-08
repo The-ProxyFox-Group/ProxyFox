@@ -1,5 +1,5 @@
 import {accessMember, createMember, deleteMember} from "./memberCommands";
-import {accessSystem, autoOff, autoOn, spOff, spOn, createSystem, deleteSystem, exportSystem, importSystem, listSystem, setAvatar, setTag, setName, setDesc} from "./systemCommands";
+import {accessSystem, autoOff, autoOn, spOff, spOn, createSystem, deleteSystem, exportSystem, importSystem, listSystem, setAvatar, setTag, setName, setDesc, createSwitch} from "./systemCommands";
 import * as discord from "discord.js";
 import { setRole } from "./serverRole";
 
@@ -79,5 +79,7 @@ export const tree = {
     "explain": `ProxyFox is a bot to help those with DID/OSDD-1 communicate
 It uses discord's webhooks to generate "pseudo-users" which different members of the system can use.
 https://did-research.org/origin/structural_dissociation/ explains why and how DID/OSDD forms`,
-    "role": setRole
+    "role": setRole,
+    "sw": createSwitch,
+    "switch": createSwitch
 };

@@ -4,6 +4,7 @@ import * as https from "https";
 import { sendError } from ".";
 import { Member } from "./memberClass";
 import { exists, load, save, saveExport } from "./saveLoad";
+import { Switch } from "./switchClass";
 import { System } from "./systemClass";
 
 function isEmpty(string:string):boolean {
@@ -12,6 +13,43 @@ function isEmpty(string:string):boolean {
 
 function isArrEmpty(array: Array<any>):boolean {
     return array == null || array == undefined || array == [] || array.length == 0;
+}
+
+export function createSwitch(msg: discord.Message, parsedMessage: string[]): string {
+    if (!exists(msg.author.id,msg)) return "System does not exist.";
+    let system:System = load(msg.author.id);
+    parsedMessage.shift();
+    let members: Member[] = [];
+    if (parsedMessage[0] == "list") {
+        let sw: Switch = system.switches[system.switches.length-1];
+        if (!sw) return "No switches registered";
+        let embed: discord.MessageEmbed  = new discord.MessageEmbed();
+        embed.setTitle("Switches of " + system.name + " [`"+system.id+"`]");
+        sw.addEmbedField(system,"Current fronter(s):",embed);
+        for (let i = 0; i < system.switches.length-1; i++) {
+            if (i == 10) break;
+            let currsw: Switch = system.switches[i];
+            let str = "`"+currsw.timeStamp+"`";
+            currsw.addEmbedField(system,str,embed);
+        }
+        msg.channel.send({
+            embeds:[embed]
+        });
+        return;
+    }
+    for (let i = 0; i < parsedMessage.length; i++) {
+        let str = parsedMessage[i];
+        let member: Member = system.memberFromName(str);
+        if (!member) return "Member with name \""+str+"\" not found.";
+        members.push(member);
+    }
+    let sw = new Switch(members);
+    if (system.switches.length > 0 && system.switches[system.switches.length-1].equals(sw)) {
+        return "Member(s) already fronting.";
+    }
+    system.switches.push(sw);
+    save(msg.author.id,system);
+    return "Switch registered!";
 }
 
 export function accessSystem(msg: discord.Message, parsedMessage: string[]) {
@@ -29,7 +67,6 @@ export function accessSystem(msg: discord.Message, parsedMessage: string[]) {
             embed.setFooter("Created on " + new Date(time).toUTCString());
         }
         msg.channel.send({
-            //@ts-ignore
             embeds: [embed]
         }).catch(err => {
             sendError(msg,err);

@@ -1,6 +1,7 @@
 import { throws } from "assert";
 import { GuildSpecific } from "./guildSpecific";
 import { Member } from "./memberClass";
+import { Switch } from "./switchClass";
 
 export class System {
     id: string = null;
@@ -14,6 +15,7 @@ export class System {
     auto: string = null;
     autobool: boolean = false;
     serverProxy: GuildSpecific = new GuildSpecific();
+    switches: Switch[] = [];
 
     constructor(name:string) {
         this.name = name;
@@ -38,11 +40,11 @@ export class System {
             avatar_url: this.avatar,
             timezone: this.timezone,
             members: Member.getArr(this.members),
-            switches: [],
             created: this.created,
             auto: this.auto,
             auto_bool: this.autobool,
             server_proxy: this.serverProxy.toJson(),
+            switches: Switch.bulkToJson(this.switches),
         };
         return JSON.stringify(json);
     }
@@ -111,7 +113,7 @@ export class System {
         system.auto = json.auto;
         system.autobool = json.auto_bool;
         system.serverProxy = GuildSpecific.fromJson(json.server_proxy);
+        system.switches = Switch.bulkFromJson(json.switches);
         return system;
     }
-
 }

@@ -52,7 +52,7 @@ function handleMessage(msg: discord.Message): boolean {
                 case "function":
                     //@ts-ignore
                     let output: string = currTree(msg,parsedMsg);
-                    if (output != undefined && output != null && output != "")
+                    if (!!output)
                         msg.channel.send(output).catch(err => {
                             sendError(msg,err);
                         }).catch(err => {
