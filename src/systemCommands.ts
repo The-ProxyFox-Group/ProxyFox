@@ -6,7 +6,7 @@ import { Member } from "./memberClass";
 import { exists, load, save, saveExport } from "./saveLoad";
 import { Switch } from "./switchClass";
 import { System } from "./systemClass";
- 
+
 function isEmpty(string:string):boolean {
     return string == "" || string == undefined || string == null;
 }
@@ -26,10 +26,15 @@ export function createSwitch(msg: discord.Message, parsedMessage: string[]): str
         let embed: discord.MessageEmbed  = new discord.MessageEmbed();
         embed.setTitle("Switches of " + system.name + " [`"+system.id+"`]");
         sw.addEmbedField(system,"Current fronter(s):",embed);
+        let j = system.switches.length-1;
         for (let i = 0; i < system.switches.length-1; i++) {
             if (i == 10) break;
-            let currsw: Switch = system.switches[i];
-            let str = "`"+currsw.timeStamp+"`";
+            j--;
+            let currsw: Switch = system.switches[j];
+            let time = Date.parse(currsw.timeStamp);
+            time /= 1000;
+            time = Math.floor(time);
+            let str = "<t:"+time+">";
             currsw.addEmbedField(system,str,embed);
         }
         msg.channel.send({
