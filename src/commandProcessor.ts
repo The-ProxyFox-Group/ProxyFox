@@ -9,12 +9,25 @@ export function parse(msg: string): string[] {
         for (let i = 0; i < newMsg.length; i++) {
             let char:string = newMsg[i];
             switch (char) {
+                case "\\":
+                    currStr += newMsg[++i];
+                    break;
                 case '"':
-                case "'":
                     out.push(currStr);
                     currStr = "";
                     for (let j = ++i; j < newMsg.length; j++) {
                         if (newMsg[j] == '"') {
+                            i = j;
+                            break;
+                        }
+                        currStr += newMsg[j];
+                    }
+                    break;
+                case "'":
+                    out.push(currStr);
+                    currStr = "";
+                    for (let j = ++i; j < newMsg.length; j++) {
+                        if (newMsg[j] == "'") {
                             i = j;
                             break;
                         }

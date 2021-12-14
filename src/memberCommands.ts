@@ -135,6 +135,13 @@ export function accessMember(msg: discord.Message, parsedMessage: string[]):stri
                 save(user.id,system);
                 return "Member's color changed to `"+color+"`";
             }
+            if (["name","rename"].indexOf(parsedMessage[0].toLowerCase()) != -1) {
+                parsedMessage.shift();
+                let name: string = parsedMessage.join(" ");
+                member.name = name;
+                save(user.id,system);
+                return "Member's name changed to `"+name+"`";
+            }
             if (parsedMessage[0].toLowerCase() == "avatar") {
                 parsedMessage.shift();
                 let avatar:string;
