@@ -1,18 +1,17 @@
-import { throws } from "assert";
-import { GuildSpecific } from "./guildSpecific";
-import { Member } from "./memberClass";
-import { Switch } from "./switchClass";
+import { GuildSpecific } from "./guildSpecific.ts";
+import { Member } from "./memberClass.ts";
+import { Switch } from "./switchClass.ts";
 
 export class System {
-    id: string = null;
-    name: string = null;
-    description: string = null;
-    tag: string = null;
-    avatar: string = null;
-    timezone: string = null;
+    id: string|null = null;
+    name: string|null = null;
+    description: string|null = null;
+    tag: string|null = null;
+    avatar: string|null = null;
+    timezone: string|null = null;
     members: Member[] = [];
-    created: string = null;
-    auto: string = null;
+    created: string|null = null;
+    auto: string|null = null;
     autobool: boolean = false;
     serverProxy: GuildSpecific = new GuildSpecific();
     switches: Switch[] = [];
@@ -65,26 +64,27 @@ export class System {
         return JSON.stringify(json);
     }
 
-    memberFromMessage(message: string): Member {
+    memberFromMessage(message: string): Member|null {
         for (let i in this.members)
             if (this.members[i].containsProxy(message)) return this.members[i];
         return null;
     }
 
-    memberFromAP():Member {
+    memberFromAP():Member|null {
         if (!this.autobool) return null;
         for (let i in this.members)
             if (this.members[i].id == this.auto) return this.members[i];
         return null;
     }
 
-    memberFromName(message: string): Member {
+    memberFromName(message: string): Member|null {
         for (let i in this.members)
+            //@ts-ignore
             if (this.members[i].name.toLowerCase() == message.toLowerCase() || this.members[i].id == message.toLowerCase()) return this.members[i];
         return null;
     }
     
-    addMember(name:string):Member {
+    addMember(name:string):Member|null {
         if (this.memberFromName(name) != null) return null;
         let member = new Member(name);
         this.members.push(member);
@@ -93,7 +93,9 @@ export class System {
 
     removeMember(name:string) {
         for (let i in this.members)
+            //@ts-ignore
             if (this.members[i].name.toLowerCase() == name.toLowerCase()) {
+                //@ts-ignore
                 this.members[i] = null;
                 this.members = this.members.filter(mem => mem != null);
                 return;

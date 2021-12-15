@@ -1,18 +1,19 @@
-import * as fs from "fs";
-import { System } from "./systemClass";
-import * as discord from "discord.js";
-import { sendError } from ".";
+import * as fs from "https://deno.land/std/fs/mod.ts";
+import { System } from "./systemClass.ts";
+import * as discord from "https://code.harmony.rocks/main";
+import { sendError } from "./index.ts";
 
 export function load(id:string):System {
-    return System.fromStr(fs.readFileSync("./systems/"+id+".json").toString());
+    return System.fromStr(Deno.readTextFileSync("./systems/"+id+".json"));
 }
 
 export function save(id:string, system:System) {
-    fs.writeFileSync("./systems/"+id+".json",system.toString().replace(/\n/g,"\\n"));
+    if (!fs.existsSync("./systems/"+id+".json")) Deno.createSync("./systems/"+id+".json")
+    Deno.writeTextFileSync("./systems/"+id+".json",system.toString().replace(/\n/g,"\\n"));
 }
 
 export function saveExport(id:string, system:System) {
-    fs.writeFileSync("./systems/"+id+"_export.json",system.toExportString().replace(/\n/g,"\\n"));
+    Deno.writeTextFileSync("./systems/"+id+"_export.json",system.toExportString().replace(/\n/g,"\\n"));
 }
 
 export function exists(id:string,msg:discord.Message):boolean {
@@ -27,7 +28,7 @@ export function exists(id:string,msg:discord.Message):boolean {
                 files: [new discord.MessageAttachment("./systems/"+id+".json", "system.json")]
             }).then(message => {
                 channel.send(message.attachments.map(a=>a)[0].url);
-                fs.unlinkSync("./systems/"+msg.author.id+".json");
+                Deno.removeSync("./systems/"+msg.author.id+".json");
             }).catch(err => {
                 sendError(msg,err);
             });

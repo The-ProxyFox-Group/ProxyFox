@@ -1,6 +1,6 @@
 export class ProxyTag {
-    prefix: string = null;
-    suffix: string = null;
+    prefix: string|null = null;
+    suffix: string|null = null;
 
     constructor(prefix:string, suffix:string) {
         this.prefix = prefix;
@@ -37,10 +37,12 @@ export class ProxyTag {
         let hasSuffix = false;
 
         if (this.containsPrefix()) {
+            //@ts-ignore
             if (message.startsWith(this.prefix)) hasPrefix = true;
         } else hasPrefix = true;
 
         if (this.containsSuffix()) {
+            //@ts-ignore
             if (message.endsWith(this.suffix)) hasSuffix = true;
         } else hasSuffix = true;
 
@@ -65,8 +67,10 @@ export class ProxyTag {
 
     trimMessage(message:string):string {
         if (this.containsPrefix())
+            //@ts-ignore
             message = message.substr(this.prefix.length);
         if (this.containsSuffix())
+            //@ts-ignore
             message = message.substr(this.suffix.length);
         return message;
     }

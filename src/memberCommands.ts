@@ -1,10 +1,9 @@
-import * as discord from "discord.js";
-import { sendError } from ".";
-import { GuildSpecific } from "./guildSpecific";
-import { Member } from "./memberClass";
-import { ProxyTag } from "./proxyClass";
-import { exists, load, save } from "./saveLoad";
-import { System } from "./systemClass";
+import * as discord from "https://code.harmony.rocks/main";
+import { sendError } from "./index.ts";
+import { Member } from "./memberClass.ts";
+import { ProxyTag } from "./proxyClass.ts";
+import { exists, load, save } from "./saveLoad.ts";
+import { System } from "./systemClass.ts";
 
 function isEmpty(string:string):boolean {
     return string == "" || string == undefined || string == null;
@@ -14,21 +13,25 @@ function isArrEmpty(array: Array<any>):boolean {
     return array == null || array == undefined || array == [] || array.length == 0;
 }
 
-export function accessMember(msg: discord.Message, parsedMessage: string[]):string {
+export function accessMember(msg: discord.Message, parsedMessage: string[]):string|void {
     if (parsedMessage.length == 1)
         return "Please specify a member command or a member name.";
     
     let user: discord.User = msg.author;
     let memberName: string = parsedMessage[1];
     if (exists(user.id,msg)) {
-        let system = load(user.id);
+        let system: System = load(user.id);
         if (system.memberFromName(memberName) != null) {
             if (isEmpty(parsedMessage[2])) {
+                //@ts-ignore
                 let member: Member = system.memberFromName(memberName);
-                let attach: discord.MessageEmbed = new discord.MessageEmbed();
+                let attach: discord.Embed = new discord.Embed();
+                //@ts-ignore
                 if (!isEmpty(member.avatar)) attach.setThumbnail(member.avatar);
+                //@ts-ignore
                 else if (!isEmpty(system.avatar)) attach.setThumbnail(system.avatar);
                 attach.setTitle(member.name + " ("+system.name+")" + " [`"+member.id+"`]");
+                //@ts-ignore
                 if (!isEmpty(member.displayname)) attach.addField("Display Name",member.displayname,true);
                 if (!member.messageCount) member.messageCount = 0;
                 attach.addField("Message Count",member.messageCount.toString(),true);
@@ -44,11 +47,16 @@ export function accessMember(msg: discord.Message, parsedMessage: string[]):stri
                     }
                     attach.addField("Proxy Tags", str, true);
                 }
+                //@ts-ignore
                 if (!isEmpty(member.description)) attach.addField("Description", member.description, false);
+                //@ts-ignore
                 if (!isEmpty(member.birthday)) attach.addField("Birthday", member.birthday, true);
+                //@ts-ignore
                 if (!isEmpty(member.pronouns)) attach.addField("Pronouns",member.pronouns,true);
                 
+                //@ts-ignore
                 if (!isEmpty(member.created)) {
+                    //@ts-ignore
                     let time:number = Date.parse(member.created);
                     attach.setFooter("Created on " + new Date(time).toUTCString());
                 }
@@ -64,6 +72,7 @@ export function accessMember(msg: discord.Message, parsedMessage: string[]):stri
                 deleteMem(system,memberName,user,msg);
                 return;
             }
+            //@ts-ignore
             let member: Member = system.memberFromName(memberName);
             parsedMessage.shift();
             parsedMessage.shift();
@@ -78,11 +87,13 @@ export function accessMember(msg: discord.Message, parsedMessage: string[]):stri
                 parsedMessage.shift();
                 let name: string = parsedMessage.join(" ");
                 if (["-reset","-clear","-remove"].indexOf(name) != -1) {
-                    member.serverNick.put(msg.guildId,null);
+                    //@ts-ignore
+                    member.serverNick.put(msg.guildID,null);
                     save(user.id,system);
                     return "Member's server name reset";
                 }
-                member.serverNick.put(msg.guildId,name);
+                //@ts-ignore
+                member.serverNick.put(msg.guildID,name);
                 save(user.id,system);
                 return "Member's server name changed to `"+name+"`";
             }
@@ -93,16 +104,20 @@ export function accessMember(msg: discord.Message, parsedMessage: string[]):stri
                     try {
                         avatar = msg.attachments.map(a=>a)[0].url;
                     } catch(e) {
+                        //@ts-ignore
                         return member.getAvatar(msg.guildId);
                     }
                 else if (parsedMessage.length >= 1)
                     avatar = parsedMessage[0];
+                //@ts-ignore
                 else return member.getAvatar(msg.guildId);
                 if (["reset","remove","delete"].indexOf(avatar.toLowerCase()) != -1) {
+                    //@ts-ignore
                     member.serverAvatar.put(msg.guildId,null);
                     save(user.id,system);
                     return "Member's server avatar reset!";
                 }
+                //@ts-ignore
                 member.serverAvatar.put(msg.guildId,avatar);
                 save(user.id,system);
                 return "Member's server avatar changed to `"+avatar+"`";
@@ -149,10 +164,12 @@ export function accessMember(msg: discord.Message, parsedMessage: string[]):stri
                     try {
                         avatar = msg.attachments.map(a=>a)[0].url;
                     } catch(e) {
+                        //@ts-ignore
                         return member.avatar;
                     }
                 else if (parsedMessage.length >= 1)
                     avatar = parsedMessage[0];
+                //@ts-ignore
                 else return member.avatar;
                 member.avatar = avatar;
                 save(user.id,system);
@@ -212,7 +229,7 @@ export function createMember(msg: discord.Message, parsedMessage: string[]):stri
     return "System doesn't exist. Please create one with `pf>system new`";
 }
 
-export function deleteMember(msg: discord.Message, parsedMessage: string[]):string {
+export function deleteMember(msg: discord.Message, parsedMessage: string[]):string|void {
     if (parsedMessage.length == 2)
         return "Please speciry a member name.";
     

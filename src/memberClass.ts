@@ -1,17 +1,17 @@
-import { ProxyTag } from "./proxyClass";
-import { GuildSpecific } from "./guildSpecific";
+import { ProxyTag } from "./proxyClass.ts";
+import { GuildSpecific } from "./guildSpecific.ts";
 export class Member {
-    id: string = null;
-    name: string = null;
-    displayname: string = null;
-    description: string = null;
-    birthday: string = null;
-    pronouns: string = null;
-    color: string = null;
-    avatar: string = null;
+    id: string|null = null;
+    name: string|null = null;
+    displayname: string|null = null;
+    description: string|null = null;
+    birthday: string|null = null;
+    pronouns: string|null = null;
+    color: string|null = null;
+    avatar: string|null = null;
     proxies: ProxyTag[] = [];
     messageCount: number = 0;
-    created: string = null;
+    created: string|null = null;
     serverAvatar: GuildSpecific = new GuildSpecific();
     serverNick: GuildSpecific = new GuildSpecific();
 
@@ -80,6 +80,7 @@ export class Member {
         for (let i in this.proxies) {
             let proxy: ProxyTag = this.proxies[i];
             if (proxy.containsProxyTag(arr[0], arr[1])) {
+                //@ts-ignore
                 this.proxies[i] = null;
                 this.proxies = this.proxies.filter(pro => pro != null);
                 return 2;
@@ -125,7 +126,8 @@ export class Member {
         out.serverNick = GuildSpecific.fromJson(obj.server_nick);
         return out;
     }
-    getDisplayName(id?:string): string {
+    getDisplayName(id?:string): string|null {
+        if (!id) return this.displayname;
         if (this.serverNick.get(id)) return this.serverNick.get(id);
         return this.displayname;
     }
@@ -154,7 +156,7 @@ export class Member {
         return false;
     }
 
-    getProxy(message:string):ProxyTag {
+    getProxy(message:string):ProxyTag|null {
         for (let i in this.proxies)
             if (this.proxies[i].containsProxy(message)) return this.proxies[i];
         return null;

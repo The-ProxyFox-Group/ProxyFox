@@ -1,11 +1,10 @@
-import * as discord from "discord.js";
-import * as fs from "fs";
-import * as https from "https";
-import { sendError } from ".";
-import { Member } from "./memberClass";
-import { exists, load, save, saveExport } from "./saveLoad";
-import { Switch } from "./switchClass";
-import { System } from "./systemClass";
+import * as discord from "https://code.harmony.rocks/main";
+import * as fs from "https://deno.land/std/fs/mod.ts";
+import { sendError } from "./index.ts";
+import { Member } from "./memberClass.ts";
+import { exists, load, save, saveExport } from "./saveLoad.ts";
+import { Switch } from "./switchClass.ts";
+import { System } from "./systemClass.ts";
 
 function isEmpty(string:string):boolean {
     return string == "" || string == undefined || string == null;
@@ -15,7 +14,7 @@ function isArrEmpty(array: Array<any>):boolean {
     return array == null || array == undefined || array == [] || array.length == 0;
 }
 
-export function createSwitch(msg: discord.Message, parsedMessage: string[]): string {
+export function createSwitch(msg: discord.Message, parsedMessage: string[]): string|void {
     if (!exists(msg.author.id,msg)) return "System does not exist.";
     let system:System = load(msg.author.id);
     parsedMessage.shift();
@@ -23,7 +22,7 @@ export function createSwitch(msg: discord.Message, parsedMessage: string[]): str
     if (parsedMessage[0] == "list") {
         let sw: Switch = system.switches[system.switches.length-1];
         if (!sw) return "No switches registered";
-        let embed: discord.MessageEmbed  = new discord.MessageEmbed();
+        let embed: discord.Embed  = new discord.Embed();
         embed.setTitle("Switches of " + system.name + " [`"+system.id+"`]");
         sw.addEmbedField(system,"Current fronter(s):",embed);
         let j = system.switches.length-1;
@@ -44,6 +43,7 @@ export function createSwitch(msg: discord.Message, parsedMessage: string[]): str
     }
     for (let i = 0; i < parsedMessage.length; i++) {
         let str = parsedMessage[i];
+        //@ts-ignore
         let member: Member = system.memberFromName(str);
         if (!member) return "Member with name \""+str+"\" not found.";
         members.push(member);
@@ -60,14 +60,19 @@ export function createSwitch(msg: discord.Message, parsedMessage: string[]): str
 export function accessSystem(msg: discord.Message, parsedMessage: string[]) {
     if (exists(msg.author.id,msg)) {
         let system:System = load(msg.author.id.toString());
-        let embed: discord.MessageEmbed  = new discord.MessageEmbed();
+        let embed: discord.Embed  = new discord.Embed();
 
         embed.setTitle(system.name + " [`"+system.id+"`]");
+        //@ts-ignore
         embed.setThumbnail(system.avatar);
+        //@ts-ignore
         if (!isEmpty(system.tag)) embed.addField("Tag",system.tag,true);
         if (!isArrEmpty(system.members)) embed.addField("Members (" + system.members.length + ")","(see `pf>system list`)",true);
+        //@ts-ignore
         if (!isEmpty(system.description)) embed.addField("Description",system.description,false);
+        //@ts-ignore
         if (!isEmpty(system.created)) {
+            //@ts-ignore
             let time:number = Date.parse(system.created);
             embed.setFooter("Created on " + new Date(time).toUTCString());
         }
@@ -93,7 +98,7 @@ export function createSystem(msg: discord.Message, parsedMessage: string[]):stri
     return "System created!";
 }
 
-export function deleteSystem(msg: discord.Message, parsedMessage: string[]):string {
+export function deleteSystem(msg: discord.Message, parsedMessage: string[]): string|void {
     if (!exists(msg.author.id.toString(),msg)) return "You don't have a system registered.";
     let system: System = load(msg.author.id.toString());
     msg.channel.send("Are you sure you want to delete your system?? Reply with the system id ("+system.id+") to delete.").then(a => {
@@ -106,8 +111,8 @@ export function deleteSystem(msg: discord.Message, parsedMessage: string[]):stri
                     files: [getSysExportMessage(msg.author.id)]
                 }).then(message => {
                     dm.send(message.attachments.map(a=>a)[0].url);
-                    fs.unlinkSync("./systems/"+msg.author.id+"_export.json");
-                    fs.unlinkSync("./systems/"+msg.author.id+".json");
+                    Deno.removeSync("./systems/"+msg.author.id+"_export.json");
+                    Deno.removeSync("./systems/"+msg.author.id+".json");
                     msg.channel.send("System deleted.").catch(err => {
                         sendError(msg,err);
                     });
@@ -126,11 +131,12 @@ export function deleteSystem(msg: discord.Message, parsedMessage: string[]):stri
 export function listSystem(msg: discord.Message, parsedMessage: string[]) {
     if (exists(msg.author.id,msg)) {
         let system:System = load(msg.author.id.toString());
-        let embed: discord.MessageEmbed  = new discord.MessageEmbed();
+        let embed: discord.Embed  = new discord.Embed();
 
         embed.setTitle(system.name + " [`"+system.id+"`]");
         if (!isArrEmpty(system.members)) {
             system.members = system.members.sort((a,b) => {
+                //@ts-ignore
                 return (a.name > b.name)? 1: ((b.name > a.name)? -1: 0);
             });
             let str:string = "";
@@ -166,7 +172,7 @@ export function exportSystem(msg:discord.Message, parsedMessage: string[]) {
                 files: [getSysExportMessage(msg.author.id.toString())]
             }).then(message => {
                 channel.send(message.attachments.map(a=>a)[0].url);
-                fs.unlinkSync("./systems/"+msg.author.id+"_export.json");
+                Deno.removeSync("./systems/"+msg.author.id+"_export.json");
             }).catch(err => {
                 sendError(msg,err);
             });
@@ -178,7 +184,7 @@ export function exportSystem(msg:discord.Message, parsedMessage: string[]) {
     msg.channel.send("No system registered.");
 }
 
-export function importSystem(msg:discord.Message, parsedMessage: string[]):string {
+export function importSystem(msg:discord.Message, parsedMessage: string[]): string {
     if (parsedMessage.length > 1) {
         getData(parsedMessage[parsedMessage.length-1],"./systems/"+msg.author.id+".json");
         return "System imported.";
@@ -198,14 +204,7 @@ function getSysExportMessage(id:string):discord.MessageAttachment {
 }
 
 export function getData(url:string,path:string) {
-    let output = ""
-    https.get(url,res => {
-        res.on("data", chunk => {
-            output += chunk;
-        })
-    }).on("close", () => {
-        fs.writeFileSync(path,output);
-    });
+    Deno.writeTextFileSync(path,Deno.readTextFileSync(url));
 }
 
 export function autoOn(msg: discord.Message, parsedMessage: string[]): string {
@@ -231,7 +230,8 @@ export function autoOff(msg: discord.Message, parsedMessage: string[]): string {
 export function spOn(msg: discord.Message, parsedMessage: string[]): string {
     if (exists(msg.author.id.toString(),msg)) {
         let system = load(msg.author.id.toString());
-        system.serverProxy.put(msg.guildId,true);
+        //@ts-ignore
+        system.serverProxy.put(msg.guildID,true);
         save(msg.author.id.toString(),system);
         return "Proxy has been enabled for this server.";
     }
@@ -241,7 +241,8 @@ export function spOn(msg: discord.Message, parsedMessage: string[]): string {
 export function spOff(msg: discord.Message, parsedMessage: string[]): string {
     if (exists(msg.author.id.toString(),msg)) {
         let system = load(msg.author.id.toString());
-        system.serverProxy.put(msg.guildId,false);
+        //@ts-ignore
+        system.serverProxy.put(msg.guildID,false);
         save(msg.author.id.toString(),system);
         return "Proxy has been disabled for this server.";
     }
@@ -267,6 +268,7 @@ export function setAvatar(msg: discord.Message, parsedMessage: string[]): string
         url = parsedMessage[parsedMessage.length-1]
     if (msg.attachments.map(a=>a).length > 0)
         url = msg.attachments.map(a=>a)[0].url;
+    //@ts-ignore
     if (!url) return "No avatar to set.";
     system.avatar = url;
     save(msg.author.id.toString(),system);

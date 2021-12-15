@@ -1,34 +1,23 @@
-import { parse as parseMessage } from "./commandProcessor";
-import { tree } from "./commandTree";
-import * as discord from "discord.js";
-import * as fs from "fs";
-import { webhook } from "./sendMessage";
-import { start } from "./webServer";
-import process from 'process';
+import { parse as parseMessage } from "./commandProcessor.ts";
+import { tree } from "./commandTree.ts";
+import * as discord from "https://code.harmony.rocks/main";
+import { webhook } from "./sendMessage.ts";
+import { start } from "./webServer.ts";
 export const client = new discord.Client({
     //@ts-ignore
     intents: [
-        discord.Intents.FLAGS.GUILDS,
-        discord.Intents.FLAGS.GUILD_MESSAGES,
-        discord.Intents.FLAGS.GUILD_WEBHOOKS,
-        discord.Intents.FLAGS.DIRECT_MESSAGES,
-        discord.Intents.FLAGS.GUILD_MESSAGE_REACTIONS,
-        discord.Intents.FLAGS.DIRECT_MESSAGE_REACTIONS,
-        discord.Intents.FLAGS.GUILD_INTEGRATIONS
+        discord.GatewayIntents.GUILDS,
+        discord.GatewayIntents.GUILD_MESSAGES,
+        discord.GatewayIntents.GUILD_WEBHOOKS,
+        discord.GatewayIntents.DIRECT_MESSAGES,
+        discord.GatewayIntents.GUILD_MESSAGE_REACTIONS,
+        discord.GatewayIntents.DIRECT_MESSAGE_REACTIONS,
+        discord.GatewayIntents.GUILD_INTEGRATIONS
     ]
 });
 console.log("starting");
 
-process.on('unhandledRejection', (reason, promise) => {
-    console.log('Unhandled Rejection at:', promise, 'reason:', reason);
-});
-
-process.on("uncaughtException", error => {
-    console.log(error.name);
-    console.log(error.message);
-})
-
-const keys = JSON.parse(fs.readFileSync("./key.json").toString());
+const keys = JSON.parse(Deno.readTextFileSync("./key.json"));
 
 function handleMessage(msg: discord.Message): boolean {
     let parsedMsg = parseMessage(msg.content);
@@ -39,6 +28,7 @@ function handleMessage(msg: discord.Message): boolean {
             if (parsedMsg[i] == null || parsedMsg[i] == undefined || parsedMsg == "") currTree = currTree.default;
             //@ts-ignore
             else if (currTree[parsedMsg[i].toLowerCase()] == null) currTree = currTree.default;
+            //@ts-ignore
             else currTree = currTree[parsedMsg[i].toLowerCase()];
             
             let breakCond: boolean = false;
@@ -55,9 +45,7 @@ function handleMessage(msg: discord.Message): boolean {
                     if (!!output)
                         msg.channel.send(output).catch(err => {
                             sendError(msg,err);
-                        }).catch(err => {
-                            sendError(msg,err);
-                        });
+                        })
                     return true;
                 case "object":
                     break;
@@ -69,7 +57,7 @@ function handleMessage(msg: discord.Message): boolean {
 }
 
 client.on('messageCreate', msg => {
-    if (msg.author.system || msg.author.bot || msg.system || msg.webhookId) return;
+    if (msg.author.system || msg.author.bot || msg.author.system) return;
     try {
         if (!handleMessage(msg))
             webhook(msg);
@@ -80,7 +68,7 @@ client.on('messageCreate', msg => {
 
 let count = 0;
 
-function getTime(duration) {
+function getTime(duration: number) {
     var seconds: any = Math.floor((duration / 1000) % 60),
         minutes: any = Math.floor((duration / (1000 * 60)) % 60),
         hours: any = Math.floor((duration / (1000 * 60 * 60)) % 24);
@@ -92,19 +80,19 @@ function getTime(duration) {
     return hours + ":" + minutes + ":" + seconds ;
 }
 
-function setPres(text: string, since?: number): void {
+async function setPres(text: string, since: number): Promise<void> {
     let activity: string;
     if (count == 0)
-        activity = text + " In " + client.guilds.cache.size + " servers";
+        activity = text + " In " + (await client.guilds.size()) + " servers";
     else {
         let now = Date.now();
         let time = now - since;
         activity = text + " Uptime: "+getTime(time);
     }
 
-    client.user.setPresence({
+    client.setPresence({
         status: "online",
-        activities: [{name: activity}]
+        activity: {name: activity, type: discord.ActivityTypes.PLAYING}
     });
 }
 
@@ -128,4 +116,4 @@ client.on("ready", () => {
     console.log("online");
 });
 start();
-client.login(keys.main);
+client.connect(keys.dev);

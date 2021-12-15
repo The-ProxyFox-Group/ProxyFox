@@ -1,6 +1,6 @@
-import { Member } from "./memberClass";
-import { System } from "./systemClass";
-import * as discord from "discord.js";
+import { Member } from "./memberClass.ts";
+import { System } from "./systemClass.ts";
+import * as discord from "https://code.harmony.rocks/main";
 
 export class Switch {
     memberIds: string[];
@@ -11,13 +11,14 @@ export class Switch {
         this.memberIds = [];
         for (let i = 0; i < members.length; i++) {
             let member = members[i];
+            //@ts-ignore
             this.memberIds.push(member.id);
         }
         this.timeStamp = new Date().toISOString();
         this.id = this.createId();
     }
 
-    public equals(other): boolean {
+    public equals(other:any): boolean {
         if (!(other instanceof Switch)) return false;
         if (other.memberIds.length != this.memberIds.length) return false;
         other.memberIds = other.memberIds.sort((a,b) => a > b? 1: a < b? -1: 0);
@@ -30,10 +31,11 @@ export class Switch {
         return false;
     } 
 
-    public addEmbedField(system:System, name:string, embed: discord.MessageEmbed) {
+    public addEmbedField(system:System, name:string, embed: discord.Embed) {
         let memStr = "";
         for (let i = 0; i < this.memberIds.length; i++) {
             let str = this.memberIds[i];
+            //@ts-ignore
             let member: Member = system.memberFromName(str);
             memStr += member.name + " [`" + str + "`]\n";
         }
@@ -57,7 +59,7 @@ export class Switch {
         return json;
     }
 
-    public static fromJson(json):Switch {
+    public static fromJson(json:any):Switch {
         let sw: Switch = new Switch([]);
         sw.timeStamp = json.timestamp;
         sw.memberIds = json.members;

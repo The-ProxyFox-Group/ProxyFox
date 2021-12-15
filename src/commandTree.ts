@@ -1,7 +1,7 @@
-import {accessMember, createMember, deleteMember} from "./memberCommands";
-import {accessSystem, autoOff, autoOn, spOff, spOn, createSystem, deleteSystem, exportSystem, importSystem, listSystem, setAvatar, setTag, setName, setDesc, createSwitch} from "./systemCommands";
-import * as discord from "discord.js";
-import { setRole } from "./serverRole";
+import {accessMember, createMember, deleteMember} from "./memberCommands.ts";
+import {accessSystem, autoOff, autoOn, spOff, spOn, createSystem, deleteSystem, exportSystem, importSystem, listSystem, setAvatar, setTag, setName, setDesc, createSwitch} from "./systemCommands.ts";
+import * as discord from "https://code.harmony.rocks/main";
+import { setRole } from "./serverRole.ts";
 
 function getTime(msg: discord.Message, parsedMessage: string[]):string {
     let time: number = new Date().valueOf()/1000;
