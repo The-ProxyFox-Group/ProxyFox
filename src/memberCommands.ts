@@ -86,6 +86,20 @@ export function accessMember(msg: discord.Message, parsedMessage: string[]):stri
                 save(user.id,system);
                 return "Member's server name changed to `"+name+"`";
             }
+            if (["serverproxy","sp"].indexOf(parsedMessage[0].toLowerCase()) != -1) {
+                parsedMessage.shift();
+                if (parsedMessage[0] == "off") {
+                    member.serverProxy.put(msg.guildId,false);
+                    save(user.id,system);
+                    return "Member's proxy disabled for this server";
+                }
+                if (parsedMessage[0] == "on") {
+                    member.serverProxy.put(msg.guildId,true);
+                    save(user.id,system);
+                    return "Member's proxy enabled for this server";
+                }
+                return "Please provide whether you want the server proxy on or off";
+            }
             if (["serveravatar","guildavatar","serverpfp","guildpfp"].indexOf(parsedMessage[0].toLowerCase()) != -1) {
                 parsedMessage.shift();
                 let avatar:string;

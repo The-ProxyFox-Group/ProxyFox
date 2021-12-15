@@ -1,4 +1,4 @@
-import { throws } from "assert";
+import { Group } from "./groupClass";
 import { GuildSpecific } from "./guildSpecific";
 import { Member } from "./memberClass";
 import { Switch } from "./switchClass";
@@ -16,6 +16,8 @@ export class System {
     autobool: boolean = false;
     serverProxy: GuildSpecific = new GuildSpecific();
     switches: Switch[] = [];
+    groups: Group[] = [];
+    subsystems: Group[] = [];
 
     constructor(name:string) {
         this.name = name;
@@ -45,6 +47,8 @@ export class System {
             auto_bool: this.autobool,
             server_proxy: this.serverProxy.toJson(),
             switches: Switch.bulkToJson(this.switches),
+            groups: Group.bulkToJson(this.groups),
+            subsystems: Group.bulkToJson(this.subsystems),
         };
         return JSON.stringify(json);
     }
@@ -114,6 +118,8 @@ export class System {
         system.autobool = json.auto_bool;
         system.serverProxy = GuildSpecific.fromJson(json.server_proxy);
         system.switches = Switch.bulkFromJson(json.switches);
+        system.groups = Group.bulkFromJson(json.groups);
+        system.subsystems = Group.bulkFromJson(json.subsystems);
         return system;
     }
 }

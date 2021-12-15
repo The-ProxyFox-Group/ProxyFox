@@ -14,6 +14,7 @@ export class Member {
     created: string = null;
     serverAvatar: GuildSpecific = new GuildSpecific();
     serverNick: GuildSpecific = new GuildSpecific();
+    serverProxy: GuildSpecific = new GuildSpecific();
 
     constructor(name:string) {
         this.name = name;
@@ -45,6 +46,7 @@ export class Member {
             created: this.created,
             server_avatar: this.serverAvatar.toJson(),
             server_nick: this.serverNick.toJson(),
+            server_proxy: this.serverProxy? this.serverProxy.toJson(): undefined
         };
         return json;
     }
@@ -123,6 +125,8 @@ export class Member {
         out.avatar = obj.avatar_url;
         out.serverAvatar = GuildSpecific.fromJson(obj.server_avatar);
         out.serverNick = GuildSpecific.fromJson(obj.server_nick);
+        out.serverProxy = GuildSpecific.fromJson(obj.server_proxy);
+        if (!out.serverProxy.data) out.serverProxy.data = {}
         return out;
     }
     getDisplayName(id?:string): string {

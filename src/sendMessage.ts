@@ -72,6 +72,7 @@ export function webhook(msg: discord.Message) {
         if (serverProxy === false) return;
         let member = system.memberFromMessage(msg.content);
         if (member != null) {
+            if (member.serverProxy.get(msg.guildId) === false) return;
             system.auto = member.id;
             msg.content = member.getProxy(msg.content).trimMessage(msg.content);
             save(msg.author.id.toString(),system);
@@ -80,8 +81,9 @@ export function webhook(msg: discord.Message) {
         }
         member = system.memberFromAP();
         if (msg.content.startsWith("\\")) return;
-        if (member != null)
-            sendMessageAsWebhook(msg,member,system);
+        if (member == null) return;
+        if (member.serverProxy.get(msg.guildId) === false) return;
+        sendMessageAsWebhook(msg,member,system);
     }
 }
 
