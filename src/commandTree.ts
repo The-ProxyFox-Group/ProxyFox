@@ -2,6 +2,7 @@ import {accessMember, createMember, deleteMember} from "./memberCommands";
 import {accessSystem, autoOff, autoOn, spOff, spOn, createSystem, deleteSystem, exportSystem, importSystem, listSystem, setAvatar, setTag, setName, setDesc, createSwitch} from "./systemCommands";
 import * as discord from "discord.js";
 import { setRole } from "./serverRole";
+import { createGroup, createSubsys } from "./groupCommands";
 
 function getTime(msg: discord.Message, parsedMessage: string[]):string {
     let time: number = new Date().valueOf()/1000;
@@ -45,6 +46,16 @@ let spTree = {
     "off": spOff
 }
 
+let subSysTree = {
+    "new": createSubsys,
+    "create": createSubsys
+}
+
+let groupTree = {
+    "new": createGroup,
+    "create": createGroup
+}
+
 let help = `To get your system started:
 - pf>system new <name>
     - Creates a system with <name> as the name.
@@ -81,5 +92,11 @@ It uses discord's webhooks to generate "pseudo-users" which different members of
 https://did-research.org/origin/structural_dissociation/ explains why and how DID/OSDD forms`,
     "role": setRole,
     "sw": createSwitch,
-    "switch": createSwitch
+    "switch": createSwitch,
+    /*/
+    "group": groupTree,
+    "g": groupTree,
+    "subsys": subSysTree,
+    "sub": subSysTree
+    //*/
 };
