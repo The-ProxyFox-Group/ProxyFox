@@ -93,6 +93,9 @@ https://did-research.org/origin/structural_dissociation/ explains why and how DI
     "role": setRole,
     "sw": createSwitch,
     "switch": createSwitch,
+    "edit": "",
+    "delete": "",
+    "ping": "",
     /*/
     "group": groupTree,
     "g": groupTree,

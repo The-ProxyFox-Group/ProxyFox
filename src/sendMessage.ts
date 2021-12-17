@@ -115,9 +115,42 @@ function sendAsHook(hook: discord.Webhook, msg: discord.Message, url: string, na
         threadId: thread,
         embeds
     }).then(a => {
-        member.messageCount++;
-        const filter = (reaction) => '❌❗❓'.indexOf(reaction.emoji.name) != -1;
         let mess = <discord.Message> a;
+        const filter = (reaction) => '❌❗❓'.indexOf(reaction.emoji.name) != -1;
+        const messageFilter = (message) => /^pf[>;:!]/i.test(message.content) && message.reference && message.reference.messageId == mess.id;
+
+        mess.channel.createMessageCollector({filter: messageFilter})
+        .on("collect", message => {
+            let authorId = message.author.id;
+            let str = message.content.substr(3);
+            let command = str.substring(0,str.indexOf(" "));
+            let content = str.substring(str.indexOf(" "));
+            if (!str.includes(" ")) command = str;
+            switch (command) {
+                case "edit": 
+                    if (authorId == msg.author.id) {
+                        message.delete().catch(e => {});
+                        hook.editMessage(mess,content).catch(e => {});
+                    }
+                    return;
+                case "delete":
+                    if (authorId == msg.author.id) {
+                        message.delete().catch(e => {});;
+                        mess.delete().catch(e => {});
+                    }
+                    return;
+                case "ping":
+                    message.delete();
+                    let embed = new discord.MessageEmbed();
+                    embed.setDescription("**[Jump to message]("+mess.url+")**");
+                    mess.channel.send({
+                        content: "Psst! **" + member.getName("") + "**(<@"+msg.author.id+">)\nYou have been pinged by <@"+authorId+">!",
+                        embeds: [embed]
+                    });
+                    return;
+            }
+        })
+
         mess.createReactionCollector({
             filter
         }).on("collect", (react, user) => {
