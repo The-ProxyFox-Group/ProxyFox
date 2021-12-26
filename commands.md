@@ -26,7 +26,12 @@
 - pf>member \<member> color \<color> - Sets member’s color to \<color>.
 - pf>member \<member> birthday \<birthday> - Sets member’s birthday to \<birthday>.
 - pf>member \<member> delete - Deletes specified member.
-  
+
+## Reply Commands (Commands ran when replying to a proxied message)
+- pf>delete - Deletes the message if you're the author
+- pf>edit \<text> - Replaces the message text with \<text> if you're the author
+- pf>ping - Pings the message author
+
 ## General
 - pf>time - Displays current time (Automatically adjusted to timezone)
 - pf>help -  Help.
