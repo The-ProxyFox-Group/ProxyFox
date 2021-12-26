@@ -45,4 +45,4 @@
 - pf>role clear - Clears role required to proxy
 
 
-### Credit for command list goes to @snaafu#8833 (693870496483246111) on Discord
+### Credit for original command list goes to @snaafu#8833 (693870496483246111) on Discord
