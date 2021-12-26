@@ -38,3 +38,6 @@
 - pf>edit [message link|reply] \<new content> - Edit proxied message.
 - pf>role \<role> - Changes the role required to send a proxy
 - pf>role clear - Clears role required to proxy
+
+
+### Credit for command list goes to @snaafu#8833 (693870496483246111) on Discord
