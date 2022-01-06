@@ -90,8 +90,9 @@ export function webhook(msg: discord.Message) {
 function sendAsHook(hook: discord.Webhook, msg: discord.Message, url: string, name: string, member: Member, embed?:discord.MessageEmbed, thread?: string) {
     if (!webhooks.has(msg.channel.id))
         webhooks.put(msg.channel.id, hook);
+    if (msg.stickers.map(a=>a).length > 0) return msg.channel.send("ProxyFox is unable to proxy this message, as it contains a sticker.");
+    if (msg.content.length > 2000) return msg.channel.send("ProxyFox is unable to proxy this message, as it's content exceeds 2,000 characters.");
     if (msg.content.length == 0) msg.content = null;
-    let attach = msg.attachments.map(a=>a);
     if (msg.reference != null) {
         msg.fetchReference().then(m => {
             let embed = new discord.MessageEmbed();
@@ -102,16 +103,19 @@ function sendAsHook(hook: discord.Webhook, msg: discord.Message, url: string, na
         });
         return;
     }
-    let embeds = null;
+    let embeds = msg.embeds;
     if (embed != null)
-        embeds = [embed];
+        embeds.push(embed);
+
+    for (let i of  msg.attachments.map(a=>a))
+        if (i.size >= 8388608) return msg.channel.send("ProxyFox is unable to proxy this message, as one or more of the files attached is greater than 8mb.");
+    
     hook.send({
         avatarURL:url,
         username:name,
         //@ts-ignore
         content: msg.content,
-        //@ts-ignore
-        files: attach,
+        files: msg.attachments.map(a=>a.url),
         threadId: thread,
         embeds
     }).then(a => {
@@ -178,8 +182,8 @@ function sendAsHook(hook: discord.Webhook, msg: discord.Message, url: string, na
         })
         setTimeout(() => {msg.delete();}, 100);
     }).catch(err => {
-        if (err.toString().indexOf("Request entity too large"))
-            return msg.channel.send("File too large to proxy.")
+        /*if (err.toString().indexOf("Request entity too large"))
+            return msg.channel.send("File too large to proxy.")*/
         sendError(msg,err);
     });
 }

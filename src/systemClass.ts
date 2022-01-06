@@ -4,15 +4,15 @@ import { Member } from "./memberClass";
 import { Switch } from "./switchClass";
 
 export class System {
-    id: string = null;
-    name: string = null;
-    description: string = null;
-    tag: string = null;
-    avatar: string = null;
-    timezone: string = null;
+    id: string;
+    name: string;
+    description: string;
+    tag: string;
+    avatar: string;
+    timezone: string;
     members: Member[] = [];
-    created: string = null;
-    auto: string = null;
+    created: string;
+    auto: string;
     autobool: boolean = false;
     serverProxy: GuildSpecific = new GuildSpecific();
     switches: Switch[] = [];
@@ -56,15 +56,15 @@ export class System {
     toExportString():string {
         let json = {
             version: 1,
-            id: this.id,
-            name: this.name,
-            description: this.description,
-            tag: this.tag,
-            avatar_url: this.avatar,
-            timezone: this.timezone,
-            members: Member.getArrExport(this.members),
+            id: this.id ?? undefined,
+            name: this.name ?? undefined,
+            description: this.description ?? undefined,
+            tag: this.tag ?? undefined,
+            avatar_url: this.avatar ?? undefined,
+            timezone: this.timezone ?? undefined,
+            members: Member.getArrExport(this.members) ?? undefined,
             switches: [],
-            created: this.created,
+            created: this.created ?? undefined,
         };
         return JSON.stringify(json);
     }

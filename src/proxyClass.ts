@@ -1,6 +1,6 @@
 export class ProxyTag {
-    prefix: string = null;
-    suffix: string = null;
+    prefix: string;
+    suffix: string;
 
     constructor(prefix:string, suffix:string) {
         this.prefix = prefix;
@@ -9,8 +9,8 @@ export class ProxyTag {
 
     toJson(): object {
         let json = {
-            prefix: this.prefix,
-            suffix: this.suffix
+            prefix: this.prefix ?? undefined,
+            suffix: this.suffix ?? undefined
         }
         return json;
     }

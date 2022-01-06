@@ -1,17 +1,17 @@
 import { ProxyTag } from "./proxyClass";
 import { GuildSpecific } from "./guildSpecific";
 export class Member {
-    id: string = null;
-    name: string = null;
-    displayname: string = null;
-    description: string = null;
-    birthday: string = null;
-    pronouns: string = null;
-    color: string = null;
-    avatar: string = null;
+    id: string;
+    name: string;
+    displayname: string;
+    description: string;
+    birthday: string;
+    pronouns: string;
+    color: string;
+    avatar: string;
     proxies: ProxyTag[] = [];
     messageCount: number = 0;
-    created: string = null;
+    created: string;
     serverAvatar: GuildSpecific = new GuildSpecific();
     serverNick: GuildSpecific = new GuildSpecific();
     serverProxy: GuildSpecific = new GuildSpecific();
@@ -53,18 +53,18 @@ export class Member {
 
     toJsonExport():object {
         let json = {
-            id: this.id,
-            name: this.name,
-            display_name: this.displayname,
-            description: this.description,
-            birthday: this.birthday,
-            pronouns: this.pronouns,
-            color: this.color,
-            avatar_url: this.avatar,
-            proxy_tags: ProxyTag.getArr(this.proxies),
+            id: this.id ?? undefined,
+            name: this.name ?? undefined,
+            display_name: this.displayname ?? undefined,
+            description: this.description ?? undefined,
+            birthday: this.birthday ?? undefined,
+            pronouns: this.pronouns ?? undefined,
+            color: this.color ?? undefined,
+            avatar_url: this.avatar ?? undefined,
+            proxy_tags: ProxyTag.getArr(this.proxies) ?? undefined,
             keep_proxy: false,
-            message_count: this.messageCount,
-            created: this.created,
+            message_count: this.messageCount ?? undefined,
+            created: this.created ?? undefined,
         };
         return json;
     }
