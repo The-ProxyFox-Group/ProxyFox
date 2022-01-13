@@ -26,6 +26,9 @@ export function accessMember(msg: discord.Message, parsedMessage: string[]):stri
             if (isEmpty(parsedMessage[2])) {
                 let member: Member = system.memberFromName(memberName);
                 let attach: discord.MessageEmbed = new discord.MessageEmbed();
+                let color = member.color;
+                //@ts-ignore
+                if (color) attach.setColor(color);
                 if (!isEmpty(member.avatar)) attach.setThumbnail(member.avatar);
                 else if (!isEmpty(system.avatar)) attach.setThumbnail(system.avatar);
                 attach.setTitle(member.name + " ("+system.name+")" + " [`"+member.id+"`]");
@@ -70,11 +73,16 @@ export function accessMember(msg: discord.Message, parsedMessage: string[]):stri
             parsedMessage.shift();
             parsedMessage.shift();
             let third = parseIdx(msg.content,3);
-            if (["displayname","nickname","nick","dn"].indexOf(parsedMessage[0].toLowerCase()) != -1) {
-                parsedMessage.shift();
-                member.displayname = third;
+            if (parsedMessage[0].toLowerCase() == "name") {
+                if (third.length == 0) return "Make sure to provide a name"
+                member.name = third;
                 save(user.id,system);
                 return "Member's name changed to `"+third+"`";
+            }
+            if (["displayname","nickname","nick","dn"].indexOf(parsedMessage[0].toLowerCase()) != -1) {
+                member.displayname = third;
+                save(user.id,system);
+                return "Member's display name changed to `"+third+"`";
             }
             if (["serverdisplayname","servernickname","servernick","guilddisplayname","guildnickname","guildnick"].indexOf(parsedMessage[0].toLowerCase()) != -1) {
                 parsedMessage.shift();
@@ -195,7 +203,7 @@ export function accessMember(msg: discord.Message, parsedMessage: string[]):stri
             }
             return "Please specify a member command, or put nothing to show the member's card";
         }
-        return "Member doesn't exist in your systen.";
+        return "Member doesn't exist in your system.";
     }
 
     return "System doesn't exist. Please create one with `pf>system new`";
@@ -203,7 +211,7 @@ export function accessMember(msg: discord.Message, parsedMessage: string[]):stri
 
 export function createMember(msg: discord.Message, parsedMessage: string[]):string {
     if (parsedMessage.length == 2)
-        return "Please speciry a member name.";
+        return "Please specify a member name.";
     
     let user: discord.User = msg.author;
     parsedMessage.shift();
@@ -236,7 +244,7 @@ export function deleteMember(msg: discord.Message, parsedMessage: string[]):stri
             deleteMem(system,memberName,user,msg);
             return;
         }
-        return "Member doesn't exist in your systen.";
+        return "Member doesn't exist in your system.";
     }
     return "System doesn't exist. Please create one with `pf>system new`";
 }
