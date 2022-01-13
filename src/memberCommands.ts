@@ -1,6 +1,6 @@
 import * as discord from "discord.js";
 import { sendError } from ".";
-import { GuildSpecific } from "./guildSpecific";
+import { parseIdx } from "./commandProcessor";
 import { Member } from "./memberClass";
 import { ProxyTag } from "./proxyClass";
 import { exists, load, save } from "./saveLoad";
@@ -44,7 +44,9 @@ export function accessMember(msg: discord.Message, parsedMessage: string[]):stri
                     }
                     attach.addField("Proxy Tags", str, true);
                 }
-                if (!isEmpty(member.description)) attach.addField("Description", member.description, false);
+                if (!isEmpty(member.description)) {
+                    if (member.description.length < 1000) attach.addField("Description", member.description, false);
+                }
                 if (!isEmpty(member.birthday)) attach.addField("Birthday", member.birthday, true);
                 if (!isEmpty(member.pronouns)) attach.addField("Pronouns",member.pronouns,true);
                 
@@ -67,24 +69,23 @@ export function accessMember(msg: discord.Message, parsedMessage: string[]):stri
             let member: Member = system.memberFromName(memberName);
             parsedMessage.shift();
             parsedMessage.shift();
+            let third = parseIdx(msg.content,3);
             if (["displayname","nickname","nick","dn"].indexOf(parsedMessage[0].toLowerCase()) != -1) {
                 parsedMessage.shift();
-                let name: string = parsedMessage.join(" ");
-                member.displayname = name;
+                member.displayname = third;
                 save(user.id,system);
-                return "Member's name changed to `"+name+"`";
+                return "Member's name changed to `"+third+"`";
             }
             if (["serverdisplayname","servernickname","servernick","guilddisplayname","guildnickname","guildnick"].indexOf(parsedMessage[0].toLowerCase()) != -1) {
                 parsedMessage.shift();
-                let name: string = parsedMessage.join(" ");
-                if (["-reset","-clear","-remove"].indexOf(name) != -1) {
+                if (["-reset","-clear","-remove"].indexOf(third) != -1) {
                     member.serverNick.put(msg.guildId,null);
                     save(user.id,system);
                     return "Member's server name reset";
                 }
-                member.serverNick.put(msg.guildId,name);
+                member.serverNick.put(msg.guildId,third);
                 save(user.id,system);
-                return "Member's server name changed to `"+name+"`";
+                return "Member's server name changed to `"+third+"`";
             }
             if (["serverproxy","sp"].indexOf(parsedMessage[0].toLowerCase()) != -1) {
                 parsedMessage.shift();
@@ -110,7 +111,7 @@ export function accessMember(msg: discord.Message, parsedMessage: string[]):stri
                         return member.getAvatar(msg.guildId);
                     }
                 else if (parsedMessage.length >= 1)
-                    avatar = parsedMessage[0];
+                    avatar = third
                 else return member.getAvatar(msg.guildId);
                 if (["reset","remove","delete"].indexOf(avatar.toLowerCase()) != -1) {
                     member.serverAvatar.put(msg.guildId,null);
@@ -122,42 +123,37 @@ export function accessMember(msg: discord.Message, parsedMessage: string[]):stri
                 return "Member's server avatar changed to `"+avatar+"`";
             }
             if (parsedMessage[0].toLowerCase() == "pronouns") {
-                parsedMessage.shift();
-                let pronouns: string = parsedMessage.join(" ");
+                let pronouns: string = third
                 member.pronouns = pronouns;
                 save(user.id,system);
                 return "Member's pronouns changed to `"+pronouns+"`";
             }
             if (parsedMessage[0].toLowerCase() == "description") {
-                parsedMessage.shift();
-                let desc: string = parsedMessage.join(" ");
+                let desc: string = third
+                if (desc.length > 1000) return "Member description must be shorter than 1,000 characters.";
                 member.description = desc;
                 save(user.id,system);
                 return "Member's description changed to `"+desc+"`";
             }
             if (parsedMessage[0].toLowerCase() == "birthday") {
-                parsedMessage.shift();
-                let birthday: string = parsedMessage.join(" ");
+                let birthday: string = third
                 member.birthday = birthday;
                 save(user.id,system);
                 return "Member's birthday changed to `"+birthday+"`";
             }
             if (parsedMessage[0].toLowerCase() == "color") {
-                parsedMessage.shift();
-                let color: string = parsedMessage.join(" ");
+                let color: string = third
                 member.color = color;
                 save(user.id,system);
                 return "Member's color changed to `"+color+"`";
             }
             if (["name","rename"].indexOf(parsedMessage[0].toLowerCase()) != -1) {
-                parsedMessage.shift();
-                let name: string = parsedMessage.join(" ");
+                let name: string = third
                 member.name = name;
                 save(user.id,system);
                 return "Member's name changed to `"+name+"`";
             }
             if (parsedMessage[0].toLowerCase() == "avatar") {
-                parsedMessage.shift();
                 let avatar:string;
                 if (parsedMessage.length == 0 && !!msg.attachments)
                     try {
@@ -166,25 +162,24 @@ export function accessMember(msg: discord.Message, parsedMessage: string[]):stri
                         return member.avatar;
                     }
                 else if (parsedMessage.length >= 1)
-                    avatar = parsedMessage[0];
+                    avatar = third
                 else return member.avatar;
                 member.avatar = avatar;
                 save(user.id,system);
                 return "Member's avatar changed to `"+avatar+"`";
             }
             if (parsedMessage[0].toLowerCase() == "proxy") {
+                let fourth = parseIdx(msg.content,4);
                 parsedMessage.shift();
                 if (parsedMessage[0].toLowerCase() == "add") {
-                    parsedMessage.shift();
-                    if (member.addProxy(parsedMessage.join(" "))) {
+                    if (member.addProxy(fourth)) {
                         save(user.id,system);
-                        return "Proxy `"+parsedMessage.join(" ")+"` added!";
+                        return "Proxy `"+fourth+"` added!";
                     }
                     return "Invalid proxy, make sure to include `text` in it somewhere!";
                 }
                 if (["remove","delete"].indexOf(parsedMessage[0].toLowerCase()) != -1) {
-                    parsedMessage.shift();
-                    let num: number = member.remProxy(parsedMessage.join(" "));
+                    let num: number = member.remProxy(third);
                     if (num == 0)
                         return "Invalid proxy, make sure to include `text` in it somewhere!";
                     if (num == 1)
@@ -192,9 +187,9 @@ export function accessMember(msg: discord.Message, parsedMessage: string[]):stri
                     save(user.id,system);
                     return "Proxy removed.";
                 }
-                if (member.addProxy(parsedMessage.join(" "))) {
+                if (member.addProxy(third)) {
                     save(user.id,system);
-                    return "Proxy `"+parsedMessage.join(" ")+"` added!";
+                    return "Proxy `"+third+"` added!";
                 }
                 return "Invalid proxy, make sure to include `text` in it somewhere!";
             }

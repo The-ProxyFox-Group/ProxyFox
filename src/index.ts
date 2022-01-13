@@ -113,7 +113,7 @@ export function sendError(msg: discord.Message, err: any) {
     let timestamp: Date = new Date();
     let timestampString = "\n`===TIMESTAMP="+timestamp.getTime().toString().trim() + "===`\n";
     console.log(timestampString + err);
-    msg.channel.send("Unexpected error" + timestampString).catch(() => {});
+    msg.channel.send("Unexpected error" + timestampString + err).catch(() => {});
 }
 
 client.on("ready", () => {

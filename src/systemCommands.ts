@@ -2,6 +2,7 @@ import * as discord from "discord.js";
 import * as fs from "fs";
 import * as https from "https";
 import { sendError } from ".";
+import { parseIdx } from "./commandProcessor";
 import { Member } from "./memberClass";
 import { exists, load, save, saveExport } from "./saveLoad";
 import { Switch } from "./switchClass";
@@ -84,9 +85,7 @@ export function accessSystem(msg: discord.Message, parsedMessage: string[]) {
 }
 
 export function createSystem(msg: discord.Message, parsedMessage: string[]):string {
-    parsedMessage.shift();
-    parsedMessage.shift();
-    let name: string = parsedMessage.join(" ");
+    let name: string = parseIdx(msg.content, 2);
     if (exists(msg.author.id.toString(),msg)) return "You already have a system registered!";
     let system: System = new System(name);
     save(msg.author.id.toString(),system);
@@ -249,9 +248,7 @@ export function spOff(msg: discord.Message, parsedMessage: string[]): string {
 }
 
 export function setTag(msg: discord.Message, parsedMessage: string[]): string {
-    parsedMessage.shift();
-    parsedMessage.shift();
-    let tag = parsedMessage.join(" ");
+    let tag = parseIdx(msg.content, 2);
     if (!exists(msg.author.id.toString(),msg)) return "System doesn't exist.";
     let system: System = load(msg.author.id.toString());
     system.tag = tag;
@@ -264,7 +261,7 @@ export function setAvatar(msg: discord.Message, parsedMessage: string[]): string
     let system: System = load(msg.author.id.toString());
     let url: string;
     if (parsedMessage.length > 2)
-        url = parsedMessage[parsedMessage.length-1]
+        url = parseIdx(msg.content, 2);
     if (msg.attachments.map(a=>a).length > 0)
         url = msg.attachments.map(a=>a)[0].url;
     if (!url) return "No avatar to set.";
@@ -276,9 +273,7 @@ export function setAvatar(msg: discord.Message, parsedMessage: string[]): string
 export function setName(msg: discord.Message, parsedMessage: string[]): string {
     if (!exists(msg.author.id.toString(),msg)) return "System doesn't exist.";
     let system: System = load(msg.author.id.toString());
-    parsedMessage.shift();
-    parsedMessage.shift();
-    let name = parsedMessage.join(" ");
+    let name = parseIdx(msg.content, 2);
     if (!name) return "No name specified.";
     system.name = name;
     save(msg.author.id.toString(),system);
@@ -288,10 +283,8 @@ export function setName(msg: discord.Message, parsedMessage: string[]): string {
 export function setDesc(msg: discord.Message, parsedMessage: string[]): string {
     if (!exists(msg.author.id.toString(),msg)) return "System doesn't exist.";
     let system: System = load(msg.author.id.toString());
-    parsedMessage.shift();
-    parsedMessage.shift();
-    let name = parsedMessage.join(" ");
-    if (!name) return "No description specified.";
+    let name = parseIdx(msg.content, 2);
+    if (name.length > 1000) return "System description must be shorter that 1,000 characters."
     system.description = name;
     save(msg.author.id.toString(),system);
     return "System description set to \"" + name + "\"";
