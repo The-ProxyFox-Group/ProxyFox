@@ -72,7 +72,7 @@ export function accessMember(msg: discord.Message, parsedMessage: string[]):stri
             let member: Member = system.memberFromName(memberName);
             parsedMessage.shift();
             parsedMessage.shift();
-            let third = parseIdx(msg.content,3);
+            let third = parseIdx(msg.content,3).trim();
             if (parsedMessage[0].toLowerCase() == "name") {
                 if (third.length == 0) return "Make sure to provide a name"
                 member.name = third;
@@ -112,13 +112,13 @@ export function accessMember(msg: discord.Message, parsedMessage: string[]):stri
             if (["serveravatar","guildavatar","serverpfp","guildpfp"].indexOf(parsedMessage[0].toLowerCase()) != -1) {
                 parsedMessage.shift();
                 let avatar:string;
-                if (parsedMessage.length == 0 && !!msg.attachments)
+                if (!third && !!msg.attachments)
                     try {
                         avatar = msg.attachments.map(a=>a)[0].url;
                     } catch(e) {
                         return member.getAvatar(msg.guildId);
                     }
-                else if (parsedMessage.length >= 1)
+                else if (third)
                     avatar = third
                 else return member.getAvatar(msg.guildId);
                 if (["reset","remove","delete"].indexOf(avatar.toLowerCase()) != -1) {
@@ -163,13 +163,13 @@ export function accessMember(msg: discord.Message, parsedMessage: string[]):stri
             }
             if (parsedMessage[0].toLowerCase() == "avatar") {
                 let avatar:string;
-                if (parsedMessage.length == 0 && !!msg.attachments)
+                if (!third && !!msg.attachments)
                     try {
                         avatar = msg.attachments.map(a=>a)[0].url;
                     } catch(e) {
                         return member.avatar;
                     }
-                else if (parsedMessage.length >= 1)
+                else if (third)
                     avatar = third
                 else return member.avatar;
                 member.avatar = avatar;

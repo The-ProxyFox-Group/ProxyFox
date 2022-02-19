@@ -103,9 +103,6 @@ function sendAsHook(hook: discord.Webhook, msg: discord.Message, url: string, na
         });
         return;
     }
-    let embeds = msg.embeds;
-    if (embed != null)
-        embeds.push(embed);
 
     for (let i of  msg.attachments.map(a=>a))
         if (i.size >= 8388608) return msg.channel.send("ProxyFox is unable to proxy this message, as one or more of the files attached is greater than 8mb.");
@@ -117,7 +114,7 @@ function sendAsHook(hook: discord.Webhook, msg: discord.Message, url: string, na
         content: msg.content,
         files: msg.attachments.map(a=>a.url),
         threadId: thread,
-        embeds
+        embeds: embed? [embed]: undefined
     }).then(a => {
         let mess = <discord.Message> a;
         const filter = (reaction) => '❌❗❓'.indexOf(reaction.emoji.name) != -1;

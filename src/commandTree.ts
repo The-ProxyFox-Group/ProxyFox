@@ -35,13 +35,13 @@ let systemTree = {
 }
 
 let autoTree = {
-    "default": "Please specify weather you want autoproxy on or off.",
+    "default": "Please specify whether you want autoproxy on or off.",
     "on": autoOn,
     "off": autoOff
 }
 
 let spTree = {
-    "default": "Please specify weather you want autoproxy on or off.",
+    "default": "Please specify whether you want autoproxy on or off.",
     "on": spOn,
     "off": spOff
 }
