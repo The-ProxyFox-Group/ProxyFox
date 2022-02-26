@@ -56,18 +56,11 @@ let groupTree = {
     "create": createGroup
 }
 
-let help = `To get your system started:
-- pf>system new <name>
-    - Creates a system with <name> as the name.
-- pf>member new <name>
-    - Creates a member with <name> as the name
-- pf>member <name> proxy <proxy>
-    - Sets <name>'s proxy to <proxy>
-- pf>member <name> avatar
-    - Attach an image to set <name>'s avatar
-**Or**
-Use pf>import to import a system from PluralKit or any other proxy bot.
-**Note: Currently, TupperBox is NOT supported for imports`;
+let help = `To view commands for ProxyFox, visit <https://github.com/Oliver-makes-code/ProxyFox/blob/master/commands.md>
+For quick setup:
+- pf>system new name
+- pf>member new John Doe
+- pf>member "John Doe" proxy j:text`;
 
 export const tree = {
     "default": "Unknown command.",
@@ -87,9 +80,8 @@ export const tree = {
     "help": help,
     "invite": "Use https://discord.com/oauth2/authorize?client_id=872276960951296051&scope=bot&permissions=258302340160 to invite ProxyFox to your server!\nTo get support, head on over to https://discord.gg/q3yF8ay9V7",
     "source": "Source code for ProxyFox is available at <https://github.com/Oliver-makes-code/ProxyFox>!",
-    "explain": `ProxyFox is a bot to help those with DID/OSDD-1 communicate
-It uses discord's webhooks to generate "pseudo-users" which different members of the system can use.
-https://did-research.org/origin/structural_dissociation/ explains why and how DID/OSDD forms`,
+    "explain": `ProxyFox is modern Discord bot designed to help systems communicate.
+It uses discord's webhooks to generate "pseudo-users" which different members of the system can use. Someone will likely be willing to explain further if need be.`,
     "role": setRole,
     "sw": createSwitch,
     "switch": createSwitch,
