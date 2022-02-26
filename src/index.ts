@@ -163,18 +163,6 @@ client.on("ready", () => {
     }, 30000);
     console.log("online");
 });
-client2.on("ready", () => {
-    let since = Date.now();
-    setPres("Run pf>help for help!",since);
-    count++;
-    count %= 2;
-    setInterval(() => {
-        setPres("Run pf>help for help!",since);
-        count++;
-        count %= 2;
-    }, 30000);
-    console.log("online");
-});
 start();
-client.login(keys.main);
 client2.login(keys.new);
+client.login(keys.main);
