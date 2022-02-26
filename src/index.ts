@@ -17,6 +17,19 @@ export const client = new discord.Client({
         discord.Intents.FLAGS.GUILD_INTEGRATIONS
     ]
 });
+export const client2 = new discord.Client({
+    //@ts-ignore
+    intents: [
+        discord.Intents.FLAGS.GUILDS,
+        discord.Intents.FLAGS.GUILD_MESSAGES,
+        discord.Intents.FLAGS.GUILD_WEBHOOKS,
+        discord.Intents.FLAGS.DIRECT_MESSAGES,
+        discord.Intents.FLAGS.GUILD_MESSAGE_REACTIONS,
+        discord.Intents.FLAGS.DIRECT_MESSAGE_REACTIONS,
+        discord.Intents.FLAGS.GUILD_INTEGRATIONS
+    ]
+});
+
 console.log("starting");
 
 process.on('unhandledRejection', (reason, promise) => {
@@ -78,6 +91,16 @@ client.on('messageCreate', msg => {
         sendError(msg,err);
     }
 });
+client2.on('messageCreate', msg => {
+    if (msg.author.system || msg.author.bot || msg.system || msg.webhookId) return;
+    try {
+        if (!handleMessage(msg))
+            webhook(msg);
+    } catch (err) {
+        sendError(msg,err);
+    }
+});
+
 
 let count = 0;
 
@@ -107,6 +130,18 @@ function setPres(text: string, since?: number): void {
         status: "online",
         activities: [{name: activity}]
     });
+    if (count == 0)
+        activity = text + " In " + client2.guilds.cache.size + " servers";
+    else {
+        let now = Date.now();
+        let time = now - since;
+        activity = text + " Uptime: "+getTime(time);
+    }
+
+    client2.user.setPresence({
+        status: "online",
+        activities: [{name: activity}]
+    });
 }
 
 export function sendError(msg: discord.Message, err: any) {
@@ -128,5 +163,18 @@ client.on("ready", () => {
     }, 30000);
     console.log("online");
 });
+client2.on("ready", () => {
+    let since = Date.now();
+    setPres("Run pf>help for help!",since);
+    count++;
+    count %= 2;
+    setInterval(() => {
+        setPres("Run pf>help for help!",since);
+        count++;
+        count %= 2;
+    }, 30000);
+    console.log("online");
+});
 start();
 client.login(keys.main);
+client2.login(keys.new);

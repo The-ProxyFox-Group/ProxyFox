@@ -1,5 +1,5 @@
 import * as discord from "discord.js";
-import { client, sendError } from ".";
+import { sendError } from ".";
 import { Member } from "./memberClass";
 import { exists, load, save } from "./saveLoad";
 import { serverRoles } from "./serverRole";
@@ -26,7 +26,7 @@ export function sendMessageAsWebhook(msg: discord.Message, member: Member, syste
                         let user: Object | discord.User = hookArr[i].owner;
 
                         //@ts-ignore
-                        if (user != null && user != undefined && user.id == client.user.id)
+                        if (user != null && user != undefined && user.id == channel.client.user.id)
                             return sendAsHook(hookArr[i],msg,url,name,member);
                     }
                     channel.createWebhook("ProxyFox webhook").then(a => {
@@ -49,7 +49,7 @@ export function sendMessageAsWebhook(msg: discord.Message, member: Member, syste
                     for (let i in hookArr) {
                         let user: Object | discord.User = hookArr[i].owner;
                         //@ts-ignore
-                        if (user != null && user != undefined && user.id == client.user.id)
+                        if (user != null && user != undefined && user.id == channel.client.user.id)
                             return sendAsHook(hookArr[i],msg,url,name,member,null,channel.id);
                     }
                     baseChannel.createWebhook("ProxyFox webhook").then(a => {
