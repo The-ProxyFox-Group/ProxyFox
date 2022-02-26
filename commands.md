@@ -40,7 +40,6 @@
 - pf>source - Source code
 - pf>proxy [on|off] - Enables/disables proxy for current server.
 - pf>autoproxy [on|off] - Enables/disables autoproxy.
-- pf>edit [message link|reply] \<new content> - Edit proxied message.
 - pf>role \<role> - Changes the role required to send a proxy
 - pf>role clear - Clears role required to proxy
 
