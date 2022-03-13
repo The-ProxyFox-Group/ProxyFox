@@ -187,7 +187,7 @@ export function accessMember(msg: discord.Message, parsedMessage: string[]):stri
                     return "Invalid proxy, make sure to include `text` in it somewhere!";
                 }
                 if (["remove","delete"].indexOf(parsedMessage[0].toLowerCase()) != -1) {
-                    let num: number = member.remProxy(third);
+                    let num: number = member.remProxy(fourth);
                     if (num == 0)
                         return "Invalid proxy, make sure to include `text` in it somewhere!";
                     if (num == 1)

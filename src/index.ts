@@ -87,6 +87,13 @@ client.on('messageCreate', msg => {
     try {
         if (!handleMessage(msg))
             webhook(msg);
+        else {
+            msg.channel.send(`
+**Note:** This version of ProxyFox is depricated, meaning it will go away soon. This is due to restrictions of how many servers a bot can be in with it's author before verification.
+To get the latest version of ProxyFox, contact Octal#9139 for the bot invite.
+https://discord.gg/M2uBsJmRNT
+`)
+        }
     } catch (err) {
         sendError(msg,err);
     }
