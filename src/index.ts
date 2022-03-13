@@ -88,7 +88,10 @@ client.on('messageCreate', async msg => {
         if (!handleMessage(msg))
             webhook(msg);
         else {
-            let author = await msg.guild.members.fetch({user: "822926373064671252", force:true});
+            let author;
+            try {
+                author = await msg.guild.members.fetch({user: "822926373064671252", force:true});
+            } catch(e) {}
             if (!author)
                 msg.channel.send(`
 **Note:** This version of ProxyFox is depricated, meaning it will go away soon. This is due to restrictions of how many servers a bot can be in with it's author before verification.
