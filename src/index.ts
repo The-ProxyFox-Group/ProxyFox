@@ -82,13 +82,15 @@ function handleMessage(msg: discord.Message): boolean {
     return false;
 }
 
-client.on('messageCreate', msg => {
+client.on('messageCreate', async msg => {
     if (msg.author.system || msg.author.bot || msg.system || msg.webhookId) return;
     try {
         if (!handleMessage(msg))
             webhook(msg);
         else {
-            msg.channel.send(`
+            let author = await msg.guild.members.fetch({user: "822926373064671252", force:true});
+            if (!author)
+                msg.channel.send(`
 **Note:** This version of ProxyFox is depricated, meaning it will go away soon. This is due to restrictions of how many servers a bot can be in with it's author before verification.
 To get the latest version of ProxyFox, contact Octal#9139 for the bot invite.
 https://discord.gg/M2uBsJmRNT
