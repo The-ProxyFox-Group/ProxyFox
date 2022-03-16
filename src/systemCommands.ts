@@ -229,8 +229,11 @@ export function autoOff(msg: discord.Message, parsedMessage: string[]): string {
 
 export function spOn(msg: discord.Message, parsedMessage: string[]): string {
     if (exists(msg.author.id.toString(),msg)) {
+        let id = msg.guildId;
+        if (parsedMessage[2]) id = parsedMessage[2];
+        if (!parseInt(id)) return "Given server ID is invalid.";
         let system = load(msg.author.id.toString());
-        system.serverProxy.put(msg.guildId,true);
+        system.serverProxy.put(id,true);
         save(msg.author.id.toString(),system);
         return "Proxy has been enabled for this server.";
     }
@@ -239,8 +242,11 @@ export function spOn(msg: discord.Message, parsedMessage: string[]): string {
 
 export function spOff(msg: discord.Message, parsedMessage: string[]): string {
     if (exists(msg.author.id.toString(),msg)) {
+        let id = msg.guildId;
+        if (parsedMessage[2]) id = parsedMessage[2];
+        if (!parseInt(id)) return "Given server ID is invalid.";
         let system = load(msg.author.id.toString());
-        system.serverProxy.put(msg.guildId,false);
+        system.serverProxy.put(id,false);
         save(msg.author.id.toString(),system);
         return "Proxy has been disabled for this server.";
     }

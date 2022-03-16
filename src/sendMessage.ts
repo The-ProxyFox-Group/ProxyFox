@@ -15,7 +15,7 @@ export async function sendMessageAsWebhook(msg: discord.Message, member: Member,
         let channel = <discord.TextChannel>msg.channel;
         let time = new Date().getTime();
         if (!channel.isThread())
-            if (!webhooks.has(channel.id))
+            if (!await webhooks.has(channel.id))
                 channel.fetchWebhooks().then(hooks => {
                     let time2 = new Date().getTime();
                     if (time2 > time + 30000)
@@ -39,7 +39,7 @@ export async function sendMessageAsWebhook(msg: discord.Message, member: Member,
         else {
             let channel = <discord.ThreadChannel> msg.channel;
             let baseChannel = <discord.TextChannel> channel.parent;
-            if (!webhooks.has(channel.id))
+            if (!await webhooks.has(channel.id))
                 baseChannel.fetchWebhooks().then(hooks => {
                     let time2 = new Date().getTime();
                     if (time2 > time + 30000)
