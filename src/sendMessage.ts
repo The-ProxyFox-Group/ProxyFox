@@ -8,7 +8,7 @@ import { webhookManager } from "./webhookManager";
 
 let webhooks: webhookManager = new webhookManager();
 
-export function sendMessageAsWebhook(msg: discord.Message, member: Member, system: System) {
+export async function sendMessageAsWebhook(msg: discord.Message, member: Member, system: System) {
     let name = member.getName(system.tag,msg.guildId);
     let url = member.getAvatar(msg.guildId) == null ? system.avatar : member.getAvatar(msg.guildId);
     if (msg.channel.isText) {
@@ -35,7 +35,7 @@ export function sendMessageAsWebhook(msg: discord.Message, member: Member, syste
                         sendError(msg,err);
                     });
                 });
-            else sendAsHook(webhooks.get(channel.id),msg,url,name,member);
+            else sendAsHook(await webhooks.get(channel.id),msg,url,name,member);
         else {
             let channel = <discord.ThreadChannel> msg.channel;
             let baseChannel = <discord.TextChannel> channel.parent;
@@ -58,7 +58,7 @@ export function sendMessageAsWebhook(msg: discord.Message, member: Member, syste
                         sendError(msg,err);
                     });
                 });
-            else sendAsHook(webhooks.get(channel.id),msg,url,name,member,null,channel.id);
+            else sendAsHook(await webhooks.get(channel.id),msg,url,name,member,null,channel.id);
         }
     }
 }

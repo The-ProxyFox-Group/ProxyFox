@@ -9,18 +9,24 @@ export class webhookManager {
     public constructor() {
 
     }
-    public put(key: string, value: Webhook) {
+    public async put(key: string, value: Webhook) {
         this.webhooks[key] = value;
     }
-    public has(key: string): boolean {
-        return this.webhooks[key] != undefined;
+    public async has(key: string): Promise<boolean> {
+        if (!this.webhooks[key]) return false;
+        try {
+            await this.webhooks[key].edit({});
+        } catch (e) {
+            return false;
+        }
+        return true;
     }
-    public get(key: string): Webhook {
-        if (!this.has(key)) return null;
+    public async get(key: string): Promise<Webhook> {
+        if (!await this.has(key)) return null;
         return this.webhooks[key];
     }
-    public remove(key: string) {
-        if (!this.has(key)) return;
+    public async remove(key: string) {
+        if (!await this.has(key)) return;
         this.webhooks[key] = undefined;
     }
 }
