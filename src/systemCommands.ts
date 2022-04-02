@@ -4,7 +4,7 @@ import * as https from "https";
 import { sendError } from ".";
 import { parseIdx } from "./commandProcessor";
 import { Member } from "./memberClass";
-import { exists, load, save, saveExport } from "./saveLoad";
+import { delete_, exists, load, save, saveExport } from "./saveLoad";
 import { Switch } from "./switchClass";
 import { System } from "./systemClass";
 
@@ -106,7 +106,7 @@ export function deleteSystem(msg: discord.Message, parsedMessage: string[]):stri
                 }).then(message => {
                     dm.send(message.attachments.map(a=>a)[0].url);
                     fs.unlinkSync("./systems/"+msg.author.id+"_export.json");
-                    fs.unlinkSync("./systems/"+msg.author.id+".json");
+                    delete_(msg.author.id)
                     msg.channel.send("System deleted.").catch(err => {
                         sendError(msg,err);
                     });
@@ -157,7 +157,7 @@ export function listSystem(msg: discord.Message, parsedMessage: string[]) {
 }
 
 export function exportSystem(msg:discord.Message, parsedMessage: string[]) {
-    if (fs.existsSync("./systems/"+msg.author.id+".json")) {
+    if (exists(msg.author.id, msg)) {
         msg.channel.send("Check your DMs :>");
         msg.author.createDM().then(channel => {
             //@ts-ignore
@@ -165,7 +165,7 @@ export function exportSystem(msg:discord.Message, parsedMessage: string[]) {
                 files: [getSysExportMessage(msg.author.id.toString())]
             }).then(message => {
                 channel.send(message.attachments.map(a=>a)[0].url);
-                fs.unlinkSync("./systems/"+msg.author.id+"_export.json");
+                delete_(msg.author.id)
             }).catch(err => {
                 sendError(msg,err);
             });
@@ -179,12 +179,12 @@ export function exportSystem(msg:discord.Message, parsedMessage: string[]) {
 
 export function importSystem(msg:discord.Message, parsedMessage: string[]):string {
     if (parsedMessage.length > 1) {
-        getData(parsedMessage[parsedMessage.length-1],"./systems/"+msg.author.id+".json");
+        getData(parsedMessage[parsedMessage.length-1],msg.author.id, msg);
         return "System imported.";
     }
     if (msg.attachments.map(a=>a).length > 0) {
         let url = msg.attachments.map(a=>a)[0].url;
-        getData(url,"./systems/"+msg.author.id+".json");
+        getData(url,msg.author.id, msg);
         return "System imported.";
     }
     return "No system to import.";
@@ -196,14 +196,16 @@ function getSysExportMessage(id:string):discord.MessageAttachment {
     return new discord.MessageAttachment("./systems/"+id+"_export.json", "system.json");
 }
 
-export function getData(url:string,path:string) {
+export function getData(url:string,id:string,msg:discord.Message) {
     let output = ""
     https.get(url,res => {
         res.on("data", chunk => {
             output += chunk;
         })
     }).on("close", () => {
-        fs.writeFileSync(path,output);
+        let str = JSON.parse(output)
+        if (str.tuppers) return msg.channel.send("Cannot import system, as it is from TupperBox.");
+        save(id,System.fromJson(str))
     });
 }
 

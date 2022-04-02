@@ -95,8 +95,12 @@ function sendAsHook(hook: discord.Webhook, msg: discord.Message, url: string, na
     if (msg.content.length == 0) msg.content = null;
     if (msg.reference != null) {
         msg.fetchReference().then(m => {
-            let embed = new discord.MessageEmbed();
-            embed.setAuthor(m.author.username + " ↩️",m.author.avatarURL());
+            let embed = new discord.MessageEmbed({
+                author: {
+                    name: m.author.username + " ↩️",
+                    iconURL: m.author.avatarURL()
+                }
+            });
             embed.setDescription("**[Reply to:](<"+m.url+">)** "+ (m.content.length > 100? m.content.substr(0,97)+"...": m.content) + (m.attachments.hasAny()? "📎": ""));
             msg.reference = null;
             sendAsHook(hook,msg,url,name,member,embed,thread);
@@ -110,7 +114,6 @@ function sendAsHook(hook: discord.Webhook, msg: discord.Message, url: string, na
     hook.send({
         avatarURL:url,
         username:name,
-        //@ts-ignore
         content: msg.content,
         files: msg.attachments.map(a=>a.url),
         threadId: thread,

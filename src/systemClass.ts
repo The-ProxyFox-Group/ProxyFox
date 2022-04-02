@@ -32,8 +32,8 @@ export class System {
         return out;
     }
 
-    toString():string {
-        let json = {
+    toJson() {
+        return {
             version: 1,
             id: this.id,
             name: this.name,
@@ -50,7 +50,10 @@ export class System {
             groups: Group.bulkToJson(this.groups),
             subsystems: Group.bulkToJson(this.subsystems),
         };
-        return JSON.stringify(json);
+    }
+
+    toString():string {
+        return JSON.stringify(this.toJson());
     }
 
     toExportString():string {
@@ -105,7 +108,10 @@ export class System {
     }
 
     static fromStr(str:string):System {
-        let json = JSON.parse(str);
+        return this.fromJson(JSON.parse(str));
+    }
+    
+    static fromJson(json): System {
         let system = new System(json.name);
         system.id = json.id;
         system.description = json.description;
