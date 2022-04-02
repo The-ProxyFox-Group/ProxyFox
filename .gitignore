@@ -4,5 +4,6 @@
 /.vscode
 roles.json
 key.json
+systems.json
 *.tsbuildinfo
 *.ini
