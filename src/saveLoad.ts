@@ -20,7 +20,7 @@ class Systems {
         let out = {}
         
         for (let i in this.values)
-            out[i] = this.values[i].toJson();
+            try { out[i] = this.values[i].toJson(); } catch (ignore) {}
         return out;
     }
 

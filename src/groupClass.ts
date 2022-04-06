@@ -53,9 +53,8 @@ export class Group {
     public static bulkFromJson(groups: any[]): Group[] {
         let out = [];
         if (!groups) return [];
-        for (let i = 0; i < groups.length; i++) {
+        for (let i = 0; i < groups.length; i++)
             out.push(Group.fromJson(groups[i]));
-        }
         return out;
     }
 }
