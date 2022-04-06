@@ -1,8 +1,9 @@
 import * as http from "http";
 
+const websocket_port = 8081;
+
 export function start() {
     http.createServer(function (req, res) {
-        res.write('Online!');
-        res.end();
-    }).listen(8080);
+        
+    }).listen(websocket_port);
 }
