@@ -52,6 +52,7 @@ export function load(id:string, msg: discord.Message):System {
 }
 
 export function loadAll() {
+    if (!fs.existsSync("./systems.json")) return;
     let json = JSON.parse(fs.readFileSync("./systems.json").toString());
     systems = Systems.fromJson(json);
 }
