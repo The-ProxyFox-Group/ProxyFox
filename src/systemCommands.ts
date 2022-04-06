@@ -165,7 +165,7 @@ export function exportSystem(msg:discord.Message, parsedMessage: string[]) {
                 files: [getSysExportMessage(msg.author.id.toString(),msg)]
             }).then(message => {
                 channel.send(message.attachments.map(a=>a)[0].url);
-                delete_(msg.author.id)
+                delete_(msg.author.id+"_export");
             }).catch(err => {
                 sendError(msg,err);
             });

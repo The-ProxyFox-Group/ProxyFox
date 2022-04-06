@@ -13,7 +13,7 @@ class Systems {
         this.values[id] = system
     }
     exists(id:string): boolean {
-        return !!this.values[id]
+        return this.values[id] != undefined
     }
 
     toJson(): Object {
@@ -40,7 +40,9 @@ export function delete_(id:string) {
 
 export function load(id:string, msg: discord.Message):System {
     if (!systems.exists(id)) {
-        save(id,System.fromStr(fs.readFileSync("./systems/"+id+".json").toString()));
+        let sys = System.fromStr(fs.readFileSync("./systems/"+id+".json").toString());
+        console.log(systems.values[id]);
+        systems.values[id] = sys;
         if (msg) {
             msg.channel.send("Moving your system to the new database. Exporting for a backup...");
             exportSystem(msg, []);
