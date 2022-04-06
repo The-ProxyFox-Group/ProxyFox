@@ -176,7 +176,7 @@ client.on("ready", () => {
     }, 30000);
     console.log("online");
 });
-loadAll()
+loadAll();
 start();
 client2.login(keys.new);
 client.login(keys.main);

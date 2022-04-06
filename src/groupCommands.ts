@@ -8,7 +8,7 @@ import { Group } from "./groupClass";
 
 export function createGroup(msg: discord.Message, parsedMessage: string[]): string {
     if (!exists(msg.author.id,msg)) return;
-    let system: System = load(msg.author.id);
+    let system: System = load(msg.author.id, msg);
     parsedMessage.shift();
     let name = parsedMessage.join(" ");
     system.groups.push(new Group(name));
@@ -17,7 +17,7 @@ export function createGroup(msg: discord.Message, parsedMessage: string[]): stri
 }
 export function createSubsys(msg: discord.Message, parsedMessage: string[]): string {
     if (!exists(msg.author.id,msg)) return;
-    let system: System = load(msg.author.id);
+    let system: System = load(msg.author.id, msg);
     parsedMessage.shift();
     let name = parsedMessage.join(" ");
     system.subsystems.push(new Group(name));

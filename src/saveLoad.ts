@@ -2,6 +2,7 @@ import * as fs from "fs";
 import { System } from "./systemClass";
 import * as discord from "discord.js";
 import { sendError } from ".";
+import { exportSystem } from "./systemCommands";
 
 class Systems {
     values: {[id:string]:System} = {}
@@ -37,10 +38,13 @@ export function delete_(id:string) {
     systems.update(id,undefined)
 }
 
-export function load(id:string):System {
+export function load(id:string, msg: discord.Message):System {
     if (!systems.exists(id)) {
-        systems.update(id,System.fromStr(fs.readFileSync("./systems/"+id+".json").toString()));
-        //fs.unlinkSync("./systems/"+id+".json");
+        save(id,System.fromStr(fs.readFileSync("./systems/"+id+".json").toString()));
+        if (msg) {
+            msg.channel.send("Moving your system to the new database. Exporting for a backup...");
+            exportSystem(msg, []);
+        }
     }
     return systems.values[id];
 }
@@ -63,7 +67,7 @@ export function exists(id:string,msg:discord.Message):boolean {
     if (systems.exists(id)) return true;
     if (!fs.existsSync("./systems/"+id+".json")) return false;
     try {
-        load(id);
+        load(id,msg);
     } catch(e) {
         msg.channel.send("An unexpected error ocurred while loading your system. Exporting and deleting.\nReminder: Systems imported from Tupperbox **will not** work.");
         msg.author.createDM().then(channel => {

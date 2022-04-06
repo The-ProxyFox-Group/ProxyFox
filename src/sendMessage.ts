@@ -67,7 +67,7 @@ export function webhook(msg: discord.Message) {
     if (!serverRoles.hasRole(msg.member,msg.guildId)) return;
     if (msg.channel instanceof discord.DMChannel) return;
     if (exists(msg.author.id.toString(),msg)) {
-        let system = load(msg.author.id.toString());
+        let system = load(msg.author.id.toString(),msg);
         let serverProxy = system.serverProxy.get(msg.guildId)
         if (serverProxy === false) return;
         let member = system.memberFromMessage(msg.content);

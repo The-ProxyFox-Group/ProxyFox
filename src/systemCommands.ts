@@ -18,7 +18,7 @@ function isArrEmpty(array: Array<any>):boolean {
 
 export function createSwitch(msg: discord.Message, parsedMessage: string[]): string {
     if (!exists(msg.author.id,msg)) return "System does not exist.";
-    let system:System = load(msg.author.id);
+    let system:System = load(msg.author.id,msg);
     parsedMessage.shift();
     let members: Member[] = [];
     if (parsedMessage[0] == "list") {
@@ -60,7 +60,7 @@ export function createSwitch(msg: discord.Message, parsedMessage: string[]): str
 
 export function accessSystem(msg: discord.Message, parsedMessage: string[]) {
     if (exists(msg.author.id,msg)) {
-        let system:System = load(msg.author.id.toString());
+        let system:System = load(msg.author.id.toString(),msg);
         let embed: discord.MessageEmbed  = new discord.MessageEmbed();
 
         embed.setTitle(system.name + " [`"+system.id+"`]");
@@ -94,7 +94,7 @@ export function createSystem(msg: discord.Message, parsedMessage: string[]):stri
 
 export function deleteSystem(msg: discord.Message, parsedMessage: string[]):string {
     if (!exists(msg.author.id.toString(),msg)) return "You don't have a system registered.";
-    let system: System = load(msg.author.id.toString());
+    let system: System = load(msg.author.id.toString(),msg);
     msg.channel.send("Are you sure you want to delete your system?? Reply with the system id ("+system.id+") to delete.").then(a => {
         //@ts-ignore
         let c = (<discord.TextChannel>(a.channel)).createMessageCollector(a => a.author.id == msg.author.id,{time:30000}).on("collect", b => {
@@ -102,7 +102,7 @@ export function deleteSystem(msg: discord.Message, parsedMessage: string[]):stri
             if (b.content != system.id) return;
             msg.author.createDM().then(dm => {
                 dm.send({
-                    files: [getSysExportMessage(msg.author.id)]
+                    files: [getSysExportMessage(msg.author.id,msg)]
                 }).then(message => {
                     dm.send(message.attachments.map(a=>a)[0].url);
                     fs.unlinkSync("./systems/"+msg.author.id+"_export.json");
@@ -124,7 +124,7 @@ export function deleteSystem(msg: discord.Message, parsedMessage: string[]):stri
 
 export function listSystem(msg: discord.Message, parsedMessage: string[]) {
     if (exists(msg.author.id,msg)) {
-        let system:System = load(msg.author.id.toString());
+        let system:System = load(msg.author.id.toString(),msg);
         let embed: discord.MessageEmbed  = new discord.MessageEmbed();
 
         embed.setTitle(system.name + " [`"+system.id+"`]");
@@ -162,7 +162,7 @@ export function exportSystem(msg:discord.Message, parsedMessage: string[]) {
         msg.author.createDM().then(channel => {
             //@ts-ignore
             channel.send({
-                files: [getSysExportMessage(msg.author.id.toString())]
+                files: [getSysExportMessage(msg.author.id.toString(),msg)]
             }).then(message => {
                 channel.send(message.attachments.map(a=>a)[0].url);
                 delete_(msg.author.id)
@@ -190,8 +190,8 @@ export function importSystem(msg:discord.Message, parsedMessage: string[]):strin
     return "No system to import.";
 }
 
-function getSysExportMessage(id:string):discord.MessageAttachment {
-    let system: System = load(id);
+function getSysExportMessage(id:string, msg: discord.Message):discord.MessageAttachment {
+    let system: System = load(id,msg);
     saveExport(id,system);
     return new discord.MessageAttachment("./systems/"+id+"_export.json", "system.json");
 }
@@ -211,7 +211,7 @@ export function getData(url:string,id:string,msg:discord.Message) {
 
 export function autoOn(msg: discord.Message, parsedMessage: string[]): string {
     if (exists(msg.author.id.toString(),msg)) {
-        let system = load(msg.author.id.toString());
+        let system = load(msg.author.id.toString(),msg);
         system.autobool = true;
         save(msg.author.id.toString(),system);
         return "Autoproxy enabled.";
@@ -221,7 +221,7 @@ export function autoOn(msg: discord.Message, parsedMessage: string[]): string {
 
 export function autoOff(msg: discord.Message, parsedMessage: string[]): string {
     if (exists(msg.author.id.toString(),msg)) {
-        let system = load(msg.author.id.toString());
+        let system = load(msg.author.id.toString(),msg);
         system.autobool = false;
         save(msg.author.id.toString(),system);
         return "Autoproxy disabled.";
@@ -234,7 +234,7 @@ export function spOn(msg: discord.Message, parsedMessage: string[]): string {
         let id = msg.guildId;
         if (parsedMessage[2]) id = parsedMessage[2];
         if (!parseInt(id)) return "Given server ID is invalid.";
-        let system = load(msg.author.id.toString());
+        let system = load(msg.author.id.toString(),msg);
         system.serverProxy.put(id,true);
         save(msg.author.id.toString(),system);
         return "Proxy has been enabled for this server.";
@@ -247,7 +247,7 @@ export function spOff(msg: discord.Message, parsedMessage: string[]): string {
         let id = msg.guildId;
         if (parsedMessage[2]) id = parsedMessage[2];
         if (!parseInt(id)) return "Given server ID is invalid.";
-        let system = load(msg.author.id.toString());
+        let system = load(msg.author.id.toString(),msg);
         system.serverProxy.put(id,false);
         save(msg.author.id.toString(),system);
         return "Proxy has been disabled for this server.";
@@ -258,7 +258,7 @@ export function spOff(msg: discord.Message, parsedMessage: string[]): string {
 export function setTag(msg: discord.Message, parsedMessage: string[]): string {
     let tag = parseIdx(msg.content, 2);
     if (!exists(msg.author.id.toString(),msg)) return "System doesn't exist.";
-    let system: System = load(msg.author.id.toString());
+    let system: System = load(msg.author.id.toString(),msg);
     system.tag = tag;
     save(msg.author.id.toString(),system);
     return "System tag changed to `"+tag+"`!";
@@ -266,7 +266,7 @@ export function setTag(msg: discord.Message, parsedMessage: string[]): string {
 
 export function setAvatar(msg: discord.Message, parsedMessage: string[]): string {
     if (!exists(msg.author.id.toString(),msg)) return "System doesn't exist.";
-    let system: System = load(msg.author.id.toString());
+    let system: System = load(msg.author.id.toString(),msg);
     let url: string;
     if (parsedMessage.length > 2)
         url = parseIdx(msg.content, 2);
@@ -280,7 +280,7 @@ export function setAvatar(msg: discord.Message, parsedMessage: string[]): string
 
 export function setName(msg: discord.Message, parsedMessage: string[]): string {
     if (!exists(msg.author.id.toString(),msg)) return "System doesn't exist.";
-    let system: System = load(msg.author.id.toString());
+    let system: System = load(msg.author.id.toString(),msg);
     let name = parseIdx(msg.content, 2);
     if (!name) return "No name specified.";
     system.name = name;
@@ -290,7 +290,7 @@ export function setName(msg: discord.Message, parsedMessage: string[]): string {
 
 export function setDesc(msg: discord.Message, parsedMessage: string[]): string {
     if (!exists(msg.author.id.toString(),msg)) return "System doesn't exist.";
-    let system: System = load(msg.author.id.toString());
+    let system: System = load(msg.author.id.toString(),msg);
     let name = parseIdx(msg.content, 2);
     if (name.length > 1000) return "System description must be shorter that 1,000 characters."
     system.description = name;

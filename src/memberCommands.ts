@@ -21,7 +21,7 @@ export function accessMember(msg: discord.Message, parsedMessage: string[]):stri
     let user: discord.User = msg.author;
     let memberName: string = parsedMessage[1];
     if (exists(user.id,msg)) {
-        let system = load(user.id);
+        let system = load(user.id, msg);
         if (system.memberFromName(memberName) != null) {
             if (isEmpty(parsedMessage[2])) {
                 let member: Member = system.memberFromName(memberName);
@@ -219,7 +219,7 @@ export function createMember(msg: discord.Message, parsedMessage: string[]):stri
     let memberName: string = parsedMessage.join(" ");
 
     if (exists(user.id,msg)) {
-        let system = load(user.id);
+        let system = load(user.id, msg);
         let member = system.addMember(memberName);
         if (member == null)
             return "Member with the same name already exists. Please provide a different name.";
@@ -239,7 +239,7 @@ export function deleteMember(msg: discord.Message, parsedMessage: string[]):stri
     let memberName: string = parsedMessage.join(" ");
 
     if (exists(user.id,msg)) {
-        let system = load(user.id);
+        let system = load(user.id, msg);
         if (system.memberFromName(memberName) != null) {
             deleteMem(system,memberName,user,msg);
             return;
