@@ -56,7 +56,7 @@ let groupTree = {
     "create": createGroup
 }
 
-let help = `To view commands for ProxyFox, visit <https://github.com/Oliver-makes-code/ProxyFox/blob/master/commands.md>
+let help = `To view commands for ProxyFox, visit <https://github.com/ProxyFox-developers/ProxyFox/blob/master/commands.md>
 For quick setup:
 - pf>system new name
 - pf>member new John Doe
@@ -79,7 +79,7 @@ export const tree = {
     "time": getTime,
     "help": help,
     "invite": "Proxyfox invites are temporarily disabled, as we're transitioning to a new bot. Contact Octal#9139 if you need an invite. https://discord.gg/M2uBsJmRNT", //"Use https://discord.com/oauth2/authorize?client_id=872276960951296051&scope=bot&permissions=258302340160 to invite ProxyFox to your server!\nTo get support, head on over to https://discord.gg/q3yF8ay9V7",
-    "source": "Source code for ProxyFox is available at <https://github.com/Oliver-makes-code/ProxyFox>!",
+    "source": "Source code for ProxyFox is available at <https://github.com/ProxyFox-developers/ProxyFox>!",
     "explain": `ProxyFox is modern Discord bot designed to help systems communicate.
 It uses discord's webhooks to generate "pseudo-users" which different members of the system can use. Someone will likely be willing to explain further if need be.`,
     "role": setRole,

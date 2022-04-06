@@ -7,9 +7,9 @@
   },
   "repository": {
     "type": "git",
-    "url": "git+https://github.com/Oliver-makes-code/ProxyFox.git"
+    "url": "git+https://github.com/ProxyFox-developers/ProxyFox.git"
   },
-  "author": "Oliver-makes-code",
+  "author": "ProxyFox-developers",
   "license": "MIT",
   "devDependencies": {
     "install": "^0.13.0",
