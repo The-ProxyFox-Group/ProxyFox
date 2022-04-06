@@ -5,6 +5,7 @@ import * as fs from "fs";
 import { webhook } from "./sendMessage";
 import { start } from "./webServer";
 import process from 'process';
+import { loadAll } from "./saveLoad";
 export const client = new discord.Client({
     //@ts-ignore
     intents: [
@@ -175,6 +176,7 @@ client.on("ready", () => {
     }, 30000);
     console.log("online");
 });
+loadAll()
 start();
 client2.login(keys.new);
 client.login(keys.main);

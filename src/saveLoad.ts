@@ -40,13 +40,13 @@ export function delete_(id:string) {
 export function load(id:string):System {
     if (!systems.exists(id)) {
         systems.update(id,System.fromStr(fs.readFileSync("./systems/"+id+".json").toString()));
-        fs.unlinkSync("./systems/"+id+".json");
+        //fs.unlinkSync("./systems/"+id+".json");
     }
     return systems.values[id];
 }
 
 export function loadAll() {
-    let json = fs.readFileSync("./systems.json").toJSON();
+    let json = JSON.parse(fs.readFileSync("./systems.json").toString());
     systems = Systems.fromJson(json);
 }
 
