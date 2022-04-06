@@ -178,5 +178,6 @@ client.on("ready", () => {
 });
 loadAll();
 start();
-client2.login(keys.new);
-client.login(keys.main);
+//client2.login(keys.new);
+console.log(keys);
+client.login(keys.dev);
