@@ -1,9 +1,3 @@
-/node_modules
-/build
-/systems
-/.vscode
-roles.json
-key.json
-systems.json
-*.tsbuildinfo
-*.ini
+.gradle/
+.idea/
+build/
