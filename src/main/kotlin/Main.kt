@@ -1,5 +1,5 @@
+import command.register
 
-
-suspend fun main() {
-    println("Test!")
+fun main() {
+    register()
 }
