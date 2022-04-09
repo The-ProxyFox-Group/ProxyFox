@@ -176,6 +176,8 @@ object MemberCommands {
                 // Access member
                 executes(MemberCommands::accessMember)
             }
+
+            // Create member
             val create: Node = {
                 argument("name", StringArgumentType.greedyString()) {
                     executes(MemberCommands::createMember)
