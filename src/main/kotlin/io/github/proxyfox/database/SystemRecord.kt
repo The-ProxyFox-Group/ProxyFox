@@ -17,7 +17,7 @@ data class SystemRecord(
     var tag: String?,
     var avatarUrl: String?,
     var timezone: String?,
-    var created: String?,
+    var created: OffsetDateTime,
     /** The ID of the member that's currently being auto-proxied. */
     var autoProxy: String?
 )

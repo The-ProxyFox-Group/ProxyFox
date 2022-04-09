@@ -1,6 +1,9 @@
 package io.github.proxyfox.importer
 
 import io.github.proxyfox.database.*
+import java.text.SimpleDateFormat
+import java.time.OffsetDateTime
+import java.time.format.DateTimeFormatter
 
 /**
  * [Importer] to import a JSON with a PluralKit format
@@ -20,7 +23,7 @@ class PluralKitImporter : Importer {
             map["tag"] as String?,
             map["avatar_url"] as String?,
             map["timezone"] as String?,
-            map["created"] as String?,
+            OffsetDateTime.parse(map["created"] as String, DateTimeFormatter.ISO_DATE_TIME),
             null
         )
         for (memMap in map["members"] as List<Map<String,*>>) {
@@ -35,7 +38,7 @@ class PluralKitImporter : Importer {
                 memMap["avatar_url"] as String?,
                 memMap["keep_proxy"] as Boolean,
                 memMap["message_count"] as Long,
-                memMap["created"] as String,
+                OffsetDateTime.parse(memMap["created"] as String, DateTimeFormatter.ISO_DATE_TIME),
             )
 
             val memberSwitches = ArrayList<SystemSwitchRecord>()
@@ -50,7 +53,6 @@ class PluralKitImporter : Importer {
 
             members.put(memMap["id"] as String, member)
         }
-
     }
 
     override suspend fun finalizeImport() {
