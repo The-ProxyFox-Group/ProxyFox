@@ -71,6 +71,7 @@ object MemberCommands {
     }
 
     suspend fun register() {
+        println("  Registering member commands")
         commands(arrayOf("member","m")) {
             argument("member",StringArgumentType.string()) {
                 // Change member name

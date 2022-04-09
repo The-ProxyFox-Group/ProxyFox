@@ -11,6 +11,7 @@ val prefixRegex = Regex("^pf[>;!].*",RegexOption.IGNORE_CASE)
 
 @OptIn(PrivilegedIntent::class)
 suspend fun main() {
+    println("Initializing ProxyFox")
     Commands.register()
     val kord = Kord(System.getenv("PROXYFOX_KEY"))
     kord.on<MessageCreateEvent> {
@@ -32,5 +33,6 @@ suspend fun main() {
         intents += Intent.DirectMessages
         intents += Intent.DirectMessagesReactions
         intents += Intent.MessageContent
+        println("ProxyFox initialized")
     }
 }

@@ -22,8 +22,9 @@ fun noSubCommandError(ctx: CommandContext<CommandSource>): Int {
 
 object Commands {
     suspend fun register() {
-        MemberCommands.register()
+        println(" Registering commands")
         SystemCommands.register()
+        MemberCommands.register()
         MiscCommands.register()
     }
 }

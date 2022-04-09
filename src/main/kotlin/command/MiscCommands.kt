@@ -59,6 +59,7 @@ object MiscCommands {
     }
 
     suspend fun register() {
+        println("  Registering misc commands")
         command("time") {
             executes(MiscCommands::getTimeString)
         }
@@ -107,6 +108,10 @@ object MiscCommands {
                 executes(MiscCommands::importSystemLinked)
             }
             executes(MiscCommands::importSystem)
+        }
+
+        command("export") {
+            executes(MiscCommands::exportSystem)
         }
     }
 }
