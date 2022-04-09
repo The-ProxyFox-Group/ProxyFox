@@ -8,6 +8,15 @@ import dev.steyn.brigadierkt.*
 typealias Node = LiteralArgumentBuilder<CommandSource>.() -> Unit
 
 object MemberCommands {
+    private fun changeName(ctx: CommandContext<CommandSource>): Int {
+        //TODO: not implemented
+        return 0
+    }
+    private fun changeDisplayName(ctx: CommandContext<CommandSource>): Int {
+        //TODO: not implemented
+        return 0
+    }
+
     suspend fun register() {
         commands(arrayOf("member","m")) {
             argument("member",StringArgumentType.string()) {
@@ -34,14 +43,5 @@ object MemberCommands {
 
             }
         }
-    }
-
-    private fun changeName(ctx: CommandContext<CommandSource>): Int {
-        //TODO: not implemented
-        return 0
-    }
-    private fun changeDisplayName(ctx: CommandContext<CommandSource>): Int {
-        //TODO: not implemented
-        return 0
     }
 }
