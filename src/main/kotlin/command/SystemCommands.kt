@@ -1,7 +1,7 @@
 package command
 
 object SystemCommands {
-    fun register() {
+    suspend fun register() {
         commands(arrayOf("system","s")) {
 
         }

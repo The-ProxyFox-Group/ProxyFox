@@ -1,7 +1,7 @@
 package command
 
 object MemberCommands {
-    fun register() {
+    suspend fun register() {
         commands(arrayOf("member","m")) {
 
         }
