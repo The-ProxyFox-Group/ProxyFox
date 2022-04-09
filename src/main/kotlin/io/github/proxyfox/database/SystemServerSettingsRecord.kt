@@ -1,0 +1,14 @@
+package io.github.proxyfox.database
+
+// Created 2022-09-04T15:13:09
+
+/**
+ * A mutable record representing a system's server settings.
+ *
+ * @author Ampflower
+ * @since ${version}
+ **/
+data class SystemServerSettingsRecord(
+    val systemId: String,
+    var proxyEnabled: Boolean
+)
