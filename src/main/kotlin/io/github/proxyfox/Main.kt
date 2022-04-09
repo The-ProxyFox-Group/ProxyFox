@@ -16,6 +16,18 @@ import kotlinx.coroutines.delay
 import kotlinx.coroutines.flow.count
 import kotlinx.coroutines.launch
 
+fun numberToNewId(int: Int): String {
+    var out = ""
+    var i1 = int
+    for (ignore in arrayOf(1,2,3,4,5)) {
+        val i2 = int % 26
+        i1 -= i2
+        i1 /= 26
+        out = (i2.toChar()) + out
+    }
+    return out
+}
+
 val prefixRegex = Regex("^pf[>;!].*",RegexOption.IGNORE_CASE)
 
 lateinit var kord: Kord

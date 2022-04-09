@@ -1,7 +1,9 @@
 package io.github.proxyfox.importer
 
 import com.google.gson.Gson
+import io.github.proxyfox.database.*
 import java.io.InputStreamReader
+import kotlin.math.floor
 
 val gson = Gson()
 
@@ -43,4 +45,9 @@ suspend fun import(reader: InputStreamReader): Importer {
 interface Importer {
     suspend fun import(map: Map<String,*>)
     suspend fun finalizeImport()
+
+    // Getters:
+    suspend fun getSystem(): SystemRecord
+    suspend fun getMembers(): List<MemberRecord>
+    suspend fun getMemberProxyTags(id: String): List<MemberProxyTagRecord>
 }

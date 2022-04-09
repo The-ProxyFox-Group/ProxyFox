@@ -1,16 +1,74 @@
 package io.github.proxyfox.importer
 
+import io.github.proxyfox.database.*
+import io.github.proxyfox.numberToNewId
+
 /**
  * [Importer] to import a JSON with a PluralKit format
  *
  * @author Oliver
  * */
 class PluralKitImporter : Importer {
+    private lateinit var system: SystemRecord
+    private var members: HashMap<String, MemberRecord> = HashMap()
+    private var proxies: HashMap<String,List<MemberProxyTagRecord>> = HashMap()
+
     override suspend fun import(map: Map<String, *>) {
-        TODO("Not yet implemented")
+        system = SystemRecord(
+            "aaaaa",
+            map["name"] as String?,
+            map["description"] as String?,
+            map["tag"] as String?,
+            map["avatar_url"] as String?,
+            map["timezone"] as String?,
+            map["created"] as String?,
+            null
+        )
+        var i = 0;
+        for (memMap in map["members"] as List<Map<String,*>>) {
+            i++
+            val member = MemberRecord(
+                numberToNewId(i),
+                "aaaaa",
+                memMap["name"] as String?,
+                memMap["display_name"] as String?,
+                memMap["description"] as String?,
+                memMap["pronouns"] as String?,
+                memMap["color"] as String?,
+                memMap["avatar_url"] as String?,
+                memMap["keep_proxy"] as Boolean,
+                memMap["message_count"] as Long,
+                memMap["created"] as String,
+            )
+
+            val memberSwitches = ArrayList<SystemSwitchRecord>()
+            for (proxyMap in memMap["proxy_tags"] as List<Map<String,*>>) {
+                val proxy = MemberProxyTagRecord(
+                    "aaaaa",
+                    numberToNewId(i),
+                    proxyMap["prefix"] as String?,
+                    proxyMap["suffix"] as String?
+                )
+            }
+
+            members.put(memMap["id"] as String, member)
+        }
+
     }
 
     override suspend fun finalizeImport() {
         TODO("Not yet implemented")
     }
+
+    // Getters:
+    override suspend fun getSystem(): SystemRecord = system
+
+    override suspend fun getMembers(): List<MemberRecord> {
+        val memberList = ArrayList<MemberRecord>()
+        for (member in members.values)
+            memberList.add(member)
+        return memberList
+    }
+
+    override suspend fun getMemberProxyTags(id: String): List<MemberProxyTagRecord> = proxies[id]!!
 }
