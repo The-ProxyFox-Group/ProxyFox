@@ -94,6 +94,8 @@ object SystemCommands {
                 }
                 executes(::noSubCommandError)
             }
+            literal("new", create)
+            literal("create", create)
 
             executes(SystemCommands::accessSystem)
         }
