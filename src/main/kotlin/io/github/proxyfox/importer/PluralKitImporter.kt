@@ -1,7 +1,6 @@
 package io.github.proxyfox.importer
 
 import io.github.proxyfox.database.*
-import io.github.proxyfox.numberToNewId
 
 /**
  * [Importer] to import a JSON with a PluralKit format
