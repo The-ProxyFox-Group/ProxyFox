@@ -2,10 +2,7 @@ package command
 
 import com.mojang.brigadier.arguments.StringArgumentType
 import com.mojang.brigadier.context.CommandContext
-import com.mojang.brigadier.builder.LiteralArgumentBuilder;
 import dev.steyn.brigadierkt.*
-
-typealias Node = LiteralArgumentBuilder<CommandSource>.() -> Unit
 
 object MemberCommands {
     private fun changeName(ctx: CommandContext<CommandSource>): Int {
@@ -81,6 +78,7 @@ object MemberCommands {
                     argument("name",StringArgumentType.greedyString()) {
                         executes(MemberCommands::changeName)
                     }
+                    executes(::noSubCommandError)
                 }
                 literal("name", name)
                 literal("rename", name)
@@ -90,6 +88,7 @@ object MemberCommands {
                     argument("name",StringArgumentType.greedyString()) {
                         executes(MemberCommands::changeDisplayName)
                     }
+                    executes(::noSubCommandError)
                 }
                 literal("displayname", displayname)
                 literal("dn", displayname)
@@ -101,6 +100,7 @@ object MemberCommands {
                     argument("name",StringArgumentType.greedyString()) {
                         executes(MemberCommands::changeServerName)
                     }
+                    executes(::noSubCommandError)
                 }
 
                 // Change member avatar
@@ -129,43 +129,50 @@ object MemberCommands {
                         argument("proxy",StringArgumentType.greedyString()) {
                             executes(MemberCommands::addProxy)
                         }
+                        executes(::noSubCommandError)
                     }
                     literal("remove") {
                         argument("proxy",StringArgumentType.greedyString()) {
                             executes(MemberCommands::removeProxy)
                         }
+                        executes(::noSubCommandError)
                     }
                     argument("proxy",StringArgumentType.greedyString()) {
                         executes(MemberCommands::addProxy)
                     }
+                    executes(::noSubCommandError)
                 }
 
                 // Change member description
                 literal("description") {
-                    literal("description") {
+                    argument("description",StringArgumentType.greedyString()) {
                         executes(MemberCommands::changeMemberDescription)
                     }
+                    executes(::noSubCommandError)
                 }
 
                 // Change member pronouns
                 literal("pronouns") {
-                    literal("pronouns") {
+                    argument("pronouns",StringArgumentType.greedyString()) {
                         executes(MemberCommands::changeMemberPronouns)
                     }
+                    executes(::noSubCommandError)
                 }
 
                 // Change member color
                 literal("color") {
-                    literal("color") {
+                    argument("color",StringArgumentType.greedyString()) {
                         executes(MemberCommands::changeMemberColor)
                     }
+                    executes(::noSubCommandError)
                 }
 
                 // Change member birthday
                 literal("birthday") {
-                    literal("birthday") {
+                    argument("birthday",StringArgumentType.greedyString()) {
                         executes(MemberCommands::changeMemberBirthday)
                     }
+                    executes(::noSubCommandError)
                 }
 
                 // Delete member
@@ -186,6 +193,8 @@ object MemberCommands {
             literal("new",create)
             literal("add",create)
             literal("create",create)
+
+            executes(::noSubCommandError)
         }
     }
 }
