@@ -2,27 +2,34 @@ import command.CommandSource
 import command.Commands
 import command.dispatcher
 import dev.kord.core.Kord
+import dev.kord.core.event.gateway.ReadyEvent
 import dev.kord.core.event.message.MessageCreateEvent
 import dev.kord.core.on
 import dev.kord.gateway.Intent
 import dev.kord.gateway.PrivilegedIntent
+import kotlinx.coroutines.delay
 
 val prefixRegex = Regex("^pf[>;!].*",RegexOption.IGNORE_CASE)
+
+lateinit var kord: Kord
 
 @OptIn(PrivilegedIntent::class)
 suspend fun main() {
     println("Initializing ProxyFox")
     Commands.register()
-    val kord = Kord(System.getenv("PROXYFOX_KEY"))
+    kord = Kord(System.getenv("PROXYFOX_KEY"))
     kord.on<MessageCreateEvent> {
-        val source = CommandSource(message)
         val content = message.content
         if (prefixRegex.matches(content)) {
             val contentWithoutRegex = content.substring(3)
-            dispatcher.execute(contentWithoutRegex,source)
+            dispatcher.execute(contentWithoutRegex,CommandSource(message))
         } else {
             // TODO: Send proxy
         }
+    }
+    kord.on<ReadyEvent> {
+        println("ProxyFox initialized")
+        updatePresence()
     }
     kord.login {
         intents += Intent.Guilds
@@ -33,6 +40,12 @@ suspend fun main() {
         intents += Intent.DirectMessages
         intents += Intent.DirectMessagesReactions
         intents += Intent.MessageContent
-        println("ProxyFox initialized")
     }
+}
+suspend fun updatePresence() {
+    kord.editPresence {
+        playing("Run pf>help for help!")
+    }
+    delay(30000)
+    updatePresence()
 }
