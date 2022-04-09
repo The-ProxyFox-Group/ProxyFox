@@ -1,6 +1,10 @@
-import command.CommandSource
-import command.Commands
-import command.dispatcher
+@file:JvmName("Main")
+
+package io.github.proxyfox
+
+import io.github.proxyfox.command.CommandSource
+import io.github.proxyfox.command.Commands
+import io.github.proxyfox.command.dispatcher
 import dev.kord.core.Kord
 import dev.kord.core.event.gateway.ReadyEvent
 import dev.kord.core.event.message.MessageCreateEvent
