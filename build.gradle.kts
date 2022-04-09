@@ -31,3 +31,7 @@ dependencies {
     implementation("com.mojang:brigadier:1.0.18")
     implementation("dev.kord:kord-core:0.8.0-M12")
 }
+
+tasks.withType<com.github.jengelman.gradle.plugins.shadow.tasks.ShadowJar> {
+    classifier = ""
+}
