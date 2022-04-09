@@ -24,11 +24,9 @@ class PluralKitImporter : Importer {
             map["created"] as String?,
             null
         )
-        var i = 0;
         for (memMap in map["members"] as List<Map<String,*>>) {
-            i++
             val member = MemberRecord(
-                numberToNewId(i),
+                memMap["id"] as String,
                 "aaaaa",
                 memMap["name"] as String?,
                 memMap["display_name"] as String?,
@@ -45,7 +43,7 @@ class PluralKitImporter : Importer {
             for (proxyMap in memMap["proxy_tags"] as List<Map<String,*>>) {
                 val proxy = MemberProxyTagRecord(
                     "aaaaa",
-                    numberToNewId(i),
+                    memMap["id"] as String,
                     proxyMap["prefix"] as String?,
                     proxyMap["suffix"] as String?
                 )
