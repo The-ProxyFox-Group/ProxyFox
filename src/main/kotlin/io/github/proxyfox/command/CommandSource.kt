@@ -1,4 +1,4 @@
-package command
+package io.github.proxyfox.command
 
 import dev.kord.core.entity.Message
 

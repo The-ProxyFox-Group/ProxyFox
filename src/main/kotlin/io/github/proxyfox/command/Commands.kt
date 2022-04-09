@@ -1,4 +1,4 @@
-package command
+package io.github.proxyfox.command
 
 import com.mojang.brigadier.CommandDispatcher
 import com.mojang.brigadier.builder.LiteralArgumentBuilder
