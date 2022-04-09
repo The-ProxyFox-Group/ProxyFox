@@ -12,7 +12,7 @@ val prefixRegex = Regex("^pf[>;!].*",RegexOption.IGNORE_CASE)
 @OptIn(PrivilegedIntent::class)
 suspend fun main() {
     Commands.register()
-    val kord = Kord()
+    val kord = Kord(System.getenv("PROXYFOX_KEY"))
     kord.on<MessageCreateEvent> {
         val source = CommandSource(message)
         val content = message.content
