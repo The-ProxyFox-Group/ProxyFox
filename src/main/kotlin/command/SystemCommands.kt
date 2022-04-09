@@ -3,38 +3,56 @@ package command
 import com.mojang.brigadier.arguments.StringArgumentType
 import com.mojang.brigadier.context.CommandContext
 import dev.steyn.brigadierkt.*
+import kotlinx.coroutines.launch
+import kotlinx.coroutines.runBlocking
 
 object SystemCommands {
     private fun changeSystemName(ctx: CommandContext<CommandSource>): Int {
-        //TODO: not implemented
+        runAsync {
+            //TODO: not implemented
+        }
         return 0
     }
     private fun changeSystemTag(ctx: CommandContext<CommandSource>): Int {
-        //TODO: not implemented
+        runAsync {
+            //TODO: not implemented
+        }
         return 0
     }
     private fun changeSystemDescription(ctx: CommandContext<CommandSource>): Int {
-        //TODO: not implemented
+        runAsync {
+            //TODO: not implemented
+        }
         return 0
     }
     private fun changeSystemAvatar(ctx: CommandContext<CommandSource>): Int {
-        //TODO: not implemented
+        runAsync {
+            //TODO: not implemented
+        }
         return 0
     }
     private fun listSystem(ctx: CommandContext<CommandSource>): Int {
-        //TODO: not implemented
+        runAsync {
+            //TODO: not implemented
+        }
         return 0
     }
     private fun deleteSystem(ctx: CommandContext<CommandSource>): Int {
-        //TODO: not implemented
+        runAsync {
+            //TODO: not implemented
+        }
         return 0
     }
     private fun accessSystem(ctx: CommandContext<CommandSource>): Int {
-        //TODO: not implemented
+        runAsync {
+            //TODO: not implemented
+        }
         return 0
     }
     private fun createSystem(ctx: CommandContext<CommandSource>): Int {
-        //TODO: not implemented
+        runAsync {
+            //TODO: not implemented
+        }
         return 0
     }
 

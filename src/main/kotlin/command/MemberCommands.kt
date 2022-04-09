@@ -3,70 +3,104 @@ package command
 import com.mojang.brigadier.arguments.StringArgumentType
 import com.mojang.brigadier.context.CommandContext
 import dev.steyn.brigadierkt.*
+import kotlinx.coroutines.launch
+import kotlinx.coroutines.runBlocking
 
 object MemberCommands {
     private fun changeName(ctx: CommandContext<CommandSource>): Int {
-        //TODO: not implemented
+        runAsync {
+            //TODO: not implemented
+        }
         return 0
     }
     private fun changeDisplayName(ctx: CommandContext<CommandSource>): Int {
-        //TODO: not implemented
+        runAsync {
+            //TODO: not implemented
+        }
         return 0
     }
     private fun changeServerName(ctx: CommandContext<CommandSource>): Int {
-        //TODO: not implemented
+        runAsync {
+            //TODO: not implemented
+        }
         return 0
     }
     private fun changeAvatar(ctx: CommandContext<CommandSource>): Int {
-        //TODO: not implemented
+        runAsync {
+            //TODO: not implemented
+        }
         return 0
     }
     private fun changeAvatarLinked(ctx: CommandContext<CommandSource>): Int {
-        //TODO: not implemented
+        runAsync {
+            //TODO: not implemented
+        }
         return 0
     }
     private fun changeServerAvatar(ctx: CommandContext<CommandSource>): Int {
-        //TODO: not implemented
+        runAsync {
+            //TODO: not implemented
+        }
         return 0
     }
     private fun changeServerAvatarLinked(ctx: CommandContext<CommandSource>): Int {
-        //TODO: not implemented
+        runAsync {
+            //TODO: not implemented
+        }
         return 0
     }
     private fun addProxy(ctx: CommandContext<CommandSource>): Int {
-        //TODO: not implemented
+        runAsync {
+            //TODO: not implemented
+        }
         return 0
     }
     private fun removeProxy(ctx: CommandContext<CommandSource>): Int {
-        //TODO: not implemented
+        runAsync {
+            //TODO: not implemented
+        }
         return 0
     }
     private fun changeMemberDescription(ctx: CommandContext<CommandSource>): Int {
-        //TODO: not implemented
+        runAsync {
+            //TODO: not implemented
+        }
         return 0
     }
     private fun changeMemberPronouns(ctx: CommandContext<CommandSource>): Int {
-        //TODO: not implemented
+        runAsync {
+            //TODO: not implemented
+        }
         return 0
     }
     private fun changeMemberColor(ctx: CommandContext<CommandSource>): Int {
-        //TODO: not implemented
+        runAsync {
+            //TODO: not implemented
+        }
         return 0
     }
     private fun changeMemberBirthday(ctx: CommandContext<CommandSource>): Int {
-        //TODO: not implemented
+        runAsync {
+            //TODO: not implemented
+        }
         return 0
     }
     private fun deleteMember(ctx: CommandContext<CommandSource>): Int {
-        //TODO: not implemented
+        runAsync {
+            //TODO: not implemented
+        }
         return 0
     }
     private fun accessMember(ctx: CommandContext<CommandSource>): Int {
-        //TODO: not implemented
+        runAsync {
+            //TODO: not implemented
+        }
         return 0
     }
     private fun createMember(ctx: CommandContext<CommandSource>): Int {
-        //TODO: not implemented
+        runAsync {
+            //TODO: not implemented
+        }
         return 0
     }
 
