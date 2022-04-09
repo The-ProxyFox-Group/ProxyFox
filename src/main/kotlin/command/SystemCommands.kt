@@ -3,8 +3,6 @@ package command
 import com.mojang.brigadier.arguments.StringArgumentType
 import com.mojang.brigadier.context.CommandContext
 import dev.steyn.brigadierkt.*
-import kotlinx.coroutines.launch
-import kotlinx.coroutines.runBlocking
 
 object SystemCommands {
     private fun changeSystemName(ctx: CommandContext<CommandSource>): Int {
