@@ -25,7 +25,9 @@ repositories {
 
 dependencies {
     implementation(kotlin("stdlib"))
-    implementation("com.mojang:brigadier:1.0.18")
-    implementation("dev.kord:kord-core:0.8.0-M12") 
+
     implementation("com.github.steenooo:brigadierkt:v1.2.4")
+    implementation("com.google.code.gson:gson:2.9.0")
+    implementation("com.mojang:brigadier:1.0.18")
+    implementation("dev.kord:kord-core:0.8.0-M12")
 }
