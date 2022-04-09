@@ -13,5 +13,5 @@ data class SystemSwitchRecord(
     val systemId: String,
     val id: String,
     var memberIds: List<String>,
-    var timestamp: String?
+    var timestamp: OffsetDateTime
 )

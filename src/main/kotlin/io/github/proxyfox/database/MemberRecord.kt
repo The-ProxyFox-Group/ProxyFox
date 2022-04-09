@@ -21,5 +21,5 @@ data class MemberRecord(
     /** Whether the proxy tag remains in the message */
     var keepProxy: Boolean,
     var messageCount: Long,
-    var created: String?
+    var created: OffsetDateTime
 )
