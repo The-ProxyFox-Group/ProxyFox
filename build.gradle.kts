@@ -1,9 +1,20 @@
 plugins {
     kotlin("jvm") version "1.6.20"
+    application
+    id("com.github.johnrengelman.shadow") version "7.1.2"
 }
 
 group = "io.github.proxyfox"
 version = "1.0.0"
+
+java {
+    sourceCompatibility = JavaVersion.VERSION_17
+    targetCompatibility = JavaVersion.VERSION_17
+}
+
+application {
+    mainClass.set("io.github.proxyfox.Main")
+}
 
 repositories {
     mavenCentral()
