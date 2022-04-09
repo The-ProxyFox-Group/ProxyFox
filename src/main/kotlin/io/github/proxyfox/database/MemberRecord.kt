@@ -16,10 +16,10 @@ data class MemberRecord(
     var displayName: String?,
     var description: String?,
     var pronouns: String?,
-    var color: Int,
+    var color: String?,
     var avatarUrl: String?,
     /** Whether the proxy tag remains in the message */
     var keepProxy: Boolean,
-    var messageCount: Int,
-    var created: OffsetDateTime
+    var messageCount: Long,
+    var created: String?
 )

@@ -149,4 +149,25 @@ interface Database {
      * @param systemId The ID of the system.
      * */
     fun removeUserFromSystem(discordId: ULong, systemId: String)
+
+    /**
+     * Gets the total number of systems registered
+     *
+     * Implementation requirements: return an int with the total systems in the database
+     * */
+    fun getTotalSystems(): Int
+
+    /**
+     * Gets the total number of members registered in a system by discord ID.
+     *
+     * Implementation requirements: return an int with the total members registered
+     * */
+    fun getTotalMembersByHost(discordId: ULong): Int
+
+    /**
+     * Gets the total number of members registered in a system by discord ID.
+     *
+     * Implementation requirements: return an int with the total members registered
+     * */
+    fun getTotalMembersById(systemId: String): Int
 }
