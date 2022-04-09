@@ -12,7 +12,7 @@ val prefixRegex = Regex("^pf[>;!].*",RegexOption.IGNORE_CASE)
 @OptIn(PrivilegedIntent::class)
 suspend fun main() {
     Commands.register()
-    val kord = Kord("ODcyMjc3MTA4MjU5NDMwNDUy.YQnhXA._J1MR-NWNomBkJuVEoJY4q9nHyI")
+    val kord = Kord()
     kord.on<MessageCreateEvent> {
         val source = CommandSource(message)
         val content = message.content
