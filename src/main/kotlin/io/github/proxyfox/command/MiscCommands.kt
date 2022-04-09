@@ -3,6 +3,10 @@ package io.github.proxyfox.command
 import com.mojang.brigadier.arguments.StringArgumentType
 import com.mojang.brigadier.context.CommandContext
 import dev.steyn.brigadierkt.*
+import io.github.proxyfox.importer.import
+import io.ktor.http.*
+import java.io.InputStreamReader
+import java.net.URL
 
 object MiscCommands {
     private fun getTimeString(ctx: CommandContext<CommandSource>): Int = runAsync {
@@ -45,10 +49,20 @@ It uses discord's webhooks to generate "pseudo-users" which different members of
         //TODO: not implemented
     }
     private fun importSystem(ctx: CommandContext<CommandSource>): Int = runAsync {
-        //TODO: not implemented
+        kotlin.runCatching {
+            val link = URL(ctx.source.message.attachments.first().url)
+            link.openStream().use {
+                import(InputStreamReader(it))
+            }
+        }
     }
     private fun importSystemLinked(ctx: CommandContext<CommandSource>): Int = runAsync {
-        //TODO: not implemented
+        kotlin.runCatching {
+            val link = URL(StringArgumentType.getString(ctx, "link"))
+            link.openStream().use {
+                import(InputStreamReader(it))
+            }
+        }
     }
     private fun exportSystem(ctx: CommandContext<CommandSource>): Int = runAsync {
         //TODO: not implemented
