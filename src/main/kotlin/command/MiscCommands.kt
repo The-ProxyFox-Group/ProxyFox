@@ -5,84 +5,44 @@ import com.mojang.brigadier.context.CommandContext
 import dev.steyn.brigadierkt.*
 
 object MiscCommands {
-    private fun getTimeString(ctx: CommandContext<CommandSource>): Int {
-        runAsync {
-            //TODO: not implemented
-        }
-        return 0
+    private fun getTimeString(ctx: CommandContext<CommandSource>): Int = runAsync {
+        //TODO: not implemented
     }
-    private fun getHelp(ctx: CommandContext<CommandSource>): Int {
-        runAsync {
-            //TODO: not implemented
-        }
-        return 0
+    private fun getHelp(ctx: CommandContext<CommandSource>): Int = runAsync {
+        //TODO: not implemented
     }
-    private fun getExplanation(ctx: CommandContext<CommandSource>): Int {
-        runAsync {
-            //TODO: not implemented
-        }
-        return 0
+    private fun getExplanation(ctx: CommandContext<CommandSource>): Int = runAsync {
+        //TODO: not implemented
     }
-    private fun getInvite(ctx: CommandContext<CommandSource>): Int {
-        runAsync {
-            //TODO: not implemented
-        }
-        return 0
+    private fun getInvite(ctx: CommandContext<CommandSource>): Int = runAsync {
+        //TODO: not implemented
     }
-    private fun enableServerProxy(ctx: CommandContext<CommandSource>): Int {
-        runAsync {
-            //TODO: not implemented
-        }
-        return 0
+    private fun enableServerProxy(ctx: CommandContext<CommandSource>): Int = runAsync {
+        //TODO: not implemented
     }
-    private fun disableServerProxy(ctx: CommandContext<CommandSource>): Int {
-        runAsync {
-            //TODO: not implemented
-        }
-        return 0
+    private fun disableServerProxy(ctx: CommandContext<CommandSource>): Int = runAsync {
+        //TODO: not implemented
     }
-    private fun enableAutoProxy(ctx: CommandContext<CommandSource>): Int {
-        runAsync {
-            //TODO: not implemented
-        }
-        return 0
+    private fun enableAutoProxy(ctx: CommandContext<CommandSource>): Int = runAsync {
+        //TODO: not implemented
     }
-    private fun disableAutoProxy(ctx: CommandContext<CommandSource>): Int {
-        runAsync {
-            //TODO: not implemented
-        }
-        return 0
+    private fun disableAutoProxy(ctx: CommandContext<CommandSource>): Int = runAsync {
+        //TODO: not implemented
     }
-    private fun changeProxyRole(ctx: CommandContext<CommandSource>): Int {
-        runAsync {
-            //TODO: not implemented
-        }
-        return 0
+    private fun changeProxyRole(ctx: CommandContext<CommandSource>): Int = runAsync {
+        //TODO: not implemented
     }
-    private fun removeProxyRole(ctx: CommandContext<CommandSource>): Int {
-        runAsync {
-            //TODO: not implemented
-        }
-        return 0
+    private fun removeProxyRole(ctx: CommandContext<CommandSource>): Int = runAsync {
+        //TODO: not implemented
     }
-    private fun importSystem(ctx: CommandContext<CommandSource>): Int {
-
-        runAsync {
-            //TODO: not implemented
-        }
-        return 0
+    private fun importSystem(ctx: CommandContext<CommandSource>): Int = runAsync {
+        //TODO: not implemented
     }
-    private fun importSystemLinked(ctx: CommandContext<CommandSource>): Int {
-        runAsync {
-            //TODO: not implemented
-        }
-        return 0
+    private fun importSystemLinked(ctx: CommandContext<CommandSource>): Int = runAsync {
+        //TODO: not implemented
     }
-    private fun exportSystem(ctx: CommandContext<CommandSource>): Int {
-        runAsync {
-            //TODO: not implemented
-        }
-        return 0
+    private fun exportSystem(ctx: CommandContext<CommandSource>): Int = runAsync {
+        //TODO: not implemented
     }
 
     suspend fun register() {

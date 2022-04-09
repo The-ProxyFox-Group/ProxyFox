@@ -4,6 +4,8 @@ import com.mojang.brigadier.CommandDispatcher
 import com.mojang.brigadier.builder.LiteralArgumentBuilder
 import com.mojang.brigadier.context.CommandContext
 import dev.steyn.brigadierkt.*
+import kotlinx.coroutines.DelicateCoroutinesApi
+import kotlinx.coroutines.GlobalScope
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.runBlocking
 
@@ -17,12 +19,12 @@ suspend fun commands(literals: Array<String>, action: LiteralArgumentBuilder<Com
         command(literal, action)
 }
 
-fun runAsync(action: suspend () -> Unit) {
-    runBlocking {
-        launch {
-            action()
-        }
+@OptIn(DelicateCoroutinesApi::class)
+fun runAsync(action: suspend () -> Unit): Int {
+    GlobalScope.launch {
+        action()
     }
+    return 0
 }
 
 fun noSubCommandError(ctx: CommandContext<CommandSource>): Int {
