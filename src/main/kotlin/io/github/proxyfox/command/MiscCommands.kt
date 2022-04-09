@@ -3,6 +3,7 @@ package io.github.proxyfox.command
 import com.mojang.brigadier.arguments.StringArgumentType
 import com.mojang.brigadier.context.CommandContext
 import dev.steyn.brigadierkt.*
+import io.github.proxyfox.importer.Importer
 import io.github.proxyfox.importer.import
 import io.ktor.http.*
 import java.io.InputStreamReader
@@ -48,22 +49,22 @@ It uses discord's webhooks to generate "pseudo-users" which different members of
     private fun removeProxyRole(ctx: CommandContext<CommandSource>): Int = runAsync {
         //TODO: not implemented
     }
-    private fun importSystem(ctx: CommandContext<CommandSource>): Int = runAsync {
+    private suspend fun importSystemCommon(ctx: CommandContext<CommandSource>, url: String) {
         kotlin.runCatching {
-            val link = URL(ctx.source.message.attachments.first().url)
+            val link = URL(url)
             link.openStream().use {
-                import(InputStreamReader(it))
+                val importer = import(InputStreamReader(it))
+
             }
         }
+    }
+    private fun importSystem(ctx: CommandContext<CommandSource>): Int = runAsync {
+        importSystemCommon(ctx,ctx.source.message.attachments.first().url)
     }
     private fun importSystemLinked(ctx: CommandContext<CommandSource>): Int = runAsync {
-        kotlin.runCatching {
-            val link = URL(StringArgumentType.getString(ctx, "link"))
-            link.openStream().use {
-                import(InputStreamReader(it))
-            }
-        }
+        importSystemCommon(ctx,StringArgumentType.getString(ctx, "link"))
     }
+
     private fun exportSystem(ctx: CommandContext<CommandSource>): Int = runAsync {
         //TODO: not implemented
     }
