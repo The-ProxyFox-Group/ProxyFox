@@ -3,6 +3,7 @@ package command
 import com.mojang.brigadier.CommandDispatcher
 import com.mojang.brigadier.builder.LiteralArgumentBuilder
 import com.mojang.brigadier.context.CommandContext
+import dev.kord.core.behavior.reply
 import dev.steyn.brigadierkt.*
 import kotlinx.coroutines.DelicateCoroutinesApi
 import kotlinx.coroutines.GlobalScope
@@ -27,9 +28,8 @@ fun runAsync(action: suspend () -> Unit): Int {
     return 0
 }
 
-fun noSubCommandError(ctx: CommandContext<CommandSource>): Int {
-    //TODO: not implemented
-    return 0
+fun noSubCommandError(ctx: CommandContext<CommandSource>): Int = runAsync {
+    ctx.source.message.channel.createMessage("No subcommand given")
 }
 
 object Commands {

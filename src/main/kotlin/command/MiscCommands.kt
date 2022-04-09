@@ -6,16 +6,25 @@ import dev.steyn.brigadierkt.*
 
 object MiscCommands {
     private fun getTimeString(ctx: CommandContext<CommandSource>): Int = runAsync {
-        //TODO: not implemented
+        val time: Long = Math.floorDiv(System.currentTimeMillis(), 1000)
+        ctx.source.message.channel.createMessage("It is currently <t:$time:f>")
     }
     private fun getHelp(ctx: CommandContext<CommandSource>): Int = runAsync {
-        //TODO: not implemented
+        ctx.source.message.channel.createMessage("""To view commands for ProxyFox, visit <https://github.com/ProxyFox-developers/ProxyFox/blob/master/commands.md>
+For quick setup:
+- pf>system new name
+- pf>member new John Doe
+- pf>member "John Doe" proxy j:text""")
     }
     private fun getExplanation(ctx: CommandContext<CommandSource>): Int = runAsync {
-        //TODO: not implemented
+        ctx.source.message.channel.createMessage("""ProxyFox is modern Discord bot designed to help systems communicate.
+It uses discord's webhooks to generate "pseudo-users" which different members of the system can use. Someone will likely be willing to explain further if need be.""")
     }
     private fun getInvite(ctx: CommandContext<CommandSource>): Int = runAsync {
-        //TODO: not implemented
+        ctx.source.message.channel.createMessage("Proxyfox invites are temporarily disabled, as we're transitioning to a new bot. Contact Octal#9139 if you need an invite. https://discord.gg/M2uBsJmRNT")
+    }
+    private fun getSource(ctx: CommandContext<CommandSource>): Int = runAsync {
+        ctx.source.message.channel.createMessage("Source code for ProxyFox is available at <https://github.com/ProxyFox-developers/ProxyFox>!")
     }
     private fun enableServerProxy(ctx: CommandContext<CommandSource>): Int = runAsync {
         //TODO: not implemented
@@ -59,6 +68,12 @@ object MiscCommands {
         commands(arrayOf("invite","link")) {
             executes(MiscCommands::getInvite)
         }
+        command("export") {
+            executes(MiscCommands::exportSystem)
+        }
+        command("source") {
+            executes(MiscCommands::getSource)
+        }
 
         commands(arrayOf("proxy","serverproxy")) {
             literal("on") {
@@ -95,10 +110,6 @@ object MiscCommands {
                 executes(MiscCommands::importSystemLinked)
             }
             executes(MiscCommands::importSystem)
-        }
-
-        command("export") {
-            executes(MiscCommands::exportSystem)
         }
     }
 }

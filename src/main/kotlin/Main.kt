@@ -8,6 +8,8 @@ import dev.kord.core.on
 import dev.kord.gateway.Intent
 import dev.kord.gateway.PrivilegedIntent
 import kotlinx.coroutines.delay
+import kotlinx.coroutines.flow.count
+import kotlinx.coroutines.launch
 
 val prefixRegex = Regex("^pf[>;!].*",RegexOption.IGNORE_CASE)
 
@@ -29,7 +31,9 @@ suspend fun main() {
     }
     kord.on<ReadyEvent> {
         println("ProxyFox initialized")
-        updatePresence()
+        launch {
+            updatePresence()
+        }
     }
     kord.login {
         intents += Intent.Guilds
@@ -44,7 +48,8 @@ suspend fun main() {
 }
 suspend fun updatePresence() {
     kord.editPresence {
-        playing("Run pf>help for help!")
+        val servers = kord.guilds.count()
+        playing("Run pf>help for help! in $servers servers!")
     }
     delay(30000)
     updatePresence()
