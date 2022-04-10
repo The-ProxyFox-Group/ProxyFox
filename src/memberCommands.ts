@@ -136,7 +136,7 @@ export function accessMember(msg: discord.Message, parsedMessage: string[]):stri
                 save(user.id,system);
                 return "Member's pronouns changed to `"+pronouns+"`";
             }
-            if (["description", "desc", "d"].indexOf(parsedMessage[0].toLowerCase())) {
+            if (["description", "desc", "d"].indexOf(parsedMessage[0].toLowerCase()) != -1) {
                 let desc: string = third
                 if (desc.length > 1000) return "Member description must be shorter than 1,000 characters.";
                 member.description = desc;
