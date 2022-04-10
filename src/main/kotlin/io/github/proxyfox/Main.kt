@@ -12,6 +12,8 @@ import dev.kord.core.on
 import dev.kord.gateway.Intent
 import dev.kord.gateway.PrivilegedIntent
 import io.github.proxyfox.importer.gson
+import io.github.proxyfox.webhook.WebhookCache
+import io.github.proxyfox.webhook.WebhookUtil
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.flow.count
 import kotlinx.coroutines.launch
@@ -41,12 +43,13 @@ suspend fun main() {
     Commands.register()
     kord = Kord(System.getenv("PROXYFOX_KEY"))
     kord.on<MessageCreateEvent> {
+        if (message.webhookId != null || message.author!!.isBot) return@on
         val content = message.content
         if (prefixRegex.matches(content)) {
             val contentWithoutRegex = content.substring(3)
             dispatcher.execute(contentWithoutRegex,CommandSource(message))
         } else {
-            // TODO: Send proxy
+            WebhookUtil.prepareMessage(message)
         }
     }
     kord.on<ReadyEvent> {
