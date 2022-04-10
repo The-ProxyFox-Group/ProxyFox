@@ -12,9 +12,9 @@ data class ProxyContext(
     var message: Message
 ) {
     suspend fun send() {
-//        kord.rest.webhook.executeWebhook(webhook.id,webhook.token!!,false) {
-//            content = messageContent
-//            return@executeWebhook
-//        }
+        kord.rest.webhook.executeWebhook(webhook.id,webhook.token!!,false) {
+            content = messageContent
+            return@executeWebhook
+        }
     }
 }
