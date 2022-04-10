@@ -17,9 +17,25 @@ object RestApi {
         printStep("Start REST API server", 1)
         embeddedServer(Netty, 8080) {
             routing {
-                get {
-                    call.respond(HttpStatusCode.NotFound)
-                    finish()
+                // System settings
+                get("systems/{user}") {
+
+                }
+                // Array of member IDs
+                get("systems/{user}/members") {
+
+                }
+                // Member settings
+                get("systems/{user}/member/{member}") {
+
+                }
+                // Member proxies
+                get("systems/{user}/member/{member}/proxies") {
+
+                }
+                // System switches
+                get("systems/{user}/switches") {
+
                 }
             }
         }.start()
