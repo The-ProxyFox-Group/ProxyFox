@@ -25,11 +25,11 @@ object RestApi {
 
                 }
                 // Member settings
-                get("systems/{user}/member/{member}") {
+                get("systems/{user}/members/{member}") {
 
                 }
                 // Member proxies
-                get("systems/{user}/member/{member}/proxies") {
+                get("systems/{user}/members/{member}/proxies") {
 
                 }
                 // System switches
