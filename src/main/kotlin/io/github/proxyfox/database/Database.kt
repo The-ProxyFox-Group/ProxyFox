@@ -15,7 +15,7 @@ interface Database {
      * @param userId The ID of the Discord user.
      * @return The system tied to the Discord user.
      * */
-    fun getSystemByHost(userId: ULong): SystemRecord
+    fun getSystemByHost(userId: ULong): SystemRecord?
 
     /**
      * Gets a [system][SystemRecord] by system ID.
@@ -23,7 +23,7 @@ interface Database {
      * @param systemId The ID of the system.
      * @return The system as registered by ID.
      * */
-    fun getSystemById(systemId: String): SystemRecord
+    fun getSystemById(systemId: String): SystemRecord?
 
     // === Members ===
     /**
@@ -32,7 +32,7 @@ interface Database {
      * @param userId The ID of the Discord user.
      * @return A list of members registered to the system tied to the Discord user.
      * */
-    fun getMembersByHost(userId: ULong): List<MemberRecord>
+    fun getMembersByHost(userId: ULong): List<MemberRecord>?
 
     /**
      * Gets a list of [members][MemberRecord] by system ID.
@@ -40,7 +40,7 @@ interface Database {
      * @param systemId The ID of the system.
      * @return A list of members registered to the system.
      * */
-    fun getMembersBySystem(systemId: String): List<MemberRecord>
+    fun getMembersBySystem(systemId: String): List<MemberRecord>?
 
     /**
      * Gets the [member][MemberRecord] by both Discord & member IDs.
@@ -49,7 +49,7 @@ interface Database {
      * @param memberId The ID of the member in the system tied to the Discord user.
      * @return The member of the system tied to the Discord user.
      * */
-    fun getMemberByHost(discordId: ULong, memberId: String): MemberRecord
+    fun getMemberByHost(discordId: ULong, memberId: String): MemberRecord?
 
     /**
      * Gets the [member][MemberRecord] by both system & member IDs.
@@ -58,7 +58,7 @@ interface Database {
      * @param memberId The ID of the member in the system.
      * @return The member of the system.
      * */
-    fun getMemberById(systemId: String, memberId: String): MemberRecord
+    fun getMemberById(systemId: String, memberId: String): MemberRecord?
 
     /**
      * Gets the fronting [member][MemberRecord] by Discord ID.
@@ -95,7 +95,7 @@ interface Database {
      * @param memberId The ID of the member in the system tied to the Discord user.
      * @return The member's settings for the server.
      * */
-    fun getServerSettingsByHost(serverId: ULong, discordId: ULong, memberId: String): MemberServerSettingsRecord
+    fun getServerSettingsByHost(serverId: ULong, discordId: ULong, memberId: String): MemberServerSettingsRecord?
 
     /**
      * Gets the [member's server settings][MemberServerSettingsRecord] by server, system & member IDs.
@@ -105,7 +105,7 @@ interface Database {
      * @param memberId The ID of the member in the system.
      * @return The member's settings for the server.
      * */
-    fun getServerSettingsByMember(serverId: ULong, systemId: String, memberId: String): MemberServerSettingsRecord
+    fun getServerSettingsByMember(serverId: ULong, systemId: String, memberId: String): MemberServerSettingsRecord?
 
     // === Management ===
     /**
@@ -114,7 +114,7 @@ interface Database {
      * @param discordId The ID of the Discord user.
      * @return A maybe newly created system.
      * */
-    fun allocateSystem(discordId: ULong): SystemRecord
+    fun allocateSystem(discordId: ULong): SystemRecord?
 
     /**
      * Allocates a member ID in the database.
@@ -123,7 +123,7 @@ interface Database {
      * @param name The name of the new member.
      * @return A newly created member ID.
      * */
-    fun allocateMember(systemId: String, name: String): MemberRecord
+    fun allocateMember(systemId: String, name: String): MemberRecord?
 
     fun updateMember(member: MemberRecord)
     fun updateMemberServerSettings(serverSettings: MemberServerSettingsRecord)
@@ -155,19 +155,19 @@ interface Database {
      *
      * Implementation requirements: return an int with the total systems in the database
      * */
-    fun getTotalSystems(): Int
+    fun getTotalSystems(): Int?
 
     /**
      * Gets the total number of members registered in a system by discord ID.
      *
      * Implementation requirements: return an int with the total members registered
      * */
-    fun getTotalMembersByHost(discordId: ULong): Int
+    fun getTotalMembersByHost(discordId: ULong): Int?
 
     /**
      * Gets the total number of members registered in a system by discord ID.
      *
      * Implementation requirements: return an int with the total members registered
      * */
-    fun getTotalMembersById(systemId: String): Int
+    fun getTotalMembersById(systemId: String): Int?
 }

@@ -11,6 +11,8 @@ import dev.kord.core.event.message.MessageCreateEvent
 import dev.kord.core.on
 import dev.kord.gateway.Intent
 import dev.kord.gateway.PrivilegedIntent
+import io.github.proxyfox.database.Database
+import io.github.proxyfox.database.NopDatabase
 import io.github.proxyfox.importer.gson
 import io.github.proxyfox.webhook.WebhookCache
 import io.github.proxyfox.webhook.WebhookUtil
@@ -36,6 +38,7 @@ fun numberToNewId(int: Int): String {
 val prefixRegex = Regex("^pf[>;!].*",RegexOption.IGNORE_CASE)
 
 lateinit var kord: Kord
+val database: Database = NopDatabase()
 
 @OptIn(PrivilegedIntent::class)
 suspend fun main() {
@@ -54,7 +57,6 @@ suspend fun main() {
         if (prefixRegex.matches(content)) {
             // Remove the prefix to pass into dispatcher
             val contentWithoutRegex = content.substring(3)
-            // Dispatch command
             dispatcher.execute(contentWithoutRegex,CommandSource(message))
         } else {
             // Proxy the message
