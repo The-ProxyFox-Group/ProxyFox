@@ -1,6 +1,5 @@
 package io.github.proxyfox.webhook
 
-import dev.kord.common.entity.DiscordAttachment
 import dev.kord.core.behavior.channel.createWebhook
 import dev.kord.core.entity.Message
 import dev.kord.core.entity.Webhook

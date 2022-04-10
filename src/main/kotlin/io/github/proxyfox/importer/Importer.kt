@@ -3,7 +3,6 @@ package io.github.proxyfox.importer
 import com.google.gson.Gson
 import io.github.proxyfox.database.*
 import java.io.InputStreamReader
-import kotlin.math.floor
 
 val gson = Gson()
 

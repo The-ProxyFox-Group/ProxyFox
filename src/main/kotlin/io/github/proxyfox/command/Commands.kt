@@ -3,13 +3,11 @@ package io.github.proxyfox.command
 import com.mojang.brigadier.CommandDispatcher
 import com.mojang.brigadier.builder.LiteralArgumentBuilder
 import com.mojang.brigadier.context.CommandContext
-import dev.kord.core.behavior.reply
 import dev.steyn.brigadierkt.*
 import io.github.proxyfox.printStep
 import kotlinx.coroutines.DelicateCoroutinesApi
 import kotlinx.coroutines.GlobalScope
 import kotlinx.coroutines.launch
-import kotlinx.coroutines.runBlocking
 
 val dispatcher = CommandDispatcher<CommandSource>()
 

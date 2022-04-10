@@ -15,7 +15,6 @@ import io.github.proxyfox.command.runAsync
 import io.github.proxyfox.database.Database
 import io.github.proxyfox.database.NopDatabase
 import io.github.proxyfox.webhook.WebhookUtil
-import kotlinx.coroutines.coroutineScope
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.flow.count
 import kotlinx.coroutines.launch

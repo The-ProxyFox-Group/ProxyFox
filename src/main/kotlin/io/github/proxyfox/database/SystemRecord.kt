@@ -1,7 +1,6 @@
 package io.github.proxyfox.database
 
 import java.time.OffsetDateTime
-import java.time.Instant
 
 // Created 2022-09-04T14:07:21
 
