@@ -14,7 +14,8 @@ object WebhookUtil {
     suspend fun prepareMessage(message: Message): ProxyContext = ProxyContext(
         message.content,
         ArrayList(),
-        fetchWebhook(message.channel.asChannel() as TextChannel)
+        fetchWebhook(message.channel.asChannel() as TextChannel),
+        message
     )
     suspend fun fetchWebhook(channel: TextChannel): Webhook {
         // Try to fetch webhook from cache

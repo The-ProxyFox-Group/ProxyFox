@@ -40,22 +40,31 @@ lateinit var kord: Kord
 @OptIn(PrivilegedIntent::class)
 suspend fun main() {
     println("Initializing ProxyFox")
+    // Register commands in brigadier
     Commands.register()
+
+    // Login to Kord and set up events
     kord = Kord(System.getenv("PROXYFOX_KEY"))
     kord.on<MessageCreateEvent> {
+        // Return if bot
         if (message.webhookId != null || message.author!!.isBot) return@on
+
+        // Get message content to check with regex
         val content = message.content
         if (prefixRegex.matches(content)) {
+            // Remove the prefix to pass into dispatcher
             val contentWithoutRegex = content.substring(3)
+            // Dispatch command
             dispatcher.execute(contentWithoutRegex,CommandSource(message))
         } else {
-            WebhookUtil.prepareMessage(message)
+            // Proxy the message
+            WebhookUtil.prepareMessage(message).send()
         }
     }
     kord.on<ReadyEvent> {
         println("ProxyFox initialized")
         launch {
-            updatePresence()
+            //updatePresence()
         }
     }
     kord.login {
@@ -69,11 +78,13 @@ suspend fun main() {
         intents += Intent.MessageContent
     }
 }
+
 suspend fun updatePresence() {
-    kord.editPresence {
-        val servers = kord.guilds.count()
-        playing("Run pf>help for help! in $servers servers!")
+    while (true) {
+        kord.editPresence {
+            val servers = kord.guilds.count()
+            playing("Run pf>help for help! in $servers servers!")
+        }
+        delay(30000)
     }
-    delay(30000)
-    updatePresence()
 }
