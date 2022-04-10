@@ -64,7 +64,7 @@ suspend fun main() {
     kord.on<ReadyEvent> {
         println("ProxyFox initialized")
         launch {
-            //updatePresence()
+            updatePresence()
         }
     }
     kord.login {
