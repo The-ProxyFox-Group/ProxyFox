@@ -79,6 +79,15 @@ interface Database {
      * */
     fun getFrontingMemberByTags(discordId: Snowflake, message: String): MemberRecord?
 
+    /**
+     * Gets the [proxy][MemberProxyTagRecord] by Discord ID and proxy tags.
+     *
+     * @param discordId The ID of the Discord user.
+     * @param message The message to check proxy tags against.
+     * @return The ProxyTag associated with the message
+     * */
+    fun getProxyTagFromMessage(discordId: Snowflake, message: String): MemberProxyTagRecord?
+
     // === Server Settings ===
     /**
      * Gets the current fronting [member's server settings][MemberServerSettingsRecord] by server & Discord IDs.

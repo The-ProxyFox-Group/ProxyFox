@@ -60,7 +60,11 @@ suspend fun main() {
             dispatcher.execute(contentWithoutRegex,CommandSource(message))
         } else {
             // Proxy the message
-            WebhookUtil.prepareMessage(message).send()
+            val proxy = database.getProxyTagFromMessage(message.author!!.id,content)
+            if (proxy != null) {
+                val member = database.getMemberById(proxy.systemId,proxy.memberId)!!
+                WebhookUtil.prepareMessage(message, member, proxy).send()
+            }
         }
     }
     kord.on<ReadyEvent> {
