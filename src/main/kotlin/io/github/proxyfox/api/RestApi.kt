@@ -32,7 +32,7 @@ object RestApi {
                 get("systems/{user}/members/{member}") {
 
                 }
-                // Member proxies
+                // Array Member proxies
                 get("systems/{user}/members/{member}/proxies") {
 
                 }
