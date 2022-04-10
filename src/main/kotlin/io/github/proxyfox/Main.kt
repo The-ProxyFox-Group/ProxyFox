@@ -30,8 +30,8 @@ fun printFancy(input: String) {
     println(edges)
 }
 fun printStep(input: String, step: Int) {
-    val add = "-".repeat(step)
-    println(step.toString()+add+input)
+    val add = "  ".repeat(step)
+    println(step.toString() + add+input)
 }
 
 val prefixRegex = Regex("^pf[>;!].*",RegexOption.IGNORE_CASE)
