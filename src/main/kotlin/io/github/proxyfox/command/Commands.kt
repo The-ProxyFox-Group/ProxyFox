@@ -5,6 +5,7 @@ import com.mojang.brigadier.builder.LiteralArgumentBuilder
 import com.mojang.brigadier.context.CommandContext
 import dev.kord.core.behavior.reply
 import dev.steyn.brigadierkt.*
+import io.github.proxyfox.printStep
 import kotlinx.coroutines.DelicateCoroutinesApi
 import kotlinx.coroutines.GlobalScope
 import kotlinx.coroutines.launch
@@ -34,7 +35,7 @@ fun noSubCommandError(ctx: CommandContext<CommandSource>): Int = runAsync {
 
 object Commands {
     suspend fun register() {
-        println(" Registering commands")
+        printStep("Registering commands",1)
         SystemCommands.register()
         MemberCommands.register()
         MiscCommands.register()

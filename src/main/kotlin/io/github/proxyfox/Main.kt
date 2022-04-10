@@ -23,16 +23,15 @@ import java.text.SimpleDateFormat
 import java.time.OffsetDateTime
 import java.time.format.DateTimeFormatter
 
-fun numberToNewId(int: Int): String {
-    var out = ""
-    var i1 = int
-    for (ignore in arrayOf(1,2,3,4,5)) {
-        val i2 = int % 26
-        i1 -= i2
-        i1 /= 26
-        out = (i2.toChar()) + out
-    }
-    return out
+fun printFancy(input: String) {
+    val edges = "*".repeat(input.length+4)
+    println(edges)
+    println("* $input *")
+    println(edges)
+}
+fun printStep(input: String, step: Int) {
+    val add = "-".repeat(step)
+    println(step.toString()+add+input)
 }
 
 val prefixRegex = Regex("^pf[>;!].*",RegexOption.IGNORE_CASE)
@@ -42,7 +41,7 @@ val database: Database = NopDatabase()
 
 @OptIn(PrivilegedIntent::class)
 suspend fun main() {
-    println("Initializing ProxyFox")
+    printFancy("Initializing ProxyFox")
     // Register commands in brigadier
     Commands.register()
 
@@ -68,7 +67,7 @@ suspend fun main() {
         }
     }
     kord.on<ReadyEvent> {
-        println("ProxyFox initialized")
+        printFancy("ProxyFox initialized")
         launch {
             updatePresence()
         }

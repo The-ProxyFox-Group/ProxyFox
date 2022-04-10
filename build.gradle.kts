@@ -30,6 +30,7 @@ dependencies {
     implementation("com.google.code.gson:gson:2.9.0")
     implementation("com.mojang:brigadier:1.0.18")
     implementation("dev.kord:kord-core:0.8.0-M12")
+    implementation("org.slf4j:slf4j-nop:1.7.29")
 }
 
 tasks.withType<com.github.jengelman.gradle.plugins.shadow.tasks.ShadowJar> {

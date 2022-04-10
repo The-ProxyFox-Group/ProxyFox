@@ -5,6 +5,7 @@ import com.mojang.brigadier.context.CommandContext
 import dev.steyn.brigadierkt.*
 import io.github.proxyfox.importer.Importer
 import io.github.proxyfox.importer.import
+import io.github.proxyfox.printStep
 import io.ktor.http.*
 import java.io.InputStreamReader
 import java.net.URL
@@ -70,7 +71,7 @@ It uses discord's webhooks to generate "pseudo-users" which different members of
     }
 
     suspend fun register() {
-        println("  Registering misc commands")
+        printStep("Registering misc commands",2)
         command("time") {
             executes(MiscCommands::getTimeString)
         }
