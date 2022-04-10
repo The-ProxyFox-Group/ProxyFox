@@ -46,7 +46,9 @@ suspend fun main() {
     Commands.register()
 
     // Login to Kord and set up events
+    printStep("Logging in",1)
     kord = Kord(System.getenv("PROXYFOX_KEY"))
+    printStep("Registering events", 2)
     kord.on<MessageCreateEvent> {
         // Return if bot
         if (message.webhookId != null || message.author!!.isBot) return@on
@@ -72,6 +74,7 @@ suspend fun main() {
             updatePresence()
         }
     }
+    printStep("Finalize login", 2)
     kord.login {
         intents += Intent.Guilds
         intents += Intent.GuildMessages
