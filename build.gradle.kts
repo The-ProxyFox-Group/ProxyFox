@@ -6,6 +6,7 @@ plugins {
 
 group = "io.github.proxyfox"
 version = "1.0.0"
+val ktor_version = "1.6.7"
 
 java {
     sourceCompatibility = JavaVersion.VERSION_17
@@ -31,6 +32,9 @@ dependencies {
     implementation("com.mojang:brigadier:1.0.18")
     implementation("dev.kord:kord-core:0.8.0-M12")
     implementation("ch.qos.logback:logback-classic:1.2.11")
+
+    implementation("io.ktor:ktor-server-core:$ktor_version")
+    implementation("io.ktor:ktor-server-netty:$ktor_version")
 }
 
 tasks {
