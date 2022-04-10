@@ -3,6 +3,7 @@ package io.github.proxyfox.command
 import com.mojang.brigadier.arguments.StringArgumentType
 import com.mojang.brigadier.context.CommandContext
 import dev.steyn.brigadierkt.*
+import io.github.proxyfox.printStep
 
 object SystemCommands {
     private fun changeSystemName(ctx: CommandContext<CommandSource>): Int = runAsync {
@@ -46,7 +47,7 @@ object SystemCommands {
     }
 
     suspend fun register() {
-        println("  Registering system commands")
+        printStep("Registering system commands",2)
         commands(arrayOf("system","s")) {
             // Change system name
             val name: Node = {

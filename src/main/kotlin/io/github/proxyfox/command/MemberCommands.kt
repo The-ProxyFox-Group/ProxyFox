@@ -3,6 +3,7 @@ package io.github.proxyfox.command
 import com.mojang.brigadier.arguments.StringArgumentType
 import com.mojang.brigadier.context.CommandContext
 import dev.steyn.brigadierkt.*
+import io.github.proxyfox.printStep
 
 object MemberCommands {
     private fun changeName(ctx: CommandContext<CommandSource>): Int = runAsync {
@@ -79,7 +80,7 @@ object MemberCommands {
     }
 
     suspend fun register() {
-        println("  Registering member commands")
+        printStep("Registering member commands",2)
         commands(arrayOf("member","m")) {
             argument("member",StringArgumentType.string()) {
                 // Change member name
