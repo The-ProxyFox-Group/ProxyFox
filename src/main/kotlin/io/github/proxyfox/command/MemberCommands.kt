@@ -8,10 +8,19 @@ object MemberCommands {
     private fun changeName(ctx: CommandContext<CommandSource>): Int = runAsync {
         //TODO: not implemented
     }
+    private fun accessName(ctx: CommandContext<CommandSource>): Int = runAsync {
+        //TODO: not implemented
+    }
     private fun changeDisplayName(ctx: CommandContext<CommandSource>): Int = runAsync {
         //TODO: not implemented
     }
+    private fun accessDisplayName(ctx: CommandContext<CommandSource>): Int = runAsync {
+        //TODO: not implemented
+    }
     private fun changeServerName(ctx: CommandContext<CommandSource>): Int = runAsync {
+        //TODO: not implemented
+    }
+    private fun accessServerName(ctx: CommandContext<CommandSource>): Int = runAsync {
         //TODO: not implemented
     }
     private fun changeAvatar(ctx: CommandContext<CommandSource>): Int = runAsync {
@@ -32,16 +41,31 @@ object MemberCommands {
     private fun removeProxy(ctx: CommandContext<CommandSource>): Int = runAsync {
         //TODO: not implemented
     }
+    private fun accessProxy(ctx: CommandContext<CommandSource>): Int = runAsync {
+        //TODO: not implemented
+    }
     private fun changeMemberDescription(ctx: CommandContext<CommandSource>): Int = runAsync {
+        //TODO: not implemented
+    }
+    private fun accessMemberDescription(ctx: CommandContext<CommandSource>): Int = runAsync {
         //TODO: not implemented
     }
     private fun changeMemberPronouns(ctx: CommandContext<CommandSource>): Int = runAsync {
         //TODO: not implemented
     }
+    private fun accessMemberPronouns(ctx: CommandContext<CommandSource>): Int = runAsync {
+        //TODO: not implemented
+    }
     private fun changeMemberColor(ctx: CommandContext<CommandSource>): Int = runAsync {
         //TODO: not implemented
     }
+    private fun accessMemberColor(ctx: CommandContext<CommandSource>): Int = runAsync {
+        //TODO: not implemented
+    }
     private fun changeMemberBirthday(ctx: CommandContext<CommandSource>): Int = runAsync {
+        //TODO: not implemented
+    }
+    private fun accessMemberBirthday(ctx: CommandContext<CommandSource>): Int = runAsync {
         //TODO: not implemented
     }
     private fun deleteMember(ctx: CommandContext<CommandSource>): Int = runAsync {
@@ -63,7 +87,7 @@ object MemberCommands {
                     argument("name",StringArgumentType.greedyString()) {
                         executes(MemberCommands::changeName)
                     }
-                    executes(::noSubCommandError)
+                    executes(MemberCommands::accessName)
                 }
                 literal("name", name)
                 literal("rename", name)
@@ -73,7 +97,7 @@ object MemberCommands {
                     argument("name",StringArgumentType.greedyString()) {
                         executes(MemberCommands::changeDisplayName)
                     }
-                    executes(::noSubCommandError)
+                    executes(MemberCommands::accessDisplayName)
                 }
                 literal("displayname", displayname)
                 literal("dn", displayname)
@@ -85,7 +109,7 @@ object MemberCommands {
                     argument("name",StringArgumentType.greedyString()) {
                         executes(MemberCommands::changeServerName)
                     }
-                    executes(::noSubCommandError)
+                    executes(MemberCommands::accessServerName)
                 }
 
                 // Change member avatar
@@ -125,23 +149,26 @@ object MemberCommands {
                     argument("proxy",StringArgumentType.greedyString()) {
                         executes(MemberCommands::addProxy)
                     }
-                    executes(::noSubCommandError)
+                    executes(MemberCommands::accessProxy)
                 }
 
                 // Change member description
-                literal("description") {
+                val description: Node = {
                     argument("description",StringArgumentType.greedyString()) {
                         executes(MemberCommands::changeMemberDescription)
                     }
-                    executes(::noSubCommandError)
+                    executes(MemberCommands::accessMemberDescription)
                 }
+                literal("description", description)
+                literal("desc", description)
+                literal("d", description)
 
                 // Change member pronouns
                 literal("pronouns") {
                     argument("pronouns",StringArgumentType.greedyString()) {
                         executes(MemberCommands::changeMemberPronouns)
                     }
-                    executes(::noSubCommandError)
+                    executes(MemberCommands::accessMemberPronouns)
                 }
 
                 // Change member color
@@ -149,7 +176,7 @@ object MemberCommands {
                     argument("color",StringArgumentType.greedyString()) {
                         executes(MemberCommands::changeMemberColor)
                     }
-                    executes(::noSubCommandError)
+                    executes(MemberCommands::accessMemberColor)
                 }
 
                 // Change member birthday
@@ -157,7 +184,7 @@ object MemberCommands {
                     argument("birthday",StringArgumentType.greedyString()) {
                         executes(MemberCommands::changeMemberBirthday)
                     }
-                    executes(::noSubCommandError)
+                    executes(MemberCommands::accessMemberBirthday)
                 }
 
                 // Delete member

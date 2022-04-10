@@ -8,13 +8,25 @@ object SystemCommands {
     private fun changeSystemName(ctx: CommandContext<CommandSource>): Int = runAsync {
         //TODO: not implemented
     }
+    private fun accessSystemName(ctx: CommandContext<CommandSource>): Int = runAsync {
+        //TODO: not implemented
+    }
     private fun changeSystemTag(ctx: CommandContext<CommandSource>): Int = runAsync {
+        //TODO: not implemented
+    }
+    private fun accessSystemTag(ctx: CommandContext<CommandSource>): Int = runAsync {
         //TODO: not implemented
     }
     private fun changeSystemDescription(ctx: CommandContext<CommandSource>): Int = runAsync {
         //TODO: not implemented
     }
+    private fun accessSystemDescription(ctx: CommandContext<CommandSource>): Int = runAsync {
+        //TODO: not implemented
+    }
     private fun changeSystemAvatar(ctx: CommandContext<CommandSource>): Int = runAsync {
+        //TODO: not implemented
+    }
+    private fun accessSystemAvatar(ctx: CommandContext<CommandSource>): Int = runAsync {
         //TODO: not implemented
     }
     private fun listSystem(ctx: CommandContext<CommandSource>): Int = runAsync {
@@ -23,10 +35,13 @@ object SystemCommands {
     private fun deleteSystem(ctx: CommandContext<CommandSource>): Int = runAsync {
         //TODO: not implemented
     }
-    private fun accessSystem(ctx: CommandContext<CommandSource>): Int = runAsync {
+    private fun createSystem(ctx: CommandContext<CommandSource>): Int = runAsync {
         //TODO: not implemented
     }
-    private fun createSystem(ctx: CommandContext<CommandSource>): Int = runAsync {
+    private fun createSystemNamed(ctx: CommandContext<CommandSource>): Int = runAsync {
+        //TODO: not implemented
+    }
+    private fun accessSystem(ctx: CommandContext<CommandSource>): Int = runAsync {
         //TODO: not implemented
     }
 
@@ -38,7 +53,7 @@ object SystemCommands {
                 argument("name", StringArgumentType.greedyString()) {
                     executes(SystemCommands::changeSystemName)
                 }
-                executes(::noSubCommandError)
+                executes(SystemCommands::accessSystemName)
             }
             literal("name", name)
             literal("rename", name)
@@ -48,23 +63,26 @@ object SystemCommands {
                 argument("tag", StringArgumentType.greedyString()) {
                     executes(SystemCommands::changeSystemTag)
                 }
-                executes(::noSubCommandError)
+                executes(SystemCommands::accessSystemTag)
             }
 
             // Change system description
-            literal("description") {
+            val description: Node = {
                 argument("description", StringArgumentType.greedyString()) {
                     executes(SystemCommands::changeSystemDescription)
                 }
-                executes(::noSubCommandError)
+                executes(SystemCommands::accessSystemDescription)
             }
+            literal("description", description)
+            literal("desc", description)
+            literal("d", description)
 
             // Change system avatar
             val avatar: Node =  {
                 argument("avatar", StringArgumentType.greedyString()) {
                     executes(SystemCommands::changeSystemAvatar)
                 }
-                executes(::noSubCommandError)
+                executes(SystemCommands::accessSystemAvatar)
             }
             literal("avatar", avatar)
             literal("pfp", avatar)
@@ -82,9 +100,9 @@ object SystemCommands {
             // Create system
             val create: Node = {
                 argument("name", StringArgumentType.greedyString()) {
-                    executes(SystemCommands::createSystem)
+                    executes(SystemCommands::createSystemNamed)
                 }
-                executes(::noSubCommandError)
+                executes(SystemCommands::createSystem)
             }
             literal("new", create)
             literal("create", create)
