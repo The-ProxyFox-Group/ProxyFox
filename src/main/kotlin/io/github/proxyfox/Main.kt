@@ -39,15 +39,21 @@ val prefixRegex = Regex("^pf[>;!].*",RegexOption.IGNORE_CASE)
 lateinit var kord: Kord
 val database: Database = NopDatabase()
 
-@OptIn(PrivilegedIntent::class)
 suspend fun main() {
     printFancy("Initializing ProxyFox")
     // Register commands in brigadier
     Commands.register()
 
-    // Login to Kord and set up events
+    // Login to Kord
+    login()
+}
+
+@OptIn(PrivilegedIntent::class)
+suspend fun login() {
     printStep("Logging in",1)
     kord = Kord(System.getenv("PROXYFOX_KEY"))
+
+    // Register events
     printStep("Registering events", 2)
     kord.on<MessageCreateEvent> {
         // Return if bot
@@ -74,6 +80,8 @@ suspend fun main() {
             updatePresence()
         }
     }
+
+    // Login
     printStep("Finalize login", 2)
     kord.login {
         intents += Intent.Guilds
