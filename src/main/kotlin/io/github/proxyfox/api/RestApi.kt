@@ -16,6 +16,10 @@ object RestApi {
         printStep("Start REST API server", 1)
         embeddedServer(Netty, 8080) {
             routing {
+                // Array of system IDs
+                get("systems") {
+
+                }
                 // System settings
                 get("systems/{user}") {
 
@@ -32,7 +36,7 @@ object RestApi {
                 get("systems/{user}/members/{member}/proxies") {
 
                 }
-                // System switches
+                // Array of System switches
                 get("systems/{user}/switches") {
 
                 }
