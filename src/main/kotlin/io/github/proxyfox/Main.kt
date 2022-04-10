@@ -8,6 +8,7 @@ import dev.kord.core.event.message.MessageCreateEvent
 import dev.kord.core.on
 import dev.kord.gateway.Intent
 import dev.kord.gateway.PrivilegedIntent
+import io.github.proxyfox.api.RestApi
 import io.github.proxyfox.command.CommandSource
 import io.github.proxyfox.command.Commands
 import io.github.proxyfox.command.dispatcher
@@ -51,6 +52,9 @@ suspend fun main() {
 
     // Start reading console input
     readConsole()
+
+    // Start REST API
+    RestApi.start()
 
     // Login to Kord
     login()
