@@ -51,19 +51,22 @@ suspend fun main() {
     Commands.register()
 
     // Start reading console input
-    printStep("Start reading console input", 1)
     readConsole()
 
     // Login to Kord
     login()
 }
 
-fun readConsole() = thread {
-    runAsync {
-        while (true) {
-            val input = readln()
-            if (input.contains("stop"))
-                exitProcess(0)
+suspend fun readConsole() {
+    printStep("Start reading console input", 1)
+    printStep("Launching thread", 2)
+    thread {
+        runAsync {
+            while (true) {
+                val input = readln()
+                if (input.contains("stop"))
+                    exitProcess(0)
+            }
         }
     }
 }
