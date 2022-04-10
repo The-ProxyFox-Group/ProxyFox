@@ -19,6 +19,8 @@ class NopDatabase : Database {
 
     override fun getFrontingMemberByTags(discordId: Snowflake, message: String): MemberRecord? = null
 
+    override fun getProxyTagFromMessage(discordId: Snowflake, message: String): MemberProxyTagRecord? = null
+
     override fun getFrontingServerSettingsByHost(serverId: Snowflake, discordId: Snowflake): MemberServerSettingsRecord? = null
 
     override fun getServerSettingsByHost(
