@@ -2,36 +2,35 @@
 
 package io.github.proxyfox
 
-import io.github.proxyfox.command.CommandSource
-import io.github.proxyfox.command.Commands
-import io.github.proxyfox.command.dispatcher
 import dev.kord.core.Kord
 import dev.kord.core.event.gateway.ReadyEvent
 import dev.kord.core.event.message.MessageCreateEvent
 import dev.kord.core.on
 import dev.kord.gateway.Intent
 import dev.kord.gateway.PrivilegedIntent
+import io.github.proxyfox.command.CommandSource
+import io.github.proxyfox.command.Commands
+import io.github.proxyfox.command.dispatcher
 import io.github.proxyfox.database.Database
 import io.github.proxyfox.database.NopDatabase
-import io.github.proxyfox.importer.gson
-import io.github.proxyfox.webhook.WebhookCache
 import io.github.proxyfox.webhook.WebhookUtil
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.flow.count
 import kotlinx.coroutines.launch
-import java.text.SimpleDateFormat
-import java.time.OffsetDateTime
-import java.time.format.DateTimeFormatter
+import org.slf4j.LoggerFactory
+
+private val logger = LoggerFactory.getLogger("ProxyFox")
 
 fun printFancy(input: String) {
-    val edges = "*".repeat(input.length+4)
-    println(edges)
-    println("* $input *")
-    println(edges)
+    val edges = "*".repeat(input.length + 4)
+    logger.info(edges)
+    logger.info("* $input *")
+    logger.info(edges)
 }
+
 fun printStep(input: String, step: Int) {
     val add = "  ".repeat(step)
-    println(step.toString() + add+input)
+    logger.info(step.toString() + add + input)
 }
 
 val prefixRegex = Regex("^pf[>;!].*",RegexOption.IGNORE_CASE)
