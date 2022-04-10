@@ -33,6 +33,11 @@ dependencies {
     implementation("org.slf4j:slf4j-nop:1.7.29")
 }
 
-tasks.withType<com.github.jengelman.gradle.plugins.shadow.tasks.ShadowJar> {
-    classifier = ""
+tasks {
+    jar {
+        archiveClassifier.set("nodeps")
+    }
+    shadowJar {
+        archiveClassifier.set("")
+    }
 }
