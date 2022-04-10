@@ -1,5 +1,6 @@
 package io.github.proxyfox.importer
 
+import io.github.proxyfox.database
 import io.github.proxyfox.database.*
 import java.text.SimpleDateFormat
 import java.time.OffsetDateTime
@@ -56,7 +57,7 @@ class PluralKitImporter : Importer {
     }
 
     override suspend fun finalizeImport() {
-        TODO("Not yet implemented")
+
     }
 
     // Getters:
