@@ -11,24 +11,27 @@ import dev.kord.gateway.PrivilegedIntent
 import io.github.proxyfox.command.CommandSource
 import io.github.proxyfox.command.Commands
 import io.github.proxyfox.command.dispatcher
+import io.github.proxyfox.command.runAsync
 import io.github.proxyfox.database.Database
 import io.github.proxyfox.database.NopDatabase
 import io.github.proxyfox.webhook.WebhookUtil
+import kotlinx.coroutines.coroutineScope
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.flow.count
 import kotlinx.coroutines.launch
 import org.slf4j.LoggerFactory
+import kotlin.concurrent.thread
 
 private val logger = LoggerFactory.getLogger("ProxyFox")
 
-fun printFancy(input: String) {
+suspend fun printFancy(input: String) {
     val edges = "*".repeat(input.length + 4)
     logger.info(edges)
     logger.info("* $input *")
     logger.info(edges)
 }
 
-fun printStep(input: String, step: Int) {
+suspend fun printStep(input: String, step: Int) {
     val add = "  ".repeat(step)
     logger.info(step.toString() + add + input)
 }
@@ -39,14 +42,29 @@ lateinit var kord: Kord
 val database: Database = NopDatabase()
 
 suspend fun main() {
+    // Hack to not get io.ktor.random warning
+    System.setProperty("io.ktor.random.secure.random.provider", "DRBG")
+
     printFancy("Initializing ProxyFox")
     // Register commands in brigadier
     Commands.register()
+
+    // Start reading console input
+    printStep("Start reading console input", 1)
+    readConsole()
 
     // Login to Kord
     login()
 }
 
+fun readConsole() = thread {
+    runAsync {
+        while (true) {
+            val input = readln()
+            logger.info(input)
+        }
+    }
+}
 @OptIn(PrivilegedIntent::class)
 suspend fun login() {
     printStep("Logging in",1)
