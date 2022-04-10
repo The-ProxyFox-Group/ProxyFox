@@ -1,6 +1,7 @@
 package io.github.proxyfox.api
 
 import io.github.proxyfox.printStep
+import io.ktor.application.*
 import io.ktor.routing.*
 import io.ktor.server.engine.*
 import io.ktor.server.netty.*
@@ -16,29 +17,41 @@ object RestApi {
         printStep("Start REST API server", 1)
         embeddedServer(Netty, 8080) {
             routing {
-                // Array of system IDs
-                get("/systems") {
+                route("/systems") {
+                    // Array of system IDs
+                    get {
 
-                }
-                // System settings
-                get("/systems/{user}") {
+                    }
+                    route("/{user}") {
+                        // System settings
+                        get {
+                            val user = call.parameters["user"]
+                        }
+                        // Array of System switches
+                        get("/switches") {
+                            val user = call.parameters["user"]
+                        }
 
-                }
-                // Array of member IDs
-                get("/systems/{user}/members") {
+                        route("/members") {
+                            // Array of member IDs
+                            get {
+                                val user = call.parameters["user"]
+                            }
 
-                }
-                // Member settings
-                get("/systems/{user}/members/{member}") {
-
-                }
-                // Array Member proxies
-                get("/systems/{user}/members/{member}/proxies") {
-
-                }
-                // Array of System switches
-                get("/systems/{user}/switches") {
-
+                            route("/{member}") {
+                                // Member settings
+                                get {
+                                    val user = call.parameters["user"]
+                                    val member = call.parameters["member"]
+                                }
+                                // Array of proxies
+                                get("/proxies") {
+                                    val user = call.parameters["user"]
+                                    val member = call.parameters["member"]
+                                }
+                            }
+                        }
+                    }
                 }
             }
         }.start()
