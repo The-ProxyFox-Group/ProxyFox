@@ -17,27 +17,27 @@ object RestApi {
         embeddedServer(Netty, 8080) {
             routing {
                 // Array of system IDs
-                get("systems") {
+                get("/systems") {
 
                 }
                 // System settings
-                get("systems/{user}") {
+                get("/systems/{user}") {
 
                 }
                 // Array of member IDs
-                get("systems/{user}/members") {
+                get("/systems/{user}/members") {
 
                 }
                 // Member settings
-                get("systems/{user}/members/{member}") {
+                get("/systems/{user}/members/{member}") {
 
                 }
                 // Array Member proxies
-                get("systems/{user}/members/{member}/proxies") {
+                get("/systems/{user}/members/{member}/proxies") {
 
                 }
                 // Array of System switches
-                get("systems/{user}/switches") {
+                get("/systems/{user}/switches") {
 
                 }
             }
