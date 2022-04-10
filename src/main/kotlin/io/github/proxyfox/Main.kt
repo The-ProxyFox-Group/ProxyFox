@@ -21,6 +21,7 @@ import kotlinx.coroutines.flow.count
 import kotlinx.coroutines.launch
 import org.slf4j.LoggerFactory
 import kotlin.concurrent.thread
+import kotlin.system.exitProcess
 
 private val logger = LoggerFactory.getLogger("ProxyFox")
 
@@ -61,7 +62,8 @@ fun readConsole() = thread {
     runAsync {
         while (true) {
             val input = readln()
-            logger.info(input)
+            if (input.contains("stop"))
+                exitProcess(0)
         }
     }
 }
