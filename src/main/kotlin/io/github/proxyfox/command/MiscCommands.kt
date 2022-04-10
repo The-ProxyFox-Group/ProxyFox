@@ -3,10 +3,8 @@ package io.github.proxyfox.command
 import com.mojang.brigadier.arguments.StringArgumentType
 import com.mojang.brigadier.context.CommandContext
 import dev.steyn.brigadierkt.*
-import io.github.proxyfox.importer.Importer
 import io.github.proxyfox.importer.import
 import io.github.proxyfox.printStep
-import io.ktor.http.*
 import java.io.InputStreamReader
 import java.net.URL
 
