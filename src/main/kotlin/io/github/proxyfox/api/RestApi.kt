@@ -18,7 +18,7 @@ object RestApi {
         printStep("Start REST API server", 1)
         embeddedServer(Netty, 8080) {
             routing {
-                route("/systems") {
+                route("/api/v1/systems") {
                     // Array of system IDs
                     get {
                         logger.info("Received GET for " + call.request.local.uri)
