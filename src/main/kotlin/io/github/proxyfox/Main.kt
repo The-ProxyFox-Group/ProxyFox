@@ -40,15 +40,19 @@ suspend fun printStep(input: String, step: Int) {
 val prefixRegex = Regex("^pf[>;!].*",RegexOption.IGNORE_CASE)
 
 lateinit var kord: Kord
-val database: Database = NopDatabase()
+lateinit var database: Database
 
 suspend fun main() {
     // Hack to not get io.ktor.random warning
     System.setProperty("io.ktor.random.secure.random.provider", "DRBG")
 
     printFancy("Initializing ProxyFox")
+
     // Register commands in brigadier
     Commands.register()
+
+    // Setup database
+    setupDatabase()
 
     // Start reading console input
     readConsole()
@@ -58,6 +62,11 @@ suspend fun main() {
 
     // Login to Kord
     login()
+}
+
+suspend fun setupDatabase() {
+    printStep("Setup database", 1)
+    database = NopDatabase()
 }
 
 suspend fun readConsole() {
