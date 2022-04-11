@@ -2,8 +2,10 @@ package io.github.proxyfox.command
 
 import com.mojang.brigadier.arguments.StringArgumentType
 import com.mojang.brigadier.context.CommandContext
-import dev.steyn.brigadierkt.*
+import dev.steyn.brigadierkt.argument
+import dev.steyn.brigadierkt.literal
 import io.github.proxyfox.printStep
+import io.github.proxyfox.runAsync
 
 object MemberCommands {
     private fun changeName(ctx: CommandContext<CommandSource>): Int = runAsync {

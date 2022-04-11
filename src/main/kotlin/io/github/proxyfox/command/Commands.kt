@@ -3,11 +3,9 @@ package io.github.proxyfox.command
 import com.mojang.brigadier.CommandDispatcher
 import com.mojang.brigadier.builder.LiteralArgumentBuilder
 import com.mojang.brigadier.context.CommandContext
-import dev.steyn.brigadierkt.*
+import dev.steyn.brigadierkt.command
 import io.github.proxyfox.printStep
-import kotlinx.coroutines.DelicateCoroutinesApi
-import kotlinx.coroutines.GlobalScope
-import kotlinx.coroutines.launch
+import io.github.proxyfox.runAsync
 
 val dispatcher = CommandDispatcher<CommandSource>()
 
@@ -17,14 +15,6 @@ suspend fun command(literal: String, action: LiteralArgumentBuilder<CommandSourc
 suspend fun commands(literals: Array<String>, action: LiteralArgumentBuilder<CommandSource>.() -> Unit) {
     for (literal in literals)
         command(literal, action)
-}
-
-@OptIn(DelicateCoroutinesApi::class)
-fun runAsync(action: suspend () -> Unit): Int {
-    GlobalScope.launch {
-        action()
-    }
-    return 0
 }
 
 fun noSubCommandError(ctx: CommandContext<CommandSource>): Int = runAsync {
