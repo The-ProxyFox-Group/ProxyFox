@@ -2,9 +2,11 @@ package io.github.proxyfox.command
 
 import com.mojang.brigadier.arguments.StringArgumentType
 import com.mojang.brigadier.context.CommandContext
-import dev.steyn.brigadierkt.*
+import dev.steyn.brigadierkt.argument
+import dev.steyn.brigadierkt.literal
 import io.github.proxyfox.importer.import
 import io.github.proxyfox.printStep
+import io.github.proxyfox.runAsync
 import java.io.InputStreamReader
 import java.net.URL
 

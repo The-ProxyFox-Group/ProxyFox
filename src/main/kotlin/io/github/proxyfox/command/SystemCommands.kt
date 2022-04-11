@@ -6,6 +6,7 @@ import dev.steyn.brigadierkt.argument
 import dev.steyn.brigadierkt.literal
 import io.github.proxyfox.database
 import io.github.proxyfox.printStep
+import io.github.proxyfox.runAsync
 
 object SystemCommands {
     private fun changeSystemName(ctx: CommandContext<CommandSource>): Int = runAsync {
