@@ -5,6 +5,10 @@ package io.github.proxyfox
 import io.github.proxyfox.api.RestApi
 import io.github.proxyfox.command.Commands
 
+
+/**
+ * @author Oliver
+ * */
 suspend fun main() {
     // Hack to not get io.ktor.random warning
     System.setProperty("io.ktor.random.secure.random.provider", "DRBG")

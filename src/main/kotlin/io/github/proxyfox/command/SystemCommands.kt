@@ -8,6 +8,10 @@ import io.github.proxyfox.database
 import io.github.proxyfox.printStep
 import io.github.proxyfox.runAsync
 
+/**
+ * Commands for accessing and changing system settings
+ * @author Oliver
+ * */
 object SystemCommands {
     private fun changeSystemName(ctx: CommandContext<CommandSource>): Int = runAsync {
         val system = database.getSystemByHost(ctx.source.message.author!!.id)
@@ -20,6 +24,7 @@ object SystemCommands {
         database.updateSystem(system)
         ctx.source.message.channel.createMessage("System name updated to `$name`")
     }
+
     private fun accessSystemName(ctx: CommandContext<CommandSource>): Int = runAsync {
         val system = database.getSystemByHost(ctx.source.message.author!!.id)
         if (system == null) {
@@ -29,6 +34,7 @@ object SystemCommands {
         val name = system.name
         ctx.source.message.channel.createMessage("Current system name is `$name`")
     }
+
     private fun changeSystemTag(ctx: CommandContext<CommandSource>): Int = runAsync {
         val system = database.getSystemByHost(ctx.source.message.author!!.id)
         if (system == null) {
@@ -40,6 +46,7 @@ object SystemCommands {
         database.updateSystem(system)
         ctx.source.message.channel.createMessage("System tag updated to `$tag`")
     }
+
     private fun accessSystemTag(ctx: CommandContext<CommandSource>): Int = runAsync {
         val system = database.getSystemByHost(ctx.source.message.author!!.id)
         if (system == null) {
@@ -49,6 +56,7 @@ object SystemCommands {
         val tag = system.tag
         ctx.source.message.channel.createMessage("Current system tag is `$tag`")
     }
+
     private fun changeSystemDescription(ctx: CommandContext<CommandSource>): Int = runAsync {
         val system = database.getSystemByHost(ctx.source.message.author!!.id)
         if (system == null) {
@@ -60,6 +68,7 @@ object SystemCommands {
         database.updateSystem(system)
         ctx.source.message.channel.createMessage("System description updated to `$desc`")
     }
+
     private fun accessSystemDescription(ctx: CommandContext<CommandSource>): Int = runAsync {
         val system = database.getSystemByHost(ctx.source.message.author!!.id)
         if (system == null) {
@@ -69,6 +78,7 @@ object SystemCommands {
         val desc = system.description
         ctx.source.message.channel.createMessage("Current system description is `$desc`")
     }
+
     private fun changeSystemAvatar(ctx: CommandContext<CommandSource>): Int = runAsync {
         val system = database.getSystemByHost(ctx.source.message.author!!.id)
         val isFetch = ctx.source.message.attachments.isNotEmpty()
@@ -110,9 +120,11 @@ object SystemCommands {
     private fun createSystem(ctx: CommandContext<CommandSource>): Int = runAsync {
         //TODO: not implemented
     }
+
     private fun createSystemNamed(ctx: CommandContext<CommandSource>): Int = runAsync {
         //TODO: not implemented
     }
+
     private fun accessSystem(ctx: CommandContext<CommandSource>): Int = runAsync {
         //TODO: not implemented
     }

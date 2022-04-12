@@ -15,6 +15,10 @@ import com.mojang.brigadier.tree.LiteralCommandNode
 import java.util.concurrent.CompletableFuture
 import java.util.function.Predicate
 
+/**
+ * A case-insensitive literal node
+ * @author Oliver
+ * */
 class CaseInsensitiveLiteralCommandNode<S>(
     private val literal: String,
     command: Command<S?>,
