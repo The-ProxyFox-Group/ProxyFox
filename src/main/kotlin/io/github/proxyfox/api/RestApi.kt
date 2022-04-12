@@ -27,19 +27,30 @@ object RestApi {
                         finish()
                     }
                     route("/{user}") {
-                        // System settings
+                        // System object
                         get {
                             logger.info("Received GET for " + call.request.local.uri)
                             val user = call.parameters["user"]
                             call.respondText("{}")
                             finish()
                         }
-                        // Array of System switches
-                        get("/switches") {
-                            logger.info("Received GET for " + call.request.local.uri)
-                            val user = call.parameters["user"]
-                            call.respondText("[]")
-                            finish()
+
+                        route("/switches") {
+                            // Array of System switch IDs
+                            get {
+                                logger.info("Received GET for " + call.request.local.uri)
+                                val user = call.parameters["user"]
+                                call.respondText("[]")
+                                finish()
+                            }
+                            // Switch object
+                            get("/{switch}") {
+                                logger.info("Received GET for " + call.request.local.uri)
+                                val user = call.parameters["user"]
+                                val switch = call.parameters["switch"]
+                                call.respondText("{}")
+                                finish()
+                            }
                         }
 
                         route("/members") {
@@ -51,6 +62,7 @@ object RestApi {
                                 finish()
                             }
 
+                            // Member object
                             route("/{member}") {
                                 // Member settings
                                 get {
