@@ -17,7 +17,7 @@ interface Database {
      * @param userId The ID of the Discord user.
      * @return The system tied to the Discord user.
      * */
-    fun getSystemByHost(userId: Snowflake): SystemRecord?
+    suspend fun getSystemByHost(userId: Snowflake): SystemRecord?
 
     /**
      * Gets a [system][SystemRecord] by system ID.
@@ -25,7 +25,7 @@ interface Database {
      * @param systemId The ID of the system.
      * @return The system as registered by ID.
      * */
-    fun getSystemById(systemId: String): SystemRecord?
+    suspend fun getSystemById(systemId: String): SystemRecord?
 
     // === Members ===
     /**
@@ -34,7 +34,7 @@ interface Database {
      * @param userId The ID of the Discord user.
      * @return A list of members registered to the system tied to the Discord user.
      * */
-    fun getMembersByHost(userId: Snowflake): List<MemberRecord>?
+    suspend fun getMembersByHost(userId: Snowflake): List<MemberRecord>?
 
     /**
      * Gets a list of [members][MemberRecord] by system ID.
@@ -42,7 +42,7 @@ interface Database {
      * @param systemId The ID of the system.
      * @return A list of members registered to the system.
      * */
-    fun getMembersBySystem(systemId: String): List<MemberRecord>?
+    suspend fun getMembersBySystem(systemId: String): List<MemberRecord>?
 
     /**
      * Gets the [member][MemberRecord] by both Discord & member IDs.
@@ -51,7 +51,7 @@ interface Database {
      * @param memberId The ID of the member in the system tied to the Discord user.
      * @return The member of the system tied to the Discord user.
      * */
-    fun getMemberByHost(discordId: Snowflake, memberId: String): MemberRecord?
+    suspend fun getMemberByHost(discordId: Snowflake, memberId: String): MemberRecord?
 
     /**
      * Gets the [member][MemberRecord] by both system & member IDs.
@@ -60,7 +60,7 @@ interface Database {
      * @param memberId The ID of the member in the system.
      * @return The member of the system.
      * */
-    fun getMemberById(systemId: String, memberId: String): MemberRecord?
+    suspend fun getMemberById(systemId: String, memberId: String): MemberRecord?
 
     /**
      * Gets the fronting [member][MemberRecord] by Discord ID.
@@ -68,7 +68,7 @@ interface Database {
      * @param discordId The ID of the Discord user.
      * @return The fronting member of the system tied to the Discord user, if applicable.
      * */
-    fun getFrontingMemberByHost(discordId: Snowflake): MemberRecord?
+    suspend fun getFrontingMemberByHost(discordId: Snowflake): MemberRecord?
 
     /**
      * Gets the fronting [member][MemberRecord] by Discord ID and proxy tags.
@@ -77,7 +77,7 @@ interface Database {
      * @param message The message to check proxy tags against.
      * @return The fronting member of the system tied to the Discord user, if applicable.
      * */
-    fun getFrontingMemberByTags(discordId: Snowflake, message: String): MemberRecord?
+    suspend fun getFrontingMemberByTags(discordId: Snowflake, message: String): MemberRecord?
 
     /**
      * Gets the [proxy][MemberProxyTagRecord] by Discord ID and proxy tags.
@@ -86,7 +86,7 @@ interface Database {
      * @param message The message to check proxy tags against.
      * @return The ProxyTag associated with the message
      * */
-    fun getProxyTagFromMessage(discordId: Snowflake, message: String): MemberProxyTagRecord?
+    suspend fun getProxyTagFromMessage(discordId: Snowflake, message: String): MemberProxyTagRecord?
 
     // === Server Settings ===
     /**
@@ -96,7 +96,7 @@ interface Database {
      * @param discordId The ID of the Discord user.
      * @return The fronting member's settings for the server.
      * */
-    fun getFrontingServerSettingsByHost(serverId: Snowflake, discordId: Snowflake): MemberServerSettingsRecord?
+    suspend fun getFrontingServerSettingsByHost(serverId: Snowflake, discordId: Snowflake): MemberServerSettingsRecord?
 
     /**
      * Gets the [member's server settings][MemberServerSettingsRecord] by server, Discord & member IDs.
@@ -106,7 +106,7 @@ interface Database {
      * @param memberId The ID of the member in the system tied to the Discord user.
      * @return The member's settings for the server.
      * */
-    fun getServerSettingsByHost(serverId: Snowflake, discordId: Snowflake, memberId: String): MemberServerSettingsRecord?
+    suspend fun getServerSettingsByHost(serverId: Snowflake, discordId: Snowflake, memberId: String): MemberServerSettingsRecord?
 
     /**
      * Gets the [member's server settings][MemberServerSettingsRecord] by server, system & member IDs.
@@ -116,7 +116,7 @@ interface Database {
      * @param memberId The ID of the member in the system.
      * @return The member's settings for the server.
      * */
-    fun getServerSettingsByMember(serverId: Snowflake, systemId: String, memberId: String): MemberServerSettingsRecord?
+    suspend fun getServerSettingsByMember(serverId: Snowflake, systemId: String, memberId: String): MemberServerSettingsRecord?
 
     // === Management ===
     /**
@@ -125,7 +125,7 @@ interface Database {
      * @param discordId The ID of the Discord user.
      * @return A maybe newly created system.
      * */
-    fun allocateSystem(discordId: Snowflake): SystemRecord?
+    suspend fun allocateSystem(discordId: Snowflake): SystemRecord?
 
     /**
      * Allocates a member ID in the database.
@@ -134,12 +134,12 @@ interface Database {
      * @param name The name of the new member.
      * @return A newly created member ID.
      * */
-    fun allocateMember(systemId: String, name: String): MemberRecord?
+    suspend fun allocateMember(systemId: String, name: String): MemberRecord?
 
-    fun updateMember(member: MemberRecord)
-    fun updateMemberServerSettings(serverSettings: MemberServerSettingsRecord)
-    fun updateSystem(system: SystemRecord)
-    fun updateSystemServerSettings(serverSettings: SystemServerSettingsRecord)
+    suspend fun updateMember(member: MemberRecord)
+    suspend fun updateMemberServerSettings(serverSettings: MemberServerSettingsRecord)
+    suspend fun updateSystem(system: SystemRecord)
+    suspend fun updateSystemServerSettings(serverSettings: SystemServerSettingsRecord)
 
     /**
      * Adds a Discord account to a system.
@@ -149,7 +149,7 @@ interface Database {
      * @param discordId The ID of the Discord user.
      * @param systemId The ID of the system.
      * */
-    fun addUserToSystem(discordId: Snowflake, systemId: String)
+    suspend fun addUserToSystem(discordId: Snowflake, systemId: String)
 
     /**
      * Removes a Discord account from a system.
@@ -159,26 +159,26 @@ interface Database {
      * @param discordId The ID of the Discord user.
      * @param systemId The ID of the system.
      * */
-    fun removeUserFromSystem(discordId: Snowflake, systemId: String)
+    suspend fun removeUserFromSystem(discordId: Snowflake, systemId: String)
 
     /**
      * Gets the total number of systems registered
      *
      * Implementation requirements: return an int with the total systems in the database
      * */
-    fun getTotalSystems(): Int?
+    suspend fun getTotalSystems(): Int?
 
     /**
      * Gets the total number of members registered in a system by discord ID.
      *
      * Implementation requirements: return an int with the total members registered
      * */
-    fun getTotalMembersByHost(discordId: Snowflake): Int?
+    suspend fun getTotalMembersByHost(discordId: Snowflake): Int?
 
     /**
      * Gets the total number of members registered in a system by discord ID.
      *
      * Implementation requirements: return an int with the total members registered
      * */
-    fun getTotalMembersById(systemId: String): Int?
+    suspend fun getTotalMembersById(systemId: String): Int?
 }
