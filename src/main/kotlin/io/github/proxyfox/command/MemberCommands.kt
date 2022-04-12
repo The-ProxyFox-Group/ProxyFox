@@ -7,76 +7,103 @@ import io.github.proxyfox.command.extension.caseInsensitiveLiteral
 import io.github.proxyfox.printStep
 import io.github.proxyfox.runAsync
 
+/**
+ * Commands for accessing and changing system member settings
+ * @author Oliver
+ * */
 object MemberCommands {
     private fun changeName(ctx: CommandContext<CommandSource>): Int = runAsync {
         //TODO: not implemented
     }
+
     private fun accessName(ctx: CommandContext<CommandSource>): Int = runAsync {
         //TODO: not implemented
     }
+
     private fun changeDisplayName(ctx: CommandContext<CommandSource>): Int = runAsync {
         //TODO: not implemented
     }
+
     private fun accessDisplayName(ctx: CommandContext<CommandSource>): Int = runAsync {
         //TODO: not implemented
     }
+
     private fun changeServerName(ctx: CommandContext<CommandSource>): Int = runAsync {
         //TODO: not implemented
     }
+
     private fun accessServerName(ctx: CommandContext<CommandSource>): Int = runAsync {
         //TODO: not implemented
     }
+
     private fun changeAvatar(ctx: CommandContext<CommandSource>): Int = runAsync {
         //TODO: not implemented
     }
+
     private fun changeAvatarLinked(ctx: CommandContext<CommandSource>): Int = runAsync {
         //TODO: not implemented
     }
+
     private fun changeServerAvatar(ctx: CommandContext<CommandSource>): Int = runAsync {
         //TODO: not implemented
     }
+
     private fun changeServerAvatarLinked(ctx: CommandContext<CommandSource>): Int = runAsync {
         //TODO: not implemented
     }
+
     private fun addProxy(ctx: CommandContext<CommandSource>): Int = runAsync {
         //TODO: not implemented
     }
+
     private fun removeProxy(ctx: CommandContext<CommandSource>): Int = runAsync {
         //TODO: not implemented
     }
+
     private fun accessProxy(ctx: CommandContext<CommandSource>): Int = runAsync {
         //TODO: not implemented
     }
+
     private fun changeMemberDescription(ctx: CommandContext<CommandSource>): Int = runAsync {
         //TODO: not implemented
     }
+
     private fun accessMemberDescription(ctx: CommandContext<CommandSource>): Int = runAsync {
         //TODO: not implemented
     }
+
     private fun changeMemberPronouns(ctx: CommandContext<CommandSource>): Int = runAsync {
         //TODO: not implemented
     }
+
     private fun accessMemberPronouns(ctx: CommandContext<CommandSource>): Int = runAsync {
         //TODO: not implemented
     }
+
     private fun changeMemberColor(ctx: CommandContext<CommandSource>): Int = runAsync {
         //TODO: not implemented
     }
+
     private fun accessMemberColor(ctx: CommandContext<CommandSource>): Int = runAsync {
         //TODO: not implemented
     }
+
     private fun changeMemberBirthday(ctx: CommandContext<CommandSource>): Int = runAsync {
         //TODO: not implemented
     }
+
     private fun accessMemberBirthday(ctx: CommandContext<CommandSource>): Int = runAsync {
         //TODO: not implemented
     }
+
     private fun deleteMember(ctx: CommandContext<CommandSource>): Int = runAsync {
         //TODO: not implemented
     }
+
     private fun accessMember(ctx: CommandContext<CommandSource>): Int = runAsync {
         //TODO: not implemented
     }
+
     private fun createMember(ctx: CommandContext<CommandSource>): Int = runAsync {
         //TODO: not implemented
     }

@@ -21,6 +21,11 @@ import java.util.*
 import kotlin.concurrent.thread
 import kotlin.system.exitProcess
 
+/**
+ * Important functions and variables needed for proxyfox
+ * @author Oliver
+ * */
+
 private val logger = LoggerFactory.getLogger("ProxyFox")
 val prefixRegex = Regex("^pf[>;!].*", RegexOption.IGNORE_CASE)
 lateinit var kord: Kord

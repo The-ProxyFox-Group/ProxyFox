@@ -2,6 +2,10 @@ package io.github.proxyfox.command.extension
 
 import com.mojang.brigadier.builder.ArgumentBuilder
 
+/**
+ * A case-insensitive literal argument builder
+ * @author Oliver
+ * */
 open class CaseInsensitiveLiteralArgumentBuilder<S> protected constructor(val literal: String) :
     ArgumentBuilder<S?, CaseInsensitiveLiteralArgumentBuilder<S>>() {
 

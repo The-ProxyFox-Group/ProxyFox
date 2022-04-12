@@ -8,11 +8,18 @@ import io.github.proxyfox.command.extension.CaseInsensitiveLiteralArgumentBuilde
 import io.github.proxyfox.printStep
 import io.github.proxyfox.runAsync
 
+/**
+ * General utilities relating to commands
+ * @author Oliver
+ * */
+
 val dispatcher = CommandDispatcher<CommandSource>()
 
 typealias Node = CaseInsensitiveLiteralArgumentBuilder<CommandSource>.() -> Unit
 
-suspend fun command(literal: String, action: LiteralArgumentBuilder<CommandSource>.() -> Unit) = dispatcher.command(literal, action)
+suspend fun command(literal: String, action: LiteralArgumentBuilder<CommandSource>.() -> Unit) =
+    dispatcher.command(literal, action)
+
 suspend fun commands(literals: Array<String>, action: LiteralArgumentBuilder<CommandSource>.() -> Unit) {
     for (literal in literals)
         command(literal, action)

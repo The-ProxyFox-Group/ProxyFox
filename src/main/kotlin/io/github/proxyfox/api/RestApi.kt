@@ -10,10 +10,11 @@ import org.slf4j.LoggerFactory
 
 private val logger = LoggerFactory.getLogger("REST API")
 
+/**
+ * Object for REST API related functions
+ * @author Oliver
+ * */
 object RestApi {
-    /**
-     * @author Oliver
-     * */
     suspend fun start() {
         printStep("Start REST API server", 1)
         embeddedServer(Netty, 8080) {
