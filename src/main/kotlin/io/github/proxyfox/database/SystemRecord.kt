@@ -1,7 +1,7 @@
 package io.github.proxyfox.database
 
 import java.time.OffsetDateTime
-import java.time.Instant
+import kotlin.time.Duration
 
 // Created 2022-09-04T14:07:21
 
@@ -19,5 +19,7 @@ data class SystemRecord(
     var timezone: String?,
     var created: OffsetDateTime,
     /** The ID of the member that's currently being auto-proxied. */
-    var autoProxy: String?
+    var autoProxy: String?,
+    var autoProxyMode: AutoProxyMode = AutoProxyMode.OFF,
+    var autoProxyTimeout: Duration?
 )

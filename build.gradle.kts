@@ -31,6 +31,8 @@ dependencies {
     implementation("com.mojang:brigadier:1.0.18")
     implementation("dev.kord:kord-core:0.8.0-M12")
     implementation("ch.qos.logback:logback-classic:1.2.11")
+    implementation("com.vladsch.kotlin-jdbc:kotlin-jdbc:0.5.2")
+    implementation("org.postgresql:postgresql:42.3.3")
 }
 
 tasks {

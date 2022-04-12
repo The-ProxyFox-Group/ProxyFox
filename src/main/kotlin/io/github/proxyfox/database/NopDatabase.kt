@@ -3,70 +3,70 @@ package io.github.proxyfox.database
 import dev.kord.common.entity.Snowflake
 
 class NopDatabase : Database {
-    override fun getSystemByHost(userId: Snowflake): SystemRecord? = null
+    override suspend fun getSystemByHost(userId: Snowflake): SystemRecord? = null
 
-    override fun getSystemById(systemId: String): SystemRecord? = null
+    override suspend fun getSystemById(systemId: String): SystemRecord? = null
 
-    override fun getMembersByHost(userId: Snowflake): List<MemberRecord>? = null
+    override suspend fun getMembersByHost(userId: Snowflake): List<MemberRecord>? = null
 
-    override fun getMembersBySystem(systemId: String): List<MemberRecord>? = null
+    override suspend fun getMembersBySystem(systemId: String): List<MemberRecord>? = null
 
-    override fun getMemberByHost(discordId: Snowflake, memberId: String): MemberRecord? = null
+    override suspend fun getMemberByHost(discordId: Snowflake, memberId: String): MemberRecord? = null
 
-    override fun getMemberById(systemId: String, memberId: String): MemberRecord? = null
+    override suspend fun getMemberById(systemId: String, memberId: String): MemberRecord? = null
 
-    override fun getFrontingMemberByHost(discordId: Snowflake): MemberRecord? = null
+    override suspend fun getFrontingMemberByHost(discordId: Snowflake): MemberRecord? = null
 
-    override fun getFrontingMemberByTags(discordId: Snowflake, message: String): MemberRecord? = null
+    override suspend fun getFrontingMemberByTags(discordId: Snowflake, message: String): MemberRecord? = null
 
-    override fun getProxyTagFromMessage(discordId: Snowflake, message: String): MemberProxyTagRecord? = null
+    override suspend fun getProxyTagFromMessage(discordId: Snowflake, message: String): MemberProxyTagRecord? = null
 
-    override fun getFrontingServerSettingsByHost(serverId: Snowflake, discordId: Snowflake): MemberServerSettingsRecord? = null
+    override suspend fun getFrontingServerSettingsByHost(serverId: Snowflake, discordId: Snowflake): MemberServerSettingsRecord? = null
 
-    override fun getServerSettingsByHost(
+    override suspend fun getServerSettingsByHost(
         serverId: Snowflake,
         discordId: Snowflake,
         memberId: String
     ): MemberServerSettingsRecord? = null
 
-    override fun getServerSettingsByMember(
+    override suspend fun getServerSettingsByMember(
         serverId: Snowflake,
         systemId: String,
         memberId: String
     ): MemberServerSettingsRecord? = null
 
-    override fun allocateSystem(discordId: Snowflake): SystemRecord? = null
+    override suspend fun allocateSystem(discordId: Snowflake): SystemRecord? = null
 
-    override fun allocateMember(systemId: String, name: String): MemberRecord? = null
+    override suspend fun allocateMember(systemId: String, name: String): MemberRecord? = null
 
-    override fun updateMember(member: MemberRecord) {
+    override suspend fun updateMember(member: MemberRecord) {
         return
     }
 
-    override fun updateMemberServerSettings(serverSettings: MemberServerSettingsRecord) {
+    override suspend fun updateMemberServerSettings(serverSettings: MemberServerSettingsRecord) {
         return
     }
 
-    override fun updateSystem(system: SystemRecord) {
+    override suspend fun updateSystem(system: SystemRecord) {
         return
     }
 
-    override fun updateSystemServerSettings(serverSettings: SystemServerSettingsRecord) {
+    override suspend fun updateSystemServerSettings(serverSettings: SystemServerSettingsRecord) {
         return
     }
 
-    override fun addUserToSystem(discordId: Snowflake, systemId: String) {
+    override suspend fun addUserToSystem(discordId: Snowflake, systemId: String) {
         return
     }
 
-    override fun removeUserFromSystem(discordId: Snowflake, systemId: String) {
+    override suspend fun removeUserFromSystem(discordId: Snowflake, systemId: String) {
         return
     }
 
-    override fun getTotalSystems(): Int? = null
+    override suspend fun getTotalSystems(): Int? = null
 
-    override fun getTotalMembersByHost(discordId: Snowflake): Int? = null
+    override suspend fun getTotalMembersByHost(discordId: Snowflake): Int? = null
 
-    override fun getTotalMembersById(systemId: String): Int? = null
+    override suspend fun getTotalMembersById(systemId: String): Int? = null
 
 }
