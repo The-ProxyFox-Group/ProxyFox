@@ -3,7 +3,7 @@ package io.github.proxyfox.command
 import com.mojang.brigadier.arguments.StringArgumentType
 import com.mojang.brigadier.context.CommandContext
 import dev.steyn.brigadierkt.argument
-import dev.steyn.brigadierkt.literal
+import io.github.proxyfox.command.extension.caseInsensitiveLiteral
 import io.github.proxyfox.printStep
 import io.github.proxyfox.runAsync
 
@@ -87,29 +87,29 @@ object MemberCommands {
             argument("member",StringArgumentType.string()) {
                 // Change member name
                 val name: Node = {
-                    argument("name",StringArgumentType.greedyString()) {
+                    argument("name", StringArgumentType.greedyString()) {
                         executes(MemberCommands::changeName)
                     }
                     executes(MemberCommands::accessName)
                 }
-                literal("name", name)
-                literal("rename", name)
+                caseInsensitiveLiteral("name", name)
+                caseInsensitiveLiteral("rename", name)
 
                 // Change member display name
                 val displayname: Node = {
-                    argument("name",StringArgumentType.greedyString()) {
+                    argument("name", StringArgumentType.greedyString()) {
                         executes(MemberCommands::changeDisplayName)
                     }
                     executes(MemberCommands::accessDisplayName)
                 }
-                literal("displayname", displayname)
-                literal("dn", displayname)
-                literal("nickname", displayname)
-                literal("nick", displayname)
+                caseInsensitiveLiteral("displayname", displayname)
+                caseInsensitiveLiteral("dn", displayname)
+                caseInsensitiveLiteral("nickname", displayname)
+                caseInsensitiveLiteral("nick", displayname)
 
                 // Change member server nickname
-                literal("servernick") {
-                    argument("name",StringArgumentType.greedyString()) {
+                caseInsensitiveLiteral("servernick") {
+                    argument("name", StringArgumentType.greedyString()) {
                         executes(MemberCommands::changeServerName)
                     }
                     executes(MemberCommands::accessServerName)
@@ -122,8 +122,8 @@ object MemberCommands {
                     }
                     executes(MemberCommands::changeAvatar)
                 }
-                literal("avatar", avatar)
-                literal("pfp", avatar)
+                caseInsensitiveLiteral("avatar", avatar)
+                caseInsensitiveLiteral("pfp", avatar)
 
                 // Change member server avatar
                 val serveravatar: Node = {
@@ -132,24 +132,24 @@ object MemberCommands {
                     }
                     executes(MemberCommands::changeServerAvatar)
                 }
-                literal("serveravatar", serveravatar)
-                literal("serverpfp", serveravatar)
+                caseInsensitiveLiteral("serveravatar", serveravatar)
+                caseInsensitiveLiteral("serverpfp", serveravatar)
 
                 // Edit member proxy
-                literal("proxy") {
-                    literal("add") {
-                        argument("proxy",StringArgumentType.greedyString()) {
+                caseInsensitiveLiteral("proxy") {
+                    caseInsensitiveLiteral("add") {
+                        argument("proxy", StringArgumentType.greedyString()) {
                             executes(MemberCommands::addProxy)
                         }
                         executes(::noSubCommandError)
                     }
-                    literal("remove") {
-                        argument("proxy",StringArgumentType.greedyString()) {
+                    caseInsensitiveLiteral("remove") {
+                        argument("proxy", StringArgumentType.greedyString()) {
                             executes(MemberCommands::removeProxy)
                         }
                         executes(::noSubCommandError)
                     }
-                    argument("proxy",StringArgumentType.greedyString()) {
+                    argument("proxy", StringArgumentType.greedyString()) {
                         executes(MemberCommands::addProxy)
                     }
                     executes(MemberCommands::accessProxy)
@@ -157,41 +157,41 @@ object MemberCommands {
 
                 // Change member description
                 val description: Node = {
-                    argument("description",StringArgumentType.greedyString()) {
+                    argument("description", StringArgumentType.greedyString()) {
                         executes(MemberCommands::changeMemberDescription)
                     }
                     executes(MemberCommands::accessMemberDescription)
                 }
-                literal("description", description)
-                literal("desc", description)
-                literal("d", description)
+                caseInsensitiveLiteral("description", description)
+                caseInsensitiveLiteral("desc", description)
+                caseInsensitiveLiteral("d", description)
 
                 // Change member pronouns
-                literal("pronouns") {
-                    argument("pronouns",StringArgumentType.greedyString()) {
+                caseInsensitiveLiteral("pronouns") {
+                    argument("pronouns", StringArgumentType.greedyString()) {
                         executes(MemberCommands::changeMemberPronouns)
                     }
                     executes(MemberCommands::accessMemberPronouns)
                 }
 
                 // Change member color
-                literal("color") {
-                    argument("color",StringArgumentType.greedyString()) {
+                caseInsensitiveLiteral("color") {
+                    argument("color", StringArgumentType.greedyString()) {
                         executes(MemberCommands::changeMemberColor)
                     }
                     executes(MemberCommands::accessMemberColor)
                 }
 
                 // Change member birthday
-                literal("birthday") {
-                    argument("birthday",StringArgumentType.greedyString()) {
+                caseInsensitiveLiteral("birthday") {
+                    argument("birthday", StringArgumentType.greedyString()) {
                         executes(MemberCommands::changeMemberBirthday)
                     }
                     executes(MemberCommands::accessMemberBirthday)
                 }
 
                 // Delete member
-                literal("delete") {
+                caseInsensitiveLiteral("delete") {
                     executes(MemberCommands::deleteMember)
                 }
 
@@ -205,9 +205,9 @@ object MemberCommands {
                     executes(MemberCommands::createMember)
                 }
             }
-            literal("new",create)
-            literal("add",create)
-            literal("create",create)
+            caseInsensitiveLiteral("new", create)
+            caseInsensitiveLiteral("add", create)
+            caseInsensitiveLiteral("create", create)
 
             executes(::noSubCommandError)
         }

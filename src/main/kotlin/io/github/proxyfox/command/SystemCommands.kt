@@ -3,7 +3,7 @@ package io.github.proxyfox.command
 import com.mojang.brigadier.arguments.StringArgumentType
 import com.mojang.brigadier.context.CommandContext
 import dev.steyn.brigadierkt.argument
-import dev.steyn.brigadierkt.literal
+import io.github.proxyfox.command.extension.caseInsensitiveLiteral
 import io.github.proxyfox.database
 import io.github.proxyfox.printStep
 import io.github.proxyfox.runAsync
@@ -127,11 +127,11 @@ object SystemCommands {
                 }
                 executes(SystemCommands::accessSystemName)
             }
-            literal("name", name)
-            literal("rename", name)
+            caseInsensitiveLiteral("name", name)
+            caseInsensitiveLiteral("rename", name)
 
             // Change system tag
-            literal("tag") {
+            caseInsensitiveLiteral("tag") {
                 argument("tag", StringArgumentType.greedyString()) {
                     executes(SystemCommands::changeSystemTag)
                 }
@@ -145,27 +145,27 @@ object SystemCommands {
                 }
                 executes(SystemCommands::accessSystemDescription)
             }
-            literal("description", description)
-            literal("desc", description)
-            literal("d", description)
+            caseInsensitiveLiteral("description", description)
+            caseInsensitiveLiteral("desc", description)
+            caseInsensitiveLiteral("d", description)
 
             // Change system avatar
-            val avatar: Node =  {
+            val avatar: Node = {
                 argument("avatar", StringArgumentType.greedyString()) {
                     executes(SystemCommands::changeSystemAvatarLinked)
                 }
                 executes(SystemCommands::changeSystemAvatar)
             }
-            literal("avatar", avatar)
-            literal("pfp", avatar)
+            caseInsensitiveLiteral("avatar", avatar)
+            caseInsensitiveLiteral("pfp", avatar)
 
             // List system members
-            literal("list") {
+            caseInsensitiveLiteral("list") {
                 executes(SystemCommands::listSystem)
             }
 
             // Delete system
-            literal("delete") {
+            caseInsensitiveLiteral("delete") {
                 executes(SystemCommands::deleteSystem)
             }
 
@@ -176,8 +176,8 @@ object SystemCommands {
                 }
                 executes(SystemCommands::createSystem)
             }
-            literal("new", create)
-            literal("create", create)
+            caseInsensitiveLiteral("new", create)
+            caseInsensitiveLiteral("create", create)
 
             executes(SystemCommands::accessSystem)
         }

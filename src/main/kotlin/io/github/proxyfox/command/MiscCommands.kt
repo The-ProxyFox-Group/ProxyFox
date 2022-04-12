@@ -3,7 +3,7 @@ package io.github.proxyfox.command
 import com.mojang.brigadier.arguments.StringArgumentType
 import com.mojang.brigadier.context.CommandContext
 import dev.steyn.brigadierkt.argument
-import dev.steyn.brigadierkt.literal
+import io.github.proxyfox.command.extension.caseInsensitiveLiteral
 import io.github.proxyfox.importer.import
 import io.github.proxyfox.printStep
 import io.github.proxyfox.runAsync
@@ -92,30 +92,30 @@ It uses discord's webhooks to generate "pseudo-users" which different members of
         }
 
         commands(arrayOf("proxy","serverproxy")) {
-            literal("on") {
+            caseInsensitiveLiteral("on") {
                 executes(MiscCommands::enableServerProxy)
             }
-            literal("off") {
+            caseInsensitiveLiteral("off") {
                 executes(MiscCommands::disableServerProxy)
             }
             executes(::noSubCommandError)
         }
 
         commands(arrayOf("autoproxy","ap")) {
-            literal("on") {
+            caseInsensitiveLiteral("on") {
                 executes(MiscCommands::enableAutoProxy)
             }
-            literal("off") {
+            caseInsensitiveLiteral("off") {
                 executes(MiscCommands::disableAutoProxy)
             }
             executes(::noSubCommandError)
         }
 
         command("role") {
-            argument("role",StringArgumentType.greedyString()) {
+            argument("role", StringArgumentType.greedyString()) {
                 executes(MiscCommands::changeProxyRole)
             }
-            literal("clear") {
+            caseInsensitiveLiteral("clear") {
                 executes(MiscCommands::removeProxyRole)
             }
             executes(::noSubCommandError)
