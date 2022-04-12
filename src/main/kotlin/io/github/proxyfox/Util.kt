@@ -17,10 +17,14 @@ import kotlinx.coroutines.delay
 import kotlinx.coroutines.flow.count
 import kotlinx.coroutines.launch
 import org.slf4j.LoggerFactory
+import java.util.*
 import kotlin.concurrent.thread
 import kotlin.system.exitProcess
 
 private val logger = LoggerFactory.getLogger("ProxyFox")
+val prefixRegex = Regex("^pf[>;!].*", RegexOption.IGNORE_CASE)
+lateinit var kord: Kord
+lateinit var database: Database
 
 suspend fun printFancy(input: String) {
     val edges = "*".repeat(input.length + 4)
@@ -34,11 +38,6 @@ suspend fun printStep(input: String, step: Int) {
     logger.info(step.toString() + add + input)
 }
 
-val prefixRegex = Regex("^pf[>;!].*", RegexOption.IGNORE_CASE)
-
-lateinit var kord: Kord
-lateinit var database: Database
-
 suspend fun setupDatabase() {
     printStep("Setup database", 1)
     database = NopDatabase()
@@ -51,7 +50,7 @@ suspend fun readConsole() {
         runAsync {
             while (true) {
                 val input = readln()
-                if (input.contains("stop"))
+                if (input.lowercase(Locale.getDefault()).startsWith("stop"))
                     exitProcess(0)
             }
         }
