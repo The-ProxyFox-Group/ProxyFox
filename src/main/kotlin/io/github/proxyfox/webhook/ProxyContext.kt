@@ -5,6 +5,10 @@ import dev.kord.core.entity.Message
 import dev.kord.core.entity.Webhook
 import io.github.proxyfox.kord
 
+/**
+ * Context for proxying
+ * @author Oliver
+ * */
 data class ProxyContext(
     var messageContent: String,
     var attachments: List<DiscordAttachment>,
