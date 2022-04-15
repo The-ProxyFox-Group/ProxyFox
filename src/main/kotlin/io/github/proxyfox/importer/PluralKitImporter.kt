@@ -23,6 +23,8 @@ class PluralKitImporter : Importer {
             map["avatar_url"] as String?,
             map["timezone"] as String?,
             OffsetDateTime.parse(map["created"] as String, DateTimeFormatter.ISO_DATE_TIME),
+            null,
+            AutoProxyMode.OFF,
             null
         )
         for (memMap in map["members"] as List<Map<String,*>>) {
