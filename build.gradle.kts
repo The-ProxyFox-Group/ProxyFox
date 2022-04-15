@@ -35,6 +35,8 @@ dependencies {
 
     implementation("io.ktor:ktor-server-core:$ktor_version")
     implementation("io.ktor:ktor-server-netty:$ktor_version")
+    implementation("com.vladsch.kotlin-jdbc:kotlin-jdbc:0.5.2")
+    implementation("org.postgresql:postgresql:42.3.3")
 }
 
 tasks {
