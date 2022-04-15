@@ -17,9 +17,6 @@ import kotlinx.coroutines.delay
 import kotlinx.coroutines.flow.count
 import kotlinx.coroutines.launch
 import org.slf4j.LoggerFactory
-import java.util.*
-import kotlin.concurrent.thread
-import kotlin.system.exitProcess
 
 /**
  * Important functions and variables needed for proxyfox
@@ -46,20 +43,6 @@ suspend fun printStep(input: String, step: Int) {
 suspend fun setupDatabase() {
     printStep("Setup database", 1)
     database = NopDatabase()
-}
-
-suspend fun readConsole() {
-    printStep("Start reading console input", 1)
-    printStep("Launching thread", 2)
-    thread {
-        runAsync {
-            while (true) {
-                val input = readln()
-                if (input.lowercase(Locale.getDefault()).startsWith("stop"))
-                    exitProcess(0)
-            }
-        }
-    }
 }
 
 @OptIn(PrivilegedIntent::class)
