@@ -1,8 +1,6 @@
 package io.github.proxyfox.importer
 
-import io.github.proxyfox.database
 import io.github.proxyfox.database.*
-import java.text.SimpleDateFormat
 import java.time.OffsetDateTime
 import java.time.format.DateTimeFormatter
 

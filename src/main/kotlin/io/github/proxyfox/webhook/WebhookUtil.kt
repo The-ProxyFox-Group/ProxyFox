@@ -1,6 +1,5 @@
 package io.github.proxyfox.webhook
 
-import dev.kord.common.entity.DiscordAttachment
 import dev.kord.core.behavior.channel.createWebhook
 import dev.kord.core.entity.Message
 import dev.kord.core.entity.Webhook
@@ -8,8 +7,12 @@ import dev.kord.core.entity.channel.TextChannel
 import io.github.proxyfox.database.MemberProxyTagRecord
 import io.github.proxyfox.database.MemberRecord
 import io.github.proxyfox.kord
-import kotlinx.coroutines.flow.*
+import kotlinx.coroutines.flow.firstOrNull
 
+/**
+ * Utilities for using webhooks
+ * @author Oliver
+ * */
 object WebhookUtil {
     suspend fun prepareMessage(message: Message, member: MemberRecord, proxy: MemberProxyTagRecord): ProxyContext = ProxyContext(
         message.content,
@@ -17,6 +20,7 @@ object WebhookUtil {
         fetchWebhook(message.channel.asChannel() as TextChannel),
         message
     )
+
     suspend fun fetchWebhook(channel: TextChannel): Webhook {
         // Try to fetch webhook from cache
         WebhookCache[channel.id]?.let {
