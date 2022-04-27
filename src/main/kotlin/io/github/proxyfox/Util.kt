@@ -10,13 +10,16 @@ import io.github.proxyfox.command.CommandSource
 import io.github.proxyfox.command.dispatcher
 import io.github.proxyfox.database.Database
 import io.github.proxyfox.database.NopDatabase
+import io.github.proxyfox.database.PostgresDatabase
 import io.github.proxyfox.webhook.WebhookUtil
 import kotlinx.coroutines.DelicateCoroutinesApi
 import kotlinx.coroutines.GlobalScope
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.flow.count
 import kotlinx.coroutines.launch
+import org.postgresql.Driver
 import org.slf4j.LoggerFactory
+import java.io.File
 import java.util.*
 import kotlin.concurrent.thread
 import kotlin.system.exitProcess
@@ -45,7 +48,16 @@ suspend fun printStep(input: String, step: Int) {
 
 suspend fun setupDatabase() {
     printStep("Setup database", 1)
-    database = NopDatabase()
+    val file = File("proxyfox.db.properties")
+    database = if (file.exists()) {
+        val properties = Properties()
+        file.inputStream().use(properties::load)
+        val psql = PostgresDatabase(Driver())
+        psql.startConnection(properties.getProperty("url"), properties)
+        psql
+    } else {
+        NopDatabase()
+    }
 }
 
 suspend fun readConsole() {

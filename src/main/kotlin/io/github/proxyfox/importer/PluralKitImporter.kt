@@ -31,11 +31,11 @@ class PluralKitImporter : Importer {
             val member = MemberRecord(
                 memMap["id"] as String,
                 "aaaaa",
-                memMap["name"] as String?,
+                memMap["name"] as String,
                 memMap["display_name"] as String?,
                 memMap["description"] as String?,
                 memMap["pronouns"] as String?,
-                memMap["color"] as String?,
+                memMap["color"]?.let { Integer.parseInt(it as String, 16) } ?: -1,
                 memMap["avatar_url"] as String?,
                 memMap["keep_proxy"] as Boolean,
                 memMap["message_count"] as Long,

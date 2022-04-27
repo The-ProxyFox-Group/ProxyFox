@@ -6,7 +6,7 @@ package io.github.proxyfox.database
  * @author Ampflower
  * @since ${version}
  **/
-object Utilities {
+object DatabaseUtils {
     fun Int.toPkString(): String {
         val arr = CharArray(5)
         var tmp = this

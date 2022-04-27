@@ -17,7 +17,7 @@ class NopDatabase : Database {
 
     override suspend fun getFrontingMemberByHost(discordId: Snowflake): MemberRecord? = null
 
-    override suspend fun getFrontingMemberByTags(discordId: Snowflake, message: String): MemberRecord? = null
+    override suspend fun getFrontingMemberByTags(discordId: Snowflake, message: String): Pair<MemberRecord, String>? = null
 
     override suspend fun getProxyTagFromMessage(discordId: Snowflake, message: String): MemberProxyTagRecord? = null
 
@@ -35,9 +35,9 @@ class NopDatabase : Database {
         memberId: String
     ): MemberServerSettingsRecord? = null
 
-    override suspend fun allocateSystem(discordId: Snowflake): SystemRecord? = null
+    override suspend fun allocateSystem(discordId: Snowflake) = SystemRecord("aaaaa")
 
-    override suspend fun allocateMember(systemId: String, name: String): MemberRecord? = null
+    override suspend fun allocateMember(systemId: String, name: String) = MemberRecord("aaaaa", systemId, name = name)
 
     override suspend fun updateMember(member: MemberRecord) {
         return
