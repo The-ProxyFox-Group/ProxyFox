@@ -77,7 +77,7 @@ interface Database {
      * @param message The message to check proxy tags against.
      * @return The fronting member of the system tied to the Discord user, if applicable.
      * */
-    suspend fun getFrontingMemberByTags(discordId: Snowflake, message: String): MemberRecord?
+    suspend fun getFrontingMemberByTags(discordId: Snowflake, message: String): Pair<MemberRecord, String>?
 
     /**
      * Gets the [proxy][MemberProxyTagRecord] by Discord ID and proxy tags.
@@ -123,19 +123,21 @@ interface Database {
      * Allocates or reuses a system ID in the database.
      *
      * @param discordId The ID of the Discord user.
-     * @return A maybe newly created system.
+     * @return A maybe newly created system. Never null.
      * */
-    suspend fun allocateSystem(discordId: Snowflake): SystemRecord?
+    suspend fun allocateSystem(discordId: Snowflake): SystemRecord
 
     /**
      * Allocates a member ID in the database.
      *
      * @param systemId The ID of the system.
      * @param name The name of the new member.
-     * @return A newly created member ID.
+     * @return A newly created member. Never null.
      * */
-    suspend fun allocateMember(systemId: String, name: String): MemberRecord?
+    suspend fun allocateMember(systemId: String, name: String): MemberRecord
 
+    // TODO: This ideally needs a much better system for updating since this really isn't ideal as is.
+    //  This applies to the following 4 methods below.
     suspend fun updateMember(member: MemberRecord)
     suspend fun updateMemberServerSettings(serverSettings: MemberServerSettingsRecord)
     suspend fun updateSystem(system: SystemRecord)
