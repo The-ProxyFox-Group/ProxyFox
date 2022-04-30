@@ -99,9 +99,6 @@ client.on('messageCreate', async msg => {
 To get the latest version of ProxyFox, contact Octal#9139 for the bot invite.
 https://discord.gg/M2uBsJmRNT
 `)
-            else msg.channel.send(`
-**Note:** Because of verification, ProxyFox 2 cannot be in more than two servers that you own. If you own more than 2 servers with ProxyFox 2, please remove it to aid with verification. Thank you!
-`)
         }
     } catch (err) {
         sendError(msg,err);
@@ -114,6 +111,9 @@ client2.on('messageCreate', msg => {
             webhook(msg);
     } catch (err) {
         sendError(msg,err);
+        msg.channel.send(`
+**Note:** Because of verification, ProxyFox 2 cannot be in more than two servers that you own. If you own more than 2 servers with ProxyFox 2, please remove it to aid with verification. Thank you!
+`)
     }
 });
 
