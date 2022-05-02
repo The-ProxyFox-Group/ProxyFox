@@ -21,10 +21,10 @@ import java.util.function.Predicate
  * */
 class CaseInsensitiveLiteralCommandNode<S>(
     private val literal: String,
-    command: Command<S?>,
-    requirement: Predicate<S?>,
-    redirect: CommandNode<S?>,
-    modifier: RedirectModifier<S?>,
+    command: Command<S?>?,
+    requirement: Predicate<S?>?,
+    redirect: CommandNode<S?>?,
+    modifier: RedirectModifier<S?>?,
     forks: Boolean
 ) :
     CommandNode<S?>(command, requirement, redirect, modifier, forks) {

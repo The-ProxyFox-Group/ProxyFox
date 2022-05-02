@@ -130,8 +130,8 @@ object SystemCommands {
     }
 
     suspend fun register() {
-        printStep("Registering system commands",2)
-        commands(arrayOf("system","s")) {
+        printStep("Registering system commands", 2)
+        commands(arrayOf("system", "s", "System", "S")) {
             // Change system name
             val name: Node = {
                 argument("name", StringArgumentType.greedyString()) {

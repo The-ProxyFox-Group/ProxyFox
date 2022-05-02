@@ -109,9 +109,9 @@ object MemberCommands {
     }
 
     suspend fun register() {
-        printStep("Registering member commands",2)
-        commands(arrayOf("member","m")) {
-            argument("member",StringArgumentType.string()) {
+        printStep("Registering member commands", 2)
+        commands(arrayOf("member", "m", "Member", "M")) {
+            argument("member", StringArgumentType.string()) {
                 // Change member name
                 val name: Node = {
                     argument("name", StringArgumentType.greedyString()) {
