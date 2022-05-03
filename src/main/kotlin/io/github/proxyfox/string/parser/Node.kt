@@ -1,8 +1,8 @@
 package io.github.proxyfox.string.parser
 
 interface Node {
-    fun parse(string: String, index: Int): Int
-    fun getSubNodes(): List<Node>
-    fun addSubNode(node: Node)
-    fun execute(holder: MessageHolder)
+    suspend fun parse(string: String, index: Int, holder: MessageHolder): Int
+    suspend fun getSubNodes(): List<Node>
+    suspend fun addSubNode(node: Node)
+    suspend fun execute(holder: MessageHolder): String
 }

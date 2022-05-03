@@ -4,5 +4,5 @@ import dev.kord.core.entity.Message
 
 data class MessageHolder(
     val message: Message,
-    val params: Map<String, String>
+    val params: HashMap<String, String>
 )
