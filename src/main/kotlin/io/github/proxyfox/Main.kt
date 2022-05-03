@@ -11,6 +11,8 @@ import io.github.proxyfox.terminal.TerminalCommands
  * @author Oliver
  * */
 suspend fun main() {
+
+
     // Hack to not get io.ktor.random warning
     System.setProperty("io.ktor.random.secure.random.provider", "DRBG")
 
