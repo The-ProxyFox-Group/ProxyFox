@@ -12,6 +12,7 @@ import com.mojang.brigadier.suggestion.Suggestions
 import com.mojang.brigadier.suggestion.SuggestionsBuilder
 import com.mojang.brigadier.tree.CommandNode
 import com.mojang.brigadier.tree.LiteralCommandNode
+import io.github.proxyfox.logger
 import java.util.concurrent.CompletableFuture
 import java.util.function.Predicate
 
@@ -28,7 +29,6 @@ class CaseInsensitiveLiteralCommandNode<S>(
     forks: Boolean
 ) :
     CommandNode<S?>(command, requirement, redirect, modifier, forks) {
-    private val literalLowerCase: String = literal.lowercase()
     override fun getName(): String {
         return literal
     }
@@ -41,6 +41,7 @@ class CaseInsensitiveLiteralCommandNode<S>(
             contextBuilder.withNode(this, StringRange.between(start, end))
             return
         }
+        logger.info("Test!")
         throw CommandSyntaxException.BUILT_IN_EXCEPTIONS.literalIncorrect().createWithContext(reader, literal)
     }
 
@@ -48,7 +49,7 @@ class CaseInsensitiveLiteralCommandNode<S>(
         val start = reader.cursor
         if (reader.canRead(literal.length)) {
             val end = start + literal.length
-            if (reader.string.substring(start, end).lowercase() == literalLowerCase) {
+            if (reader.string.substring(start, end).lowercase() == literal.lowercase()) {
                 reader.cursor = end
                 if (!reader.canRead() || reader.peek() == ' ') {
                     return end
@@ -64,7 +65,7 @@ class CaseInsensitiveLiteralCommandNode<S>(
         context: CommandContext<S?>,
         builder: SuggestionsBuilder
     ): CompletableFuture<Suggestions> {
-        return if (literalLowerCase.startsWith(builder.remainingLowerCase)) {
+        return if (literal.lowercase().startsWith(builder.remainingLowerCase)) {
             builder.suggest(literal).buildFuture()
         } else {
             Suggestions.empty()

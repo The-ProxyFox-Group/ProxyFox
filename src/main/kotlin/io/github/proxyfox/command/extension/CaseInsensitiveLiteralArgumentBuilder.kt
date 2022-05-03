@@ -6,8 +6,8 @@ import com.mojang.brigadier.builder.ArgumentBuilder
  * A case-insensitive literal argument builder
  * @author Oliver
  * */
-open class CaseInsensitiveLiteralArgumentBuilder<S> protected constructor(val literal: String) :
-    ArgumentBuilder<S?, CaseInsensitiveLiteralArgumentBuilder<S>>() {
+open class CaseInsensitiveLiteralArgumentBuilder<S> constructor(val literal: String) :
+    ArgumentBuilder<S, CaseInsensitiveLiteralArgumentBuilder<S>>() {
 
     override fun getThis(): CaseInsensitiveLiteralArgumentBuilder<S> {
         return this
@@ -29,13 +29,13 @@ open class CaseInsensitiveLiteralArgumentBuilder<S> protected constructor(val li
             return CaseInsensitiveLiteralArgumentBuilder(name)
         }
     }
+
+    fun caseInsensitiveLiteral(
+        literal: String,
+        action: CaseInsensitiveLiteralArgumentBuilder<S>.() -> Unit
+    ) {
+        val result = literal<S>(literal).apply(action).build()
+        this.then(result)
+    }
 }
 
-inline fun <S> ArgumentBuilder<S, *>.caseInsensitiveLiteral(
-    literal: String,
-    action: CaseInsensitiveLiteralArgumentBuilder<S>.() -> Unit
-): CaseInsensitiveLiteralCommandNode<S> {
-    val result = CaseInsensitiveLiteralArgumentBuilder.literal<S>(literal).apply(action).build()
-    this.then(result)
-    return result
-}

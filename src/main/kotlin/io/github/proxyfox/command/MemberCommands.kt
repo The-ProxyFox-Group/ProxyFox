@@ -3,7 +3,6 @@ package io.github.proxyfox.command
 import com.mojang.brigadier.arguments.StringArgumentType
 import com.mojang.brigadier.context.CommandContext
 import dev.steyn.brigadierkt.argument
-import io.github.proxyfox.command.extension.caseInsensitiveLiteral
 import io.github.proxyfox.printStep
 import io.github.proxyfox.runAsync
 
@@ -110,7 +109,7 @@ object MemberCommands {
 
     suspend fun register() {
         printStep("Registering member commands", 2)
-        commands(arrayOf("member", "m", "Member", "M")) {
+        commands(arrayOf("member", "m")) {
             argument("member", StringArgumentType.string()) {
                 // Change member name
                 val name: Node = {

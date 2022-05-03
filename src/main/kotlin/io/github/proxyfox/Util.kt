@@ -21,15 +21,13 @@ import org.postgresql.Driver
 import org.slf4j.LoggerFactory
 import java.io.File
 import java.util.*
-import kotlin.concurrent.thread
-import kotlin.system.exitProcess
 
 /**
  * Important functions and variables needed for proxyfox
  * @author Oliver
  * */
 
-private val logger = LoggerFactory.getLogger("ProxyFox")
+val logger = LoggerFactory.getLogger("ProxyFox")
 val prefixRegex = Regex("^pf[>;!].*", RegexOption.IGNORE_CASE)
 lateinit var kord: Kord
 lateinit var database: Database
@@ -60,20 +58,6 @@ suspend fun setupDatabase() {
     }
 }
 
-suspend fun readConsole() {
-    printStep("Start reading console input", 1)
-    printStep("Launching thread", 2)
-    thread {
-        runAsync {
-            while (true) {
-                val input = readln()
-                if (input.lowercase(Locale.getDefault()).startsWith("stop"))
-                    exitProcess(0)
-            }
-        }
-    }
-}
-
 @OptIn(PrivilegedIntent::class)
 suspend fun login() {
     printStep("Logging in", 1)
@@ -90,6 +74,7 @@ suspend fun login() {
         if (prefixRegex.matches(content)) {
             // Remove the prefix to pass into dispatcher
             val contentWithoutRegex = content.substring(3)
+            logger.info(contentWithoutRegex)
             dispatcher.execute(contentWithoutRegex, CommandSource(message))
         } else {
             // Proxy the message

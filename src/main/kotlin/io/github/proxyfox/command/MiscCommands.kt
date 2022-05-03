@@ -3,7 +3,6 @@ package io.github.proxyfox.command
 import com.mojang.brigadier.arguments.StringArgumentType
 import com.mojang.brigadier.context.CommandContext
 import dev.steyn.brigadierkt.argument
-import io.github.proxyfox.command.extension.caseInsensitiveLiteral
 import io.github.proxyfox.importer.import
 import io.github.proxyfox.printStep
 import io.github.proxyfox.runAsync
@@ -89,26 +88,26 @@ It uses discord's webhooks to generate "pseudo-users" which different members of
 
     suspend fun register() {
         printStep("Registering misc commands", 2)
-        commands(arrayOf("time", "Time")) {
+        commands(arrayOf("time")) {
             executes(MiscCommands::getTimeString)
         }
-        commands(arrayOf("help", "commands", "?", "Help", "Commands")) {
+        commands(arrayOf("help", "commands", "?")) {
             executes(MiscCommands::getHelp)
         }
-        commands(arrayOf("explain", "why", "Explain", "Why")) {
+        commands(arrayOf("explain", "why")) {
             executes(MiscCommands::getExplanation)
         }
-        commands(arrayOf("invite", "link", "Invite", "Link")) {
+        commands(arrayOf("invite", "link")) {
             executes(MiscCommands::getInvite)
         }
-        commands(arrayOf("export", "Export")) {
+        command("export") {
             executes(MiscCommands::exportSystem)
         }
-        commands(arrayOf("source", "Source")) {
+        command("Source") {
             executes(MiscCommands::getSource)
         }
 
-        commands(arrayOf("proxy", "serverproxy", "sp", "Proxy", "Serverproxy", "Sp")) {
+        commands(arrayOf("proxy", "serverproxy", "sp")) {
             caseInsensitiveLiteral("on") {
                 executes(MiscCommands::enableServerProxy)
             }
@@ -118,7 +117,7 @@ It uses discord's webhooks to generate "pseudo-users" which different members of
             executes(::noSubCommandError)
         }
 
-        commands(arrayOf("autoproxy", "ap", "Autoproxy", "Ap")) {
+        commands(arrayOf("autoproxy", "ap")) {
             caseInsensitiveLiteral("on") {
                 executes(MiscCommands::enableAutoProxy)
             }
@@ -128,7 +127,7 @@ It uses discord's webhooks to generate "pseudo-users" which different members of
             executes(::noSubCommandError)
         }
 
-        commands(arrayOf("role", "Role")) {
+        command("role") {
             argument("role", StringArgumentType.greedyString()) {
                 executes(MiscCommands::changeProxyRole)
             }
@@ -138,7 +137,7 @@ It uses discord's webhooks to generate "pseudo-users" which different members of
             executes(::noSubCommandError)
         }
 
-        commands(arrayOf("import", "Import")) {
+        command("import") {
             argument("link", StringArgumentType.greedyString()) {
                 executes(MiscCommands::importSystemLinked)
             }
