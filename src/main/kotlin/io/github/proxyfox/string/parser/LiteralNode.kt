@@ -1,8 +1,6 @@
 package io.github.proxyfox.string.parser
 
-import dev.kord.core.entity.Message
-
-class LiteralNode(val literal: String, val executes: (Message) -> String) : Node {
+class LiteralNode(val literal: String) : Node {
     val nodes: ArrayList<Node> = ArrayList()
 
     override fun parse(string: String, index: Int): Int {
@@ -16,5 +14,9 @@ class LiteralNode(val literal: String, val executes: (Message) -> String) : Node
 
     override fun addSubNode(node: Node) {
         nodes.add(node)
+    }
+
+    override fun execute(holder: MessageHolder) {
+        TODO("Not yet implemented")
     }
 }
