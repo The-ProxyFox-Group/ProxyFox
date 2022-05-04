@@ -1,12 +1,14 @@
-package io.github.proxyfox.string.parser
+package io.github.proxyfox.string.node
 
-class GreedyNode(val name: String, val executor: suspend (MessageHolder) -> String) : Node {
+import io.github.proxyfox.string.parser.MessageHolder
+
+class GreedyNode(val name: String, val executor: suspend MessageHolder.() -> String) : Node {
     override suspend fun parse(string: String, index: Int, holder: MessageHolder): Int {
         holder.params[name] = string.substring(index)
         return string.length
     }
 
-    override suspend fun getSubNodes(): List<Node> = ArrayList()
+    override suspend fun getSubNodes(): Array<Node> = arrayOf()
 
     override suspend fun addSubNode(node: Node) = Unit
 
