@@ -1,6 +1,5 @@
 package io.github.proxyfox.command
 
-import com.mojang.brigadier.CommandDispatcher
 import io.github.proxyfox.printStep
 import io.github.proxyfox.string.node.Node
 
@@ -8,8 +7,6 @@ import io.github.proxyfox.string.node.Node
  * General utilities relating to commands
  * @author Oliver
  * */
-
-val dispatcher = CommandDispatcher<CommandSource>()
 
 typealias CommandNode = Node.() -> Unit
 
