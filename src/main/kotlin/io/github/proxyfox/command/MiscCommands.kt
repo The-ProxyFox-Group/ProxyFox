@@ -3,7 +3,6 @@ package io.github.proxyfox.command
 import com.mojang.brigadier.arguments.StringArgumentType
 import com.mojang.brigadier.context.CommandContext
 import dev.steyn.brigadierkt.argument
-import io.github.proxyfox.command.extension.caseInsensitiveLiteral
 import io.github.proxyfox.importer.import
 import io.github.proxyfox.printStep
 import io.github.proxyfox.runAsync
@@ -88,27 +87,27 @@ It uses discord's webhooks to generate "pseudo-users" which different members of
     }
 
     suspend fun register() {
-        printStep("Registering misc commands",2)
-        command("time") {
+        printStep("Registering misc commands", 2)
+        commands(arrayOf("time")) {
             executes(MiscCommands::getTimeString)
         }
-        commands(arrayOf("help","commands","?")) {
+        commands(arrayOf("help", "commands", "?")) {
             executes(MiscCommands::getHelp)
         }
-        commands(arrayOf("explain","why")) {
+        commands(arrayOf("explain", "why")) {
             executes(MiscCommands::getExplanation)
         }
-        commands(arrayOf("invite","link")) {
+        commands(arrayOf("invite", "link")) {
             executes(MiscCommands::getInvite)
         }
         command("export") {
             executes(MiscCommands::exportSystem)
         }
-        command("source") {
+        command("Source") {
             executes(MiscCommands::getSource)
         }
 
-        commands(arrayOf("proxy","serverproxy")) {
+        commands(arrayOf("proxy", "serverproxy", "sp")) {
             caseInsensitiveLiteral("on") {
                 executes(MiscCommands::enableServerProxy)
             }
@@ -118,7 +117,7 @@ It uses discord's webhooks to generate "pseudo-users" which different members of
             executes(::noSubCommandError)
         }
 
-        commands(arrayOf("autoproxy","ap")) {
+        commands(arrayOf("autoproxy", "ap")) {
             caseInsensitiveLiteral("on") {
                 executes(MiscCommands::enableAutoProxy)
             }
@@ -139,7 +138,7 @@ It uses discord's webhooks to generate "pseudo-users" which different members of
         }
 
         command("import") {
-            argument("link",StringArgumentType.greedyString()) {
+            argument("link", StringArgumentType.greedyString()) {
                 executes(MiscCommands::importSystemLinked)
             }
             executes(MiscCommands::importSystem)

@@ -1,9 +1,7 @@
 package io.github.proxyfox.command
 
 import com.mojang.brigadier.CommandDispatcher
-import com.mojang.brigadier.builder.LiteralArgumentBuilder
 import com.mojang.brigadier.context.CommandContext
-import dev.steyn.brigadierkt.command
 import io.github.proxyfox.command.extension.CaseInsensitiveLiteralArgumentBuilder
 import io.github.proxyfox.printStep
 import io.github.proxyfox.runAsync
@@ -17,10 +15,18 @@ val dispatcher = CommandDispatcher<CommandSource>()
 
 typealias Node = CaseInsensitiveLiteralArgumentBuilder<CommandSource>.() -> Unit
 
-suspend fun command(literal: String, action: LiteralArgumentBuilder<CommandSource>.() -> Unit) =
-    dispatcher.command(literal, action)
+suspend fun command(
+    literal: String,
+    action: CaseInsensitiveLiteralArgumentBuilder<CommandSource>.() -> Unit
+): CaseInsensitiveLiteralArgumentBuilder<CommandSource> {
+    val literal = CaseInsensitiveLiteralArgumentBuilder.literal<CommandSource>(literal).apply(action)
+    dispatcher.root.addChild(
+        literal.build()
+    )
+    return literal
+}
 
-suspend fun commands(literals: Array<String>, action: LiteralArgumentBuilder<CommandSource>.() -> Unit) {
+suspend fun commands(literals: Array<String>, action: CaseInsensitiveLiteralArgumentBuilder<CommandSource>.() -> Unit) {
     for (literal in literals)
         command(literal, action)
 }
