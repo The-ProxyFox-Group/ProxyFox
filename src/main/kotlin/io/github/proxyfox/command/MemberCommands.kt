@@ -79,6 +79,11 @@ object MemberCommands {
 
                 literal("delete", ::memberDelete)
             }
+
+            literal("new", ::memberCreateEmpty) {
+                greedy("name", ::memberCreate)
+            }
+
         }
         registerCommand(literal("member", ::emptyMember, memberCommands))
     }
@@ -196,6 +201,14 @@ object MemberCommands {
     }
 
     private fun memberDelete(ctx: MessageHolder): String {
+        TODO()
+    }
+
+    private fun memberCreateEmpty(ctx: MessageHolder): String {
+        TODO()
+    }
+
+    private fun memberCreate(ctx: MessageHolder): String {
         TODO()
     }
 }
