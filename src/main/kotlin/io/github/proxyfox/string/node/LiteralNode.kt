@@ -17,7 +17,7 @@ class LiteralNode(val literal: String, val executor: suspend MessageHolder.() ->
         val literalArray: Array<Node> = literalNodes.toTypedArray()
         val stringArray: Array<Node> = stringNodes.toTypedArray()
         val greedyArray: Array<Node> = greedyNodes.toTypedArray()
-        return literalArray.plus(stringArray).plus(greedyArray)
+        return literalArray + stringArray + greedyArray
     }
 
     override fun addSubNode(node: Node) {
