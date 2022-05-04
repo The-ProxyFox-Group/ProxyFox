@@ -12,12 +12,26 @@ fun literal(
     action: Node.() -> Unit
 ): LiteralNode = LiteralNode(name, executor).apply(action)
 
+fun literal(
+    name: String,
+    executor: suspend MessageHolder.() -> String
+): LiteralNode = LiteralNode(name, executor)
+
 fun Node.literal(
     name: String,
     executor: suspend MessageHolder.() -> String,
     action: Node.() -> Unit
 ): LiteralNode {
     val node = LiteralNode(name, executor).apply(action)
+    addSubNode(node)
+    return node
+}
+
+fun Node.literal(
+    name: String,
+    executor: suspend MessageHolder.() -> String
+): LiteralNode {
+    val node = LiteralNode(name, executor)
     addSubNode(node)
     return node
 }
@@ -37,6 +51,15 @@ fun Node.string(
     action: Node.() -> Unit
 ): StringNode {
     val node = StringNode(name, executor).apply(action)
+    addSubNode(node)
+    return node
+}
+
+fun Node.string(
+    name: String,
+    executor: suspend MessageHolder.() -> String
+): StringNode {
+    val node = StringNode(name, executor)
     addSubNode(node)
     return node
 }
