@@ -38,10 +38,46 @@ object MemberCommands {
 
                 val desc: CommandNode = {
                     literal("-raw", ::memberDescriptionRaw)
-                    greedy("name", ::memberDescription)
+                    greedy("desc", ::memberDescription)
                 }
                 literal("desc", ::memberDescriptionEmpty, desc)
                 literal("description", ::memberDescriptionEmpty, desc)
+
+                val avatar: CommandNode = {
+                    greedy("avatar", ::memberAvatarLinked)
+                }
+                literal("avatar", ::memberAvatar, avatar)
+                literal("pfp", ::memberAvatar, avatar)
+
+                val serveravatar: CommandNode = {
+                    greedy("avatar", ::memberServerAvatarLinked)
+                }
+                literal("serveravatar", ::memberServerAvatar, serveravatar)
+                literal("serverpfp", ::memberServerAvatar, serveravatar)
+
+                literal("proxy", ::memberProxyEmpty) {
+                    literal("remove", ::memberRemoveProxyEmpty) {
+                        greedy("proxy", ::memberRemoveProxy)
+                    }
+                    greedy("proxy", ::memberProxy)
+                }
+
+                literal("pronouns", ::memberPronounsEmpty) {
+                    literal("-raw", ::memberPronounsRaw)
+                    greedy("pronouns", ::memberPronouns)
+                }
+
+                literal("color", ::memberColorEmpty) {
+                    literal("-raw", ::memberColorRaw)
+                    greedy("color", ::memberColor)
+                }
+
+                literal("birthday", ::memberBirthEmpty) {
+                    literal("-raw", ::memberBirthRaw)
+                    greedy("birthday", ::memberBirth)
+                }
+
+                literal("delete", ::memberDelete)
             }
         }
         registerCommand(literal("member", ::emptyMember, memberCommands))
@@ -88,6 +124,78 @@ object MemberCommands {
     }
 
     private fun memberDescription(ctx: MessageHolder): String {
+        TODO()
+    }
+
+    private fun memberAvatarLinked(ctx: MessageHolder): String {
+        TODO()
+    }
+
+    private fun memberAvatar(ctx: MessageHolder): String {
+        TODO()
+    }
+
+    private fun memberServerAvatarLinked(ctx: MessageHolder): String {
+        TODO()
+    }
+
+    private fun memberServerAvatar(ctx: MessageHolder): String {
+        TODO()
+    }
+
+    private fun memberRemoveProxyEmpty(ctx: MessageHolder): String {
+        TODO()
+    }
+
+    private fun memberRemoveProxy(ctx: MessageHolder): String {
+        TODO()
+    }
+
+    private fun memberProxyEmpty(ctx: MessageHolder): String {
+        TODO()
+    }
+
+    private fun memberProxy(ctx: MessageHolder): String {
+        TODO()
+    }
+
+    private fun memberPronounsEmpty(ctx: MessageHolder): String {
+        TODO()
+    }
+
+    private fun memberPronounsRaw(ctx: MessageHolder): String {
+        TODO()
+    }
+
+    private fun memberPronouns(ctx: MessageHolder): String {
+        TODO()
+    }
+
+    private fun memberColorEmpty(ctx: MessageHolder): String {
+        TODO()
+    }
+
+    private fun memberColorRaw(ctx: MessageHolder): String {
+        TODO()
+    }
+
+    private fun memberColor(ctx: MessageHolder): String {
+        TODO()
+    }
+
+    private fun memberBirthEmpty(ctx: MessageHolder): String {
+        TODO()
+    }
+
+    private fun memberBirthRaw(ctx: MessageHolder): String {
+        TODO()
+    }
+
+    private fun memberBirth(ctx: MessageHolder): String {
+        TODO()
+    }
+
+    private fun memberDelete(ctx: MessageHolder): String {
         TODO()
     }
 }
