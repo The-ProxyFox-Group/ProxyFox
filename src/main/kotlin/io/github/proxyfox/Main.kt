@@ -3,7 +3,9 @@
 package io.github.proxyfox
 
 import io.github.proxyfox.api.RestApi
-import io.github.proxyfox.command.Commands
+import io.github.proxyfox.string.node.LiteralNode
+import io.github.proxyfox.string.node.StringNode
+import io.github.proxyfox.string.parser.nodes
 import io.github.proxyfox.terminal.TerminalCommands
 
 
@@ -18,8 +20,15 @@ suspend fun main() {
 
     printFancy("Initializing ProxyFox")
 
-    // Register commands in brigadier
-    Commands.register()
+//    // Register commands in brigadier
+//    Commands.register()
+    val node = LiteralNode("test") {
+        "test!"
+    }
+    node.addSubNode(StringNode("test2") {
+        params["test2"]!!
+    })
+    nodes.add(node)
 
     // Setup database
     setupDatabase()

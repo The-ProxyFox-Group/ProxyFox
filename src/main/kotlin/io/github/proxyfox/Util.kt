@@ -6,11 +6,10 @@ import dev.kord.core.event.message.MessageCreateEvent
 import dev.kord.core.on
 import dev.kord.gateway.Intent
 import dev.kord.gateway.PrivilegedIntent
-import io.github.proxyfox.command.CommandSource
-import io.github.proxyfox.command.dispatcher
 import io.github.proxyfox.database.Database
 import io.github.proxyfox.database.NopDatabase
 import io.github.proxyfox.database.PostgresDatabase
+import io.github.proxyfox.string.parser.parseString
 import io.github.proxyfox.webhook.WebhookUtil
 import kotlinx.coroutines.DelicateCoroutinesApi
 import kotlinx.coroutines.GlobalScope
@@ -75,7 +74,7 @@ suspend fun login() {
             // Remove the prefix to pass into dispatcher
             val contentWithoutRegex = content.substring(3)
             logger.info(contentWithoutRegex)
-            dispatcher.execute(contentWithoutRegex, CommandSource(message))
+            logger.info(parseString(contentWithoutRegex, message))
         } else {
             // Proxy the message
             val proxy = database.getProxyTagFromMessage(message.author!!.id, content)
