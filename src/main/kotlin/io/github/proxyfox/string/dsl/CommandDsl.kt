@@ -6,13 +6,13 @@ import io.github.proxyfox.string.node.Node
 import io.github.proxyfox.string.node.StringNode
 import io.github.proxyfox.string.parser.MessageHolder
 
-suspend fun literal(
+fun literal(
     name: String,
     executor: suspend MessageHolder.() -> String,
     action: Node.() -> Unit
 ): LiteralNode = LiteralNode(name, executor).apply(action)
 
-suspend fun Node.literal(
+fun Node.literal(
     name: String,
     executor: suspend MessageHolder.() -> String,
     action: Node.() -> Unit
@@ -22,17 +22,16 @@ suspend fun Node.literal(
     return node
 }
 
-suspend fun Node.greedy(
+fun Node.greedy(
     name: String,
-    executor: suspend MessageHolder.() -> String,
-    action: Node.() -> Unit
+    executor: suspend MessageHolder.() -> String
 ): GreedyNode {
-    val node = GreedyNode(name, executor).apply(action)
+    val node = GreedyNode(name, executor)
     addSubNode(node)
     return node
 }
 
-suspend fun Node.string(
+fun Node.string(
     name: String,
     executor: suspend MessageHolder.() -> String,
     action: Node.() -> Unit

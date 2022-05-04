@@ -6,6 +6,10 @@ import io.github.proxyfox.string.node.Node
 
 val nodes: ArrayList<LiteralNode> = ArrayList()
 
+suspend fun registerCommand(node: LiteralNode) {
+    nodes.add(node)
+}
+
 suspend fun parseString(input: String, message: Message): String? {
     for (node in nodes) {
         val str = tryExecuteNode(input, 0, node, MessageHolder(message, HashMap()))

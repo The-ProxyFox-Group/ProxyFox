@@ -7,20 +7,20 @@ class LiteralNode(val literal: String, val executor: suspend MessageHolder.() ->
     private val stringNodes: ArrayList<StringNode> = ArrayList()
     private val greedyNodes: ArrayList<GreedyNode> = ArrayList()
 
-    override suspend fun parse(string: String, index: Int, holder: MessageHolder): Int {
+    override fun parse(string: String, index: Int, holder: MessageHolder): Int {
         if (string.substring(index, index + literal.length).lowercase() == literal.lowercase())
             return index + literal.length + 1
         return index
     }
 
-    override suspend fun getSubNodes(): Array<Node> {
+    override fun getSubNodes(): Array<Node> {
         val literalArray: Array<Node> = literalNodes.toTypedArray()
         val stringArray: Array<Node> = stringNodes.toTypedArray()
         val greedyArray: Array<Node> = greedyNodes.toTypedArray()
         return literalArray.plus(stringArray).plus(greedyArray)
     }
 
-    override suspend fun addSubNode(node: Node) {
+    override fun addSubNode(node: Node) {
         when (node) {
             is LiteralNode -> literalNodes.add(node)
             is StringNode -> stringNodes.add(node)

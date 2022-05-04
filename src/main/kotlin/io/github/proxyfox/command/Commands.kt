@@ -1,10 +1,8 @@
 package io.github.proxyfox.command
 
 import com.mojang.brigadier.CommandDispatcher
-import com.mojang.brigadier.context.CommandContext
-import io.github.proxyfox.command.extension.CaseInsensitiveLiteralArgumentBuilder
 import io.github.proxyfox.printStep
-import io.github.proxyfox.runAsync
+import io.github.proxyfox.string.node.Node
 
 /**
  * General utilities relating to commands
@@ -13,27 +11,7 @@ import io.github.proxyfox.runAsync
 
 val dispatcher = CommandDispatcher<CommandSource>()
 
-typealias Node = CaseInsensitiveLiteralArgumentBuilder<CommandSource>.() -> Unit
-
-suspend fun command(
-    literal: String,
-    action: CaseInsensitiveLiteralArgumentBuilder<CommandSource>.() -> Unit
-): CaseInsensitiveLiteralArgumentBuilder<CommandSource> {
-    val literal = CaseInsensitiveLiteralArgumentBuilder.literal<CommandSource>(literal).apply(action)
-    dispatcher.root.addChild(
-        literal.build()
-    )
-    return literal
-}
-
-suspend fun commands(literals: Array<String>, action: CaseInsensitiveLiteralArgumentBuilder<CommandSource>.() -> Unit) {
-    for (literal in literals)
-        command(literal, action)
-}
-
-fun noSubCommandError(ctx: CommandContext<CommandSource>): Int = runAsync {
-    ctx.source.message.channel.createMessage("No subcommand given")
-}
+typealias CommandNode = Node.() -> Unit
 
 object Commands {
     suspend fun register() {
