@@ -86,6 +86,7 @@ object MemberCommands {
 
         }
         registerCommand(literal("member", ::emptyMember, memberCommands))
+        registerCommand(literal("m", ::emptyMember, memberCommands))
     }
 
     private fun emptyMember(ctx: MessageHolder): String {
