@@ -41,7 +41,7 @@ class PostgresDatabase(val driver: Driver) : Database {
             }
             // For now, it'll only contain the one branch; this is preparation for any kind of migration later on.
             when (cont) {
-                -1 -> connection.prepareCall(PostgresDatabase::class.java.getResourceAsStream("/assets/database/postgres-bootstrap.pgsql")!!.reader().readText())
+                -1 -> connection.prepareCall(PostgresDatabase::class.java.getResourceAsStream("/assets/databases/postgres-bootstrap.pgsql")!!.reader().readText()).execute()
             }
         } catch (sql: SQLException) {
             throw RuntimeException("Unable to create connection to $uri", sql)
