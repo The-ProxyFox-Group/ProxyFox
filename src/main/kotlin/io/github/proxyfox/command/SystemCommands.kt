@@ -3,7 +3,6 @@ package io.github.proxyfox.command
 import com.mojang.brigadier.arguments.StringArgumentType
 import com.mojang.brigadier.context.CommandContext
 import dev.steyn.brigadierkt.argument
-import io.github.proxyfox.command.extension.caseInsensitiveLiteral
 import io.github.proxyfox.database
 import io.github.proxyfox.printStep
 import io.github.proxyfox.runAsync
@@ -118,7 +117,8 @@ object SystemCommands {
     }
 
     private fun createSystem(ctx: CommandContext<CommandSource>): Int = runAsync {
-        //TODO: not implemented
+        database.allocateSystem(ctx.source.message.author!!.id)
+        ctx.source.message.channel.createMessage("Created system!")
     }
 
     private fun createSystemNamed(ctx: CommandContext<CommandSource>): Int = runAsync {
@@ -129,9 +129,10 @@ object SystemCommands {
         //TODO: not implemented
     }
 
+
     suspend fun register() {
-        printStep("Registering system commands",2)
-        commands(arrayOf("system","s")) {
+        printStep("Registering system commands", 2)
+        commands(arrayOf("system", "s")) {
             // Change system name
             val name: Node = {
                 argument("name", StringArgumentType.greedyString()) {

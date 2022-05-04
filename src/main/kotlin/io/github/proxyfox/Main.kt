@@ -4,6 +4,7 @@ package io.github.proxyfox
 
 import io.github.proxyfox.api.RestApi
 import io.github.proxyfox.command.Commands
+import io.github.proxyfox.terminal.TerminalCommands
 
 
 /**
@@ -22,7 +23,7 @@ suspend fun main() {
     setupDatabase()
 
     // Start reading console input
-    readConsole()
+    TerminalCommands.start()
 
     // Start REST API
     RestApi.start()
