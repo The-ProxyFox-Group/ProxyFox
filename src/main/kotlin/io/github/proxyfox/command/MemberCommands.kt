@@ -8,208 +8,209 @@ import io.github.proxyfox.string.parser.MessageHolder
 import io.github.proxyfox.string.parser.registerCommand
 
 /**
- * Commands for accessing and changing system member settings
+ * Commands for accessing and changing system  settings
  * @author Oliver
  * */
 object MemberCommands {
     suspend fun register() {
-        printStep("Registering member commands", 2)
-        val memberCommands: CommandNode = {
-            string("member", ::accessMember) {
+        printStep("Registering  commands", 2)
+        val commands: CommandNode = {
+            string("", ::access) {
                 val name: CommandNode = {
-                    greedy("name", ::renameMember)
+                    greedy("name", ::rename)
                 }
-                literal("rename", ::renameMemberEmpty, name)
-                literal("name", ::renameMemberEmpty, name)
+                literal("rename", ::renameEmpty, name)
+                literal("name", ::renameEmpty, name)
 
                 val nickname: CommandNode = {
-                    greedy("name", ::nicknameMember)
+                    greedy("name", ::nickname)
                 }
-                literal("nickname", ::nicknameMemberEmpty, nickname)
-                literal("nick", ::nicknameMemberEmpty, nickname)
-                literal("displayname", ::nicknameMemberEmpty, nickname)
-                literal("dn", ::nicknameMemberEmpty, nickname)
+                literal("nickname", ::nicknameEmpty, nickname)
+                literal("nick", ::nicknameEmpty, nickname)
+                literal("displayname", ::nicknameEmpty, nickname)
+                literal("dn", ::nicknameEmpty, nickname)
 
                 val servername: CommandNode = {
-                    greedy("name", ::servernameMember)
+                    greedy("name", ::servername)
                 }
-                literal("servername", ::servernameMemberEmpty, servername)
-                literal("servernick", ::servernameMemberEmpty, servername)
+                literal("servername", ::servernameEmpty, servername)
+                literal("servernick", ::servernameEmpty, servername)
 
                 val desc: CommandNode = {
-                    literal("-raw", ::memberDescriptionRaw)
-                    greedy("desc", ::memberDescription)
+                    literal("-raw", ::descriptionRaw)
+                    greedy("desc", ::description)
                 }
-                literal("desc", ::memberDescriptionEmpty, desc)
-                literal("description", ::memberDescriptionEmpty, desc)
+                literal("desc", ::descriptionEmpty, desc)
+                literal("description", ::descriptionEmpty, desc)
+                literal("d", ::descriptionEmpty, desc)
 
                 val avatar: CommandNode = {
-                    greedy("avatar", ::memberAvatarLinked)
+                    greedy("avatar", ::avatarLinked)
                 }
-                literal("avatar", ::memberAvatar, avatar)
-                literal("pfp", ::memberAvatar, avatar)
+                literal("avatar", ::avatar, avatar)
+                literal("pfp", ::avatar, avatar)
 
                 val serveravatar: CommandNode = {
-                    greedy("avatar", ::memberServerAvatarLinked)
+                    greedy("avatar", ::serverAvatarLinked)
                 }
-                literal("serveravatar", ::memberServerAvatar, serveravatar)
-                literal("serverpfp", ::memberServerAvatar, serveravatar)
+                literal("serveravatar", ::serverAvatar, serveravatar)
+                literal("serverpfp", ::serverAvatar, serveravatar)
 
-                literal("proxy", ::memberProxyEmpty) {
-                    literal("remove", ::memberRemoveProxyEmpty) {
-                        greedy("proxy", ::memberRemoveProxy)
+                literal("proxy", ::proxyEmpty) {
+                    literal("remove", ::removeProxyEmpty) {
+                        greedy("proxy", ::removeProxy)
                     }
-                    greedy("proxy", ::memberProxy)
+                    greedy("proxy", ::proxy)
                 }
 
-                literal("pronouns", ::memberPronounsEmpty) {
-                    literal("-raw", ::memberPronounsRaw)
-                    greedy("pronouns", ::memberPronouns)
+                literal("pronouns", ::pronounsEmpty) {
+                    literal("-raw", ::pronounsRaw)
+                    greedy("pronouns", ::pronouns)
                 }
 
-                literal("color", ::memberColorEmpty) {
-                    literal("-raw", ::memberColorRaw)
-                    greedy("color", ::memberColor)
+                literal("color", ::colorEmpty) {
+                    literal("-raw", ::colorRaw)
+                    greedy("color", ::color)
                 }
 
-                literal("birthday", ::memberBirthEmpty) {
-                    literal("-raw", ::memberBirthRaw)
-                    greedy("birthday", ::memberBirth)
+                literal("birthday", ::birthEmpty) {
+                    literal("-raw", ::birthRaw)
+                    greedy("birthday", ::birth)
                 }
 
-                literal("delete", ::memberDelete)
+                literal("delete", ::delete)
             }
 
-            literal("new", ::memberCreateEmpty) {
-                greedy("name", ::memberCreate)
+            literal("new", ::createEmpty) {
+                greedy("name", ::create)
             }
 
         }
-        registerCommand(literal("member", ::emptyMember, memberCommands))
-        registerCommand(literal("m", ::emptyMember, memberCommands))
+        registerCommand(literal("", ::empty, commands))
+        registerCommand(literal("m", ::empty, commands))
     }
 
-    private fun emptyMember(ctx: MessageHolder): String {
+    private fun empty(ctx: MessageHolder): String {
         TODO()
     }
 
-    private fun accessMember(ctx: MessageHolder): String {
+    private fun access(ctx: MessageHolder): String {
         TODO()
     }
 
-    private fun renameMemberEmpty(ctx: MessageHolder): String {
+    private fun renameEmpty(ctx: MessageHolder): String {
         TODO()
     }
 
-    private fun renameMember(ctx: MessageHolder): String {
+    private fun rename(ctx: MessageHolder): String {
         TODO()
     }
 
-    private fun nicknameMemberEmpty(ctx: MessageHolder): String {
+    private fun nicknameEmpty(ctx: MessageHolder): String {
         TODO()
     }
 
-    private fun nicknameMember(ctx: MessageHolder): String {
+    private fun nickname(ctx: MessageHolder): String {
         TODO()
     }
 
-    private fun servernameMemberEmpty(ctx: MessageHolder): String {
+    private fun servernameEmpty(ctx: MessageHolder): String {
         TODO()
     }
 
-    private fun servernameMember(ctx: MessageHolder): String {
+    private fun servername(ctx: MessageHolder): String {
         TODO()
     }
 
-    private fun memberDescriptionEmpty(ctx: MessageHolder): String {
+    private fun descriptionEmpty(ctx: MessageHolder): String {
         TODO()
     }
 
-    private fun memberDescriptionRaw(ctx: MessageHolder): String {
+    private fun descriptionRaw(ctx: MessageHolder): String {
         TODO()
     }
 
-    private fun memberDescription(ctx: MessageHolder): String {
+    private fun description(ctx: MessageHolder): String {
         TODO()
     }
 
-    private fun memberAvatarLinked(ctx: MessageHolder): String {
+    private fun avatarLinked(ctx: MessageHolder): String {
         TODO()
     }
 
-    private fun memberAvatar(ctx: MessageHolder): String {
+    private fun avatar(ctx: MessageHolder): String {
         TODO()
     }
 
-    private fun memberServerAvatarLinked(ctx: MessageHolder): String {
+    private fun serverAvatarLinked(ctx: MessageHolder): String {
         TODO()
     }
 
-    private fun memberServerAvatar(ctx: MessageHolder): String {
+    private fun serverAvatar(ctx: MessageHolder): String {
         TODO()
     }
 
-    private fun memberRemoveProxyEmpty(ctx: MessageHolder): String {
+    private fun removeProxyEmpty(ctx: MessageHolder): String {
         TODO()
     }
 
-    private fun memberRemoveProxy(ctx: MessageHolder): String {
+    private fun removeProxy(ctx: MessageHolder): String {
         TODO()
     }
 
-    private fun memberProxyEmpty(ctx: MessageHolder): String {
+    private fun proxyEmpty(ctx: MessageHolder): String {
         TODO()
     }
 
-    private fun memberProxy(ctx: MessageHolder): String {
+    private fun proxy(ctx: MessageHolder): String {
         TODO()
     }
 
-    private fun memberPronounsEmpty(ctx: MessageHolder): String {
+    private fun pronounsEmpty(ctx: MessageHolder): String {
         TODO()
     }
 
-    private fun memberPronounsRaw(ctx: MessageHolder): String {
+    private fun pronounsRaw(ctx: MessageHolder): String {
         TODO()
     }
 
-    private fun memberPronouns(ctx: MessageHolder): String {
+    private fun pronouns(ctx: MessageHolder): String {
         TODO()
     }
 
-    private fun memberColorEmpty(ctx: MessageHolder): String {
+    private fun colorEmpty(ctx: MessageHolder): String {
         TODO()
     }
 
-    private fun memberColorRaw(ctx: MessageHolder): String {
+    private fun colorRaw(ctx: MessageHolder): String {
         TODO()
     }
 
-    private fun memberColor(ctx: MessageHolder): String {
+    private fun color(ctx: MessageHolder): String {
         TODO()
     }
 
-    private fun memberBirthEmpty(ctx: MessageHolder): String {
+    private fun birthEmpty(ctx: MessageHolder): String {
         TODO()
     }
 
-    private fun memberBirthRaw(ctx: MessageHolder): String {
+    private fun birthRaw(ctx: MessageHolder): String {
         TODO()
     }
 
-    private fun memberBirth(ctx: MessageHolder): String {
+    private fun birth(ctx: MessageHolder): String {
         TODO()
     }
 
-    private fun memberDelete(ctx: MessageHolder): String {
+    private fun delete(ctx: MessageHolder): String {
         TODO()
     }
 
-    private fun memberCreateEmpty(ctx: MessageHolder): String {
+    private fun createEmpty(ctx: MessageHolder): String {
         TODO()
     }
 
-    private fun memberCreate(ctx: MessageHolder): String {
+    private fun create(ctx: MessageHolder): String {
         TODO()
     }
 }

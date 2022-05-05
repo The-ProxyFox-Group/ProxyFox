@@ -4,6 +4,7 @@ import io.github.proxyfox.string.parser.MessageHolder
 
 class GreedyNode(val name: String, val executor: suspend MessageHolder.() -> String) : Node {
     override fun parse(string: String, index: Int, holder: MessageHolder): Int {
+        if (index >= string.length) return index
         holder.params[name] = string.substring(index)
         return string.length
     }

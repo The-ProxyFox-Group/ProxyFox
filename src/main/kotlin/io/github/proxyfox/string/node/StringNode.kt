@@ -8,6 +8,7 @@ class StringNode(val name: String, val executor: suspend MessageHolder.() -> Str
     private val greedyNodes: ArrayList<GreedyNode> = ArrayList()
 
     override fun parse(string: String, index: Int, holder: MessageHolder): Int {
+        if (index >= string.length) return index
         val newString = string.substring(index)
         when (newString[0]) {
             '"' -> {
