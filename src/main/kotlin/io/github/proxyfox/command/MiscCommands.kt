@@ -13,7 +13,9 @@ import io.github.proxyfox.string.parser.registerCommand
 object MiscCommands {
     suspend fun register() {
         printStep("Registering misc commands", 2)
-        registerCommand(literal("import", ::import))
+        registerCommand(literal("import", ::importEmpty) {
+            greedy("url", ::import)
+        })
         registerCommand(literal("export", ::export))
         registerCommand(literal("time", ::time))
         registerCommand(literal("help", ::help))
@@ -39,6 +41,10 @@ object MiscCommands {
             literal("clear", ::roleClear)
             greedy("role", ::role)
         })
+    }
+
+    private fun importEmpty(ctx: MessageHolder): String {
+        TODO()
     }
 
     private fun import(ctx: MessageHolder): String {
