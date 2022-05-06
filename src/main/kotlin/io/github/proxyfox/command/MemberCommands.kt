@@ -90,127 +90,127 @@ object MemberCommands {
         registerCommand(literal("m", ::empty, commands))
     }
 
-    private fun empty(ctx: MessageHolder): String {
+    private suspend fun empty(ctx: MessageHolder): String {
         TODO()
     }
 
-    private fun access(ctx: MessageHolder): String {
+    private suspend fun access(ctx: MessageHolder): String {
         TODO()
     }
 
-    private fun renameEmpty(ctx: MessageHolder): String {
+    private suspend fun renameEmpty(ctx: MessageHolder): String {
         TODO()
     }
 
-    private fun rename(ctx: MessageHolder): String {
+    private suspend fun rename(ctx: MessageHolder): String {
         TODO()
     }
 
-    private fun nicknameEmpty(ctx: MessageHolder): String {
+    private suspend fun nicknameEmpty(ctx: MessageHolder): String {
         TODO()
     }
 
-    private fun nickname(ctx: MessageHolder): String {
+    private suspend fun nickname(ctx: MessageHolder): String {
         TODO()
     }
 
-    private fun servernameEmpty(ctx: MessageHolder): String {
+    private suspend fun servernameEmpty(ctx: MessageHolder): String {
         TODO()
     }
 
-    private fun servername(ctx: MessageHolder): String {
+    private suspend fun servername(ctx: MessageHolder): String {
         TODO()
     }
 
-    private fun descriptionEmpty(ctx: MessageHolder): String {
+    private suspend fun descriptionEmpty(ctx: MessageHolder): String {
         TODO()
     }
 
-    private fun descriptionRaw(ctx: MessageHolder): String {
+    private suspend fun descriptionRaw(ctx: MessageHolder): String {
         TODO()
     }
 
-    private fun description(ctx: MessageHolder): String {
+    private suspend fun description(ctx: MessageHolder): String {
         TODO()
     }
 
-    private fun avatarLinked(ctx: MessageHolder): String {
+    private suspend fun avatarLinked(ctx: MessageHolder): String {
         TODO()
     }
 
-    private fun avatar(ctx: MessageHolder): String {
+    private suspend fun avatar(ctx: MessageHolder): String {
         TODO()
     }
 
-    private fun serverAvatarLinked(ctx: MessageHolder): String {
+    private suspend fun serverAvatarLinked(ctx: MessageHolder): String {
         TODO()
     }
 
-    private fun serverAvatar(ctx: MessageHolder): String {
+    private suspend fun serverAvatar(ctx: MessageHolder): String {
         TODO()
     }
 
-    private fun removeProxyEmpty(ctx: MessageHolder): String {
+    private suspend fun removeProxyEmpty(ctx: MessageHolder): String {
         TODO()
     }
 
-    private fun removeProxy(ctx: MessageHolder): String {
+    private suspend fun removeProxy(ctx: MessageHolder): String {
         TODO()
     }
 
-    private fun proxyEmpty(ctx: MessageHolder): String {
+    private suspend fun proxyEmpty(ctx: MessageHolder): String {
         TODO()
     }
 
-    private fun proxy(ctx: MessageHolder): String {
+    private suspend fun proxy(ctx: MessageHolder): String {
         TODO()
     }
 
-    private fun pronounsEmpty(ctx: MessageHolder): String {
+    private suspend fun pronounsEmpty(ctx: MessageHolder): String {
         TODO()
     }
 
-    private fun pronounsRaw(ctx: MessageHolder): String {
+    private suspend fun pronounsRaw(ctx: MessageHolder): String {
         TODO()
     }
 
-    private fun pronouns(ctx: MessageHolder): String {
+    private suspend fun pronouns(ctx: MessageHolder): String {
         TODO()
     }
 
-    private fun colorEmpty(ctx: MessageHolder): String {
+    private suspend fun colorEmpty(ctx: MessageHolder): String {
         TODO()
     }
 
-    private fun colorRaw(ctx: MessageHolder): String {
+    private suspend fun colorRaw(ctx: MessageHolder): String {
         TODO()
     }
 
-    private fun color(ctx: MessageHolder): String {
+    private suspend fun color(ctx: MessageHolder): String {
         TODO()
     }
 
-    private fun birthEmpty(ctx: MessageHolder): String {
+    private suspend fun birthEmpty(ctx: MessageHolder): String {
         TODO()
     }
 
-    private fun birthRaw(ctx: MessageHolder): String {
+    private suspend fun birthRaw(ctx: MessageHolder): String {
         TODO()
     }
 
-    private fun birth(ctx: MessageHolder): String {
+    private suspend fun birth(ctx: MessageHolder): String {
         TODO()
     }
 
-    private fun delete(ctx: MessageHolder): String {
+    private suspend fun delete(ctx: MessageHolder): String {
         TODO()
     }
 
-    private fun createEmpty(ctx: MessageHolder): String {
+    private suspend fun createEmpty(ctx: MessageHolder): String {
         TODO()
     }
 
-    private fun create(ctx: MessageHolder): String {
+    private suspend fun create(ctx: MessageHolder): String {
         TODO()
     }
 }

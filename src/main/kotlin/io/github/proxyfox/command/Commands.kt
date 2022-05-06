@@ -8,7 +8,7 @@ import io.github.proxyfox.string.node.Node
  * @author Oliver
  * */
 
-typealias CommandNode = Node.() -> Unit
+typealias CommandNode = suspend Node.() -> Unit
 
 object Commands {
     suspend fun register() {
