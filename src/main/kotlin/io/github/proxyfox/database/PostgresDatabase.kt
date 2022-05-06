@@ -6,6 +6,7 @@ import io.github.proxyfox.database.DatabaseUtils.toPkString
 import io.github.proxyfox.database.records.member.MemberProxyTagRecord
 import io.github.proxyfox.database.records.member.MemberRecord
 import io.github.proxyfox.database.records.member.MemberServerSettingsRecord
+import io.github.proxyfox.database.records.misc.AutoProxyMode
 import io.github.proxyfox.database.records.system.SystemRecord
 import io.github.proxyfox.database.records.system.SystemServerSettingsRecord
 import kotlinx.coroutines.Dispatchers
