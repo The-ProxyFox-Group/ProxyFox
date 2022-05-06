@@ -1,6 +1,11 @@
 package io.github.proxyfox.database
 
 import dev.kord.common.entity.Snowflake
+import io.github.proxyfox.database.records.member.MemberProxyTagRecord
+import io.github.proxyfox.database.records.member.MemberRecord
+import io.github.proxyfox.database.records.member.MemberServerSettingsRecord
+import io.github.proxyfox.database.records.system.SystemRecord
+import io.github.proxyfox.database.records.system.SystemServerSettingsRecord
 
 class NopDatabase : Database {
     override suspend fun getSystemByHost(userId: Snowflake): SystemRecord? = null

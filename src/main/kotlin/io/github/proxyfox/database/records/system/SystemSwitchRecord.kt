@@ -1,4 +1,4 @@
-package io.github.proxyfox.database
+package io.github.proxyfox.database.records.system
 
 import java.time.OffsetDateTime
 
