@@ -1,7 +1,9 @@
 package io.github.proxyfox.importer
 
 import com.google.gson.Gson
-import io.github.proxyfox.database.*
+import io.github.proxyfox.database.records.member.MemberProxyTagRecord
+import io.github.proxyfox.database.records.member.MemberRecord
+import io.github.proxyfox.database.records.system.SystemRecord
 import java.io.InputStreamReader
 
 val gson = Gson()

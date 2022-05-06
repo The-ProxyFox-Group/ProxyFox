@@ -4,8 +4,8 @@ import dev.kord.core.behavior.channel.createWebhook
 import dev.kord.core.entity.Message
 import dev.kord.core.entity.Webhook
 import dev.kord.core.entity.channel.TextChannel
-import io.github.proxyfox.database.MemberProxyTagRecord
-import io.github.proxyfox.database.MemberRecord
+import io.github.proxyfox.database.records.member.MemberProxyTagRecord
+import io.github.proxyfox.database.records.member.MemberRecord
 import io.github.proxyfox.kord
 import kotlinx.coroutines.flow.firstOrNull
 

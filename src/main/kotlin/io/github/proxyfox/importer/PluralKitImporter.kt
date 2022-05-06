@@ -1,6 +1,10 @@
 package io.github.proxyfox.importer
 
-import io.github.proxyfox.database.*
+import io.github.proxyfox.database.AutoProxyMode
+import io.github.proxyfox.database.records.member.MemberProxyTagRecord
+import io.github.proxyfox.database.records.member.MemberRecord
+import io.github.proxyfox.database.records.system.SystemRecord
+import io.github.proxyfox.database.records.system.SystemSwitchRecord
 import java.time.OffsetDateTime
 import java.time.format.DateTimeFormatter
 
