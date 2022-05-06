@@ -1,6 +1,6 @@
 package io.github.proxyfox.database.records.system
 
-import io.github.proxyfox.database.AutoProxyMode
+import io.github.proxyfox.database.records.misc.AutoProxyMode
 import java.time.OffsetDateTime
 import java.time.ZoneOffset
 import kotlin.time.Duration

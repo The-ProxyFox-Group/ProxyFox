@@ -1,4 +1,4 @@
-package io.github.proxyfox.database
+package io.github.proxyfox.database.records.misc
 
 // Created 2022-11-04T12:10:37
 
