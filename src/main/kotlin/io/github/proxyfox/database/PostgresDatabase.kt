@@ -3,6 +3,11 @@ package io.github.proxyfox.database
 import dev.kord.common.entity.Snowflake
 import io.github.proxyfox.database.DatabaseUtils.fromPkString
 import io.github.proxyfox.database.DatabaseUtils.toPkString
+import io.github.proxyfox.database.records.member.MemberProxyTagRecord
+import io.github.proxyfox.database.records.member.MemberRecord
+import io.github.proxyfox.database.records.member.MemberServerSettingsRecord
+import io.github.proxyfox.database.records.system.SystemRecord
+import io.github.proxyfox.database.records.system.SystemServerSettingsRecord
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.withContext
 import org.postgresql.Driver

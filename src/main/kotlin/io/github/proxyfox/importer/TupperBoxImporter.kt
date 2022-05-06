@@ -1,6 +1,8 @@
 package io.github.proxyfox.importer
 
-import io.github.proxyfox.database.*
+import io.github.proxyfox.database.records.member.MemberProxyTagRecord
+import io.github.proxyfox.database.records.member.MemberRecord
+import io.github.proxyfox.database.records.system.SystemRecord
 
 /**
  * [Importer] to import a JSON with a TupperBox format
