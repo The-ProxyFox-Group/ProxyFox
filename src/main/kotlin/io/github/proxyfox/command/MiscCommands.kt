@@ -43,71 +43,71 @@ object MiscCommands {
         })
     }
 
-    private fun importEmpty(ctx: MessageHolder): String {
+    private suspend fun importEmpty(ctx: MessageHolder): String {
         TODO()
     }
 
-    private fun import(ctx: MessageHolder): String {
+    private suspend fun import(ctx: MessageHolder): String {
         TODO()
     }
 
-    private fun export(ctx: MessageHolder): String {
+    private suspend fun export(ctx: MessageHolder): String {
         TODO()
     }
 
-    private fun time(ctx: MessageHolder): String {
+    private suspend fun time(ctx: MessageHolder): String {
         TODO()
     }
 
-    private fun help(ctx: MessageHolder): String {
+    private suspend fun help(ctx: MessageHolder): String {
         TODO()
     }
 
-    private fun explain(ctx: MessageHolder): String {
+    private suspend fun explain(ctx: MessageHolder): String {
         TODO()
     }
 
-    private fun invite(ctx: MessageHolder): String {
+    private suspend fun invite(ctx: MessageHolder): String {
         TODO()
     }
 
-    private fun source(ctx: MessageHolder): String {
+    private suspend fun source(ctx: MessageHolder): String {
         TODO()
     }
 
-    private fun proxyEmpty(ctx: MessageHolder): String {
+    private suspend fun proxyEmpty(ctx: MessageHolder): String {
         TODO()
     }
 
-    private fun proxyOn(ctx: MessageHolder): String {
+    private suspend fun proxyOn(ctx: MessageHolder): String {
         TODO()
     }
 
-    private fun proxyOff(ctx: MessageHolder): String {
+    private suspend fun proxyOff(ctx: MessageHolder): String {
         TODO()
     }
 
-    private fun serverProxyEmpty(ctx: MessageHolder): String {
+    private suspend fun serverProxyEmpty(ctx: MessageHolder): String {
         TODO()
     }
 
-    private fun serverProxyOn(ctx: MessageHolder): String {
+    private suspend fun serverProxyOn(ctx: MessageHolder): String {
         TODO()
     }
 
-    private fun serverProxyOff(ctx: MessageHolder): String {
+    private suspend fun serverProxyOff(ctx: MessageHolder): String {
         TODO()
     }
 
-    private fun roleEmpty(ctx: MessageHolder): String {
+    private suspend fun roleEmpty(ctx: MessageHolder): String {
         TODO()
     }
 
-    private fun role(ctx: MessageHolder): String {
+    private suspend fun role(ctx: MessageHolder): String {
         TODO()
     }
 
-    private fun roleClear(ctx: MessageHolder): String {
+    private suspend fun roleClear(ctx: MessageHolder): String {
         TODO()
     }
 }

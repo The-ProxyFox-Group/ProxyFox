@@ -20,6 +20,9 @@ import org.postgresql.Driver
 import org.slf4j.LoggerFactory
 import java.io.File
 import java.util.*
+import kotlin.contracts.ExperimentalContracts
+import kotlin.contracts.InvocationKind
+import kotlin.contracts.contract
 
 /**
  * Important functions and variables needed for proxyfox
@@ -73,8 +76,9 @@ suspend fun login() {
         if (prefixRegex.matches(content)) {
             // Remove the prefix to pass into dispatcher
             val contentWithoutRegex = content.substring(3)
-            logger.info(contentWithoutRegex)
-            logger.info(parseString(contentWithoutRegex, message))
+            val output = parseString(contentWithoutRegex, message)
+            if (output!!.isNotBlank())
+                message.channel.createMessage(output)
         } else {
             // Proxy the message
             val proxy = database.getProxyTagFromMessage(message.author!!.id, content)
@@ -121,4 +125,13 @@ fun runAsync(action: suspend () -> Unit): Int {
         action()
     }
     return 0
+}
+
+@OptIn(ExperimentalContracts::class)
+suspend inline fun <T> T.applyAsync(block: suspend T.() -> Unit): T {
+    contract {
+        callsInPlace(block, InvocationKind.EXACTLY_ONCE)
+    }
+    block()
+    return this
 }
