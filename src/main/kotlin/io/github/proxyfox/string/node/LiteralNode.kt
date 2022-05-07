@@ -8,7 +8,7 @@ class LiteralNode(val literal: String, val executor: suspend MessageHolder.() ->
     private val greedyNodes: ArrayList<GreedyNode> = ArrayList()
 
     override fun parse(string: String, index: Int, holder: MessageHolder): Int {
-        if (string.length < literal.length) return index
+        if (string.length < literal.length + index) return index
         if (string.substring(index, index + literal.length).lowercase() == literal.lowercase())
             return index + literal.length + 1
         return index
