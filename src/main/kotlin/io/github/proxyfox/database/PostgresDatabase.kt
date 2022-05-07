@@ -148,9 +148,34 @@ class PostgresDatabase(val driver: Driver) : Database {
     }
 
     override suspend fun getMemberByHost(discordId: Snowflake, memberId: String) = withContext(Dispatchers.IO) {
-        val statement = connection.prepareStatement("SELECT id, systemId, name, displayName, description, pronouns, color, avatarUrl, keepProxyTags, messageCount, created FROM hosts JOIN members ON members.systemId = hosts.systemId AND members.id = ?  WHERE discordId = ?;")
+        val statement = connection.prepareStatement("SELECT id, systemId, name, displayName, description, pronouns, color, avatarUrl, keepProxyTags, messageCount, created FROM hosts JOIN members ON members.systemId = hosts.systemId AND members.id = ? WHERE discordId = ?;")
         statement.setLong(1, discordId.value.toLong())
         statement.setInt(2, memberId.fromPkString())
+        val results = statement.executeQuery()
+        var ret: MemberRecord? = null
+        if (results.next()) {
+            val id = results.getInt(1)
+            val systemId = results.getInt(2)
+            val name = results.getString(3)
+            val displayName = results.getString(4)
+            val description = results.getString(5)
+            val pronouns = results.getString(6)
+            val color = results.getInt(7)
+            val avatarUrl = results.getString(8)
+            val keepProxyTags = results.getBoolean(9)
+            val messageCount = results.getLong(10)
+            val created = OffsetDateTime.ofInstant(results.getTimestamp(11).toInstant(), ZoneOffset.UTC)
+            ret = MemberRecord(id.toPkString(), systemId.toPkString(), name, displayName, description, pronouns, color, avatarUrl, keepProxyTags, messageCount, created)
+        }
+        results.close()
+        statement.close()
+        ret
+    }
+
+    override suspend fun getMemberByHostAndName(discordId: Snowflake, memberName: String) = withContext(Dispatchers.IO) {
+        val statement = connection.prepareStatement("SELECT id, systemId, name, displayName, description, pronouns, color, avatarUrl, keepProxyTags, messageCount, created FROM hosts JOIN members ON members.systemId = hosts.systemId AND members.name = ? WHERE discordId = ?;")
+        statement.setLong(1, discordId.value.toLong())
+        statement.setString(2, memberName)
         val results = statement.executeQuery()
         var ret: MemberRecord? = null
         if (results.next()) {
@@ -189,6 +214,30 @@ class PostgresDatabase(val driver: Driver) : Database {
             val messageCount = results.getLong(8)
             val created = OffsetDateTime.ofInstant(results.getTimestamp(9).toInstant(), ZoneOffset.UTC)
             ret = MemberRecord(memberId, systemId, name, displayName, description, pronouns, color, avatarUrl, keepProxyTags, messageCount, created)
+        }
+        results.close()
+        statement.close()
+        ret
+    }
+
+    override suspend fun getMemberByIdAndName(systemId: String, memberName: String) = withContext(Dispatchers.IO) {
+        val statement = connection.prepareStatement("SELECT id, name, displayName, description, pronouns, color, avatarUrl, keepProxyTags, messageCount, created FROM members WHERE systemId = ? AND name = ?;")
+        statement.setInt(1, systemId.fromPkString())
+        statement.setString(2, memberName)
+        val results = statement.executeQuery()
+        var ret: MemberRecord? = null
+        if (results.next()) {
+            val id = results.getInt(1)
+            val name = results.getString(2)
+            val displayName = results.getString(3)
+            val description = results.getString(4)
+            val pronouns = results.getString(5)
+            val color = results.getInt(6)
+            val avatarUrl = results.getString(7)
+            val keepProxyTags = results.getBoolean(8)
+            val messageCount = results.getLong(9)
+            val created = OffsetDateTime.ofInstant(results.getTimestamp(10).toInstant(), ZoneOffset.UTC)
+            ret = MemberRecord(id.toPkString(), systemId, name, displayName, description, pronouns, color, avatarUrl, keepProxyTags, messageCount, created)
         }
         results.close()
         statement.close()

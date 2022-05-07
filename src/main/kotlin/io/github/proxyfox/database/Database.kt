@@ -188,4 +188,6 @@ interface Database {
      * Implementation requirements: return an int with the total members registered
      * */
     suspend fun getTotalMembersById(systemId: String): Int?
+    suspend fun getMemberByIdAndName(systemId: String, memberName: String): MemberRecord?
+    suspend fun getMemberByHostAndName(discordId: Snowflake, memberName: String): MemberRecord?
 }
