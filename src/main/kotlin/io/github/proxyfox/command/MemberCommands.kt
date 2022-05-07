@@ -1,6 +1,10 @@
 package io.github.proxyfox.command
 
+import dev.kord.common.Color
+import dev.kord.core.behavior.channel.createMessage
+import dev.kord.rest.builder.message.create.embed
 import io.github.proxyfox.database
+import io.github.proxyfox.logger
 import io.github.proxyfox.printStep
 import io.github.proxyfox.string.dsl.greedy
 import io.github.proxyfox.string.dsl.literal
@@ -16,7 +20,7 @@ object MemberCommands {
     suspend fun register() {
         printStep("Registering  commands", 2)
         val commands: CommandNode = {
-            string("", ::access) {
+            string("member", ::access) {
                 val name: CommandNode = {
                     greedy("name", ::rename)
                 }
@@ -85,175 +89,251 @@ object MemberCommands {
             literal("new", ::createEmpty) {
                 greedy("name", ::create)
             }
+            literal("create", ::createEmpty) {
+                greedy("name", ::create)
+            }
 
         }
-        registerCommand(literal("", ::empty, commands))
+        registerCommand(literal("member", ::empty, commands))
         registerCommand(literal("m", ::empty, commands))
     }
 
     private suspend fun empty(ctx: MessageHolder): String {
-        return "Make sur eto provide a member command!"
+        return "Make sure to provide a member command!"
     }
 
     private suspend fun access(ctx: MessageHolder): String {
         val system = database.getSystemByHost(ctx.message.author!!.id)
             ?: return "System does not exist. Create one using `pf>system new`"
-        TODO()
+        logger.info(ctx.params["member"])
+        val member = database.getMemberById(system.id, ctx.params["member"]!!)
+            ?: return "Member does not exist. Create one using `pf>member new`"
+        ctx.message.channel.createMessage {
+            embed {
+                title = "${member.displayName} (${member.name}) [`${member.id}`]"
+                color = Color(member.color)
+                val desc = member.description
+                if (desc != null) field {
+                    name = "Description"
+                    value = desc
+                    inline = false
+                }
+                val pronouns = member.pronouns
+                if (pronouns != null) field {
+                    name = "Pronouns"
+                    value = pronouns
+                    inline = true
+                }
+            }
+        }
+        return ""
     }
 
     private suspend fun renameEmpty(ctx: MessageHolder): String {
         val system = database.getSystemByHost(ctx.message.author!!.id)
             ?: return "System does not exist. Create one using `pf>system new`"
+        val member = database.getMemberById(system.id, ctx.params["member"]!!)
+            ?: return "Member does not exist. Create one using `pf>member new`"
         TODO()
     }
 
     private suspend fun rename(ctx: MessageHolder): String {
         val system = database.getSystemByHost(ctx.message.author!!.id)
             ?: return "System does not exist. Create one using `pf>system new`"
+        val member = database.getMemberById(system.id, ctx.params["member"]!!)
+            ?: return "Member does not exist. Create one using `pf>member new`"
         TODO()
     }
 
     private suspend fun nicknameEmpty(ctx: MessageHolder): String {
         val system = database.getSystemByHost(ctx.message.author!!.id)
             ?: return "System does not exist. Create one using `pf>system new`"
+        val member = database.getMemberById(system.id, ctx.params["member"]!!)
+            ?: return "Member does not exist. Create one using `pf>member new`"
         TODO()
     }
 
     private suspend fun nickname(ctx: MessageHolder): String {
         val system = database.getSystemByHost(ctx.message.author!!.id)
             ?: return "System does not exist. Create one using `pf>system new`"
+        val member = database.getMemberById(system.id, ctx.params["member"]!!)
+            ?: return "Member does not exist. Create one using `pf>member new`"
         TODO()
     }
 
     private suspend fun servernameEmpty(ctx: MessageHolder): String {
         val system = database.getSystemByHost(ctx.message.author!!.id)
             ?: return "System does not exist. Create one using `pf>system new`"
+        val member = database.getMemberById(system.id, ctx.params["member"]!!)
+            ?: return "Member does not exist. Create one using `pf>member new`"
         TODO()
     }
 
     private suspend fun servername(ctx: MessageHolder): String {
         val system = database.getSystemByHost(ctx.message.author!!.id)
             ?: return "System does not exist. Create one using `pf>system new`"
+        val member = database.getMemberById(system.id, ctx.params["member"]!!)
+            ?: return "Member does not exist. Create one using `pf>member new`"
         TODO()
     }
 
     private suspend fun descriptionEmpty(ctx: MessageHolder): String {
         val system = database.getSystemByHost(ctx.message.author!!.id)
             ?: return "System does not exist. Create one using `pf>system new`"
+        val member = database.getMemberById(system.id, ctx.params["member"]!!)
+            ?: return "Member does not exist. Create one using `pf>member new`"
         TODO()
     }
 
     private suspend fun descriptionRaw(ctx: MessageHolder): String {
         val system = database.getSystemByHost(ctx.message.author!!.id)
             ?: return "System does not exist. Create one using `pf>system new`"
+        val member = database.getMemberById(system.id, ctx.params["member"]!!)
+            ?: return "Member does not exist. Create one using `pf>member new`"
         TODO()
     }
 
     private suspend fun description(ctx: MessageHolder): String {
         val system = database.getSystemByHost(ctx.message.author!!.id)
             ?: return "System does not exist. Create one using `pf>system new`"
+        val member = database.getMemberById(system.id, ctx.params["member"]!!)
+            ?: return "Member does not exist. Create one using `pf>member new`"
         TODO()
     }
 
     private suspend fun avatarLinked(ctx: MessageHolder): String {
         val system = database.getSystemByHost(ctx.message.author!!.id)
             ?: return "System does not exist. Create one using `pf>system new`"
+        val member = database.getMemberById(system.id, ctx.params["member"]!!)
+            ?: return "Member does not exist. Create one using `pf>member new`"
         TODO()
     }
 
     private suspend fun avatar(ctx: MessageHolder): String {
         val system = database.getSystemByHost(ctx.message.author!!.id)
             ?: return "System does not exist. Create one using `pf>system new`"
+        val member = database.getMemberById(system.id, ctx.params["member"]!!)
+            ?: return "Member does not exist. Create one using `pf>member new`"
         TODO()
     }
 
     private suspend fun serverAvatarLinked(ctx: MessageHolder): String {
         val system = database.getSystemByHost(ctx.message.author!!.id)
             ?: return "System does not exist. Create one using `pf>system new`"
+        val member = database.getMemberById(system.id, ctx.params["member"]!!)
+            ?: return "Member does not exist. Create one using `pf>member new`"
         TODO()
     }
 
     private suspend fun serverAvatar(ctx: MessageHolder): String {
         val system = database.getSystemByHost(ctx.message.author!!.id)
             ?: return "System does not exist. Create one using `pf>system new`"
+        val member = database.getMemberById(system.id, ctx.params["member"]!!)
+            ?: return "Member does not exist. Create one using `pf>member new`"
         TODO()
     }
 
     private suspend fun removeProxyEmpty(ctx: MessageHolder): String {
         val system = database.getSystemByHost(ctx.message.author!!.id)
             ?: return "System does not exist. Create one using `pf>system new`"
+        val member = database.getMemberById(system.id, ctx.params["member"]!!)
+            ?: return "Member does not exist. Create one using `pf>member new`"
         TODO()
     }
 
     private suspend fun removeProxy(ctx: MessageHolder): String {
         val system = database.getSystemByHost(ctx.message.author!!.id)
             ?: return "System does not exist. Create one using `pf>system new`"
+        val member = database.getMemberById(system.id, ctx.params["member"]!!)
+            ?: return "Member does not exist. Create one using `pf>member new`"
         TODO()
     }
 
     private suspend fun proxyEmpty(ctx: MessageHolder): String {
         val system = database.getSystemByHost(ctx.message.author!!.id)
             ?: return "System does not exist. Create one using `pf>system new`"
+        val member = database.getMemberById(system.id, ctx.params["member"]!!)
+            ?: return "Member does not exist. Create one using `pf>member new`"
         TODO()
     }
 
     private suspend fun proxy(ctx: MessageHolder): String {
         val system = database.getSystemByHost(ctx.message.author!!.id)
             ?: return "System does not exist. Create one using `pf>system new`"
+        val member = database.getMemberById(system.id, ctx.params["member"]!!)
+            ?: return "Member does not exist. Create one using `pf>member new`"
         TODO()
     }
 
     private suspend fun pronounsEmpty(ctx: MessageHolder): String {
         val system = database.getSystemByHost(ctx.message.author!!.id)
             ?: return "System does not exist. Create one using `pf>system new`"
+        val member = database.getMemberById(system.id, ctx.params["member"]!!)
+            ?: return "Member does not exist. Create one using `pf>member new`"
         TODO()
     }
 
     private suspend fun pronounsRaw(ctx: MessageHolder): String {
         val system = database.getSystemByHost(ctx.message.author!!.id)
             ?: return "System does not exist. Create one using `pf>system new`"
+        val member = database.getMemberById(system.id, ctx.params["member"]!!)
+            ?: return "Member does not exist. Create one using `pf>member new`"
         TODO()
     }
 
     private suspend fun pronouns(ctx: MessageHolder): String {
         val system = database.getSystemByHost(ctx.message.author!!.id)
             ?: return "System does not exist. Create one using `pf>system new`"
+        val member = database.getMemberById(system.id, ctx.params["member"]!!)
+            ?: return "Member does not exist. Create one using `pf>member new`"
         TODO()
     }
 
     private suspend fun colorEmpty(ctx: MessageHolder): String {
         val system = database.getSystemByHost(ctx.message.author!!.id)
             ?: return "System does not exist. Create one using `pf>system new`"
+        val member = database.getMemberById(system.id, ctx.params["member"]!!)
+            ?: return "Member does not exist. Create one using `pf>member new`"
         TODO()
     }
 
     private suspend fun colorRaw(ctx: MessageHolder): String {
         val system = database.getSystemByHost(ctx.message.author!!.id)
             ?: return "System does not exist. Create one using `pf>system new`"
+        val member = database.getMemberById(system.id, ctx.params["member"]!!)
+            ?: return "Member does not exist. Create one using `pf>member new`"
         TODO()
     }
 
     private suspend fun color(ctx: MessageHolder): String {
         val system = database.getSystemByHost(ctx.message.author!!.id)
             ?: return "System does not exist. Create one using `pf>system new`"
+        val member = database.getMemberById(system.id, ctx.params["member"]!!)
+            ?: return "Member does not exist. Create one using `pf>member new`"
         TODO()
     }
 
     private suspend fun birthEmpty(ctx: MessageHolder): String {
         val system = database.getSystemByHost(ctx.message.author!!.id)
             ?: return "System does not exist. Create one using `pf>system new`"
+        val member = database.getMemberById(system.id, ctx.params["member"]!!)
+            ?: return "Member does not exist. Create one using `pf>member new`"
         TODO()
     }
 
     private suspend fun birthRaw(ctx: MessageHolder): String {
         val system = database.getSystemByHost(ctx.message.author!!.id)
             ?: return "System does not exist. Create one using `pf>system new`"
+        val member = database.getMemberById(system.id, ctx.params["member"]!!)
+            ?: return "Member does not exist. Create one using `pf>member new`"
         TODO()
     }
 
     private suspend fun birth(ctx: MessageHolder): String {
         val system = database.getSystemByHost(ctx.message.author!!.id)
             ?: return "System does not exist. Create one using `pf>system new`"
+        val member = database.getMemberById(system.id, ctx.params["member"]!!)
+            ?: return "Member does not exist. Create one using `pf>member new`"
         TODO()
     }
 
