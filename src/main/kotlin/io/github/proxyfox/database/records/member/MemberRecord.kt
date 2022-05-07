@@ -17,7 +17,7 @@ data class MemberRecord(
     var displayName: String? = null,
     var description: String? = null,
     var pronouns: String? = null,
-    var color: Int = -1,
+    var color: Int = 0,
     var avatarUrl: String? = null,
     /** Whether the proxy tag remains in the message */
     var keepProxy: Boolean = false,

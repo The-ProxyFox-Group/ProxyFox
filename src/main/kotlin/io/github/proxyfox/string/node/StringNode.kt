@@ -20,6 +20,7 @@ class StringNode(val name: String, val executor: suspend MessageHolder.() -> Str
                     }
                     out += newString[i].toString()
                 }
+                holder.params[name] = out
             }
             '\'' -> {
                 var out = ""
@@ -30,6 +31,7 @@ class StringNode(val name: String, val executor: suspend MessageHolder.() -> Str
                     }
                     out += newString[i].toString()
                 }
+                holder.params[name] = out
             }
             else -> {
                 var out = ""
@@ -40,6 +42,7 @@ class StringNode(val name: String, val executor: suspend MessageHolder.() -> Str
                     }
                     out += newString[i].toString()
                 }
+                holder.params[name] = out
             }
         }
         return string.length
