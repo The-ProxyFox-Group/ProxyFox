@@ -8,12 +8,12 @@ class StringNode(val name: String, val executor: suspend MessageHolder.() -> Str
     private val greedyNodes: ArrayList<GreedyNode> = ArrayList()
 
     override fun parse(string: String, index: Int, holder: MessageHolder): Int {
-        if (index >= string.length) return index
+        if (string.length < index) return index
         val newString = string.substring(index)
         when (newString[0]) {
             '"' -> {
                 var out = ""
-                for (i in 1..newString.length) {
+                for (i in newString.indices) {
                     if (newString[i] == '"') {
                         holder.params[name] = out
                         return index + i
@@ -23,7 +23,7 @@ class StringNode(val name: String, val executor: suspend MessageHolder.() -> Str
             }
             '\'' -> {
                 var out = ""
-                for (i in 1..newString.length) {
+                for (i in newString.indices) {
                     if (newString[i] == '\'') {
                         holder.params[name] = out
                         return index + i
@@ -33,7 +33,7 @@ class StringNode(val name: String, val executor: suspend MessageHolder.() -> Str
             }
             else -> {
                 var out = ""
-                for (i in 0..newString.length) {
+                for (i in newString.indices) {
                     if (newString[i] == ' ') {
                         holder.params[name] = out
                         return index + i
