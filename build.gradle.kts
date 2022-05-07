@@ -26,13 +26,9 @@ repositories {
 
 dependencies {
     implementation(kotlin("stdlib"))
-
-    implementation("com.github.steenooo:brigadierkt:v1.2.4")
     implementation("com.google.code.gson:gson:2.9.0")
-    implementation("com.mojang:brigadier:1.0.18")
     implementation("dev.kord:kord-core:0.8.0-M12")
     implementation("ch.qos.logback:logback-classic:1.2.11")
-
     implementation("io.ktor:ktor-server-core:$ktor_version")
     implementation("io.ktor:ktor-server-netty:$ktor_version")
     implementation("com.vladsch.kotlin-jdbc:kotlin-jdbc:0.5.2")
