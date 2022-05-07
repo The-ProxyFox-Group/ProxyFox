@@ -18,7 +18,11 @@ class NopDatabase : Database {
 
     override suspend fun getMemberByHost(discordId: Snowflake, memberId: String): MemberRecord? = null
 
+    override suspend fun getMemberByHostAndName(discordId: Snowflake, memberName: String): MemberRecord? = null
+
     override suspend fun getMemberById(systemId: String, memberId: String): MemberRecord? = null
+
+    override suspend fun getMemberByIdAndName(systemId: String, memberName: String): MemberRecord? = null
 
     override suspend fun getFrontingMemberByHost(discordId: Snowflake): MemberRecord? = null
 
