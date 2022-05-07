@@ -1,11 +1,14 @@
 package io.github.proxyfox.command
 
+import dev.kord.core.behavior.channel.createMessage
+import dev.kord.rest.builder.message.create.embed
 import io.github.proxyfox.database
 import io.github.proxyfox.printStep
 import io.github.proxyfox.string.dsl.greedy
 import io.github.proxyfox.string.dsl.literal
 import io.github.proxyfox.string.parser.MessageHolder
 import io.github.proxyfox.string.parser.registerCommand
+import java.time.format.DateTimeFormatter
 
 /**
  * Commands for accessing and changing system settings
@@ -61,7 +64,39 @@ object SystemCommands {
     }
 
     private suspend fun empty(ctx: MessageHolder): String {
-        TODO()
+        val system = database.getSystemByHost(ctx.message.author!!.id)
+            ?: return "System does not exist. Create one using `pf>system new`"
+        val members = database.getTotalMembersByHost(ctx.message.author!!.id)!!
+        ctx.message.channel.createMessage {
+            embed {
+                title = "${system.name} [`${system.id}`]"
+                val avatar = system.avatarUrl
+                if (avatar != null) thumbnail {
+                    url = avatar
+                }
+                val tag = system.tag
+                if (tag != null) field {
+                    name = "Tag"
+                    value = tag
+                    inline = true
+                }
+                field {
+                    name = "Members (`${members}`)"
+                    value = "See `pf>system list`"
+                    inline = true
+                }
+                val description = system.description
+                if (description != null) field {
+                    name = "Description"
+                    value = description
+                }
+                footer {
+                    val formatter = DateTimeFormatter.ofPattern("E, MMM dd yyyy HH:mm:ss")
+                    text = "Created on ${formatter.format(system.created)}"
+                }
+            }
+        }
+        return ""
     }
 
     private suspend fun createEmpty(ctx: MessageHolder): String {
@@ -97,13 +132,15 @@ object SystemCommands {
     }
 
     private suspend fun list(ctx: MessageHolder): String {
+        val system = database.getSystemByHost(ctx.message.author!!.id)
+            ?: return "System does not exist. Create one using `pf>system new`"
 
         return ""
     }
 
     private suspend fun listByMessage(ctx: MessageHolder): String {
-
-        return ""
+        // TODO: Make it sort by message count
+        return list(ctx)
     }
 
     private suspend fun description(ctx: MessageHolder): String {
@@ -127,27 +164,43 @@ object SystemCommands {
     }
 
     private suspend fun avatar(ctx: MessageHolder): String {
-        TODO()
+        val system = database.getSystemByHost(ctx.message.author!!.id)
+            ?: return "System does not exist. Create one using `pf>system new`"
+        system.avatarUrl = ctx.params["avatar"]
+        database.updateSystem(system)
+        return "System avatar updated!"
     }
 
     private suspend fun avatarRaw(ctx: MessageHolder): String {
-        TODO()
+        val system = database.getSystemByHost(ctx.message.author!!.id)
+            ?: return "System does not exist. Create one using `pf>system new`"
+        return "`${system.avatarUrl}`"
     }
 
     private suspend fun avatarEmpty(ctx: MessageHolder): String {
-        TODO()
+        val system = database.getSystemByHost(ctx.message.author!!.id)
+            ?: return "System does not exist. Create one using `pf>system new`"
+        return system.avatarUrl!!
     }
 
     private suspend fun tag(ctx: MessageHolder): String {
-        TODO()
+        val system = database.getSystemByHost(ctx.message.author!!.id)
+            ?: return "System does not exist. Create one using `pf>system new`"
+        system.tag = ctx.params["tag"]
+        database.updateSystem(system)
+        return "System tag updated!"
     }
 
     private suspend fun tagRaw(ctx: MessageHolder): String {
-        TODO()
+        val system = database.getSystemByHost(ctx.message.author!!.id)
+            ?: return "System does not exist. Create one using `pf>system new`"
+        return "`${system.tag}`"
     }
 
     private suspend fun tagEmpty(ctx: MessageHolder): String {
-        TODO()
+        val system = database.getSystemByHost(ctx.message.author!!.id)
+            ?: return "System does not exist. Create one using `pf>system new`"
+        return system.tag!!
     }
 
     private suspend fun delete(ctx: MessageHolder): String {

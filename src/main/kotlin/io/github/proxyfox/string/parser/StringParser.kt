@@ -1,6 +1,7 @@
 package io.github.proxyfox.string.parser
 
 import dev.kord.core.entity.Message
+import io.github.proxyfox.logger
 import io.github.proxyfox.string.node.LiteralNode
 import io.github.proxyfox.string.node.Node
 
@@ -25,5 +26,12 @@ suspend fun tryExecuteNode(input: String, index: Int, node: Node, holder: Messag
         val str = tryExecuteNode(input, newIdx, newNode, holder)
         if (str != null) return str
     }
-    return node.execute(holder)
+    return try {
+        node.execute(holder)
+    } catch (err: Throwable) {
+        val timestamp = System.currentTimeMillis()
+        logger.warn(timestamp.toString())
+        logger.warn(err.stackTraceToString())
+        "An unexpected error occurred.\nTimestamp: `$timestamp`"
+    }
 }
