@@ -15,6 +15,7 @@ import org.postgresql.Driver
 import org.slf4j.LoggerFactory
 import java.sql.Connection
 import java.sql.SQLException
+import java.sql.Types
 import java.time.OffsetDateTime
 import java.time.ZoneOffset
 import java.util.*
@@ -56,7 +57,7 @@ class PostgresDatabase(val driver: Driver) : Database {
 
     override suspend fun getSystemByHost(userId: Snowflake): SystemRecord? {
         return withContext(Dispatchers.IO) {
-            val statement = connection.prepareStatement("SELECT id, name, description, tag, avatarUrl, timezone, created FROM hosts WHERE discordId = ? JOIN systems ON systems.id = systemId;")
+            val statement = connection.prepareStatement("SELECT id, name, description, tag, avatarUrl, timezone, created FROM hosts JOIN systems ON systems.id = systemId WHERE discordId = ? ;")
             statement.setLong(1, userId.value.toLong())
             val results = statement.executeQuery()
             var ret: SystemRecord? = null
@@ -100,7 +101,7 @@ class PostgresDatabase(val driver: Driver) : Database {
     }
 
     override suspend fun getMembersByHost(userId: Snowflake) = withContext(Dispatchers.IO) {
-        val statement = connection.prepareStatement("SELECT id, systemId, name, displayName, description, pronouns, color, avatarUrl, keepProxyTags, messageCount, created FROM hosts WHERE discordId = ? JOIN members ON members.systemId = systemId;")
+        val statement = connection.prepareStatement("SELECT id, systemId, name, displayName, description, pronouns, color, avatarUrl, keepProxyTags, messageCount, created FROM hosts JOIN members ON members.systemId = hosts.systemId WHERE discordId = ?;")
         statement.setLong(1, userId.value.toLong())
         val results = statement.executeQuery()
         val ret = ArrayList<MemberRecord>()
@@ -147,7 +148,7 @@ class PostgresDatabase(val driver: Driver) : Database {
     }
 
     override suspend fun getMemberByHost(discordId: Snowflake, memberId: String) = withContext(Dispatchers.IO) {
-        val statement = connection.prepareStatement("SELECT id, systemId, name, displayName, description, pronouns, color, avatarUrl, keepProxyTags, messageCount, created FROM hosts WHERE discordId = ? JOIN members ON members.systemId = systemId AND members.id = ?;")
+        val statement = connection.prepareStatement("SELECT id, systemId, name, displayName, description, pronouns, color, avatarUrl, keepProxyTags, messageCount, created FROM hosts JOIN members ON members.systemId = hosts.systemId AND members.id = ?  WHERE discordId = ?;")
         statement.setLong(1, discordId.value.toLong())
         statement.setInt(2, memberId.fromPkString())
         val results = statement.executeQuery()
@@ -195,7 +196,7 @@ class PostgresDatabase(val driver: Driver) : Database {
     }
 
     override suspend fun getFrontingMemberByHost(discordId: Snowflake) = withContext(Dispatchers.IO) {
-        val statement = connection.prepareStatement("SELECT id, systemId, name, displayName, description, pronouns, color, avatarUrl, keepProxyTags, messageCount, created FROM hosts WHERE discordId = ? JOIN systems ON systems.id = systemId JOIN members ON members.systemId = systemId AND members.id = systems.autoProxy;")
+        val statement = connection.prepareStatement("SELECT id, systemId, name, displayName, description, pronouns, color, avatarUrl, keepProxyTags, messageCount, created FROM hosts JOIN systems ON systems.id = systemId JOIN members ON members.systemId = hosts.systemId AND members.id = systems.autoProxy WHERE discordId = ?;")
         statement.setLong(1, discordId.value.toLong())
         val results = statement.executeQuery()
         var ret: MemberRecord? = null
@@ -231,7 +232,7 @@ class PostgresDatabase(val driver: Driver) : Database {
     }
 
     override suspend fun getServerSettingsByHost(serverId: Snowflake, discordId: Snowflake, memberId: String) = withContext(Dispatchers.IO) {
-        val statement = connection.prepareStatement("SELECT systemId, avatarUrl, nickname, proxyEnabled FROM hosts WHERE discordId = ? JOIN systemServerPreferences AS ssp ON ssp.systemId = systemId AND ssp.serverId = ? AND ssp.memberId = ?")
+        val statement = connection.prepareStatement("SELECT systemId, avatarUrl, nickname, proxyEnabled FROM hosts JOIN systemServerPreferences ssp ON ssp.systemId = hosts.systemId AND ssp.serverId = ? AND ssp.memberId = ? WHERE discordId = ?")
         statement.setLong(1, discordId.value.toLong())
         statement.setLong(2, serverId.value.toLong())
         statement.setInt(3, memberId.fromPkString())
@@ -272,7 +273,7 @@ class PostgresDatabase(val driver: Driver) : Database {
         val system = getSystemByHost(discordId)
         if (system != null) return system
         return withContext(Dispatchers.IO) {
-            val statement = connection.prepareStatement("WITH ins1 AS (INSERT INTO system() VALUES() RETURNING systemId, created) INSERT INTO hosts (systemId, discordId) SELECT systemId, ? FROM ins1 RETURNING systemId, created;")
+            val statement = connection.prepareStatement("WITH ins1 AS (INSERT INTO systems(id) VALUES(DEFAULT) RETURNING id as systemId, created), ins2 AS (INSERT INTO hosts (systemId, discordId) SELECT systemId, ? FROM ins1) SELECT systemId, created FROM ins1;")
             statement.setLong(1, discordId.value.toLong())
             val results = statement.executeQuery()
             if (results.next()) {
@@ -331,15 +332,16 @@ class PostgresDatabase(val driver: Driver) : Database {
     }
 
     override suspend fun updateSystem(system: SystemRecord) {
-        val statement = connection.prepareStatement("UPDATE systems SET (name, description, tag, avatarUrl, timezone, autoProxy, autoProxyMode, autoProxyTimeout) = (?, ?, ?, ?, ?, members.globalId, ?::autoproxymode, ?) FROM systems WHERE id = ?;")
+        val statement = connection.prepareStatement("UPDATE systems SET (name, description, tag, avatarUrl, timezone, autoProxy, autoProxyMode, autoProxyTimeout) = (?, ?, ?, ?, ?, members.globalId, ?::autoproxymode, ?) FROM systems s LEFT OUTER JOIN members ON members.systemId = s.id AND members.id = ? WHERE systems.id = ?;")
         statement.setString(1, system.name)
         statement.setString(2, system.description)
         statement.setString(3, system.tag)
         statement.setString(4, system.avatarUrl)
         statement.setString(5, system.timezone)
-        statement.setString(6, system.autoProxyMode.name)
+        statement.setString(6, system.autoProxyMode.name.lowercase())
         statement.setLong(7, system.autoProxyTimeout?.inWholeMilliseconds ?: 0L)
-        statement.setInt(8, system.id.fromPkString())
+        statement.setInt(9, system.id.fromPkString())
+        system.autoProxy?.let { statement.setInt(8, it.fromPkString()) } ?: statement.setNull(8, Types.INTEGER)
         val i = statement.executeUpdate()
         if (i != 1) throw IllegalStateException("Expected 1, got $i from $statement? See $system")
     }
@@ -373,7 +375,7 @@ class PostgresDatabase(val driver: Driver) : Database {
     }
 
     override suspend fun getTotalMembersByHost(discordId: Snowflake) = withContext(Dispatchers.IO) {// "SELECT name, description, tag, avatarUrl, timezone, created FROM systems WHERE id = ?;"
-        val statement = connection.prepareStatement("SELECT count(*) FROM hosts WHERE discordId = ? JOIN members ON members.systemId = systemId;")
+        val statement = connection.prepareStatement("SELECT count(*) FROM hosts JOIN members ON members.systemId = hosts.systemId WHERE discordId = ?;")
         statement.setLong(1, discordId.value.toLong())
         val results = statement.executeQuery()
         var ret: Int? = null
