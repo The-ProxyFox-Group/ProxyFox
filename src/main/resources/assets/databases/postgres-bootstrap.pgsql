@@ -12,7 +12,7 @@ CREATE TABLE IF NOT EXISTS pfmeta(
     schema  INT NOT NULL
 );
 
-INSERT INTO pfmeta (id, schema) VALUES (0, 1);
+INSERT INTO pfmeta (id, schema) VALUES (0, 2);
 
 CREATE TABLE IF NOT EXISTS systems (
     /** The ID of the system. Must be unique. A hint maybe provided. */
@@ -58,7 +58,9 @@ CREATE TABLE IF NOT EXISTS members (
     /** How many messages the member has sent. */
     messageCount    INT8 NOT NULL DEFAULT 0,
     /** When the member was created. */
-    created         TIMESTAMP WITH TIME ZONE NOT NULL DEFAULT NOW()
+    created         TIMESTAMP WITH TIME ZONE NOT NULL DEFAULT NOW(),
+    /** Member's birthday. */
+    birthday        TEXT NULL
 );
 
 ALTER TABLE systems ADD CONSTRAINT autoProxy_fk FOREIGN KEY (autoProxy) REFERENCES members(globalId);
