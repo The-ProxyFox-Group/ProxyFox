@@ -22,5 +22,6 @@ data class MemberRecord(
     /** Whether the proxy tag remains in the message */
     var keepProxy: Boolean = false,
     var messageCount: Long = 0L,
-    var created: OffsetDateTime = OffsetDateTime.now(ZoneOffset.UTC)
+    var created: OffsetDateTime = OffsetDateTime.now(ZoneOffset.UTC),
+    var birthday: String? = null
 )
