@@ -9,6 +9,7 @@ import io.github.proxyfox.database.records.member.MemberServerSettingsRecord
 import io.github.proxyfox.database.records.misc.AutoProxyMode
 import io.github.proxyfox.database.records.system.SystemRecord
 import io.github.proxyfox.database.records.system.SystemServerSettingsRecord
+import io.github.proxyfox.printStep
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.withContext
 import org.postgresql.Driver
@@ -44,7 +45,7 @@ class PostgresDatabase(val driver: Driver) : Database {
                 }
             } catch (sql: SQLException) {
                 sql.printStackTrace()
-                println("Your database is potentially foobar. Continuing onto init.")
+                printStep("Your database is potentially foobar. Continuing onto init.", 2)
             }
             when (cont) {
                 1 -> connection.prepareCall("""ALTER TABLE members ADD birthday TEXT NULL; UPDATE pfmeta SET (schema) = (2) WHERE id = 0;""").execute()
