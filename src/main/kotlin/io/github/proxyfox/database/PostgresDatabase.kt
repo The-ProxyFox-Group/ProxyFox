@@ -48,7 +48,7 @@ class PostgresDatabase(val driver: Driver) : Database {
                 printStep("Your database is potentially foobar. Continuing onto init.", 2)
             }
             when (cont) {
-                1 -> connection.prepareCall("""ALTER TABLE members ADD birthday TEXT NULL; UPDATE pfmeta SET (schema) = (2) WHERE id = 0;""").execute()
+                1 -> connection.prepareCall("""ALTER TABLE members ADD birthday TEXT NULL; UPDATE pfmeta SET schema = 2 WHERE id = 0;""").execute()
                 -1 -> connection.prepareCall(PostgresDatabase::class.java.getResourceAsStream("/assets/databases/postgres-bootstrap.pgsql")!!.reader().readText()).execute()
             }
         } catch (sql: SQLException) {
