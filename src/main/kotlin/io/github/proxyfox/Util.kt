@@ -34,14 +34,14 @@ val prefixRegex = Regex("^pf[>;!].*", RegexOption.IGNORE_CASE)
 lateinit var kord: Kord
 lateinit var database: Database
 
-suspend fun printFancy(input: String) {
+fun printFancy(input: String) {
     val edges = "*".repeat(input.length + 4)
     logger.info(edges)
     logger.info("* $input *")
     logger.info(edges)
 }
 
-suspend fun printStep(input: String, step: Int) {
+fun printStep(input: String, step: Int) {
     val add = "  ".repeat(step)
     logger.info(step.toString() + add + input)
 }
