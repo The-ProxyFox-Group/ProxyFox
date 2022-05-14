@@ -109,7 +109,7 @@ client2.on('messageCreate', msg => {
     try {
         if (!handleMessage(msg))
             webhook(msg);
-        else if (!msg.content.startsWith("pf>edit") && !msg.content.startsWith("pf>delete"))
+        else if (!msg.content.contains("edit") && !msg.content.contains("delete"))
         msg.channel.send(`
 **Note:** Because of verification, ProxyFox 2 cannot be in more than two servers that you own. If you own more than 2 servers with ProxyFox 2, please remove it to aid with verification. Thank you!
 `)
