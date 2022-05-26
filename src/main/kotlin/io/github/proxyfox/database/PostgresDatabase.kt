@@ -27,6 +27,7 @@ import java.util.*
  * @author KJP12
  * @since ${version}
  **/
+@Deprecated("Will be unmaintained until Hachmitsu is usable. For now, use the JSON or Mongo drivers.")
 class PostgresDatabase(val driver: Driver) : Database {
     private val logger = LoggerFactory.getLogger(PostgresDatabase::class.java)
 
