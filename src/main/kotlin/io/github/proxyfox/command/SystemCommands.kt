@@ -1,13 +1,19 @@
 package io.github.proxyfox.command
 
 import dev.kord.core.behavior.channel.createMessage
+import dev.kord.core.entity.ReactionEmoji
+import dev.kord.core.event.message.ReactionAddEvent
+import dev.kord.core.on
 import dev.kord.rest.builder.message.create.embed
 import io.github.proxyfox.database
+import io.github.proxyfox.kord
 import io.github.proxyfox.printStep
 import io.github.proxyfox.string.dsl.greedy
 import io.github.proxyfox.string.dsl.literal
 import io.github.proxyfox.string.parser.MessageHolder
 import io.github.proxyfox.string.parser.registerCommand
+import kotlinx.coroutines.Job
+import kotlinx.coroutines.flow.map
 import java.time.format.DateTimeFormatter
 
 /**
@@ -204,6 +210,29 @@ object SystemCommands {
     }
 
     private suspend fun delete(ctx: MessageHolder): String {
-        TODO()
+        val system = database.getSystemByHost(ctx.message.author!!.id)
+            ?: return "System does not exist. Create one using `pf>system new`"
+        val message1 =
+            ctx.message.channel.createMessage("Are you sure you want to delete your system?\nThe data will be lost forever (A long time!)")
+        message1.addReaction(ReactionEmoji.Unicode("❌"))
+        message1.addReaction(ReactionEmoji.Unicode("✅"))
+        var job: Job? = null
+        job = kord.on<ReactionAddEvent> {
+            if (message.id == message1.id) {
+                message.getReactors(ReactionEmoji.Unicode("❌")).map {
+                    if (it.id == ctx.message.author!!.id) {
+                        message.channel.createMessage("Member deleted")
+                        job!!.cancel()
+                    }
+                }
+                message.getReactors(ReactionEmoji.Unicode("✅")).map {
+                    if (it.id == ctx.message.author!!.id) {
+                        message.channel.createMessage("Action cancelled")
+                        job!!.cancel()
+                    }
+                }
+            }
+        }
+        return ""
     }
 }

@@ -19,7 +19,6 @@ application {
 
 repositories {
     mavenCentral()
-    maven("https://libraries.minecraft.net/")
     maven("https://oss.sonatype.org/content/repositories/snapshots")
     maven("https://jitpack.io")
 }
@@ -27,7 +26,7 @@ repositories {
 dependencies {
     implementation(kotlin("stdlib"))
     implementation("com.google.code.gson:gson:2.9.0")
-    implementation("dev.kord:kord-core:0.8.0-M12")
+    implementation("dev.kord:kord-core:0.8.0-M13")
     implementation("ch.qos.logback:logback-classic:1.2.11")
     implementation("io.ktor:ktor-server-core:$ktor_version")
     implementation("io.ktor:ktor-server-netty:$ktor_version")
