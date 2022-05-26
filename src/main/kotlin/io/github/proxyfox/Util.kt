@@ -46,15 +46,16 @@ fun printStep(input: String, step: Int) {
 
 fun String.toColor(): Int {
     return if (startsWith("#"))
-        Integer.valueOf(substring(1))
+        Integer.valueOf(substring(1), 16)
     else if (startsWith("0x"))
         Integer.decode(this)
     else toInt(16)
 }
 
 fun Int.fromColor(): String {
-    val string = toString(16)
-    return "#${string.padStart(7 - string.length)}"
+    var string = toString(16)
+    if (string == "-1") string = "0"
+    return "#${string.padStart(7 - string.length, '0')}"
 }
 
 suspend fun setupDatabase() {
