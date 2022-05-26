@@ -2,7 +2,6 @@ package io.github.proxyfox
 
 import dev.kord.core.Kord
 import dev.kord.core.event.gateway.ReadyEvent
-import dev.kord.core.event.interaction.InteractionCreateEvent
 import dev.kord.core.event.message.MessageCreateEvent
 import dev.kord.core.on
 import dev.kord.gateway.Intent
@@ -81,9 +80,6 @@ suspend fun login() {
     printStep("Registering events", 2)
     kord.on<MessageCreateEvent> {
         onMessageCreate()
-    }
-    kord.on<InteractionCreateEvent> {
-        onResponse()
     }
     kord.on<ReadyEvent> {
         printFancy("ProxyFox initialized")
