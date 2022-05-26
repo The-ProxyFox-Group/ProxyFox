@@ -13,5 +13,7 @@ data class MemberServerSettingsRecord(
     val memberId: String,
     var avatarUrl: String?,
     var nickname: String?,
+    /** Whether the member should be auto-proxied in the server. */
+    var autoProxy: Boolean,
     var proxyEnabled: Boolean
 )

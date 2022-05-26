@@ -12,7 +12,7 @@ CREATE TABLE IF NOT EXISTS pfmeta(
     schema  INT NOT NULL
 );
 
-INSERT INTO pfmeta (id, schema) VALUES (0, 2);
+INSERT INTO pfmeta (id, schema) VALUES (0, 3);
 
 CREATE TABLE IF NOT EXISTS systems (
     /** The ID of the system. Must be unique. A hint maybe provided. */
@@ -89,6 +89,8 @@ CREATE TABLE IF NOT EXISTS memberServerPreferences (
     avatarUrl   TEXT NULL,
     /** Nickname for within the server. If present, will override the set display name. */
     nickname    TEXT NULL,
+    /** Whether the member should be auto-proxied in the server. */
+    autoProxy   BOOLEAN DEFAULT TRUE,
     /** Whether the member's proxy is enabled in the server. */
     proxyEnabled BOOLEAN DEFAULT TRUE,
     PRIMARY KEY(serverId, memberId)
