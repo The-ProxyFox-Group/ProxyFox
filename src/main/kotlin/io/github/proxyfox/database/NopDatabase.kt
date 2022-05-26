@@ -38,6 +38,8 @@ class NopDatabase : Database {
         memberId: String
     ): MemberServerSettingsRecord? = null
 
+    override suspend fun getServerSettingsByHost(serverId: Snowflake, discordId: Snowflake): SystemServerSettingsRecord? = null
+
     override suspend fun getServerSettingsByMember(
         serverId: Snowflake,
         systemId: String,

@@ -123,6 +123,15 @@ interface Database {
      * */
     suspend fun getServerSettingsByMember(serverId: Snowflake, systemId: String, memberId: String): MemberServerSettingsRecord?
 
+    /**
+     * Gets the [system's server settings][SystemServerSettingsRecord] by server & Discord IDs.
+     *
+     * @param serverId The ID of the server.
+     * @param discordId The ID of the Discord user.
+     * @return The system's settings for the server.
+     * */
+    suspend fun getServerSettingsByHost(serverId: Snowflake, discordId: Snowflake): SystemServerSettingsRecord?
+
     // === Management ===
     /**
      * Allocates or reuses a system ID in the database.
