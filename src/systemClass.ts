@@ -100,7 +100,7 @@ export class System {
 
     removeMember(name:string) {
         for (let i in this.members)
-            if (this.members[i].name.toLowerCase() == name.toLowerCase()) {
+            if (this.members[i].name.toLowerCase() == name.toLowerCase() || this.members[i].id == name.toLowerCase()) {
                 this.members[i] = null;
                 this.members = this.members.filter(mem => mem != null);
                 return;

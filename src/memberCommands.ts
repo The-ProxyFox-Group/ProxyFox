@@ -251,7 +251,7 @@ export function deleteMember(msg: discord.Message, parsedMessage: string[]):stri
 
 function deleteMem(system: System, name:string, user: discord.User, msg:discord.Message) {
     if (system.memberFromName(name) != null) {
-        msg.channel.send("Are you sure you want to delete is member? Reply with the member name again to delete.").then(a => {
+        msg.channel.send("Are you sure you want to delete this member? Reply with the member name again to delete.").then(a => {
             //@ts-ignore
             let c = (<discord.TextChannel>(a.channel)).createMessageCollector(a => a.author.id == user.id,{time:30000}).on("collect", b => {
                 if (b.content != name) return;
