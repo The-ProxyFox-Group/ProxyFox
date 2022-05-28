@@ -468,7 +468,7 @@ class PostgresDatabase(val driver: Driver) : Database() {
                 val created = OffsetDateTime.ofInstant(results.getTimestamp(2).toInstant(), ZoneOffset.UTC)
                 results.close()
                 statement.close()
-                return@withContext SystemRecord(systemId.toPkString(), created = created)
+                return@withContext SystemRecord(systemId.toPkString(), timestamp = created)
             } else {
                 throw IllegalStateException("$statement & $results didn't return anything?")
             }
@@ -485,7 +485,7 @@ class PostgresDatabase(val driver: Driver) : Database() {
             val created = OffsetDateTime.ofInstant(results.getTimestamp(2).toInstant(), ZoneOffset.UTC)
             results.close()
             statement.close()
-            return@withContext MemberRecord(memberId.toPkString(), systemId, name, created = created)
+            return@withContext MemberRecord(memberId.toPkString(), systemId, name, timestamp = created)
         } else {
             throw IllegalStateException("$statement & $results didn't return anything?")
         }
@@ -527,7 +527,7 @@ class PostgresDatabase(val driver: Driver) : Database() {
         statement.setString(3, system.tag)
         statement.setString(4, system.avatarUrl)
         statement.setString(5, system.timezone)
-        statement.setString(6, system.autoProxyMode.name.lowercase())
+        statement.setString(6, system.autoType.name.lowercase())
         statement.setLong(7, system.autoProxyTimeout?.inWholeMilliseconds ?: 0L)
         statement.setInt(9, system.id.fromPkString())
         system.autoProxy?.let { statement.setInt(8, it.fromPkString()) } ?: statement.setNull(8, Types.INTEGER)
