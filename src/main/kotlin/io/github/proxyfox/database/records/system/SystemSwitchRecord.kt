@@ -1,6 +1,7 @@
 package io.github.proxyfox.database.records.system
 
 import java.time.OffsetDateTime
+import java.time.ZoneOffset
 
 // Created 2022-09-04T15:18:49
 
@@ -13,5 +14,5 @@ data class SystemSwitchRecord(
     val systemId: String,
     val id: String,
     var memberIds: List<String>,
-    var timestamp: OffsetDateTime
+    var timestamp: OffsetDateTime = OffsetDateTime.now(ZoneOffset.UTC)
 )

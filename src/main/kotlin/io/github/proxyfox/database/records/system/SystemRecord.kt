@@ -19,9 +19,9 @@ data class SystemRecord(
     var tag: String? = null,
     var avatarUrl: String? = null,
     var timezone: String? = null,
-    var created: OffsetDateTime = OffsetDateTime.now(ZoneOffset.UTC),
+    var timestamp: OffsetDateTime = OffsetDateTime.now(ZoneOffset.UTC),
     /** The ID of the member that's currently being auto-proxied. */
     var autoProxy: String? = null,
-    var autoProxyMode: AutoProxyMode = AutoProxyMode.OFF,
+    var autoType: AutoProxyMode = AutoProxyMode.OFF,
     var autoProxyTimeout: Duration? = null
 )
