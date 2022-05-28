@@ -5,6 +5,7 @@ import io.github.proxyfox.database.records.member.MemberProxyTagRecord
 import io.github.proxyfox.database.records.member.MemberRecord
 import io.github.proxyfox.database.records.member.MemberServerSettingsRecord
 import io.github.proxyfox.database.records.misc.ServerSettingsRecord
+import io.github.proxyfox.database.records.misc.TrustLevel
 import io.github.proxyfox.database.records.system.SystemRecord
 import io.github.proxyfox.database.records.system.SystemServerSettingsRecord
 import io.github.proxyfox.database.records.system.SystemSwitchRecord
@@ -70,29 +71,28 @@ class NopDatabase : Database() {
 
     override suspend fun allocateMember(systemId: String, name: String) = MemberRecord("aaaaa", systemId, name = name)
 
-    override suspend fun updateMember(member: MemberRecord) {
-        return
-    }
+    override suspend fun updateMember(member: MemberRecord) {}
 
-    override suspend fun updateMemberServerSettings(serverSettings: MemberServerSettingsRecord) {
-        return
-    }
+    override suspend fun updateMemberServerSettings(serverSettings: MemberServerSettingsRecord) {}
 
-    override suspend fun updateSystem(system: SystemRecord) {
-        return
-    }
+    override suspend fun updateSystem(system: SystemRecord) {}
 
-    override suspend fun updateSystemServerSettings(serverSettings: SystemServerSettingsRecord) {
-        return
-    }
+    override suspend fun updateSystemServerSettings(serverSettings: SystemServerSettingsRecord) {}
 
-    override suspend fun addUserToSystem(discordId: Snowflake, systemId: String) {
-        return
-    }
+    override suspend fun allocateProxyTag(
+        systemId: String,
+        memberId: String,
+        prefix: String,
+        suffix: String
+    ): MemberProxyTagRecord? = null
 
-    override suspend fun removeUserFromSystem(discordId: Snowflake, systemId: String) {
-        return
-    }
+    override suspend fun removeProxyTag(systemId: String, proxyTag: MemberProxyTagRecord) {}
+
+    override suspend fun addUserToSystem(discordId: Snowflake, systemId: String) {}
+
+    override suspend fun removeUserFromSystem(discordId: Snowflake, systemId: String) {}
+
+    override suspend fun updateTrustLevel(userId: Snowflake, trustee: Snowflake, level: TrustLevel) {}
 
     override suspend fun getTotalSystems(): Int? = null
 
