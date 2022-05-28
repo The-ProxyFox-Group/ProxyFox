@@ -1,5 +1,6 @@
 package io.github.proxyfox.database.records.system
 
+import dev.kord.common.entity.Snowflake
 import io.github.proxyfox.database.records.misc.AutoProxyMode
 import kotlin.time.Duration
 
@@ -12,7 +13,7 @@ import kotlin.time.Duration
  * @since ${version}
  **/
 data class SystemServerSettingsRecord(
-    val serverId: ULong,
+    val serverId: Snowflake,
     val systemId: String,
     var proxyEnabled: Boolean,
     /** The ID of the member that's currently being auto-proxied. */

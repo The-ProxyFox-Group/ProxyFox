@@ -5,6 +5,7 @@ import io.github.proxyfox.database.records.member.MemberProxyTagRecord
 import io.github.proxyfox.database.records.member.MemberRecord
 import io.github.proxyfox.database.records.member.MemberServerSettingsRecord
 import io.github.proxyfox.database.records.misc.ServerSettingsRecord
+import io.github.proxyfox.database.records.misc.TrustLevel
 import io.github.proxyfox.database.records.system.SystemRecord
 import io.github.proxyfox.database.records.system.SystemServerSettingsRecord
 import io.github.proxyfox.database.records.system.SystemSwitchRecord
@@ -160,6 +161,28 @@ abstract class Database : AutoCloseable {
     abstract suspend fun updateSystemServerSettings(serverSettings: SystemServerSettingsRecord)
 
     /**
+     * Allocates a proxy tag
+     * @param systemId The system ID to assign it to
+     * @param memberId The member to assign it to
+     * @param prefix The prefix of the proxy
+     * @param suffix the suffix of the proxy
+     * @return The newly created proxy tag, if one with the same prefix and suffix exists already, return null
+     * */
+    abstract suspend fun allocateProxyTag(
+        systemId: String,
+        memberId: String,
+        prefix: String,
+        suffix: String
+    ): MemberProxyTagRecord?
+
+    /**
+     * Removes a proxy tag
+     * @param systemId The system to remove it from
+     * @param proxyTag The proxy tag to remove
+     * */
+    abstract suspend fun removeProxyTag(systemId: String, proxyTag: MemberProxyTagRecord)
+
+    /**
      * Adds a Discord account to a system.
      *
      * Implementation requirements: Deny addition when the user is already tied to a system.
@@ -172,12 +195,20 @@ abstract class Database : AutoCloseable {
     /**
      * Removes a Discord account from a system.
      *
-     * Implementation requirements: Deny removal when that is the system's only user.
+     * Implementation requirements: Delete the system if there's no users left.
      *
      * @param discordId The ID of the Discord user.
      * @param systemId The ID of the system.
      * */
     abstract suspend fun removeUserFromSystem(discordId: Snowflake, systemId: String)
+
+    /**
+     * Updates the trust level for the trustee
+     * @param userId The owner of the system
+     * @param trustee The person being trusted
+     * @param level the level of trust granted
+     * */
+    abstract suspend fun updateTrustLevel(userId: Snowflake, trustee: Snowflake, level: TrustLevel)
 
     /**
      * Gets the total number of systems registered
@@ -199,7 +230,15 @@ abstract class Database : AutoCloseable {
      * Implementation requirements: return an int with the total members registered
      * */
     abstract suspend fun getTotalMembersById(systemId: String): Int?
+
+    /**
+     * Gets a member by system ID and member name
+     * */
     abstract suspend fun getMemberByIdAndName(systemId: String, memberName: String): MemberRecord?
+
+    /**
+     * Gets a member by user snowflake and member name
+     * */
     abstract suspend fun getMemberByHostAndName(discordId: Snowflake, memberName: String): MemberRecord?
 
     // === Unsafe direct-write import & export functions ===

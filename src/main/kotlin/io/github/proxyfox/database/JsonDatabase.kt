@@ -5,6 +5,7 @@ import io.github.proxyfox.database.records.member.MemberProxyTagRecord
 import io.github.proxyfox.database.records.member.MemberRecord
 import io.github.proxyfox.database.records.member.MemberServerSettingsRecord
 import io.github.proxyfox.database.records.misc.ServerSettingsRecord
+import io.github.proxyfox.database.records.misc.TrustLevel
 import io.github.proxyfox.database.records.system.SystemRecord
 import io.github.proxyfox.database.records.system.SystemServerSettingsRecord
 import io.github.proxyfox.database.records.system.SystemSwitchRecord
@@ -212,11 +213,28 @@ class JsonDatabase : Database() {
         TODO("Not yet implemented")
     }
 
+    override suspend fun allocateProxyTag(
+        systemId: String,
+        memberId: String,
+        prefix: String,
+        suffix: String
+    ): MemberProxyTagRecord? {
+        TODO("Not yet implemented")
+    }
+
+    override suspend fun removeProxyTag(systemId: String, proxyTag: MemberProxyTagRecord) {
+        TODO("Not yet implemented")
+    }
+
     override suspend fun addUserToSystem(discordId: Snowflake, systemId: String) {
         throw UnsupportedOperationException("JSON flat file doesn't support multi-user.")
     }
 
     override suspend fun removeUserFromSystem(discordId: Snowflake, systemId: String) {
+        TODO("Not yet implemented")
+    }
+
+    override suspend fun updateTrustLevel(userId: Snowflake, trustee: Snowflake, level: TrustLevel) {
         TODO("Not yet implemented")
     }
 

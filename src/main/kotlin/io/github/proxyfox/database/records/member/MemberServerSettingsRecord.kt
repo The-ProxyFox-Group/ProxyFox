@@ -1,5 +1,7 @@
 package io.github.proxyfox.database.records.member
 
+import dev.kord.common.entity.Snowflake
+
 // Created 2022-09-04T14:16:19
 
 /**
@@ -8,7 +10,7 @@ package io.github.proxyfox.database.records.member
  * @author KJP12
  **/
 data class MemberServerSettingsRecord(
-    val serverId: ULong,
+    val serverId: Snowflake,
     val systemId: String,
     val memberId: String,
     var avatarUrl: String?,

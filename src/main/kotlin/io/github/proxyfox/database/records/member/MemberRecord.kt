@@ -23,5 +23,7 @@ data class MemberRecord(
     var keepProxy: Boolean = false,
     var messageCount: Long = 0L,
     var timestamp: OffsetDateTime = OffsetDateTime.now(ZoneOffset.UTC),
-    var birthday: String? = null
+    var birthday: String? = null,
+    var age: String? = null,
+    var role: String? = null
 )
