@@ -21,7 +21,7 @@ import io.github.proxyfox.database.records.system.SystemSwitchRecord
  *           "sysid": {
  *               // here for redundancy purposes
  *               "id": "sysid",
- *               // list of user snowflakes of users that own the system (have it set as 'system' in their user object
+ *               // list of user snowflakes of users that own the system (have it set as 'system' in their user object)
  *               "accounts": [],
  *               // name of the system
  *               "name": "name",
@@ -63,23 +63,27 @@ import io.github.proxyfox.database.records.system.SystemSwitchRecord
  *                       "messageCount": 0,
  *                       // timestamp of when the member was created
  *                       "timestamp": "timestamp",
- *                       // display name per server
- *                       "serverDisplayName": {
- *                           "server snowflake": "display name"
- *                       },
- *                       // avatar URL per server
- *                       "serverAvatarUrl": {
- *                           "server snowflake": "avatar url"
- *                       },
- *                       // proxy per server
- *                       "serverProxy": {
- *                           "server snowflake": false
+ *                       // per server settings
+ *                       "serverSettings": {
+ *                           "server snowflake": {
+ *                               // display name
+ *                               "displayName": "display name",
+ *                               // avatar
+ *                               "avatarUrl": "avatar URL",
+ *                               // whether to proxy or not
+ *                               "proxy": true
+ *                           }
  *                       }
  *                   }
  *               },
- *               // proxy per server
- *               "serverProxy": {
- *                   "server snowflake": false
+ *               // per server
+ *               "serverSettings": {
+ *                   "server snowflake": {
+ *                       // autoproxy type
+ *                       "autoType": "autoproxy type",
+ *                       // whether or not to proxy
+ *                       "proxyEnabled": true
+ *                   }
  *               },
  *               // array of proxy tags (each prefix/suffix pair will be unique)
  *               "proxyTags": [
