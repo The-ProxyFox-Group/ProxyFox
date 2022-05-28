@@ -4,10 +4,12 @@ import dev.kord.common.entity.Snowflake
 import io.github.proxyfox.database.records.member.MemberProxyTagRecord
 import io.github.proxyfox.database.records.member.MemberRecord
 import io.github.proxyfox.database.records.member.MemberServerSettingsRecord
+import io.github.proxyfox.database.records.misc.ServerSettingsRecord
 import io.github.proxyfox.database.records.system.SystemRecord
 import io.github.proxyfox.database.records.system.SystemServerSettingsRecord
+import io.github.proxyfox.database.records.system.SystemSwitchRecord
 
-class NopDatabase : Database {
+class NopDatabase : Database() {
     override suspend fun getSystemByHost(userId: Snowflake): SystemRecord? = null
 
     override suspend fun getSystemById(systemId: String): SystemRecord? = null
@@ -19,6 +21,24 @@ class NopDatabase : Database {
     override suspend fun getMemberByHost(discordId: Snowflake, memberId: String): MemberRecord? = null
 
     override suspend fun getMemberByHostAndName(discordId: Snowflake, memberName: String): MemberRecord? = null
+
+    override suspend fun export(other: Database) {}
+
+    override suspend fun import(memberProxyTagRecord: MemberProxyTagRecord) {}
+
+    override suspend fun import(memberRecord: MemberRecord) {}
+
+    override suspend fun import(memberServerSettingsRecord: MemberServerSettingsRecord) {}
+
+    override suspend fun import(serverSettingsRecord: ServerSettingsRecord) {}
+
+    override suspend fun import(system: SystemRecord) {}
+
+    override suspend fun import(systemServerSettingsRecord: SystemServerSettingsRecord) {}
+
+    override suspend fun import(systemSwitchRecord: SystemSwitchRecord) {}
+
+    override fun close() {}
 
     override suspend fun getMemberById(systemId: String, memberId: String): MemberRecord? = null
 

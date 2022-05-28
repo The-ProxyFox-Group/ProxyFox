@@ -7,8 +7,10 @@ import io.github.proxyfox.database.records.member.MemberProxyTagRecord
 import io.github.proxyfox.database.records.member.MemberRecord
 import io.github.proxyfox.database.records.member.MemberServerSettingsRecord
 import io.github.proxyfox.database.records.misc.AutoProxyMode
+import io.github.proxyfox.database.records.misc.ServerSettingsRecord
 import io.github.proxyfox.database.records.system.SystemRecord
 import io.github.proxyfox.database.records.system.SystemServerSettingsRecord
+import io.github.proxyfox.database.records.system.SystemSwitchRecord
 import io.github.proxyfox.printStep
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.withContext
@@ -28,7 +30,7 @@ import java.util.*
  * @since ${version}
  **/
 @Deprecated("Will be unmaintained until Hachmitsu is usable. For now, use the JSON or Mongo drivers.")
-class PostgresDatabase(val driver: Driver) : Database {
+class PostgresDatabase(val driver: Driver) : Database() {
     private val logger = LoggerFactory.getLogger(PostgresDatabase::class.java)
 
     private lateinit var connection: Connection
@@ -211,6 +213,42 @@ class PostgresDatabase(val driver: Driver) : Database {
         results.close()
         statement.close()
         ret
+    }
+
+    override suspend fun export(other: Database) {
+        TODO("Not yet implemented")
+    }
+
+    override suspend fun import(memberProxyTagRecord: MemberProxyTagRecord) {
+        TODO("Not yet implemented")
+    }
+
+    override suspend fun import(memberRecord: MemberRecord) {
+        TODO("Not yet implemented")
+    }
+
+    override suspend fun import(memberServerSettingsRecord: MemberServerSettingsRecord) {
+        TODO("Not yet implemented")
+    }
+
+    override suspend fun import(serverSettingsRecord: ServerSettingsRecord) {
+        TODO("Not yet implemented")
+    }
+
+    override suspend fun import(system: SystemRecord) {
+        TODO("Not yet implemented")
+    }
+
+    override suspend fun import(systemServerSettingsRecord: SystemServerSettingsRecord) {
+        TODO("Not yet implemented")
+    }
+
+    override suspend fun import(systemSwitchRecord: SystemSwitchRecord) {
+        TODO("Not yet implemented")
+    }
+
+    override fun close() {
+        connection.close()
     }
 
     override suspend fun getMemberById(systemId: String, memberId: String) = withContext(Dispatchers.IO) {
