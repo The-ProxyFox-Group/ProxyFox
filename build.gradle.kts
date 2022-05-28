@@ -33,6 +33,7 @@ dependencies {
     implementation("io.ktor:ktor-server-netty:$ktor_version")
     implementation("com.vladsch.kotlin-jdbc:kotlin-jdbc:0.5.2")
     implementation("org.postgresql:postgresql:42.3.3")
+    implementation("org.litote.kmongo:kmongo-coroutine:4.6.0")
 }
 
 tasks {
