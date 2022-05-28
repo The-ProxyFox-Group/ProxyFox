@@ -92,7 +92,7 @@ object SystemCommands {
                 }
                 footer {
                     val formatter = DateTimeFormatter.ofPattern("E, MMM dd yyyy HH:mm:ss")
-                    text = "Created on ${formatter.format(system.created)}"
+                    text = "Created on ${formatter.format(system.timestamp)}"
                 }
             }
         }
