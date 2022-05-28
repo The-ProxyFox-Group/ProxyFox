@@ -1,12 +1,13 @@
 package io.github.proxyfox.importer
 
+import dev.kord.common.entity.Snowflake
+import io.github.proxyfox.database
 import io.github.proxyfox.database.records.member.MemberProxyTagRecord
 import io.github.proxyfox.database.records.member.MemberRecord
-import io.github.proxyfox.database.records.misc.AutoProxyMode
 import io.github.proxyfox.database.records.system.SystemRecord
-import io.github.proxyfox.database.records.system.SystemSwitchRecord
-import java.time.OffsetDateTime
-import java.time.format.DateTimeFormatter
+import io.github.proxyfox.fromColor
+import io.github.proxyfox.toColor
+import io.github.proxyfox.types.PkSystem
 
 /**
  * [Importer] to import a JSON with a PluralKit format
@@ -15,64 +16,49 @@ import java.time.format.DateTimeFormatter
  * */
 class PluralKitImporter : Importer {
     private lateinit var system: SystemRecord
-    private var members: HashMap<String, MemberRecord> = HashMap()
-    private var proxies: HashMap<String,List<MemberProxyTagRecord>> = HashMap()
+    private var members: List<MemberRecord> = ArrayList()
+    private var proxies: HashMap<MemberRecord, List<MemberProxyTagRecord>> = HashMap()
+    private var createdMembers = 0
+    private var updatedMembers = 0
 
-    override suspend fun import(map: Map<String, *>) {
-        system = SystemRecord(
-            "aaaaa",
-            map["name"] as String?,
-            map["description"] as String?,
-            map["tag"] as String?,
-            map["avatar_url"] as String?,
-            map["timezone"] as String?,
-            OffsetDateTime.parse(map["created"] as String, DateTimeFormatter.ISO_DATE_TIME),
-            null,
-            AutoProxyMode.OFF,
-            null
-        )
-        for (memMap in map["members"] as List<Map<String,*>>) {
-            val member = MemberRecord(
-                memMap["id"] as String,
-                "aaaaa",
-                memMap["name"] as String,
-                memMap["display_name"] as String?,
-                memMap["description"] as String?,
-                memMap["pronouns"] as String?,
-                memMap["color"]?.let { Integer.parseInt(it as String, 16) } ?: -1,
-                memMap["avatar_url"] as String?,
-                memMap["keep_proxy"] as Boolean,
-                memMap["message_count"] as Long,
-                OffsetDateTime.parse(memMap["created"] as String, DateTimeFormatter.ISO_DATE_TIME),
-            )
+    override suspend fun import(string: String, userId: Snowflake) {
+        val pkSystem = gson.fromJson(string, PkSystem::class.java)
+        system = database.allocateSystem(userId)
+        system.name = pkSystem.name ?: system.name
+        system.description = pkSystem.description ?: system.description
+        system.tag = pkSystem.tag ?: system.tag
+        system.avatarUrl = pkSystem.avatar_url ?: system.avatarUrl
+        if (pkSystem.members != null)
+            for (pkMember in pkSystem.members!!) {
+                var member = database.getMemberById(system.id, pkMember.name)
+                if (member == null) {
+                    member = database.allocateMember(system.id, pkMember.name)
+                    createdMembers++
+                } else updatedMembers++
+                member.displayName = pkMember.display_name ?: member.displayName
+                member.description = pkMember.description ?: member.description
+                member.pronouns = pkMember.pronouns ?: member.pronouns
+                member.color = (pkMember.color ?: member.color.fromColor()).toColor()
+                member.keepProxy = pkMember.keep_proxy ?: member.keepProxy
+                member.messageCount = pkMember.message_count ?: member.messageCount
+                if (pkMember.proxies != null)
+                    for (pkProxy in pkMember.proxies!!) {
+                        val text = "${pkProxy.prefix}text${pkProxy.suffix}"
+                        if (database.getProxyTagFromMessage(userId, text) != null) continue
 
-            val memberSwitches = ArrayList<SystemSwitchRecord>()
-            for (proxyMap in memMap["proxy_tags"] as List<Map<String,*>>) {
-                val proxy = MemberProxyTagRecord(
-                    "aaaaa",
-                    memMap["id"] as String,
-                    proxyMap["prefix"] as String?,
-                    proxyMap["suffix"] as String?
-                )
+                    }
             }
-
-            members.put(memMap["id"] as String, member)
-        }
-    }
-
-    override suspend fun finalizeImport() {
-
     }
 
     // Getters:
     override suspend fun getSystem(): SystemRecord = system
 
-    override suspend fun getMembers(): List<MemberRecord> {
-        val memberList = ArrayList<MemberRecord>()
-        for (member in members.values)
-            memberList.add(member)
-        return memberList
-    }
+    override suspend fun getMembers(): List<MemberRecord> = members
 
-    override suspend fun getMemberProxyTags(id: String): List<MemberProxyTagRecord> = proxies[id]!!
+    override suspend fun getMemberProxyTags(member: MemberRecord): List<MemberProxyTagRecord> = proxies[member]!!
+
+    override suspend fun getNewMembers(): Int = createdMembers
+
+    override suspend fun getUpdatedMembers(): Int = updatedMembers
 }
+
