@@ -9,8 +9,6 @@ import dev.kord.gateway.PrivilegedIntent
 import io.github.proxyfox.database.Database
 import io.github.proxyfox.database.NopDatabase
 import io.github.proxyfox.database.PostgresDatabase
-import io.github.proxyfox.string.parser.parseString
-import io.github.proxyfox.webhook.WebhookUtil
 import kotlinx.coroutines.DelicateCoroutinesApi
 import kotlinx.coroutines.GlobalScope
 import kotlinx.coroutines.delay
@@ -46,6 +44,20 @@ fun printStep(input: String, step: Int) {
     logger.info(step.toString() + add + input)
 }
 
+fun String.toColor(): Int {
+    return if (startsWith("#"))
+        Integer.valueOf(substring(1), 16)
+    else if (startsWith("0x"))
+        Integer.decode(this)
+    else toInt(16)
+}
+
+fun Int.fromColor(): String {
+    var string = toString(16)
+    if (string == "-1") string = "0"
+    return "#${string.padStart(7 - string.length, '0')}"
+}
+
 suspend fun setupDatabase() {
     printStep("Setup database", 1)
     val file = File("proxyfox.db.properties")
@@ -68,27 +80,7 @@ suspend fun login() {
     // Register events
     printStep("Registering events", 2)
     kord.on<MessageCreateEvent> {
-        // Return if bot
-        if (message.webhookId != null || message.author!!.isBot) return@on
-
-        // Get message content to check with regex
-        val content = message.content
-        if (prefixRegex.matches(content)) {
-            // Remove the prefix to pass into dispatcher
-            val contentWithoutRegex = content.substring(3)
-            // Run the command
-            val output = parseString(contentWithoutRegex, message)
-            // Send output message if exists
-            if (output!!.isNotBlank())
-                message.channel.createMessage(output)
-        } else {
-            // Proxy the message
-            val proxy = database.getProxyTagFromMessage(message.author!!.id, content)
-            if (proxy != null) {
-                val member = database.getMemberById(proxy.systemId, proxy.memberId)!!
-                WebhookUtil.prepareMessage(message, member, proxy).send()
-            }
-        }
+        onMessageCreate()
     }
     kord.on<ReadyEvent> {
         printFancy("ProxyFox initialized")

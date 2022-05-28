@@ -27,6 +27,7 @@ repositories {
 dependencies {
     implementation(kotlin("stdlib"))
     implementation("com.google.code.gson:gson:2.9.0")
+    implementation("com.google.guava:guava:31.1-jre")
     implementation("dev.kord:kord-core:0.8.0-M12")
     implementation("ch.qos.logback:logback-classic:1.2.11")
     implementation("io.ktor:ktor-server-core:$ktor_version")
