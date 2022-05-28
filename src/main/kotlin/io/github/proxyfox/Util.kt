@@ -8,16 +8,12 @@ import dev.kord.gateway.Intent
 import dev.kord.gateway.PrivilegedIntent
 import io.github.proxyfox.database.Database
 import io.github.proxyfox.database.NopDatabase
-import io.github.proxyfox.database.PostgresDatabase
 import kotlinx.coroutines.DelicateCoroutinesApi
 import kotlinx.coroutines.GlobalScope
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.flow.count
 import kotlinx.coroutines.launch
-import org.postgresql.Driver
 import org.slf4j.LoggerFactory
-import java.io.File
-import java.util.*
 import kotlin.contracts.ExperimentalContracts
 import kotlin.contracts.InvocationKind
 import kotlin.contracts.contract
@@ -60,16 +56,7 @@ fun Int.fromColor(): String {
 
 suspend fun setupDatabase() {
     printStep("Setup database", 1)
-    val file = File("proxyfox.db.properties")
-    database = if (file.exists()) {
-        val properties = Properties()
-        file.inputStream().use(properties::load)
-        val psql = PostgresDatabase(Driver())
-        psql.startConnection(properties.getProperty("url"), properties)
-        psql
-    } else {
-        NopDatabase()
-    }
+    database = NopDatabase()
 }
 
 @OptIn(PrivilegedIntent::class)

@@ -1,5 +1,7 @@
 package io.github.proxyfox.database.records.misc
 
+import dev.kord.common.entity.Snowflake
+
 // Created 2022-10-04T21:06:30
 
 /**
@@ -7,7 +9,7 @@ package io.github.proxyfox.database.records.misc
  * @since ${version}
  **/
 data class ServerSettingsRecord(
-    val serverId: ULong,
-    var proxyRole: ULong?,
+    val serverId: Snowflake,
+    var proxyRole: Snowflake?,
     var disabledChannels: List<ULong>?
 )
