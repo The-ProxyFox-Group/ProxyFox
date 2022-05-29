@@ -1,5 +1,8 @@
 package io.github.proxyfox.database
 
+import com.google.gson.Gson
+import com.google.gson.JsonObject
+import com.google.gson.JsonParser
 import dev.kord.common.entity.Snowflake
 import io.github.proxyfox.database.records.member.MemberProxyTagRecord
 import io.github.proxyfox.database.records.member.MemberRecord
@@ -9,6 +12,9 @@ import io.github.proxyfox.database.records.misc.TrustLevel
 import io.github.proxyfox.database.records.system.SystemRecord
 import io.github.proxyfox.database.records.system.SystemServerSettingsRecord
 import io.github.proxyfox.database.records.system.SystemSwitchRecord
+import java.io.File
+import java.io.FileReader
+import java.io.Reader
 
 // Created 2022-26-05T19:47:37
 
@@ -144,6 +150,26 @@ class JsonDatabase : Database() {
 
     @Transient
     private val membersBySystemId = HashMap<String, List<MemberRecord>>()
+
+    private val gson = Gson()
+
+    private var systems: JsonObject = JsonObject()
+    private var users: JsonObject = JsonObject()
+    private var servers: JsonObject = JsonObject()
+
+    fun setup() {
+        val file = File("systems.json")
+        val reader: Reader? = if (!file.exists())
+            javaClass.getResourceAsStream("/assets/databases/defaultDatabase.json")?.reader()
+        else FileReader(file)
+        val db = JsonParser.parseReader(reader)
+        val dbObject = db.asJsonObject
+        if (dbObject["schema"].asInt == 1) {
+            systems = dbObject.getAsJsonObject("systems")
+            users = dbObject.getAsJsonObject("users")
+            servers = dbObject.getAsJsonObject("servers")
+        }
+    }
 
     override suspend fun getSystemByHost(userId: Snowflake) = systemsByDiscordId[userId.value]
 
