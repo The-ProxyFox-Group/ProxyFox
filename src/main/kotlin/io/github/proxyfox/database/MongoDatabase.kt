@@ -196,7 +196,7 @@ class MongoDatabase : Database() {
         user.system = system.id
         updateUser(user)
         this.systems.insertOne(system)
-        db.return system
+        return system
     }
 
     override suspend fun allocateMember(systemId: String, name: String): MemberRecord? {
