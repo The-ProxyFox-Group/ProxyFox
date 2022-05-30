@@ -211,7 +211,7 @@ object MemberCommands {
             ?: database.getMemberById(system.id, ctx.params["member"]!!)
             ?: return "Member does not exist. Create one using `pf>member new`"
         val serverMember =
-            database.getServerSettingsByMember(ctx.message.getGuild().id.value.toString(), system.id, member.id)!!
+            database.getMemberServerSettingsById(ctx.message.getGuild().id.value.toString(), system.id, member.id)!!
         return if (serverMember.nickname != null)
             "Member's server nickname is `${serverMember.nickname}`"
         else "Member doesn't have a server nickname"
@@ -224,7 +224,7 @@ object MemberCommands {
             ?: database.getMemberById(system.id, ctx.params["member"]!!)
             ?: return "Member does not exist. Create one using `pf>member new`"
         val serverMember =
-            database.getServerSettingsByMember(ctx.message.getGuild().id.value.toString(), system.id, member.id)!!
+            database.getMemberServerSettingsById(ctx.message.getGuild().id.value.toString(), system.id, member.id)!!
         serverMember.nickname = ctx.params["name"]
         database.updateMemberServerSettings(serverMember)
         return "Member's server nickname updated!"
@@ -237,7 +237,7 @@ object MemberCommands {
             ?: database.getMemberById(system.id, ctx.params["member"]!!)
             ?: return "Member does not exist. Create one using `pf>member new`"
         val serverMember =
-            database.getServerSettingsByMember(ctx.message.getGuild().id.value.toString(), system.id, member.id)!!
+            database.getMemberServerSettingsById(ctx.message.getGuild().id.value.toString(), system.id, member.id)!!
         serverMember.nickname = null
         database.updateMemberServerSettings(serverMember)
         return "Member's server nickname removed!"
@@ -332,7 +332,7 @@ object MemberCommands {
             ?: database.getMemberById(system.id, ctx.params["member"]!!)
             ?: return "Member does not exist. Create one using `pf>member new`"
         val serverMember =
-            database.getServerSettingsByMember(ctx.message.getGuild().id.value.toString(), system.id, member.id)!!
+            database.getMemberServerSettingsById(ctx.message.getGuild().id.value.toString(), system.id, member.id)!!
         serverMember.avatarUrl = ctx.params["avatar"]
         database.updateMemberServerSettings(serverMember)
         return "Member server avatar updated!"
@@ -345,7 +345,7 @@ object MemberCommands {
             ?: database.getMemberById(system.id, ctx.params["member"]!!)
             ?: return "Member does not exist. Create one using `pf>member new`"
         val serverMember =
-            database.getServerSettingsByMember(ctx.message.getGuild().id.value.toString(), system.id, member.id)!!
+            database.getMemberServerSettingsById(ctx.message.getGuild().id.value.toString(), system.id, member.id)!!
         val attachments = ctx.message.attachments;
         if (attachments.isEmpty())
             return if (serverMember.avatarUrl != null)
@@ -363,7 +363,7 @@ object MemberCommands {
             ?: database.getMemberById(system.id, ctx.params["member"]!!)
             ?: return "Member does not exist. Create one using `pf>member new`"
         val serverMember =
-            database.getServerSettingsByMember(ctx.message.getGuild().id.value.toString(), system.id, member.id)!!
+            database.getMemberServerSettingsById(ctx.message.getGuild().id.value.toString(), system.id, member.id)!!
         serverMember.avatarUrl = null
         database.updateMemberServerSettings(serverMember)
         return "Member server avatar cleared!"

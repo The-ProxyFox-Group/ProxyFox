@@ -34,7 +34,7 @@ class PluralKitImporter : Importer {
                     member = database.allocateMember(system.id, pkMember.name)
                     createdMembers++
                 } else updatedMembers++
-                member.displayName = pkMember.display_name ?: member.displayName
+                member!!.displayName = pkMember.display_name ?: member.displayName
                 member.description = pkMember.description ?: member.description
                 member.pronouns = pkMember.pronouns ?: member.pronouns
                 member.color = (pkMember.color ?: member.color.fromColor()).toColor()
@@ -44,7 +44,6 @@ class PluralKitImporter : Importer {
                     for (pkProxy in pkMember.proxies!!) {
                         val text = "${pkProxy.prefix}text${pkProxy.suffix}"
                         if (database.getProxyTagFromMessage(userId, text) != null) continue
-
                     }
             }
     }

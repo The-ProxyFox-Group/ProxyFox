@@ -47,10 +47,29 @@ class NopDatabase : Database() {
         TODO("Not yet implemented")
     }
 
-    override suspend fun getFrontingMemberByTags(
+    override suspend fun getProxiesByHost(userId: String): Collection<MemberProxyTagRecord>? {
+        TODO("Not yet implemented")
+    }
+
+    override suspend fun getProxiesById(systemId: String): Collection<MemberProxyTagRecord>? {
+        TODO("Not yet implemented")
+    }
+
+    override suspend fun getProxiesByHostAndMember(
         userId: String,
-        message: String
-    ): Pair<MemberRecord, MemberProxyTagRecord>? {
+        memberId: String
+    ): Collection<MemberProxyTagRecord>? {
+        TODO("Not yet implemented")
+    }
+
+    override suspend fun getProxiesByIdAndMember(
+        systemId: String,
+        memberId: String
+    ): Collection<MemberProxyTagRecord>? {
+        TODO("Not yet implemented")
+    }
+
+    override suspend fun getMemberFromMessage(userId: String, message: String): MemberRecord? {
         TODO("Not yet implemented")
     }
 
@@ -58,16 +77,17 @@ class NopDatabase : Database() {
         TODO("Not yet implemented")
     }
 
-    override suspend fun getFrontingServerSettingsByHost(
+    override suspend fun getMemberServerSettingsByHost(
         serverId: String,
-        userId: String
+        userId: String,
+        memberId: String
     ): MemberServerSettingsRecord? {
         TODO("Not yet implemented")
     }
 
-    override suspend fun getServerSettingsByHost(
+    override suspend fun getMemberServerSettingsById(
         serverId: String,
-        userId: String,
+        systemId: String,
         memberId: String
     ): MemberServerSettingsRecord? {
         TODO("Not yet implemented")
@@ -77,11 +97,7 @@ class NopDatabase : Database() {
         TODO("Not yet implemented")
     }
 
-    override suspend fun getServerSettingsByMember(
-        serverId: String,
-        systemId: String,
-        memberId: String
-    ): MemberServerSettingsRecord? {
+    override suspend fun getServerSettingsById(serverId: String, systemId: String): SystemServerSettingsRecord? {
         TODO("Not yet implemented")
     }
 
@@ -89,7 +105,7 @@ class NopDatabase : Database() {
         TODO("Not yet implemented")
     }
 
-    override suspend fun allocateMember(systemId: String, name: String): MemberRecord {
+    override suspend fun allocateMember(systemId: String, name: String): MemberRecord? {
         TODO("Not yet implemented")
     }
 
@@ -109,28 +125,28 @@ class NopDatabase : Database() {
         TODO("Not yet implemented")
     }
 
+    override suspend fun updateUser(user: UserRecord) {
+        TODO("Not yet implemented")
+    }
+
     override suspend fun allocateProxyTag(
         systemId: String,
         memberId: String,
-        prefix: String,
-        suffix: String
+        prefix: String?,
+        suffix: String?
     ): MemberProxyTagRecord? {
         TODO("Not yet implemented")
     }
 
-    override suspend fun removeProxyTag(systemId: String, proxyTag: MemberProxyTagRecord) {
+    override suspend fun removeProxyTag(proxyTag: MemberProxyTagRecord) {
         TODO("Not yet implemented")
     }
 
-    override suspend fun addUserToSystem(userId: String, systemId: String) {
+    override suspend fun updateTrustLevel(userId: String, trustee: String, level: TrustLevel): Boolean {
         TODO("Not yet implemented")
     }
 
-    override suspend fun removeUserFromSystem(userId: String, systemId: String) {
-        TODO("Not yet implemented")
-    }
-
-    override suspend fun updateTrustLevel(userId: String, trustee: String, level: TrustLevel) {
+    override suspend fun getTrustLevel(userId: String, trustee: String): TrustLevel {
         TODO("Not yet implemented")
     }
 
@@ -189,5 +205,4 @@ class NopDatabase : Database() {
     override fun close() {
         TODO("Not yet implemented")
     }
-
 }

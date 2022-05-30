@@ -12,4 +12,12 @@ class MemberProxyTagRecord {
     var memberId: String = ""
     var prefix: String? = null
     var suffix: String? = null
+
+    fun test(message: String): Boolean {
+        var pre = true
+        if (prefix != null) pre = message.startsWith(prefix!!)
+        var suf = true
+        if (suffix != null) suf = message.startsWith(suffix!!)
+        return pre && suf
+    }
 }

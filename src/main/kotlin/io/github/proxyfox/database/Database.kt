@@ -88,17 +88,11 @@ abstract class Database : AutoCloseable {
      * */
     abstract suspend fun getFrontingMembersById(systemId: String): List<MemberRecord?>?
 
-    /**
-     * Gets the fronting [member][MemberRecord] by Discord ID and proxy tags.
-     *
-     * @param userId The ID of the Discord user.
-     * @param message The message to check proxy tags against.
-     * @return The fronting member of the system tied to the Discord user, if applicable.
-     * */
-    abstract suspend fun getFrontingMemberByTags(
-        userId: String,
-        message: String
-    ): Pair<MemberRecord, MemberProxyTagRecord>?
+    abstract suspend fun getProxiesByHost(userId: String): Collection<MemberProxyTagRecord>?
+    abstract suspend fun getProxiesById(systemId: String): Collection<MemberProxyTagRecord>?
+
+    abstract suspend fun getProxiesByHostAndMember(userId: String, memberId: String): Collection<MemberProxyTagRecord>?
+    abstract suspend fun getProxiesByIdAndMember(systemId: String, memberId: String): Collection<MemberProxyTagRecord>?
 
     /**
      * Gets the [proxy][MemberProxyTagRecord] by Discord ID and proxy tags.
@@ -107,18 +101,11 @@ abstract class Database : AutoCloseable {
      * @param message The message to check proxy tags against.
      * @return The ProxyTag associated with the message
      * */
+    abstract suspend fun getMemberFromMessage(userId: String, message: String): MemberRecord?
+
     abstract suspend fun getProxyTagFromMessage(userId: String, message: String): MemberProxyTagRecord?
 
     // === Server Settings ===
-    /**
-     * Gets the current fronting [member's server settings][MemberServerSettingsRecord] by server & Discord IDs.
-     *
-     * @param serverId The ID of the server.
-     * @param userId The ID of the Discord user.
-     * @return The fronting member's settings for the server.
-     * */
-    abstract suspend fun getFrontingServerSettingsByHost(serverId: String, userId: String): MemberServerSettingsRecord?
-
     /**
      * Gets the [member's server settings][MemberServerSettingsRecord] by server, Discord & member IDs.
      *
@@ -127,7 +114,7 @@ abstract class Database : AutoCloseable {
      * @param memberId The ID of the member in the system tied to the Discord user.
      * @return The member's settings for the server.
      * */
-    abstract suspend fun getServerSettingsByHost(
+    abstract suspend fun getMemberServerSettingsByHost(
         serverId: String,
         userId: String,
         memberId: String
@@ -137,11 +124,11 @@ abstract class Database : AutoCloseable {
      * Gets the [member's server settings][MemberServerSettingsRecord] by server, system & member IDs.
      *
      * @param serverId The ID of the server.
-     * @param systemId The ID of the system.
-     * @param memberId The ID of the member in the system.
+     * @param systemIdId The ID of the Discord user.
+     * @param memberId The ID of the member in the system tied to the Discord user.
      * @return The member's settings for the server.
      * */
-    abstract suspend fun getServerSettingsByMember(
+    abstract suspend fun getMemberServerSettingsById(
         serverId: String,
         systemId: String,
         memberId: String
@@ -155,6 +142,8 @@ abstract class Database : AutoCloseable {
      * @return The system's settings for the server.
      * */
     abstract suspend fun getServerSettingsByHost(serverId: String, userId: String): SystemServerSettingsRecord?
+
+    abstract suspend fun getServerSettingsById(serverId: String, systemId: String): SystemServerSettingsRecord?
 
     // === Management ===
     /**
@@ -170,9 +159,9 @@ abstract class Database : AutoCloseable {
      *
      * @param systemId The ID of the system.
      * @param name The name of the new member.
-     * @return A newly created member. Never null.
+     * @return A newly created member. null if system doesn't exist.
      * */
-    abstract suspend fun allocateMember(systemId: String, name: String): MemberRecord
+    abstract suspend fun allocateMember(systemId: String, name: String): MemberRecord?
 
     // TODO: This ideally needs a much better system for updating since this really isn't ideal as is.
     //  This applies to the following 4 methods below.
@@ -180,6 +169,7 @@ abstract class Database : AutoCloseable {
     abstract suspend fun updateMemberServerSettings(serverSettings: MemberServerSettingsRecord)
     abstract suspend fun updateSystem(system: SystemRecord)
     abstract suspend fun updateSystemServerSettings(serverSettings: SystemServerSettingsRecord)
+    abstract suspend fun updateUser(user: UserRecord)
 
     /**
      * Allocates a proxy tag
@@ -192,8 +182,8 @@ abstract class Database : AutoCloseable {
     abstract suspend fun allocateProxyTag(
         systemId: String,
         memberId: String,
-        prefix: String,
-        suffix: String
+        prefix: String?,
+        suffix: String?
     ): MemberProxyTagRecord?
 
     /**
@@ -201,27 +191,7 @@ abstract class Database : AutoCloseable {
      * @param systemId The system to remove it from
      * @param proxyTag The proxy tag to remove
      * */
-    abstract suspend fun removeProxyTag(systemId: String, proxyTag: MemberProxyTagRecord)
-
-    /**
-     * Adds a Discord account to a system.
-     *
-     * Implementation requirements: Deny addition when the user is already tied to a system.
-     *
-     * @param userId The ID of the Discord user.
-     * @param systemId The ID of the system.
-     * */
-    abstract suspend fun addUserToSystem(userId: String, systemId: String)
-
-    /**
-     * Removes a Discord account from a system.
-     *
-     * Implementation requirements: Delete the system if there's no users left.
-     *
-     * @param userId The ID of the Discord user.
-     * @param systemId The ID of the system.
-     * */
-    abstract suspend fun removeUserFromSystem(userId: String, systemId: String)
+    abstract suspend fun removeProxyTag(proxyTag: MemberProxyTagRecord)
 
     /**
      * Updates the trust level for the trustee
@@ -229,7 +199,8 @@ abstract class Database : AutoCloseable {
      * @param trustee The person being trusted
      * @param level the level of trust granted
      * */
-    abstract suspend fun updateTrustLevel(userId: String, trustee: String, level: TrustLevel)
+    abstract suspend fun updateTrustLevel(userId: String, trustee: String, level: TrustLevel): Boolean
+    abstract suspend fun getTrustLevel(userId: String, trustee: String): TrustLevel
 
     /**
      * Gets the total number of systems registered
