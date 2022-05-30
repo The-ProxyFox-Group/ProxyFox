@@ -67,9 +67,9 @@ class NopDatabase : Database() {
         memberId: String
     ): MemberServerSettingsRecord? = null
 
-    override suspend fun allocateSystem(discordId: Snowflake) = SystemRecord("aaaaa")
+    override suspend fun allocateSystem(discordId: Snowflake) = SystemRecord()
 
-    override suspend fun allocateMember(systemId: String, name: String) = MemberRecord("aaaaa", systemId, name = name)
+    override suspend fun allocateMember(systemId: String, name: String) = MemberRecord()
 
     override suspend fun updateMember(member: MemberRecord) {}
 

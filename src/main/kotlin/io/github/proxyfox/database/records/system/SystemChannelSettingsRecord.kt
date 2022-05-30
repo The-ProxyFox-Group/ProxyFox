@@ -1,10 +1,8 @@
 package io.github.proxyfox.database.records.system
 
-import dev.kord.common.entity.Snowflake
-
-data class SystemChannelSettingsRecord(
-    val serverId: Snowflake,
-    val channelId: Snowflake,
-    val systemId: Snowflake,
+class SystemChannelSettingsRecord {
+    val serverId: String = ""
+    val channelId: String = ""
+    val systemId: String = ""
     var proxyEnabled: Boolean = true
-)
+}

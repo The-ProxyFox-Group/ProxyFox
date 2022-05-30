@@ -8,6 +8,7 @@ import dev.kord.gateway.Intent
 import dev.kord.gateway.PrivilegedIntent
 import io.github.proxyfox.database.Database
 import io.github.proxyfox.database.JsonDatabase
+import io.github.proxyfox.database.MongoDatabase
 import kotlinx.coroutines.DelicateCoroutinesApi
 import kotlinx.coroutines.GlobalScope
 import kotlinx.coroutines.delay
@@ -56,8 +57,16 @@ fun Int.fromColor(): String {
 
 suspend fun setupDatabase() {
     printStep("Setup database", 1)
-    database = JsonDatabase()
-    (database as JsonDatabase).setup()
+    database = try {
+        val db = MongoDatabase()
+        db.setup()
+        db
+    } catch (err: Throwable) {
+        err.printStackTrace()
+        val db = JsonDatabase()
+        db.setup()
+        db
+    }
 }
 
 @OptIn(PrivilegedIntent::class)

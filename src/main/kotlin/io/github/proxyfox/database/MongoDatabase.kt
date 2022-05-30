@@ -17,6 +17,10 @@ import io.github.proxyfox.database.records.system.SystemSwitchRecord
  * @since ${version}
  **/
 class MongoDatabase : Database() {
+    suspend fun setup() {
+
+    }
+
     override suspend fun getSystemByHost(userId: Snowflake): SystemRecord? {
         TODO("Not yet implemented")
     }

@@ -10,20 +10,21 @@ import java.time.ZoneOffset
  *
  * @author KJP12
  **/
-data class MemberRecord(
-    val id: String,
-    val systemId: String,
-    var name: String,
-    var displayName: String? = null,
-    var description: String? = null,
-    var pronouns: String? = null,
-    var color: Int = 0,
-    var avatarUrl: String? = null,
+class MemberRecord {
+    var id: String = ""
+    var systemId: String = ""
+    var name: String = ""
+    var displayName: String? = null
+    var description: String? = null
+    var pronouns: String? = null
+    var color: Int = 0
+    var avatarUrl: String? = null
+
     /** Whether the proxy tag remains in the message */
-    var keepProxy: Boolean = false,
-    var messageCount: Long = 0L,
-    var timestamp: OffsetDateTime = OffsetDateTime.now(ZoneOffset.UTC),
-    var birthday: String? = null,
-    var age: String? = null,
+    var keepProxy: Boolean = false
+    var messageCount: Long = 0L
+    var timestamp: OffsetDateTime = OffsetDateTime.now(ZoneOffset.UTC)
+    var birthday: String? = null
+    var age: String? = null
     var role: String? = null
-)
+}

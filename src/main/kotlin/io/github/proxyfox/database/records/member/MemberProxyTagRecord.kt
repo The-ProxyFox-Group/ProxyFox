@@ -7,9 +7,9 @@ package io.github.proxyfox.database.records.member
  *
  * @author KJP12
  **/
-data class MemberProxyTagRecord(
-    val systemId: String,
-    val memberId: String,
-    var prefix: String?,
-    var suffix: String?
-)
+class MemberProxyTagRecord {
+    var systemId: String = ""
+    var memberId: String = ""
+    var prefix: String? = null
+    var suffix: String? = null
+}
