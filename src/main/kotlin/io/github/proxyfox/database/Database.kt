@@ -93,7 +93,6 @@ abstract class Database : AutoCloseable {
 
     abstract suspend fun getProxiesByHostAndMember(userId: String, memberId: String): Collection<MemberProxyTagRecord>?
     abstract suspend fun getProxiesByIdAndMember(systemId: String, memberId: String): Collection<MemberProxyTagRecord>?
-
     /**
      * Gets the [proxy][MemberProxyTagRecord] by Discord ID and proxy tags.
      *
