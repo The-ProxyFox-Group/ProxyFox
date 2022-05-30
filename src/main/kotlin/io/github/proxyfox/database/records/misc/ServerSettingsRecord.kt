@@ -8,8 +8,8 @@ import dev.kord.common.entity.Snowflake
  * @author Ampflower
  * @since ${version}
  **/
-data class ServerSettingsRecord(
-    val serverId: Snowflake,
-    var proxyRole: Snowflake?,
-    var disabledChannels: List<ULong>?
-)
+class ServerSettingsRecord {
+    var serverId: String = ""
+    var proxyRole: String? = null
+    var disabledChannels: List<Snowflake>? = null
+}

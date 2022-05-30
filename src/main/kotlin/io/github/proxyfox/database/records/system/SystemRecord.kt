@@ -12,16 +12,17 @@ import kotlin.time.Duration
  *
  * @author Ampflower
  **/
-data class SystemRecord(
-    val id: String,
-    var name: String? = null,
-    var description: String? = null,
-    var tag: String? = null,
-    var avatarUrl: String? = null,
-    var timezone: String? = null,
-    var timestamp: OffsetDateTime = OffsetDateTime.now(ZoneOffset.UTC),
+class SystemRecord {
+    var id: String = ""
+    var name: String? = null
+    var description: String? = null
+    var tag: String? = null
+    var avatarUrl: String? = null
+    var timezone: String? = null
+    var timestamp: OffsetDateTime = OffsetDateTime.now(ZoneOffset.UTC)
+
     /** The ID of the member that's currently being auto-proxied. */
-    var autoProxy: String? = null,
-    var autoType: AutoProxyMode = AutoProxyMode.OFF,
+    var autoProxy: String? = null
+    var autoType: AutoProxyMode = AutoProxyMode.OFF
     var autoProxyTimeout: Duration? = null
-)
+}
