@@ -1,7 +1,6 @@
 package io.github.proxyfox.database.records.system
 
 import io.github.proxyfox.database.records.misc.AutoProxyMode
-import kotlin.time.Duration
 
 // Created 2022-09-04T15:13:09
 
@@ -19,5 +18,4 @@ class SystemServerSettingsRecord {
     /** The ID of the member that's currently being auto-proxied. */
     var autoProxy: String? = null
     var autoProxyMode: AutoProxyMode = AutoProxyMode.OFF
-    var autoProxyTimeout: Duration? = null
 }
