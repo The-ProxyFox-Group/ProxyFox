@@ -1,6 +1,7 @@
 package io.github.proxyfox.database.records.misc
 
 class UserRecord {
-    var system: String = ""
+    var id: String = ""
+    var system: String? = null
     var trust: Map<String, TrustLevel> = HashMap()
 }

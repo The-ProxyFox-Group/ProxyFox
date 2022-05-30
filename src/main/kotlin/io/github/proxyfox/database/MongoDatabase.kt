@@ -1,79 +1,154 @@
 package io.github.proxyfox.database
 
-import dev.kord.common.entity.Snowflake
+import com.mongodb.reactivestreams.client.MongoClient
+import com.mongodb.reactivestreams.client.MongoCollection
+import io.github.proxyfox.database.DatabaseUtil.findAll
+import io.github.proxyfox.database.DatabaseUtil.findOne
+import io.github.proxyfox.database.DatabaseUtil.getOrCreateCollection
 import io.github.proxyfox.database.records.member.MemberProxyTagRecord
 import io.github.proxyfox.database.records.member.MemberRecord
 import io.github.proxyfox.database.records.member.MemberServerSettingsRecord
+import io.github.proxyfox.database.records.misc.ChannelSettingsRecord
 import io.github.proxyfox.database.records.misc.ServerSettingsRecord
 import io.github.proxyfox.database.records.misc.TrustLevel
+import io.github.proxyfox.database.records.misc.UserRecord
+import io.github.proxyfox.database.records.system.SystemChannelSettingsRecord
 import io.github.proxyfox.database.records.system.SystemRecord
 import io.github.proxyfox.database.records.system.SystemServerSettingsRecord
 import io.github.proxyfox.database.records.system.SystemSwitchRecord
+import org.litote.kmongo.reactivestreams.KMongo
 
 // Created 2022-26-05T22:43:40
 
+typealias Mongo = com.mongodb.reactivestreams.client.MongoDatabase
+typealias KCollection<T> = MongoCollection<T>
+
 /**
- * @author KJP12
+ * @author KJP12, Emma
  * @since ${version}
  **/
 class MongoDatabase : Database() {
+    private lateinit var kmongo: MongoClient
+    private lateinit var db: Mongo
+
+    private lateinit var users: KCollection<UserRecord>
+
+    private lateinit var servers: KCollection<ServerSettingsRecord>
+    private lateinit var channels: KCollection<ChannelSettingsRecord>
+
+    private lateinit var systems: KCollection<SystemRecord>
+    private lateinit var systemSwitches: KCollection<SystemSwitchRecord>
+
+    private lateinit var systemServers: KCollection<SystemServerSettingsRecord>
+    private lateinit var systemChannels: KCollection<SystemChannelSettingsRecord>
+
+    private lateinit var members: KCollection<MemberRecord>
+    private lateinit var memberProxies: KCollection<MemberProxyTagRecord>
+
+    private lateinit var memberServers: KCollection<MemberServerSettingsRecord>
+
     suspend fun setup() {
+        kmongo = KMongo.createClient()
+        db = kmongo.getDatabase("ProxyFox")
 
+        users = db.getOrCreateCollection()
+
+        servers = db.getOrCreateCollection()
+        channels = db.getOrCreateCollection()
+
+        systems = db.getOrCreateCollection()
+        systemSwitches = db.getOrCreateCollection()
+
+        systemServers = db.getOrCreateCollection()
+        systemChannels = db.getOrCreateCollection()
+
+        members = db.getOrCreateCollection()
+        memberProxies = db.getOrCreateCollection()
+
+        memberServers = db.getOrCreateCollection()
     }
 
-    override suspend fun getSystemByHost(userId: Snowflake): SystemRecord? {
+    override suspend fun getUser(userId: String): UserRecord? {
+        return users.findOne("{id='$userId'}")
+    }
+
+    override suspend fun getSystemByHost(userId: String): SystemRecord? {
+        val user = getUser(userId) ?: return null
+        return user.system?.let { getSystemById(it) }
+    }
+
+    override suspend fun getSystemById(systemId: String): SystemRecord? = systems.findOne("{id='$systemId'}")
+
+    override suspend fun getMembersByHost(userId: String): List<MemberRecord>? {
+        val user = getUser(userId) ?: return null
+        return user.system?.let { getMembersBySystem(it) }
+    }
+
+    override suspend fun getMembersBySystem(systemId: String): List<MemberRecord>? =
+        members.findAll("{systemId='$systemId'}")
+
+    override suspend fun getMemberByHost(userId: String, memberId: String): MemberRecord? {
+        val user = getUser(userId) ?: return null
+        return user.system?.let { getMemberById(it, memberId) }
+    }
+
+    override suspend fun getMemberById(systemId: String, memberId: String): MemberRecord? =
+        members.findOne("{id='$memberId', systemId='$systemId'}")
+
+    override suspend fun getFrontingMembersByHost(userId: String): List<MemberRecord?>? {
+        val user = getUser(userId) ?: return null
+        return user.system?.let { getFrontingMembersById(it) }
+    }
+
+    override suspend fun getFrontingMembersById(systemId: String): List<MemberRecord?>? {
+        val switch = systemSwitches.findAll("{systemId='$systemId'}").minByOrNull {
+            it.timestamp
+        }!!
+        val members = ArrayList<MemberRecord?>()
+        for (memberId in switch.memberIds)
+            members.add(getMemberById(systemId, memberId))
+        return members
+    }
+
+    override suspend fun getFrontingMemberByTags(
+        userId: String,
+        message: String
+    ): Pair<MemberRecord, MemberProxyTagRecord>? {
         TODO("Not yet implemented")
     }
 
-    override suspend fun getSystemById(systemId: String): SystemRecord? {
+    override suspend fun getProxyTagFromMessage(userId: String, message: String): MemberProxyTagRecord? {
         TODO("Not yet implemented")
     }
 
-    override suspend fun getMembersByHost(userId: Snowflake): List<MemberRecord>? {
+    override suspend fun getFrontingServerSettingsByHost(
+        serverId: String,
+        userId: String
+    ): MemberServerSettingsRecord? {
         TODO("Not yet implemented")
     }
 
-    override suspend fun getMembersBySystem(systemId: String): List<MemberRecord>? {
+    override suspend fun getServerSettingsByHost(
+        serverId: String,
+        userId: String,
+        memberId: String
+    ): MemberServerSettingsRecord? {
         TODO("Not yet implemented")
     }
 
-    override suspend fun getMemberByHost(discordId: Snowflake, memberId: String): MemberRecord? {
+    override suspend fun getServerSettingsByHost(serverId: String, userId: String): SystemServerSettingsRecord? {
         TODO("Not yet implemented")
     }
 
-    override suspend fun getMemberById(systemId: String, memberId: String): MemberRecord? {
+    override suspend fun getServerSettingsByMember(
+        serverId: String,
+        systemId: String,
+        memberId: String
+    ): MemberServerSettingsRecord? {
         TODO("Not yet implemented")
     }
 
-    override suspend fun getFrontingMemberByHost(discordId: Snowflake): MemberRecord? {
-        TODO("Not yet implemented")
-    }
-
-    override suspend fun getFrontingMemberByTags(discordId: Snowflake, message: String): Pair<MemberRecord, String>? {
-        TODO("Not yet implemented")
-    }
-
-    override suspend fun getProxyTagFromMessage(discordId: Snowflake, message: String): MemberProxyTagRecord? {
-        TODO("Not yet implemented")
-    }
-
-    override suspend fun getFrontingServerSettingsByHost(serverId: Snowflake, discordId: Snowflake): MemberServerSettingsRecord? {
-        TODO("Not yet implemented")
-    }
-
-    override suspend fun getServerSettingsByHost(serverId: Snowflake, discordId: Snowflake, memberId: String): MemberServerSettingsRecord? {
-        TODO("Not yet implemented")
-    }
-
-    override suspend fun getServerSettingsByHost(serverId: Snowflake, discordId: Snowflake): SystemServerSettingsRecord? {
-        TODO("Not yet implemented")
-    }
-
-    override suspend fun getServerSettingsByMember(serverId: Snowflake, systemId: String, memberId: String): MemberServerSettingsRecord? {
-        TODO("Not yet implemented")
-    }
-
-    override suspend fun allocateSystem(discordId: Snowflake): SystemRecord {
+    override suspend fun allocateSystem(userId: String): SystemRecord {
         TODO("Not yet implemented")
     }
 
@@ -110,15 +185,15 @@ class MongoDatabase : Database() {
         TODO("Not yet implemented")
     }
 
-    override suspend fun addUserToSystem(discordId: Snowflake, systemId: String) {
+    override suspend fun addUserToSystem(userId: String, systemId: String) {
         TODO("Not yet implemented")
     }
 
-    override suspend fun removeUserFromSystem(discordId: Snowflake, systemId: String) {
+    override suspend fun removeUserFromSystem(userId: String, systemId: String) {
         TODO("Not yet implemented")
     }
 
-    override suspend fun updateTrustLevel(userId: Snowflake, trustee: Snowflake, level: TrustLevel) {
+    override suspend fun updateTrustLevel(userId: String, trustee: String, level: TrustLevel) {
         TODO("Not yet implemented")
     }
 
@@ -126,7 +201,7 @@ class MongoDatabase : Database() {
         TODO("Not yet implemented")
     }
 
-    override suspend fun getTotalMembersByHost(discordId: Snowflake): Int? {
+    override suspend fun getTotalMembersByHost(userId: String): Int? {
         TODO("Not yet implemented")
     }
 
@@ -138,7 +213,7 @@ class MongoDatabase : Database() {
         TODO("Not yet implemented")
     }
 
-    override suspend fun getMemberByHostAndName(discordId: Snowflake, memberName: String): MemberRecord? {
+    override suspend fun getMemberByHostAndName(userId: String, memberName: String): MemberRecord? {
         TODO("Not yet implemented")
     }
 
@@ -175,6 +250,6 @@ class MongoDatabase : Database() {
     }
 
     override fun close() {
-        TODO("Not yet implemented")
+        kmongo.close()
     }
 }

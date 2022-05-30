@@ -1,11 +1,11 @@
 package io.github.proxyfox.database
 
-import dev.kord.common.entity.Snowflake
 import io.github.proxyfox.database.records.member.MemberProxyTagRecord
 import io.github.proxyfox.database.records.member.MemberRecord
 import io.github.proxyfox.database.records.member.MemberServerSettingsRecord
 import io.github.proxyfox.database.records.misc.ServerSettingsRecord
 import io.github.proxyfox.database.records.misc.TrustLevel
+import io.github.proxyfox.database.records.misc.UserRecord
 import io.github.proxyfox.database.records.system.SystemRecord
 import io.github.proxyfox.database.records.system.SystemServerSettingsRecord
 import io.github.proxyfox.database.records.system.SystemSwitchRecord
@@ -18,6 +18,8 @@ import io.github.proxyfox.database.records.system.SystemSwitchRecord
  * @author KJP12
  **/
 abstract class Database : AutoCloseable {
+    abstract suspend fun getUser(userId: String): UserRecord?
+
     // === Systems ===
     /**
      * Gets a [system][SystemRecord] by Discord ID.
@@ -25,7 +27,7 @@ abstract class Database : AutoCloseable {
      * @param userId The ID of the Discord user.
      * @return The system tied to the Discord user.
      * */
-    abstract suspend fun getSystemByHost(userId: Snowflake): SystemRecord?
+    abstract suspend fun getSystemByHost(userId: String): SystemRecord?
 
     /**
      * Gets a [system][SystemRecord] by system ID.
@@ -42,7 +44,7 @@ abstract class Database : AutoCloseable {
      * @param userId The ID of the Discord user.
      * @return A list of members registered to the system tied to the Discord user.
      * */
-    abstract suspend fun getMembersByHost(userId: Snowflake): List<MemberRecord>?
+    abstract suspend fun getMembersByHost(userId: String): List<MemberRecord>?
 
     /**
      * Gets a list of [members][MemberRecord] by system ID.
@@ -55,11 +57,11 @@ abstract class Database : AutoCloseable {
     /**
      * Gets the [member][MemberRecord] by both Discord & member IDs.
      *
-     * @param discordId The ID of the Discord user.
+     * @param userId The ID of the Discord user.
      * @param memberId The ID of the member in the system tied to the Discord user.
      * @return The member of the system tied to the Discord user.
      * */
-    abstract suspend fun getMemberByHost(discordId: Snowflake, memberId: String): MemberRecord?
+    abstract suspend fun getMemberByHost(userId: String, memberId: String): MemberRecord?
 
     /**
      * Gets the [member][MemberRecord] by both system & member IDs.
@@ -73,48 +75,63 @@ abstract class Database : AutoCloseable {
     /**
      * Gets the fronting [member][MemberRecord] by Discord ID.
      *
-     * @param discordId The ID of the Discord user.
+     * @param userId The ID of the Discord user.
      * @return The fronting member of the system tied to the Discord user, if applicable.
      * */
-    abstract suspend fun getFrontingMemberByHost(discordId: Snowflake): MemberRecord?
+    abstract suspend fun getFrontingMembersByHost(userId: String): List<MemberRecord?>?
+
+    /**
+     * Gets the fronting [member][MemberRecord] by Discord ID.
+     *
+     * @param userId The ID of the Discord user.
+     * @return The fronting member of the system tied to the Discord user, if applicable.
+     * */
+    abstract suspend fun getFrontingMembersById(systemId: String): List<MemberRecord?>?
 
     /**
      * Gets the fronting [member][MemberRecord] by Discord ID and proxy tags.
      *
-     * @param discordId The ID of the Discord user.
+     * @param userId The ID of the Discord user.
      * @param message The message to check proxy tags against.
      * @return The fronting member of the system tied to the Discord user, if applicable.
      * */
-    abstract suspend fun getFrontingMemberByTags(discordId: Snowflake, message: String): Pair<MemberRecord, String>?
+    abstract suspend fun getFrontingMemberByTags(
+        userId: String,
+        message: String
+    ): Pair<MemberRecord, MemberProxyTagRecord>?
 
     /**
      * Gets the [proxy][MemberProxyTagRecord] by Discord ID and proxy tags.
      *
-     * @param discordId The ID of the Discord user.
+     * @param userId The ID of the Discord user.
      * @param message The message to check proxy tags against.
      * @return The ProxyTag associated with the message
      * */
-    abstract suspend fun getProxyTagFromMessage(discordId: Snowflake, message: String): MemberProxyTagRecord?
+    abstract suspend fun getProxyTagFromMessage(userId: String, message: String): MemberProxyTagRecord?
 
     // === Server Settings ===
     /**
      * Gets the current fronting [member's server settings][MemberServerSettingsRecord] by server & Discord IDs.
      *
      * @param serverId The ID of the server.
-     * @param discordId The ID of the Discord user.
+     * @param userId The ID of the Discord user.
      * @return The fronting member's settings for the server.
      * */
-    abstract suspend fun getFrontingServerSettingsByHost(serverId: Snowflake, discordId: Snowflake): MemberServerSettingsRecord?
+    abstract suspend fun getFrontingServerSettingsByHost(serverId: String, userId: String): MemberServerSettingsRecord?
 
     /**
      * Gets the [member's server settings][MemberServerSettingsRecord] by server, Discord & member IDs.
      *
      * @param serverId The ID of the server.
-     * @param discordId The ID of the Discord user.
+     * @param userId The ID of the Discord user.
      * @param memberId The ID of the member in the system tied to the Discord user.
      * @return The member's settings for the server.
      * */
-    abstract suspend fun getServerSettingsByHost(serverId: Snowflake, discordId: Snowflake, memberId: String): MemberServerSettingsRecord?
+    abstract suspend fun getServerSettingsByHost(
+        serverId: String,
+        userId: String,
+        memberId: String
+    ): MemberServerSettingsRecord?
 
     /**
      * Gets the [member's server settings][MemberServerSettingsRecord] by server, system & member IDs.
@@ -124,25 +141,29 @@ abstract class Database : AutoCloseable {
      * @param memberId The ID of the member in the system.
      * @return The member's settings for the server.
      * */
-    abstract suspend fun getServerSettingsByMember(serverId: Snowflake, systemId: String, memberId: String): MemberServerSettingsRecord?
+    abstract suspend fun getServerSettingsByMember(
+        serverId: String,
+        systemId: String,
+        memberId: String
+    ): MemberServerSettingsRecord?
 
     /**
      * Gets the [system's server settings][SystemServerSettingsRecord] by server & Discord IDs.
      *
      * @param serverId The ID of the server.
-     * @param discordId The ID of the Discord user.
+     * @param userId The ID of the Discord user.
      * @return The system's settings for the server.
      * */
-    abstract suspend fun getServerSettingsByHost(serverId: Snowflake, discordId: Snowflake): SystemServerSettingsRecord?
+    abstract suspend fun getServerSettingsByHost(serverId: String, userId: String): SystemServerSettingsRecord?
 
     // === Management ===
     /**
      * Allocates or reuses a system ID in the database.
      *
-     * @param discordId The ID of the Discord user.
+     * @param userId The ID of the Discord user.
      * @return A maybe newly created system. Never null.
      * */
-    abstract suspend fun allocateSystem(discordId: Snowflake): SystemRecord
+    abstract suspend fun allocateSystem(userId: String): SystemRecord
 
     /**
      * Allocates a member ID in the database.
@@ -187,20 +208,20 @@ abstract class Database : AutoCloseable {
      *
      * Implementation requirements: Deny addition when the user is already tied to a system.
      *
-     * @param discordId The ID of the Discord user.
+     * @param userId The ID of the Discord user.
      * @param systemId The ID of the system.
      * */
-    abstract suspend fun addUserToSystem(discordId: Snowflake, systemId: String)
+    abstract suspend fun addUserToSystem(userId: String, systemId: String)
 
     /**
      * Removes a Discord account from a system.
      *
      * Implementation requirements: Delete the system if there's no users left.
      *
-     * @param discordId The ID of the Discord user.
+     * @param userId The ID of the Discord user.
      * @param systemId The ID of the system.
      * */
-    abstract suspend fun removeUserFromSystem(discordId: Snowflake, systemId: String)
+    abstract suspend fun removeUserFromSystem(userId: String, systemId: String)
 
     /**
      * Updates the trust level for the trustee
@@ -208,7 +229,7 @@ abstract class Database : AutoCloseable {
      * @param trustee The person being trusted
      * @param level the level of trust granted
      * */
-    abstract suspend fun updateTrustLevel(userId: Snowflake, trustee: Snowflake, level: TrustLevel)
+    abstract suspend fun updateTrustLevel(userId: String, trustee: String, level: TrustLevel)
 
     /**
      * Gets the total number of systems registered
@@ -222,7 +243,7 @@ abstract class Database : AutoCloseable {
      *
      * Implementation requirements: return an int with the total members registered
      * */
-    abstract suspend fun getTotalMembersByHost(discordId: Snowflake): Int?
+    abstract suspend fun getTotalMembersByHost(userId: String): Int?
 
     /**
      * Gets the total number of members registered in a system by discord ID.
@@ -239,7 +260,7 @@ abstract class Database : AutoCloseable {
     /**
      * Gets a member by user snowflake and member name
      * */
-    abstract suspend fun getMemberByHostAndName(discordId: Snowflake, memberName: String): MemberRecord?
+    abstract suspend fun getMemberByHostAndName(userId: String, memberName: String): MemberRecord?
 
     // === Unsafe direct-write import & export functions ===
     abstract suspend fun export(other: Database)

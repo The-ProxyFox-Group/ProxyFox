@@ -62,7 +62,7 @@ suspend fun setupDatabase() {
         db.setup()
         db
     } catch (err: Throwable) {
-        err.printStackTrace()
+        printStep("Database setup failed. Falling back to JSON", 2)
         val db = JsonDatabase()
         db.setup()
         db
