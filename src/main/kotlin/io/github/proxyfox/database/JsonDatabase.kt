@@ -207,10 +207,23 @@ class JsonDatabase : Database() {
         TODO("Not yet implemented")
     }
 
-    override suspend fun getFrontingMemberByTags(
-        userId: String,
-        message: String
-    ): Pair<MemberRecord, MemberProxyTagRecord>? {
+    override suspend fun getProxiesByHost(userId: String): Collection<MemberProxyTagRecord> {
+        TODO("Not yet implemented")
+    }
+
+    override suspend fun getProxiesById(systemId: String): Collection<MemberProxyTagRecord> {
+        TODO("Not yet implemented")
+    }
+
+    override suspend fun getProxiesByHostAndMember(userId: String, memberId: String): Collection<MemberProxyTagRecord> {
+        TODO("Not yet implemented")
+    }
+
+    override suspend fun getProxiesByIdAndMember(systemId: String, memberId: String): Collection<MemberProxyTagRecord> {
+        TODO("Not yet implemented")
+    }
+
+    override suspend fun getMemberFromMessage(userId: String, message: String): MemberRecord? {
         TODO("Not yet implemented")
     }
 
@@ -218,16 +231,17 @@ class JsonDatabase : Database() {
         TODO("Not yet implemented")
     }
 
-    override suspend fun getFrontingServerSettingsByHost(
+    override suspend fun getMemberServerSettingsByHost(
         serverId: String,
-        userId: String
+        userId: String,
+        memberId: String
     ): MemberServerSettingsRecord? {
         TODO("Not yet implemented")
     }
 
-    override suspend fun getServerSettingsByHost(
+    override suspend fun getMemberServerSettingsById(
         serverId: String,
-        userId: String,
+        systemId: String,
         memberId: String
     ): MemberServerSettingsRecord? {
         TODO("Not yet implemented")
@@ -237,11 +251,7 @@ class JsonDatabase : Database() {
         TODO("Not yet implemented")
     }
 
-    override suspend fun getServerSettingsByMember(
-        serverId: String,
-        systemId: String,
-        memberId: String
-    ): MemberServerSettingsRecord? {
+    override suspend fun getServerSettingsById(serverId: String, systemId: String): SystemServerSettingsRecord? {
         TODO("Not yet implemented")
     }
 
@@ -269,28 +279,28 @@ class JsonDatabase : Database() {
         TODO("Not yet implemented")
     }
 
+    override suspend fun updateUser(user: UserRecord) {
+        TODO("Not yet implemented")
+    }
+
     override suspend fun allocateProxyTag(
         systemId: String,
         memberId: String,
-        prefix: String,
-        suffix: String
+        prefix: String?,
+        suffix: String?
     ): MemberProxyTagRecord? {
         TODO("Not yet implemented")
     }
 
-    override suspend fun removeProxyTag(systemId: String, proxyTag: MemberProxyTagRecord) {
+    override suspend fun removeProxyTag(proxyTag: MemberProxyTagRecord) {
         TODO("Not yet implemented")
     }
 
-    override suspend fun addUserToSystem(userId: String, systemId: String) {
-        throw UnsupportedOperationException("JSON flat file doesn't support multi-user.")
-    }
-
-    override suspend fun removeUserFromSystem(userId: String, systemId: String) {
+    override suspend fun updateTrustLevel(userId: String, trustee: String, level: TrustLevel): Boolean {
         TODO("Not yet implemented")
     }
 
-    override suspend fun updateTrustLevel(userId: String, trustee: String, level: TrustLevel) {
+    override suspend fun getTrustLevel(userId: String, trustee: String): TrustLevel {
         TODO("Not yet implemented")
     }
 

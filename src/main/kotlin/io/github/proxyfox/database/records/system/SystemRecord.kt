@@ -13,7 +13,7 @@ import java.time.ZoneOffset
  **/
 class SystemRecord {
     var id: String = ""
-    var users: List<String> = ArrayList()
+    var users: ArrayList<String> = ArrayList()
     var name: String? = null
     var description: String? = null
     var tag: String? = null
