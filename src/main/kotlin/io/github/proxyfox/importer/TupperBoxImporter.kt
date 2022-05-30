@@ -1,6 +1,5 @@
 package io.github.proxyfox.importer
 
-import dev.kord.common.entity.Snowflake
 import io.github.proxyfox.database.records.member.MemberProxyTagRecord
 import io.github.proxyfox.database.records.member.MemberRecord
 import io.github.proxyfox.database.records.system.SystemRecord
@@ -11,7 +10,7 @@ import io.github.proxyfox.database.records.system.SystemRecord
  * @author Oliver
  * */
 class TupperBoxImporter : Importer {
-    override suspend fun import(string: String, userId: Snowflake) {
+    override suspend fun import(string: String, userId: String) {
         TODO("Not yet implemented")
     }
 

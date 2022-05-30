@@ -20,7 +20,7 @@ suspend fun MessageCreateEvent.onMessageCreate() {
             message.channel.createMessage(output)
     } else {
         // Proxy the message
-        val proxy = database.getProxyTagFromMessage(message.author!!.id, content)
+        val proxy = database.getProxyTagFromMessage(message.author!!.id.value.toString(), content)
         if (proxy != null) {
             val member = database.getMemberById(proxy.systemId, proxy.memberId)!!
             WebhookUtil.prepareMessage(message, member, proxy).send()

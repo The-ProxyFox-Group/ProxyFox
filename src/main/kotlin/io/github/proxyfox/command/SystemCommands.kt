@@ -70,9 +70,9 @@ object SystemCommands {
     }
 
     private suspend fun empty(ctx: MessageHolder): String {
-        val system = database.getSystemByHost(ctx.message.author!!.id)
+        val system = database.getSystemByHost(ctx.message.author!!.id.value.toString())
             ?: return "System does not exist. Create one using `pf>system new`"
-        val members = database.getTotalMembersByHost(ctx.message.author!!.id)!!
+        val members = database.getTotalMembersByHost(ctx.message.author!!.id.value.toString())!!
         ctx.message.channel.createMessage {
             embed {
                 title = "${system.name} [`${system.id}`]"
@@ -106,25 +106,25 @@ object SystemCommands {
     }
 
     private suspend fun createEmpty(ctx: MessageHolder): String {
-        database.allocateSystem(ctx.message.author!!.id)
+        database.allocateSystem(ctx.message.author!!.id.value.toString())
         return "System created! See `pf>help` for how to set up your system further!"
     }
 
     private suspend fun create(ctx: MessageHolder): String {
-        val system = database.allocateSystem(ctx.message.author!!.id)
+        val system = database.allocateSystem(ctx.message.author!!.id.value.toString())
         system.name = ctx.params["name"]
         database.updateSystem(system)
         return "System created with name ${system.name}! See `pf>help` for how to set up your system further!"
     }
 
     private suspend fun renameEmpty(ctx: MessageHolder): String {
-        val system = database.getSystemByHost(ctx.message.author!!.id)
+        val system = database.getSystemByHost(ctx.message.author!!.id.value.toString())
             ?: return "System does not exist. Create one using `pf>system new`"
         return "Make sure to provide me with a name to update your system!"
     }
 
     private suspend fun rename(ctx: MessageHolder): String {
-        val system = database.getSystemByHost(ctx.message.author!!.id)
+        val system = database.getSystemByHost(ctx.message.author!!.id.value.toString())
             ?: return "System does not exist. Create one using `pf>system new`"
         system.name = ctx.params["name"]
         database.updateSystem(system)
@@ -132,13 +132,13 @@ object SystemCommands {
     }
 
     private suspend fun accessName(ctx: MessageHolder): String {
-        val system = database.getSystemByHost(ctx.message.author!!.id)
+        val system = database.getSystemByHost(ctx.message.author!!.id.value.toString())
             ?: return "System does not exist. Create one using `pf>system new`"
         return "System's name is ${system.name}"
     }
 
     private suspend fun list(ctx: MessageHolder): String {
-        val system = database.getSystemByHost(ctx.message.author!!.id)
+        val system = database.getSystemByHost(ctx.message.author!!.id.value.toString())
             ?: return "System does not exist. Create one using `pf>system new`"
 
         return ""
@@ -150,7 +150,7 @@ object SystemCommands {
     }
 
     private suspend fun description(ctx: MessageHolder): String {
-        val system = database.getSystemByHost(ctx.message.author!!.id)
+        val system = database.getSystemByHost(ctx.message.author!!.id.value.toString())
             ?: return "System does not exist. Create one using `pf>system new`"
         system.description = ctx.params["desc"]
         database.updateSystem(system)
@@ -158,19 +158,19 @@ object SystemCommands {
     }
 
     private suspend fun descriptionRaw(ctx: MessageHolder): String {
-        val system = database.getSystemByHost(ctx.message.author!!.id)
+        val system = database.getSystemByHost(ctx.message.author!!.id.value.toString())
             ?: return "System does not exist. Create one using `pf>system new`"
         return "`${system.description}`"
     }
 
     private suspend fun descriptionEmpty(ctx: MessageHolder): String {
-        val system = database.getSystemByHost(ctx.message.author!!.id)
+        val system = database.getSystemByHost(ctx.message.author!!.id.value.toString())
             ?: return "System does not exist. Create one using `pf>system new`"
         return system.description!!
     }
 
     private suspend fun avatar(ctx: MessageHolder): String {
-        val system = database.getSystemByHost(ctx.message.author!!.id)
+        val system = database.getSystemByHost(ctx.message.author!!.id.value.toString())
             ?: return "System does not exist. Create one using `pf>system new`"
         system.avatarUrl = ctx.params["avatar"]
         database.updateSystem(system)
@@ -178,19 +178,19 @@ object SystemCommands {
     }
 
     private suspend fun avatarRaw(ctx: MessageHolder): String {
-        val system = database.getSystemByHost(ctx.message.author!!.id)
+        val system = database.getSystemByHost(ctx.message.author!!.id.value.toString())
             ?: return "System does not exist. Create one using `pf>system new`"
         return "`${system.avatarUrl}`"
     }
 
     private suspend fun avatarEmpty(ctx: MessageHolder): String {
-        val system = database.getSystemByHost(ctx.message.author!!.id)
+        val system = database.getSystemByHost(ctx.message.author!!.id.value.toString())
             ?: return "System does not exist. Create one using `pf>system new`"
         return system.avatarUrl!!
     }
 
     private suspend fun tag(ctx: MessageHolder): String {
-        val system = database.getSystemByHost(ctx.message.author!!.id)
+        val system = database.getSystemByHost(ctx.message.author!!.id.value.toString())
             ?: return "System does not exist. Create one using `pf>system new`"
         system.tag = ctx.params["tag"]
         database.updateSystem(system)
@@ -198,19 +198,19 @@ object SystemCommands {
     }
 
     private suspend fun tagRaw(ctx: MessageHolder): String {
-        val system = database.getSystemByHost(ctx.message.author!!.id)
+        val system = database.getSystemByHost(ctx.message.author!!.id.value.toString())
             ?: return "System does not exist. Create one using `pf>system new`"
         return "`${system.tag}`"
     }
 
     private suspend fun tagEmpty(ctx: MessageHolder): String {
-        val system = database.getSystemByHost(ctx.message.author!!.id)
+        val system = database.getSystemByHost(ctx.message.author!!.id.value.toString())
             ?: return "System does not exist. Create one using `pf>system new`"
         return system.tag!!
     }
 
     private suspend fun delete(ctx: MessageHolder): String {
-        val system = database.getSystemByHost(ctx.message.author!!.id)
+        val system = database.getSystemByHost(ctx.message.author!!.id.value.toString())
             ?: return "System does not exist. Create one using `pf>system new`"
         val message1 =
             ctx.message.channel.createMessage("Are you sure you want to delete your system?\nThe data will be lost forever (A long time!)")

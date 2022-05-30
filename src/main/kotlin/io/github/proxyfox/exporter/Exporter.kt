@@ -9,7 +9,7 @@ import io.github.proxyfox.types.PkSystem
 
 object Exporter {
     suspend fun export(userId: Snowflake): String {
-        val system = database.getSystemByHost(userId) ?: return ""
+        val system = database.getSystemByHost(userId.value.toString()) ?: return ""
 
         val pkSystem = PkSystem()
         pkSystem.name = system.name
