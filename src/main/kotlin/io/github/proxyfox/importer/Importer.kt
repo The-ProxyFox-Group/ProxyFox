@@ -1,7 +1,6 @@
 package io.github.proxyfox.importer
 
 import com.google.gson.Gson
-import dev.kord.common.entity.Snowflake
 import io.github.proxyfox.database.records.member.MemberProxyTagRecord
 import io.github.proxyfox.database.records.member.MemberRecord
 import io.github.proxyfox.database.records.system.SystemRecord
@@ -17,7 +16,7 @@ val gson = Gson()
  *
  * @author Oliver
  * */
-suspend fun import(string: String, userId: Snowflake): Importer {
+suspend fun import(string: String, userId: String): Importer {
     val map = gson.fromJson(string, Map::class.java) as Map<String, *>
     val importer = if (map.containsKey("tuppers")) TupperBoxImporter() else PluralKitImporter()
     importer.import(string, userId)
@@ -32,7 +31,7 @@ suspend fun import(string: String, userId: Snowflake): Importer {
  *
  * @author Oliver
  * */
-suspend fun import(reader: InputStreamReader, userId: Snowflake): Importer {
+suspend fun import(reader: InputStreamReader, userId: String): Importer {
     val map = gson.fromJson(reader, Map::class.java)
     val importer = if (map.containsKey("tuppers")) TupperBoxImporter() else PluralKitImporter()
     importer.import(reader.readText(), userId)
@@ -45,7 +44,7 @@ suspend fun import(reader: InputStreamReader, userId: Snowflake): Importer {
  * @author Oliver
  * */
 interface Importer {
-    suspend fun import(string: String, userId: Snowflake)
+    suspend fun import(string: String, userId: String)
 
     // Getters:
     suspend fun getSystem(): SystemRecord

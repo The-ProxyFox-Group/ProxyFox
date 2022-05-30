@@ -1,6 +1,5 @@
 package io.github.proxyfox.importer
 
-import dev.kord.common.entity.Snowflake
 import io.github.proxyfox.database
 import io.github.proxyfox.database.records.member.MemberProxyTagRecord
 import io.github.proxyfox.database.records.member.MemberRecord
@@ -21,7 +20,7 @@ class PluralKitImporter : Importer {
     private var createdMembers = 0
     private var updatedMembers = 0
 
-    override suspend fun import(string: String, userId: Snowflake) {
+    override suspend fun import(string: String, userId: String) {
         val pkSystem = gson.fromJson(string, PkSystem::class.java)
         system = database.allocateSystem(userId)
         system.name = pkSystem.name ?: system.name
