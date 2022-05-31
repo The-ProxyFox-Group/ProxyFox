@@ -5,6 +5,7 @@ import io.github.proxyfox.database
 import io.github.proxyfox.fromColor
 import io.github.proxyfox.importer.gson
 import io.github.proxyfox.types.PkMember
+import io.github.proxyfox.types.PkProxy
 import io.github.proxyfox.types.PkSystem
 
 object Exporter {
@@ -29,7 +30,14 @@ object Exporter {
             pkMember.keep_proxy = member.keepProxy
             pkMember.message_count = member.messageCount
 
-            // TODO: Get proxies
+            val proxies = database.getProxiesByIdAndMember(system.id, member.id)
+            pkMember.proxies = Array(proxies!!.size) {
+                val proxy = proxies[it]
+                val pkProxy = PkProxy()
+                pkProxy.prefix = proxy.prefix
+                pkProxy.suffix = proxy.suffix
+                pkProxy
+            }
 
             pkMember
         }

@@ -88,11 +88,12 @@ abstract class Database : AutoCloseable {
      * */
     abstract suspend fun getFrontingMembersById(systemId: String): List<MemberRecord?>?
 
-    abstract suspend fun getProxiesByHost(userId: String): Collection<MemberProxyTagRecord>?
-    abstract suspend fun getProxiesById(systemId: String): Collection<MemberProxyTagRecord>?
+    abstract suspend fun getProxiesByHost(userId: String): List<MemberProxyTagRecord>?
+    abstract suspend fun getProxiesById(systemId: String): List<MemberProxyTagRecord>?
 
-    abstract suspend fun getProxiesByHostAndMember(userId: String, memberId: String): Collection<MemberProxyTagRecord>?
-    abstract suspend fun getProxiesByIdAndMember(systemId: String, memberId: String): Collection<MemberProxyTagRecord>?
+    abstract suspend fun getProxiesByHostAndMember(userId: String, memberId: String): List<MemberProxyTagRecord>?
+    abstract suspend fun getProxiesByIdAndMember(systemId: String, memberId: String): List<MemberProxyTagRecord>?
+
     /**
      * Gets the [proxy][MemberProxyTagRecord] by Discord ID and proxy tags.
      *
@@ -142,7 +143,10 @@ abstract class Database : AutoCloseable {
      * */
     abstract suspend fun getServerSettingsByHost(serverId: String, userId: String): SystemServerSettingsRecord?
 
-    abstract suspend fun getServerSettingsById(serverId: String, systemId: String): SystemServerSettingsRecord?
+    abstract suspend fun getServerSettingsById(serverId: String, systemId: String): SystemServerSettingsRecord
+
+    abstract suspend fun getServerSettings(serverId: String): ServerSettingsRecord
+    abstract suspend fun updateServerSettings(serverSettings: ServerSettingsRecord)
 
     // === Management ===
     /**

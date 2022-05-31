@@ -123,23 +123,23 @@ class MongoDatabase : Database() {
         return members
     }
 
-    override suspend fun getProxiesByHost(userId: String): Collection<MemberProxyTagRecord>? {
+    override suspend fun getProxiesByHost(userId: String): List<MemberProxyTagRecord>? {
         val user = getUser(userId)
         return user.system?.let { getProxiesById(it) }
     }
 
-    override suspend fun getProxiesById(systemId: String): Collection<MemberProxyTagRecord> =
+    override suspend fun getProxiesById(systemId: String): List<MemberProxyTagRecord> =
         memberProxies.findAll("{systemId:'$systemId'}")
 
     override suspend fun getProxiesByHostAndMember(
         userId: String,
         memberId: String
-    ): Collection<MemberProxyTagRecord>? {
+    ): List<MemberProxyTagRecord>? {
         val user = getUser(userId)
         return user.system?.let { getProxiesByIdAndMember(it, memberId) }
     }
 
-    override suspend fun getProxiesByIdAndMember(systemId: String, memberId: String): Collection<MemberProxyTagRecord> =
+    override suspend fun getProxiesByIdAndMember(systemId: String, memberId: String): List<MemberProxyTagRecord> =
         memberProxies.findAll("{systemId:'$systemId',memberId:'$memberId'}")
 
     override suspend fun getMemberFromMessage(
@@ -178,8 +178,31 @@ class MongoDatabase : Database() {
         return user.system?.let { getServerSettingsById(serverId, it) }
     }
 
-    override suspend fun getServerSettingsById(serverId: String, systemId: String): SystemServerSettingsRecord? =
-        systemServers.findOne("{serverId:'$serverId',systemId:'$systemId'}")
+    override suspend fun getServerSettingsById(serverId: String, systemId: String): SystemServerSettingsRecord {
+        var serverSettings = systemServers.findOne("{serverId:'$serverId',systemId:'$systemId'}")
+        if (serverSettings == null) {
+            serverSettings = SystemServerSettingsRecord()
+            serverSettings.serverId = serverId
+            serverSettings.systemId = systemId
+            systemServers.insertOne(serverSettings)
+        }
+        return serverSettings
+    }
+
+    override suspend fun getServerSettings(serverId: String): ServerSettingsRecord {
+        var serverSettings = servers.findOne("{serverId:'$serverId'}")
+        if (serverSettings == null) {
+            serverSettings = ServerSettingsRecord()
+            serverSettings.serverId = serverId
+            servers.insertOne(serverSettings)
+        }
+        return serverSettings
+    }
+
+    override suspend fun updateServerSettings(serverSettings: ServerSettingsRecord) {
+        servers.deleteOneById(serverSettings._id).awaitFirst()
+        servers.insertOne(serverSettings).awaitFirst()
+    }
 
     override suspend fun allocateSystem(userId: String): SystemRecord {
         if (getSystemByHost(userId) != null) return getSystemByHost(userId)!!
