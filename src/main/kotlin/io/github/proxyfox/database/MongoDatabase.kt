@@ -23,7 +23,7 @@ import org.litote.kmongo.coroutine.toList
 import org.litote.kmongo.reactivestreams.KMongo
 import org.litote.kmongo.reactivestreams.countDocuments
 import org.litote.kmongo.reactivestreams.deleteOne
-import org.litote.kmongo.reactivestreams.findOneAndReplace
+import org.litote.kmongo.reactivestreams.deleteOneById
 
 // Created 2022-26-05T22:43:40
 
@@ -80,7 +80,7 @@ class MongoDatabase : Database() {
         if (user == null) {
             user = UserRecord()
             user.id = userId
-            users.insertOne(user)
+            users.insertOne(user).awaitFirst()
         }
         return user
     }
@@ -195,7 +195,8 @@ class MongoDatabase : Database() {
         system.users.add(userId)
         user.system = system.id
         updateUser(user)
-        this.systems.insertOne(system)
+        this.systems.insertOne(system).awaitFirst()
+        this.systems.insertOne(system).awaitFirst()
         return system
     }
 
@@ -211,34 +212,34 @@ class MongoDatabase : Database() {
         val member = MemberRecord()
         member.id = (currentId + 1).toPkString()
         member.name = name
-        this.members.insertOne(member)
+        member.systemId = systemId
+        this.members.insertOne(member).awaitFirst()
         return member
     }
 
     override suspend fun updateMember(member: MemberRecord) {
-        members.findOneAndReplace("{systemId:'${member.systemId}',id:'${member.id}'}", member)
+        members.deleteOneById(member._id).awaitFirst()
+        members.insertOne(member).awaitFirst()
     }
 
     override suspend fun updateMemberServerSettings(serverSettings: MemberServerSettingsRecord) {
-        memberServers.findOneAndReplace(
-            "{memberId:'${serverSettings.memberId}',systemId:'${serverSettings.systemId}',serverId:'${serverSettings.serverId}'}",
-            serverSettings
-        )
+        memberServers.deleteOneById(serverSettings._id).awaitFirst()
+        memberServers.insertOne(serverSettings)
     }
 
     override suspend fun updateSystem(system: SystemRecord) {
-        systems.findOneAndReplace("{id:'${system.id}'}", system)
+        systems.deleteOneById(system._id).awaitFirst()
+        systems.insertOne(system).awaitFirst()
     }
 
     override suspend fun updateSystemServerSettings(serverSettings: SystemServerSettingsRecord) {
-        systemServers.findOneAndReplace(
-            "{systemId:'${serverSettings.systemId}',serverId:'${serverSettings.serverId}'}",
-            serverSettings
-        )
+        systemServers.deleteOneById(serverSettings._id).awaitFirst()
+        systemServers.insertOne(serverSettings).awaitFirst()
     }
 
     override suspend fun updateUser(user: UserRecord) {
-        users.findOneAndReplace("{id:'${user.id}'}", user)
+        users.deleteOneById(user._id).awaitFirst()
+        users.insertOne(user).awaitFirst()
     }
 
     override suspend fun allocateProxyTag(
@@ -251,16 +252,17 @@ class MongoDatabase : Database() {
         for (proxy in proxyTags)
             if (prefix == proxy.prefix && suffix == proxy.suffix) return null
         val proxy = MemberProxyTagRecord()
-        proxy.prefix = prefix
-        proxy.suffix = suffix
+        proxy.prefix = prefix!!
+        proxy.suffix = suffix!!
         proxy.memberId = memberId
         proxy.systemId = systemId
-        memberProxies.insertOne(proxy)
+        memberProxies.insertOne(proxy).awaitFirst()
         return proxy
     }
 
     override suspend fun removeProxyTag(proxyTag: MemberProxyTagRecord) {
         memberProxies.deleteOne("{systemId:'${proxyTag.systemId}',memberId:'${proxyTag.memberId}',prefix:'${proxyTag.prefix}',suffix:'${proxyTag.suffix}'")
+            .awaitFirst()
     }
 
     override suspend fun updateTrustLevel(userId: String, trustee: String, level: TrustLevel): Boolean {
@@ -290,7 +292,7 @@ class MongoDatabase : Database() {
     }
 
     override suspend fun getMemberByIdAndName(systemId: String, memberName: String): MemberRecord? {
-        return members.findOne("{systemId:'$systemId',name:$memberName}")
+        return members.findOne("{systemId:'$systemId',name:'$memberName'}")
     }
 
     override suspend fun getMemberByHostAndName(userId: String, memberName: String): MemberRecord? {

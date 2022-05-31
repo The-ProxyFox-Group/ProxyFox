@@ -22,8 +22,9 @@ suspend fun parseString(input: String, message: Message): String? {
 suspend fun tryExecuteNode(input: String, index: Int, node: Node, holder: MessageHolder): String? {
     val newIdx = node.parse(input, index, holder)
     if (newIdx == index) return null
+    if (newIdx < input.length && input[newIdx] != ' ') return null
     for (newNode in node.getSubNodes()) {
-        val str = tryExecuteNode(input, newIdx, newNode, holder)
+        val str = tryExecuteNode(input, newIdx + 1, newNode, holder)
         if (str != null) return str
     }
     return try {

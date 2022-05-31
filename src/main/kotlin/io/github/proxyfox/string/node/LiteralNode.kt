@@ -2,15 +2,15 @@ package io.github.proxyfox.string.node
 
 import io.github.proxyfox.string.parser.MessageHolder
 
-class LiteralNode(val literal: String, val executor: suspend MessageHolder.() -> String) : Node {
+class LiteralNode(private val literal: String, val executor: suspend MessageHolder.() -> String) : Node {
     private val literalNodes: ArrayList<LiteralNode> = ArrayList()
     private val stringNodes: ArrayList<StringNode> = ArrayList()
     private val greedyNodes: ArrayList<GreedyNode> = ArrayList()
 
     override fun parse(string: String, index: Int, holder: MessageHolder): Int {
         if (string.length < literal.length + index) return index
-        if (string.substring(index, index + literal.length).lowercase() == literal.lowercase())
-            return index + literal.length + 1
+        if (string.substring(index).lowercase().startsWith(literal.lowercase()))
+            return index + literal.length
         return index
     }
 

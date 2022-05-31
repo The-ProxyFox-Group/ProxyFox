@@ -1,6 +1,7 @@
 package io.github.proxyfox.database.records.system
 
 import io.github.proxyfox.database.records.misc.AutoProxyMode
+import org.bson.types.ObjectId
 import java.time.OffsetDateTime
 import java.time.ZoneOffset
 
@@ -12,6 +13,7 @@ import java.time.ZoneOffset
  * @author KJP12
  **/
 class SystemRecord {
+    var _id: ObjectId = ObjectId()
     var id: String = ""
     var users: ArrayList<String> = ArrayList()
     var name: String? = null

@@ -1,5 +1,7 @@
 package io.github.proxyfox.database.records.member
 
+import org.bson.types.ObjectId
+
 // Created 2022-09-04T15:17:43
 
 /**
@@ -8,10 +10,11 @@ package io.github.proxyfox.database.records.member
  * @author KJP12
  **/
 class MemberProxyTagRecord {
+    var _id: ObjectId = ObjectId()
     var systemId: String = ""
     var memberId: String = ""
-    var prefix: String? = null
-    var suffix: String? = null
+    var prefix: String = ""
+    var suffix: String = ""
 
     fun test(message: String): Boolean {
         var pre = true
@@ -19,5 +22,9 @@ class MemberProxyTagRecord {
         var suf = true
         if (suffix != null) suf = message.startsWith(suffix!!)
         return pre && suf
+    }
+
+    fun trim(message: String): String {
+        return message.substring(prefix.length, message.length - suffix.length)
     }
 }

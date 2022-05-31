@@ -1,5 +1,7 @@
 package io.github.proxyfox.database.records.member
 
+import org.bson.types.ObjectId
+
 // Created 2022-09-04T14:16:19
 
 /**
@@ -8,6 +10,7 @@ package io.github.proxyfox.database.records.member
  * @author KJP12
  **/
 class MemberServerSettingsRecord {
+    var _id: ObjectId = ObjectId()
     var serverId: String = ""
     var systemId: String = ""
     var memberId: String = ""
