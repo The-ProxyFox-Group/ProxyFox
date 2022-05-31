@@ -375,7 +375,7 @@ object MemberCommands {
         val member = database.getMemberByIdAndName(system.id, ctx.params["member"]!!)
             ?: database.getMemberById(system.id, ctx.params["member"]!!)
             ?: return "Member does not exist. Create one using `pf>member new`"
-        TODO()
+        return "Please provide a proxy tag to remove"
     }
 
     private suspend fun removeProxy(ctx: MessageHolder): String {
@@ -384,7 +384,12 @@ object MemberCommands {
         val member = database.getMemberByIdAndName(system.id, ctx.params["member"]!!)
             ?: database.getMemberById(system.id, ctx.params["member"]!!)
             ?: return "Member does not exist. Create one using `pf>member new`"
-        TODO()
+        val proxy = ctx.params["proxy"]!!
+        val proxyTag = database.getProxyTagFromMessage(ctx.message.author!!.id.value.toString(), proxy)
+            ?: return "Proxy tag doesn't exist in this member"
+        if (proxyTag.memberId != member.id) return "Proxy tag doens't exist in this member"
+        database.removeProxyTag(proxyTag)
+        return "Proxy removed."
     }
 
     private suspend fun proxyEmpty(ctx: MessageHolder): String {
@@ -393,7 +398,7 @@ object MemberCommands {
         val member = database.getMemberByIdAndName(system.id, ctx.params["member"]!!)
             ?: database.getMemberById(system.id, ctx.params["member"]!!)
             ?: return "Member does not exist. Create one using `pf>member new`"
-        return ""
+        return "Please provide a subcommand or a proxy tag"
     }
 
     private suspend fun proxy(ctx: MessageHolder): String {
@@ -407,8 +412,8 @@ object MemberCommands {
         val prefix = proxy.substring(0, proxy.indexOf("text"))
         val suffix = proxy.substring(4 + prefix.length, proxy.length)
         if (prefix.isEmpty() && suffix.isEmpty()) return "Proxy tag must contain either a prefix or a suffix"
-        val proxyTag =
-            database.allocateProxyTag(system.id, member.id, prefix, suffix) ?: "Proxy tag already exists in this system"
+        database.allocateProxyTag(system.id, member.id, prefix, suffix)
+            ?: return "Proxy tag already exists in this system"
         return "Proxy tag created!"
     }
 

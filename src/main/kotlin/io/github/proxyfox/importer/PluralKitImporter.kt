@@ -44,8 +44,11 @@ class PluralKitImporter : Importer {
                     for (pkProxy in pkMember.proxies!!) {
                         val text = "${pkProxy.prefix}text${pkProxy.suffix}"
                         if (database.getProxyTagFromMessage(userId, text) != null) continue
+                        database.allocateProxyTag(system.id, member.id, pkProxy.prefix, pkProxy.suffix)
                     }
+                database.updateMember(member)
             }
+        database.updateSystem(system)
     }
 
     // Getters:

@@ -207,19 +207,19 @@ class JsonDatabase : Database() {
         TODO("Not yet implemented")
     }
 
-    override suspend fun getProxiesByHost(userId: String): Collection<MemberProxyTagRecord> {
+    override suspend fun getProxiesByHost(userId: String): List<MemberProxyTagRecord>? {
         TODO("Not yet implemented")
     }
 
-    override suspend fun getProxiesById(systemId: String): Collection<MemberProxyTagRecord> {
+    override suspend fun getProxiesById(systemId: String): List<MemberProxyTagRecord>? {
         TODO("Not yet implemented")
     }
 
-    override suspend fun getProxiesByHostAndMember(userId: String, memberId: String): Collection<MemberProxyTagRecord> {
+    override suspend fun getProxiesByHostAndMember(userId: String, memberId: String): List<MemberProxyTagRecord>? {
         TODO("Not yet implemented")
     }
 
-    override suspend fun getProxiesByIdAndMember(systemId: String, memberId: String): Collection<MemberProxyTagRecord> {
+    override suspend fun getProxiesByIdAndMember(systemId: String, memberId: String): List<MemberProxyTagRecord>? {
         TODO("Not yet implemented")
     }
 
@@ -251,7 +251,15 @@ class JsonDatabase : Database() {
         TODO("Not yet implemented")
     }
 
-    override suspend fun getServerSettingsById(serverId: String, systemId: String): SystemServerSettingsRecord? {
+    override suspend fun getServerSettingsById(serverId: String, systemId: String): SystemServerSettingsRecord {
+        TODO("Not yet implemented")
+    }
+
+    override suspend fun getServerSettings(serverId: String): ServerSettingsRecord {
+        TODO("Not yet implemented")
+    }
+
+    override suspend fun updateServerSettings(serverSettings: ServerSettingsRecord) {
         TODO("Not yet implemented")
     }
 
