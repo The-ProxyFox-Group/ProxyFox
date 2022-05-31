@@ -17,7 +17,9 @@ object WebhookUtil {
         message.content,
         ArrayList(),
         fetchWebhook(message.channel.asChannel() as TextChannel),
-        message
+        message,
+        member,
+        proxy
     )
 
     suspend fun fetchWebhook(channel: TextChannel): WebhookHolder {

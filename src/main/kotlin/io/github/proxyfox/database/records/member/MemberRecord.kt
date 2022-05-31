@@ -1,5 +1,6 @@
 package io.github.proxyfox.database.records.member
 
+import org.bson.types.ObjectId
 import java.time.OffsetDateTime
 import java.time.ZoneOffset
 
@@ -11,6 +12,7 @@ import java.time.ZoneOffset
  * @author Ampflower
  **/
 class MemberRecord {
+    var _id: ObjectId = ObjectId()
     var id: String = ""
     var systemId: String = ""
     var name: String = ""

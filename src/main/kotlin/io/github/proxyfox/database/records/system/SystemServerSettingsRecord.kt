@@ -1,6 +1,7 @@
 package io.github.proxyfox.database.records.system
 
 import io.github.proxyfox.database.records.misc.AutoProxyMode
+import org.bson.types.ObjectId
 
 // Created 2022-09-04T15:13:09
 
@@ -11,6 +12,7 @@ import io.github.proxyfox.database.records.misc.AutoProxyMode
  * @since ${version}
  **/
 class SystemServerSettingsRecord {
+    var _id: ObjectId = ObjectId()
     var serverId: String = ""
     var systemId: String = ""
     var proxyEnabled: Boolean = true

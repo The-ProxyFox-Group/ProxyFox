@@ -14,9 +14,9 @@ suspend fun MessageCreateEvent.onMessageCreate() {
         // Remove the prefix to pass into dispatcher
         val contentWithoutRegex = content.substring(3)
         // Run the command
-        val output = parseString(contentWithoutRegex, message)
+        val output = parseString(contentWithoutRegex, message) ?: return
         // Send output message if exists
-        if (output!!.isNotBlank())
+        if (output.isNotBlank())
             message.channel.createMessage(output)
     } else {
         // Proxy the message

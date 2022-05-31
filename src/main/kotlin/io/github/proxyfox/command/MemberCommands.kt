@@ -13,7 +13,7 @@ import io.github.proxyfox.string.dsl.string
 import io.github.proxyfox.string.parser.MessageHolder
 import io.github.proxyfox.string.parser.registerCommand
 import kotlinx.coroutines.Job
-import kotlinx.coroutines.flow.map
+import kotlinx.coroutines.flow.toList
 
 /**
  * Commands for accessing and changing system  settings
@@ -393,7 +393,7 @@ object MemberCommands {
         val member = database.getMemberByIdAndName(system.id, ctx.params["member"]!!)
             ?: database.getMemberById(system.id, ctx.params["member"]!!)
             ?: return "Member does not exist. Create one using `pf>member new`"
-        TODO()
+        return ""
     }
 
     private suspend fun proxy(ctx: MessageHolder): String {
@@ -402,7 +402,14 @@ object MemberCommands {
         val member = database.getMemberByIdAndName(system.id, ctx.params["member"]!!)
             ?: database.getMemberById(system.id, ctx.params["member"]!!)
             ?: return "Member does not exist. Create one using `pf>member new`"
-        TODO()
+        val proxy = ctx.params["proxy"]!!
+        if (!proxy.contains("text")) return "Given proxy tag does not contain `text`"
+        val prefix = proxy.substring(0, proxy.indexOf("text"))
+        val suffix = proxy.substring(4 + prefix.length, proxy.length)
+        if (prefix.isEmpty() && suffix.isEmpty()) return "Proxy tag must contain either a prefix or a suffix"
+        val proxyTag =
+            database.allocateProxyTag(system.id, member.id, prefix, suffix) ?: "Proxy tag already exists in this system"
+        return "Proxy tag created!"
     }
 
     private suspend fun pronounsEmpty(ctx: MessageHolder): String {
@@ -517,15 +524,15 @@ object MemberCommands {
         var job: Job? = null
         job = kord.on<ReactionAddEvent> {
             if (message.id == message1.id) {
-                message.getReactors(ReactionEmoji.Unicode("❌")).map {
+                message.getReactors(ReactionEmoji.Unicode("✅")).toList().forEach {
                     if (it.id == ctx.message.author!!.id) {
                         message.channel.createMessage("Member deleted")
                         job!!.cancel()
                     }
                 }
-                message.getReactors(ReactionEmoji.Unicode("✅")).map {
+                message.getReactors(ReactionEmoji.Unicode("❌")).toList().forEach {
                     if (it.id == ctx.message.author!!.id) {
-                        message.channel.createMessage("Action cancelled")
+                        message.channel.createMessage("Member deleted")
                         job!!.cancel()
                     }
                 }
@@ -538,9 +545,6 @@ object MemberCommands {
     private suspend fun deleteEmpty(ctx: MessageHolder): String {
         val system = database.getSystemByHost(ctx.message.author!!.id.value.toString())
             ?: return "System does not exist. Create one using `pf>system new`"
-        val member = database.getMemberByIdAndName(system.id, ctx.params["member"]!!)
-            ?: database.getMemberById(system.id, ctx.params["member"]!!)
-            ?: return "Member does not exist. Create one using `pf>member new`"
         return "Make sure to tell me which member you want to delete!"
     }
 
