@@ -241,11 +241,11 @@ abstract class Database : AutoCloseable {
 
     // Warning: These methods may directly allocate as part of importing records, inadvertently overwriting records in the process.
     // It is not assumed that these can be used for importing TupperBox, PluralKit and ProxyFox exports.
-    protected abstract suspend fun import(memberProxyTagRecord: MemberProxyTagRecord)
-    protected abstract suspend fun import(memberRecord: MemberRecord)
-    protected abstract suspend fun import(memberServerSettingsRecord: MemberServerSettingsRecord)
-    protected abstract suspend fun import(serverSettingsRecord: ServerSettingsRecord)
-    protected abstract suspend fun import(system: SystemRecord)
-    protected abstract suspend fun import(systemServerSettingsRecord: SystemServerSettingsRecord)
-    protected abstract suspend fun import(systemSwitchRecord: SystemSwitchRecord)
+    internal abstract suspend fun import(memberProxyTagRecord: MemberProxyTagRecord)
+    internal abstract suspend fun import(memberRecord: MemberRecord)
+    internal abstract suspend fun import(memberServerSettingsRecord: MemberServerSettingsRecord)
+    internal abstract suspend fun import(serverSettingsRecord: ServerSettingsRecord)
+    internal abstract suspend fun import(system: SystemRecord)
+    internal abstract suspend fun import(systemServerSettingsRecord: SystemServerSettingsRecord)
+    internal abstract suspend fun import(systemSwitchRecord: SystemSwitchRecord)
 }
