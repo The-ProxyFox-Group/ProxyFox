@@ -219,7 +219,6 @@ class MongoDatabase : Database() {
         user.system = system.id
         updateUser(user)
         this.systems.insertOne(system).awaitFirst()
-        this.systems.insertOne(system).awaitFirst()
         return system
     }
 
