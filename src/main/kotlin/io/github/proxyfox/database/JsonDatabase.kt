@@ -1,11 +1,14 @@
 package io.github.proxyfox.database
 
 import com.google.gson.Gson
-import com.google.gson.JsonObject
 import com.google.gson.JsonParser
+import com.google.gson.reflect.TypeToken
+import io.github.proxyfox.database.DatabaseUtil.fromPkString
+import io.github.proxyfox.database.DatabaseUtil.toPkString
 import io.github.proxyfox.database.records.member.MemberProxyTagRecord
 import io.github.proxyfox.database.records.member.MemberRecord
 import io.github.proxyfox.database.records.member.MemberServerSettingsRecord
+import io.github.proxyfox.database.records.misc.AutoProxyMode
 import io.github.proxyfox.database.records.misc.ServerSettingsRecord
 import io.github.proxyfox.database.records.misc.TrustLevel
 import io.github.proxyfox.database.records.misc.UserRecord
@@ -15,6 +18,8 @@ import io.github.proxyfox.database.records.system.SystemSwitchRecord
 import java.io.File
 import java.io.FileReader
 import java.io.Reader
+import java.time.OffsetDateTime
+import java.time.ZoneOffset
 
 // Created 2022-26-05T19:47:37
 
@@ -139,23 +144,9 @@ import java.io.Reader
  * @since ${version}
  **/
 class JsonDatabase : Database() {
-    // Entries that must be saved
-    private val systemsByDiscordId = HashMap<ULong, SystemRecord>()
-
-    // TODO: Map<String, Member>?
-    private val membersByDiscordId = HashMap<ULong, List<MemberRecord>>()
-
-    @Transient
-    private val systemsBySystemId = HashMap<String, SystemRecord>()
-
-    @Transient
-    private val membersBySystemId = HashMap<String, List<MemberRecord>>()
-
-    private val gson = Gson()
-
-    private var systems: JsonObject = JsonObject()
-    private var users: JsonObject = JsonObject()
-    private var servers: JsonObject = JsonObject()
+    private lateinit var systems: MutableMap<String, JsonSystemStruct>
+    private lateinit var users: MutableMap<ULong, UserRecord>
+    private lateinit var servers: MutableMap<ULong, ServerSettingsRecord>
 
     fun setup() {
         val file = File("systems.json")
@@ -164,71 +155,83 @@ class JsonDatabase : Database() {
         else FileReader(file)
         val db = JsonParser.parseReader(reader)
         val dbObject = db.asJsonObject
+        if (!dbObject.has("schema")) {
+            throw IllegalStateException("Database missing schema. Halt immediately.")
+        }
         if (dbObject["schema"].asInt == 1) {
-            systems = dbObject.getAsJsonObject("systems")
-            users = dbObject.getAsJsonObject("users")
-            servers = dbObject.getAsJsonObject("servers")
+            systems = gson.fromJson(dbObject.getAsJsonObject("systems"), systemMapToken.type)
+            users = gson.fromJson(dbObject.getAsJsonObject("users"), userMapToken.type)
+            servers = gson.fromJson(dbObject.getAsJsonObject("servers"), serverMapToken.type)
         }
     }
 
-    override suspend fun getUser(userId: String): UserRecord? {
-        TODO("Not yet implemented")
+    override suspend fun getUser(userId: String): UserRecord {
+        return users[userId.toULong()] ?: run {
+            val record = UserRecord()
+            record.id = userId
+            users[userId.toULong()] = record
+            record
+        }
     }
 
     override suspend fun getSystemByHost(userId: String): SystemRecord? {
-        TODO("Not yet implemented")
+        return systems[getUser(userId).system]?.view()
     }
 
     override suspend fun getSystemById(systemId: String): SystemRecord? {
-        TODO("Not yet implemented")
+        return systems[systemId]?.view()
     }
 
     override suspend fun getMembersByHost(userId: String): List<MemberRecord>? {
-        TODO("Not yet implemented")
+        return systems[getUser(userId).system]?.members?.values?.map(JsonMemberStruct::view)
     }
 
     override suspend fun getMembersBySystem(systemId: String): List<MemberRecord>? {
-        TODO("Not yet implemented")
+        return systems[systemId]?.members?.values?.map(JsonMemberStruct::view)
     }
 
     override suspend fun getMemberByHost(userId: String, memberId: String): MemberRecord? {
-        TODO("Not yet implemented")
+        return systems[getUser(userId).system]?.members?.get(memberId)?.view()
     }
 
     override suspend fun getMemberById(systemId: String, memberId: String): MemberRecord? {
-        TODO("Not yet implemented")
+        return systems[systemId]?.members?.get(memberId)?.view()
     }
 
     override suspend fun getFrontingMembersByHost(userId: String): List<MemberRecord?>? {
-        TODO("Not yet implemented")
+        val system = systems[getUser(userId).system] ?: return null
+        return system.switches.values.maxByOrNull { it.timestamp }?.memberIds?.mapNotNull { system.members[it]?.view() }
     }
 
     override suspend fun getFrontingMembersById(systemId: String): List<MemberRecord?>? {
-        TODO("Not yet implemented")
+        val system = systems[systemId] ?: return null
+        return system.switches.values.maxByOrNull { it.timestamp }?.memberIds?.mapNotNull { system.members[it]?.view() }
     }
 
     override suspend fun getProxiesByHost(userId: String): List<MemberProxyTagRecord>? {
-        TODO("Not yet implemented")
+        return systems[getUser(userId).system]?.proxyTags
     }
 
     override suspend fun getProxiesById(systemId: String): List<MemberProxyTagRecord>? {
-        TODO("Not yet implemented")
+        return systems[systemId]?.proxyTags
     }
 
     override suspend fun getProxiesByHostAndMember(userId: String, memberId: String): List<MemberProxyTagRecord>? {
-        TODO("Not yet implemented")
+        return systems[getUser(userId).system]?.proxyTags?.filter { it.memberId == memberId }
     }
 
     override suspend fun getProxiesByIdAndMember(systemId: String, memberId: String): List<MemberProxyTagRecord>? {
-        TODO("Not yet implemented")
+        return systems[systemId]?.proxyTags?.filter { it.memberId == memberId }
     }
 
     override suspend fun getMemberFromMessage(userId: String, message: String): MemberRecord? {
-        TODO("Not yet implemented")
+        val system = systems[getUser(userId).system] ?: return null
+        return system.members[getProxyTagFromMessage(userId, message)?.memberId]?.view()
     }
 
     override suspend fun getProxyTagFromMessage(userId: String, message: String): MemberProxyTagRecord? {
-        TODO("Not yet implemented")
+        val system = systems[getUser(userId).system] ?: return null
+        return system.proxyTags.find { message.startsWith(it.prefix) && message.endsWith(it.suffix) }
     }
 
     override suspend fun getMemberServerSettingsByHost(
@@ -236,7 +239,7 @@ class JsonDatabase : Database() {
         userId: String,
         memberId: String
     ): MemberServerSettingsRecord? {
-        TODO("Not yet implemented")
+        return systems[getUser(userId).system]?.members?.get(memberId)?.serverSettings?.get(serverId.toULong())
     }
 
     override suspend fun getMemberServerSettingsById(
@@ -244,27 +247,40 @@ class JsonDatabase : Database() {
         systemId: String,
         memberId: String
     ): MemberServerSettingsRecord? {
-        TODO("Not yet implemented")
+        return systems[systemId]?.members?.get(memberId)?.serverSettings?.get(serverId.toULong())
     }
 
     override suspend fun getServerSettingsByHost(serverId: String, userId: String): SystemServerSettingsRecord? {
-        TODO("Not yet implemented")
+        return systems[getUser(userId).system]?.serverSettings?.get(serverId.toULong())
     }
 
     override suspend fun getServerSettingsById(serverId: String, systemId: String): SystemServerSettingsRecord {
-        TODO("Not yet implemented")
+        return systems[systemId]?.serverSettings?.get(serverId.toULong()) ?: SystemServerSettingsRecord().apply {
+            this.serverId = serverId
+            this.systemId = systemId
+        }
     }
 
     override suspend fun getServerSettings(serverId: String): ServerSettingsRecord {
-        TODO("Not yet implemented")
+        return servers[serverId.toULong()] ?: ServerSettingsRecord().apply {
+            this.serverId = serverId
+        }
     }
 
     override suspend fun updateServerSettings(serverSettings: ServerSettingsRecord) {
-        TODO("Not yet implemented")
+        servers[serverSettings.serverId.toULong()] = serverSettings
     }
 
     override suspend fun allocateSystem(userId: String): SystemRecord {
-        TODO("Not yet implemented")
+        return getSystemByHost(userId) ?: run {
+            val user = getUser(userId)
+            val id = ((systems.keys.maxOfOrNull { it.fromPkString() } ?: 0) + 1).toPkString()
+            val struct = JsonSystemStruct(id)
+            struct.accounts.add(userId.toULong())
+            user.system = id
+            systems[id] = struct
+            struct.view()
+        }
     }
 
     override suspend fun allocateMember(systemId: String, name: String): MemberRecord {
@@ -333,7 +349,15 @@ class JsonDatabase : Database() {
     }
 
     override suspend fun export(other: Database) {
-        TODO("Not yet implemented")
+        for ((_, system) in systems) {
+            other.import(system.view())
+            for ((_, member) in system.members) {
+                other.import(member.view())
+                for ((_, memberSettings) in member.serverSettings) {
+                    other.import(memberSettings)
+                }
+            }
+        }
     }
 
     override suspend fun import(memberProxyTagRecord: MemberProxyTagRecord) {
@@ -366,5 +390,85 @@ class JsonDatabase : Database() {
 
     override fun close() {
         TODO("Not yet implemented")
+    }
+
+    class JsonSystemStruct(
+        val id: String,
+        /** The user must have their snowflake bound to `system` to be included here. */
+        val accounts: ArrayList<ULong> = ArrayList(),
+        var name: String? = null,
+        var description: String? = null,
+        var tag: String? = null,
+        var avatarUrl: String? = null,
+        var timezone: String? = null,
+        var timestamp: OffsetDateTime = OffsetDateTime.now(ZoneOffset.UTC),
+        var auto: String? = null,
+        var autoType: AutoProxyMode = AutoProxyMode.OFF,
+
+        val members: MutableMap<String, JsonMemberStruct> = HashMap(),
+        val serverSettings: MutableMap<ULong, SystemServerSettingsRecord> = HashMap(),
+        val proxyTags: List<MemberProxyTagRecord> = ArrayList(),
+        val switches: MutableMap<String, SystemSwitchRecord> = HashMap()
+    ) {
+
+        fun view(): SystemRecord {
+            val record = SystemRecord()
+            record.id = id
+            record.users.addAll(accounts.map(ULong::toString))
+            record.name = name
+            record.description = description
+            record.tag = tag
+            record.avatarUrl = avatarUrl
+            record.timezone = timezone
+            record.timestamp = timestamp
+            record.autoProxy = auto
+            record.autoType = autoType
+            return record
+        }
+    }
+
+    class JsonMemberStruct(
+        val id: String,
+        val systemId: String,
+        var name: String = "",
+        var displayName: String? = null,
+        var description: String? = null,
+        var birthday: String? = null,
+        var age: String? = null,
+        var role: String? = null,
+        var pronouns: String? = null,
+        var color: Int = 0,
+        var avatarUrl: String? = null,
+        var keepProxy: Boolean = false,
+        var messageCount: Long = 0L,
+        var timestamp: OffsetDateTime = OffsetDateTime.now(ZoneOffset.UTC),
+
+        val serverSettings: MutableMap<ULong, MemberServerSettingsRecord> = HashMap()
+    ) {
+        fun view(): MemberRecord {
+            val record = MemberRecord()
+            record.id = id
+            record.systemId = systemId
+            record.name = name
+            record.displayName = displayName
+            record.description = description
+            record.birthday = birthday
+            record.age = age
+            record.role = role
+            record.pronouns = pronouns
+            record.color = color
+            record.avatarUrl = avatarUrl
+            record.keepProxy = keepProxy
+            record.messageCount = messageCount
+            record.timestamp = timestamp
+            return record
+        }
+    }
+
+    companion object {
+        private val gson = Gson()
+        private val systemMapToken = object : TypeToken<MutableMap<String, JsonSystemStruct>>() {}
+        private val userMapToken = object : TypeToken<MutableMap<ULong, UserRecord>>() {}
+        private val serverMapToken = object : TypeToken<MutableMap<ULong, ServerSettingsRecord>>() {}
     }
 }
