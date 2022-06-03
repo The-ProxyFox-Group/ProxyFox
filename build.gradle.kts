@@ -4,7 +4,7 @@ plugins {
     id("com.github.johnrengelman.shadow") version "7.1.2"
 }
 
-group = "io.github.proxyfox"
+group = "dev.proxyfox"
 version = "1.0.0"
 val ktor_version = "1.6.7"
 
@@ -14,7 +14,7 @@ java {
 }
 
 application {
-    mainClass.set("io.github.proxyfox.Main")
+    mainClass.set("dev.proxyfox.Main")
 }
 
 repositories {
