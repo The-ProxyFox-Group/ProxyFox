@@ -1,4 +1,4 @@
-package dev.proxyfox
+package dev.proxyfox.bot
 
 import dev.kord.core.event.message.MessageCreateEvent
 import dev.proxyfox.bot.string.parser.parseString

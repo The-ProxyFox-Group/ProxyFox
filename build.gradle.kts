@@ -25,18 +25,10 @@ repositories {
 }
 
 dependencies {
-    implementation(kotlin("stdlib"))
     implementation("com.google.code.gson:gson:2.9.0")
-    implementation("com.google.guava:guava:31.1-jre")
     implementation("dev.kord:kord-core:0.8.0-M12")
-    implementation("ch.qos.logback:logback-classic:1.2.11")
     implementation("io.ktor:ktor-server-core:$ktor_version")
     implementation("io.ktor:ktor-server-netty:$ktor_version")
-    implementation("com.vladsch.kotlin-jdbc:kotlin-jdbc:0.5.2")
-    implementation("org.postgresql:postgresql:42.3.3")
-    implementation("org.litote.kmongo:kmongo:4.6.0")
-    implementation("org.litote.kmongo:kmongo-coroutine:4.6.0")
-    implementation("org.litote.kmongo:kmongo-async:4.6.0")
 }
 
 tasks {
