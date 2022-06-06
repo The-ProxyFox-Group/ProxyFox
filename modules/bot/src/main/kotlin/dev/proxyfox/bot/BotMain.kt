@@ -1,6 +1,6 @@
 @file:JvmName("Main")
 
-package dev.proxyfox
+package dev.proxyfox.bot
 
 import dev.proxyfox.bot.command.Commands
 import dev.proxyfox.bot.login
