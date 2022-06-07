@@ -283,7 +283,15 @@ class JsonDatabase : Database() {
         }
     }
 
+    override suspend fun removeSystem(userId: String): Boolean {
+        TODO("Not yet implemented")
+    }
+
     override suspend fun allocateMember(systemId: String, name: String): MemberRecord {
+        TODO("Not yet implemented")
+    }
+
+    override suspend fun removeMember(systemId: String, memberId: String): Boolean {
         TODO("Not yet implemented")
     }
 

@@ -1,9 +1,12 @@
 package dev.proxyfox.bot.webhook
 
+import dev.kord.common.Color
 import dev.kord.common.entity.DiscordAttachment
 import dev.kord.common.entity.Snowflake
 import dev.kord.core.entity.Message
 import dev.kord.core.entity.toRawType
+import dev.kord.core.live.live
+import dev.kord.rest.builder.message.create.embed
 import dev.proxyfox.database.database
 import dev.proxyfox.database.records.member.MemberProxyTagRecord
 import dev.proxyfox.database.records.member.MemberRecord
@@ -38,6 +41,17 @@ data class ProxyContext(
             attachments = ArrayList()
             for (attachment in message.attachments)
                 (attachments as ArrayList<DiscordAttachment>).add(attachment.toRawType())
+            if (message.referencedMessage != null) {
+                val ref = message.referencedMessage!!
+                embed {
+                    color = Color(member.color)
+                    field {
+                        name = ref.author!!.username + " ↩"
+                        value = "[**Reply to:**]("
+                    }
+
+                }
+            }
             return@executeWebhook
         }
         message.delete()

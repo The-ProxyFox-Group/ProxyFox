@@ -1,6 +1,5 @@
 plugins {
     kotlin("jvm") version "1.6.20"
-    application
     id("com.github.johnrengelman.shadow") version "7.1.2"
 }
 
@@ -13,10 +12,6 @@ java {
     targetCompatibility = JavaVersion.VERSION_17
 }
 
-application {
-    mainClass.set("dev.proxyfox.Main")
-}
-
 repositories {
     mavenCentral()
     maven("https://libraries.minecraft.net/")
@@ -25,10 +20,6 @@ repositories {
 }
 
 dependencies {
-    implementation("com.google.code.gson:gson:2.9.0")
-    implementation("dev.kord:kord-core:0.8.0-M12")
-    implementation("io.ktor:ktor-server-core:$ktor_version")
-    implementation("io.ktor:ktor-server-netty:$ktor_version")
 }
 
 tasks {
