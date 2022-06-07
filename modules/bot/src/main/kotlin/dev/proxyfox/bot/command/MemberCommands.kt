@@ -536,6 +536,7 @@ object MemberCommands {
                 message.getReactors(ReactionEmoji.Unicode("✅")).toList().forEach {
                     if (it.id == ctx.message.author!!.id) {
                         message.channel.createMessage("Member deleted")
+                        database.removeMember(system.id, member.id)
                         job!!.cancel()
                     }
                 }

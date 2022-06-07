@@ -184,7 +184,7 @@ class MongoDatabase : Database() {
             serverSettings = SystemServerSettingsRecord()
             serverSettings.serverId = serverId
             serverSettings.systemId = systemId
-            systemServers.insertOne(serverSettings)
+            systemServers.insertOne(serverSettings).awaitFirst()
         }
         return serverSettings
     }
@@ -194,7 +194,7 @@ class MongoDatabase : Database() {
         if (serverSettings == null) {
             serverSettings = ServerSettingsRecord()
             serverSettings.serverId = serverId
-            servers.insertOne(serverSettings)
+            servers.insertOne(serverSettings).awaitFirst()
         }
         return serverSettings
     }
@@ -222,6 +222,21 @@ class MongoDatabase : Database() {
         return system
     }
 
+    override suspend fun removeSystem(userId: String): Boolean {
+        val system = getSystemByHost(userId) ?: return false
+        systemServers.findAll("{systemId:'${system.id}'}").forEach {
+            systemServers.deleteOneById(it._id).awaitFirst()
+        }
+        systemChannels.findAll("{systemId:'${system.id}'").forEach {
+            systemChannels.deleteOneById(it._id).awaitFirst()
+        }
+        getMembersBySystem(system.id).forEach {
+            removeMember(system.id, it.id)
+        }
+        systems.deleteOneById(system._id).awaitFirst()
+        return true
+    }
+
     override suspend fun allocateMember(systemId: String, name: String): MemberRecord? {
         getSystemById(systemId) ?: return null
         val members = getMembersBySystem(systemId)
@@ -239,6 +254,18 @@ class MongoDatabase : Database() {
         return member
     }
 
+    override suspend fun removeMember(systemId: String, memberId: String): Boolean {
+        val member = getMemberById(systemId, memberId) ?: return false
+        getProxiesByIdAndMember(systemId, memberId).forEach {
+            memberProxies.deleteOneById(it._id).awaitFirst()
+        }
+        memberServers.findAll("{systemId:'$systemId',memberId:'${member.id}'").forEach {
+            memberServers.deleteOneById(it._id).awaitFirst()
+        }
+        members.deleteOneById(member._id).awaitFirst()
+        return true
+    }
+
     override suspend fun updateMember(member: MemberRecord) {
         members.deleteOneById(member._id).awaitFirst()
         members.insertOne(member).awaitFirst()
@@ -246,7 +273,7 @@ class MongoDatabase : Database() {
 
     override suspend fun updateMemberServerSettings(serverSettings: MemberServerSettingsRecord) {
         memberServers.deleteOneById(serverSettings._id).awaitFirst()
-        memberServers.insertOne(serverSettings)
+        memberServers.insertOne(serverSettings).awaitFirst()
     }
 
     override suspend fun updateSystem(system: SystemRecord) {

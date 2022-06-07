@@ -13,7 +13,9 @@ import dev.proxyfox.bot.string.parser.registerCommand
 import dev.proxyfox.common.printStep
 import dev.proxyfox.database.database
 import kotlinx.coroutines.Job
+import kotlinx.coroutines.flow.forEach
 import kotlinx.coroutines.flow.map
+import kotlinx.coroutines.flow.toList
 import java.time.format.DateTimeFormatter
 
 /**
@@ -219,13 +221,14 @@ object SystemCommands {
         var job: Job? = null
         job = kord.on<ReactionAddEvent> {
             if (message.id == message1.id) {
-                message.getReactors(ReactionEmoji.Unicode("❌")).map {
+                message.getReactors(ReactionEmoji.Unicode("✅")).toList().forEach {
                     if (it.id == ctx.message.author!!.id) {
                         message.channel.createMessage("Member deleted")
+                        database.removeSystem(it.id.value.toString())
                         job!!.cancel()
                     }
                 }
-                message.getReactors(ReactionEmoji.Unicode("✅")).map {
+                message.getReactors(ReactionEmoji.Unicode("❌")).toList().forEach {
                     if (it.id == ctx.message.author!!.id) {
                         message.channel.createMessage("Action cancelled")
                         job!!.cancel()

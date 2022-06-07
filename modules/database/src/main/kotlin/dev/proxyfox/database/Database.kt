@@ -156,6 +156,8 @@ abstract class Database : AutoCloseable {
      * @return A maybe newly created system. Never null.
      * */
     abstract suspend fun allocateSystem(userId: String): SystemRecord
+    abstract suspend fun removeSystem(userId: String): Boolean
+
 
     /**
      * Allocates a member ID in the database.
@@ -165,6 +167,7 @@ abstract class Database : AutoCloseable {
      * @return A newly created member. null if system doesn't exist.
      * */
     abstract suspend fun allocateMember(systemId: String, name: String): MemberRecord?
+    abstract suspend fun removeMember(systemId: String, memberId: String): Boolean
 
     // TODO: This ideally needs a much better system for updating since this really isn't ideal as is.
     //  This applies to the following 4 methods below.
