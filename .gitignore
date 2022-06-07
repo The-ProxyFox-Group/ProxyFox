@@ -4,3 +4,4 @@ build/
 out/
 proxyfox.db.properties
 systems.json
+.env
