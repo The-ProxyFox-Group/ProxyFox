@@ -4,7 +4,7 @@
 ## Information Stored by ProxyFox
 
 - Any information directly given to ProxyFox
-    1. Ex: Members, Switches, etc
+  1. Ex: Members, Switches, etc
 - Data relating to messages sent via ProxyFox
   1. Ex: Member that sent the message
 - Data relating to how many Systems, Members, and Switches created
