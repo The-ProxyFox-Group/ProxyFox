@@ -8,6 +8,8 @@
 - Data relating to messages sent via ProxyFox
   1. Ex: Member that sent the message
 - Data relating to how many Systems, Members, and Switches created
+- Any possible information logged when an error occurs
+  1. We are unable to specify exactly what might be logged here, as we don't specify what information to log
 
 ## Information _Not_ Stored by ProxyFox
 
