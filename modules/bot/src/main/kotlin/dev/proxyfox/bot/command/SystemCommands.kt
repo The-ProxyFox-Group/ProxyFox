@@ -223,7 +223,7 @@ object SystemCommands {
             if (message.id == message1.id) {
                 message.getReactors(ReactionEmoji.Unicode("✅")).toList().forEach {
                     if (it.id == ctx.message.author!!.id) {
-                        message.channel.createMessage("Member deleted")
+                        message.channel.createMessage("System deleted")
                         database.removeSystem(it.id.value.toString())
                         job!!.cancel()
                     }

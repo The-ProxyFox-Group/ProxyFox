@@ -3,6 +3,7 @@ package dev.proxyfox.database
 import com.google.gson.Gson
 import com.google.gson.JsonParser
 import com.google.gson.reflect.TypeToken
+import dev.kord.common.entity.Snowflake
 import dev.proxyfox.database.DatabaseUtil.fromPkString
 import dev.proxyfox.database.DatabaseUtil.toPkString
 import dev.proxyfox.database.records.member.MemberProxyTagRecord
@@ -12,6 +13,7 @@ import dev.proxyfox.database.records.misc.AutoProxyMode
 import dev.proxyfox.database.records.misc.ServerSettingsRecord
 import dev.proxyfox.database.records.misc.TrustLevel
 import dev.proxyfox.database.records.misc.UserRecord
+import dev.proxyfox.database.records.system.SystemChannelSettingsRecord
 import dev.proxyfox.database.records.system.SystemRecord
 import dev.proxyfox.database.records.system.SystemServerSettingsRecord
 import dev.proxyfox.database.records.system.SystemSwitchRecord
@@ -271,6 +273,10 @@ class JsonDatabase : Database() {
         servers[serverSettings.serverId.toULong()] = serverSettings
     }
 
+    override suspend fun getChannelSettings(serverId: String, systemId: String): SystemChannelSettingsRecord {
+        TODO("Not yet implemented")
+    }
+
     override suspend fun allocateSystem(userId: String): SystemRecord {
         return getSystemByHost(userId) ?: run {
             val user = getUser(userId)
@@ -312,6 +318,15 @@ class JsonDatabase : Database() {
     }
 
     override suspend fun updateUser(user: UserRecord) {
+        TODO("Not yet implemented")
+    }
+
+    override suspend fun createMessage(
+        oldMessageId: Snowflake,
+        newMessageId: Snowflake,
+        memberId: String,
+        systemId: String
+    ) {
         TODO("Not yet implemented")
     }
 

@@ -16,13 +16,13 @@ object WebhookUtil {
     suspend fun prepareMessage(message: Message, member: MemberRecord, proxy: MemberProxyTagRecord): ProxyContext = ProxyContext(
         message.content,
         ArrayList(),
-        fetchWebhook(message.channel.asChannel() as TextChannel),
+        createOrFetchWebhookFromCache(message.channel.asChannel() as TextChannel),
         message,
         member,
         proxy
     )
 
-    suspend fun fetchWebhook(channel: TextChannel): WebhookHolder {
+    private suspend fun createOrFetchWebhookFromCache(channel: TextChannel): WebhookHolder {
         // Try to fetch webhook from cache
         WebhookCache[channel.id]?.let {
             return it
@@ -30,7 +30,7 @@ object WebhookUtil {
         return createOrFetchWebhook(channel)
     }
 
-    suspend fun createOrFetchWebhook(channel: TextChannel): WebhookHolder {
+    private suspend fun createOrFetchWebhook(channel: TextChannel): WebhookHolder {
         // Try to fetch webhook from channel
         channel.webhooks.firstOrNull { it.creatorId == kord.selfId }?.let {
             val holder = it.toHolder()

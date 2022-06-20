@@ -1,7 +1,10 @@
 package dev.proxyfox.database
 
+import com.mongodb.client.model.IndexOptions
+import com.mongodb.client.model.Indexes
 import com.mongodb.reactivestreams.client.MongoClient
 import com.mongodb.reactivestreams.client.MongoCollection
+import dev.kord.common.entity.Snowflake
 import dev.proxyfox.database.DatabaseUtil.findAll
 import dev.proxyfox.database.DatabaseUtil.findOne
 import dev.proxyfox.database.DatabaseUtil.fromPkString
@@ -10,10 +13,7 @@ import dev.proxyfox.database.DatabaseUtil.toPkString
 import dev.proxyfox.database.records.member.MemberProxyTagRecord
 import dev.proxyfox.database.records.member.MemberRecord
 import dev.proxyfox.database.records.member.MemberServerSettingsRecord
-import dev.proxyfox.database.records.misc.ChannelSettingsRecord
-import dev.proxyfox.database.records.misc.ServerSettingsRecord
-import dev.proxyfox.database.records.misc.TrustLevel
-import dev.proxyfox.database.records.misc.UserRecord
+import dev.proxyfox.database.records.misc.*
 import dev.proxyfox.database.records.system.SystemChannelSettingsRecord
 import dev.proxyfox.database.records.system.SystemRecord
 import dev.proxyfox.database.records.system.SystemServerSettingsRecord
@@ -24,6 +24,8 @@ import org.litote.kmongo.reactivestreams.KMongo
 import org.litote.kmongo.reactivestreams.countDocuments
 import org.litote.kmongo.reactivestreams.deleteOne
 import org.litote.kmongo.reactivestreams.deleteOneById
+import java.util.concurrent.TimeUnit
+
 
 // Created 2022-26-05T22:43:40
 
@@ -39,6 +41,8 @@ class MongoDatabase : Database() {
     private lateinit var db: Mongo
 
     private lateinit var users: KCollection<UserRecord>
+
+    private lateinit var messages: KCollection<ProxiedMessageRecord>
 
     private lateinit var servers: KCollection<ServerSettingsRecord>
     private lateinit var channels: KCollection<ChannelSettingsRecord>
@@ -59,6 +63,12 @@ class MongoDatabase : Database() {
         db = kmongo.getDatabase("ProxyFox")
 
         users = db.getOrCreateCollection()
+
+        messages = db.getOrCreateCollection()
+        messages.createIndex(
+            Indexes.ascending("creationDate"),
+            IndexOptions().expireAfter(1L, TimeUnit.DAYS)
+        ).awaitFirst()
 
         servers = db.getOrCreateCollection()
         channels = db.getOrCreateCollection()
@@ -204,6 +214,10 @@ class MongoDatabase : Database() {
         servers.insertOne(serverSettings).awaitFirst()
     }
 
+    override suspend fun getChannelSettings(serverId: String, systemId: String): SystemChannelSettingsRecord {
+        TODO("Not yet implemented")
+    }
+
     override suspend fun allocateSystem(userId: String): SystemRecord {
         if (getSystemByHost(userId) != null) return getSystemByHost(userId)!!
         val user = getUser(userId)
@@ -227,13 +241,15 @@ class MongoDatabase : Database() {
         systemServers.findAll("{systemId:'${system.id}'}").forEach {
             systemServers.deleteOneById(it._id).awaitFirst()
         }
-        systemChannels.findAll("{systemId:'${system.id}'").forEach {
+        systemChannels.findAll("{systemId:'${system.id}'}").forEach {
             systemChannels.deleteOneById(it._id).awaitFirst()
         }
         getMembersBySystem(system.id).forEach {
             removeMember(system.id, it.id)
         }
         systems.deleteOneById(system._id).awaitFirst()
+        val user = getUser(userId)
+        users.deleteOneById(user._id).awaitFirst()
         return true
     }
 
@@ -259,7 +275,7 @@ class MongoDatabase : Database() {
         getProxiesByIdAndMember(systemId, memberId).forEach {
             memberProxies.deleteOneById(it._id).awaitFirst()
         }
-        memberServers.findAll("{systemId:'$systemId',memberId:'${member.id}'").forEach {
+        memberServers.findAll("{systemId:'$systemId',memberId:'${member.id}'}").forEach {
             memberServers.deleteOneById(it._id).awaitFirst()
         }
         members.deleteOneById(member._id).awaitFirst()
@@ -291,6 +307,20 @@ class MongoDatabase : Database() {
         users.insertOne(user).awaitFirst()
     }
 
+    override suspend fun createMessage(
+        oldMessageId: Snowflake,
+        newMessageId: Snowflake,
+        memberId: String,
+        systemId: String
+    ) {
+        val message = ProxiedMessageRecord()
+        message.oldMessageId = oldMessageId
+        message.newMessageId = newMessageId
+        message.memberId = memberId
+        message.systmId = systemId
+        messages.insertOne(message).awaitFirst()
+    }
+
     override suspend fun allocateProxyTag(
         systemId: String,
         memberId: String,
@@ -310,7 +340,7 @@ class MongoDatabase : Database() {
     }
 
     override suspend fun removeProxyTag(proxyTag: MemberProxyTagRecord) {
-        memberProxies.deleteOne("{systemId:'${proxyTag.systemId}',memberId:'${proxyTag.memberId}',prefix:'${proxyTag.prefix}',suffix:'${proxyTag.suffix}'")
+        memberProxies.deleteOne("{systemId:'${proxyTag.systemId}',memberId:'${proxyTag.memberId}',prefix:'${proxyTag.prefix}',suffix:'${proxyTag.suffix}'}")
             .awaitFirst()
     }
 
