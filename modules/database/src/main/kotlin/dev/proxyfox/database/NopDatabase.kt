@@ -1,11 +1,13 @@
 package dev.proxyfox.database
 
+import dev.kord.common.entity.Snowflake
 import dev.proxyfox.database.records.member.MemberProxyTagRecord
 import dev.proxyfox.database.records.member.MemberRecord
 import dev.proxyfox.database.records.member.MemberServerSettingsRecord
 import dev.proxyfox.database.records.misc.ServerSettingsRecord
 import dev.proxyfox.database.records.misc.TrustLevel
 import dev.proxyfox.database.records.misc.UserRecord
+import dev.proxyfox.database.records.system.SystemChannelSettingsRecord
 import dev.proxyfox.database.records.system.SystemRecord
 import dev.proxyfox.database.records.system.SystemServerSettingsRecord
 import dev.proxyfox.database.records.system.SystemSwitchRecord
@@ -103,6 +105,10 @@ class NopDatabase : Database() {
         TODO("Not yet implemented")
     }
 
+    override suspend fun getChannelSettings(serverId: String, systemId: String): SystemChannelSettingsRecord {
+        TODO("Not yet implemented")
+    }
+
     override suspend fun allocateSystem(userId: String): SystemRecord {
         TODO("Not yet implemented")
     }
@@ -136,6 +142,15 @@ class NopDatabase : Database() {
     }
 
     override suspend fun updateUser(user: UserRecord) {
+        TODO("Not yet implemented")
+    }
+
+    override suspend fun createMessage(
+        oldMessageId: Snowflake,
+        newMessageId: Snowflake,
+        memberId: String,
+        systemId: String
+    ) {
         TODO("Not yet implemented")
     }
 

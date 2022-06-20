@@ -1,11 +1,13 @@
 package dev.proxyfox.database
 
+import dev.kord.common.entity.Snowflake
 import dev.proxyfox.database.records.member.MemberProxyTagRecord
 import dev.proxyfox.database.records.member.MemberRecord
 import dev.proxyfox.database.records.member.MemberServerSettingsRecord
 import dev.proxyfox.database.records.misc.ServerSettingsRecord
 import dev.proxyfox.database.records.misc.TrustLevel
 import dev.proxyfox.database.records.misc.UserRecord
+import dev.proxyfox.database.records.system.SystemChannelSettingsRecord
 import dev.proxyfox.database.records.system.SystemRecord
 import dev.proxyfox.database.records.system.SystemServerSettingsRecord
 import dev.proxyfox.database.records.system.SystemSwitchRecord
@@ -148,6 +150,8 @@ abstract class Database : AutoCloseable {
     abstract suspend fun getServerSettings(serverId: String): ServerSettingsRecord
     abstract suspend fun updateServerSettings(serverSettings: ServerSettingsRecord)
 
+    abstract suspend fun getChannelSettings(serverId: String, systemId: String): SystemChannelSettingsRecord
+
     // === Management ===
     /**
      * Allocates or reuses a system ID in the database.
@@ -176,6 +180,8 @@ abstract class Database : AutoCloseable {
     abstract suspend fun updateSystem(system: SystemRecord)
     abstract suspend fun updateSystemServerSettings(serverSettings: SystemServerSettingsRecord)
     abstract suspend fun updateUser(user: UserRecord)
+
+    abstract suspend fun createMessage(oldMessageId: Snowflake, newMessageId: Snowflake, memberId: String, systemId: String)
 
     /**
      * Allocates a proxy tag

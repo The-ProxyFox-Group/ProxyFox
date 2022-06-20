@@ -97,6 +97,9 @@ object MemberCommands {
                     literal("--clear", ::birthClear)
                     greedy("birthday", ::birth)
                 }
+
+                literal("delete", ::delete)
+                literal("remove", ::delete)
             }
 
             literal("delete", ::deleteEmpty) {

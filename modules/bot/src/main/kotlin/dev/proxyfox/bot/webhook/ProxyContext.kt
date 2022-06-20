@@ -34,7 +34,7 @@ data class ProxyContext(
             member.systemId,
             member.id
         ) ?: MemberServerSettingsRecord()
-        kord.rest.webhook.executeWebhook(Snowflake(webhook.id), webhook.token!!, false) {
+        val newMessage = kord.rest.webhook.executeWebhook(Snowflake(webhook.id), webhook.token!!, false) {
             if (messageContent.isNotBlank()) content = messageContent
             username = (serverMember.nickname ?: member.displayName ?: member.name) + " " + (system.tag ?: "")
             avatarUrl = (serverMember.avatarUrl ?: member.avatarUrl ?: system.avatarUrl ?: "")
@@ -47,13 +47,14 @@ data class ProxyContext(
                     color = Color(member.color)
                     field {
                         name = ref.author!!.username + " ↩"
-                        value = "[**Reply to:**]("
+                        value = "[**Reply to:**](https://discord.com/channels/${ref.getGuild().id}/${ref.channelId}/${ref.id}) ${ref.content.substring(0,100)}"
                     }
 
                 }
             }
             return@executeWebhook
         }
+        database.createMessage(message.id, newMessage!!.id, member.id, member.systemId)
         message.delete()
     }
 }

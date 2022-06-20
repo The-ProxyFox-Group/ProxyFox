@@ -8,7 +8,6 @@ class PkSystem {
     var members: Array<PkMember>? = arrayOf()
 }
 
-
 class PkMember {
     var name: String = ""
     var display_name: String? = null

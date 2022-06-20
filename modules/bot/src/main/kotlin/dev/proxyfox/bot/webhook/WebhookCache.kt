@@ -1,5 +1,6 @@
 package dev.proxyfox.bot.webhook
 
+import com.google.common.cache.Cache
 import com.google.common.cache.CacheBuilder
 import dev.kord.common.entity.Snowflake
 import java.util.concurrent.TimeUnit
@@ -9,7 +10,7 @@ import java.util.concurrent.TimeUnit
  * @author Oliver
  * */
 object WebhookCache {
-    val webhookCache = CacheBuilder.newBuilder().expireAfterWrite(1, TimeUnit.DAYS).build<Snowflake, WebhookHolder>()
+    val webhookCache: Cache<Snowflake, WebhookHolder> = CacheBuilder.newBuilder().expireAfterWrite(1, TimeUnit.DAYS).build<Snowflake, WebhookHolder>()
 
     operator fun get(key: Snowflake): WebhookHolder? = webhookCache.getIfPresent(key)
     operator fun set(key: Snowflake, value: WebhookHolder) {
