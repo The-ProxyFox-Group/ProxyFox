@@ -19,5 +19,8 @@ object DatabaseMain {
             db.setup()
             db
         }
+        printStep("Registering shutdown hook for database", 2)
+        // Allows the database to shut down & save correctly.
+        Runtime.getRuntime().addShutdownHook(Thread(database::close))
     }
 }
