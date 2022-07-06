@@ -327,12 +327,13 @@ class MongoDatabase : Database() {
         prefix: String?,
         suffix: String?
     ): MemberProxyTagRecord? {
+        if(prefix.isNullOrEmpty() && suffix.isNullOrEmpty()) return null
         val proxyTags = getProxiesById(systemId)
         for (proxy in proxyTags)
             if (prefix == proxy.prefix && suffix == proxy.suffix) return null
         val proxy = MemberProxyTagRecord()
-        proxy.prefix = prefix!!
-        proxy.suffix = suffix!!
+        proxy.prefix = prefix ?: ""
+        proxy.suffix = suffix ?: ""
         proxy.memberId = memberId
         proxy.systemId = systemId
         memberProxies.insertOne(proxy).awaitFirst()

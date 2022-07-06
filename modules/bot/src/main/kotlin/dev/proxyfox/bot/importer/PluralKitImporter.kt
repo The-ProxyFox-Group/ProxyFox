@@ -1,12 +1,12 @@
 package dev.proxyfox.bot.importer
 
+import dev.proxyfox.bot.types.PkSystem
+import dev.proxyfox.common.fromColor
+import dev.proxyfox.common.toColor
 import dev.proxyfox.database.database
 import dev.proxyfox.database.records.member.MemberProxyTagRecord
 import dev.proxyfox.database.records.member.MemberRecord
 import dev.proxyfox.database.records.system.SystemRecord
-import dev.proxyfox.common.fromColor
-import dev.proxyfox.common.toColor
-import dev.proxyfox.bot.types.PkSystem
 
 /**
  * [Importer] to import a JSON with a PluralKit format
@@ -42,8 +42,6 @@ class PluralKitImporter : Importer {
                 member.messageCount = pkMember.message_count ?: member.messageCount
                 if (pkMember.proxies != null)
                     for (pkProxy in pkMember.proxies!!) {
-                        val text = "${pkProxy.prefix}text${pkProxy.suffix}"
-                        if (database.getProxyTagFromMessage(userId, text) != null) continue
                         database.allocateProxyTag(system.id, member.id, pkProxy.prefix, pkProxy.suffix)
                     }
                 database.updateMember(member)
