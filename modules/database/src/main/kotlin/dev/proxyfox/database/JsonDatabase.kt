@@ -1,8 +1,6 @@
 package dev.proxyfox.database
 
-import com.google.gson.Gson
-import com.google.gson.JsonObject
-import com.google.gson.JsonParser
+import com.google.gson.*
 import com.google.gson.reflect.TypeToken
 import dev.kord.common.entity.Snowflake
 import dev.proxyfox.common.logger
@@ -16,9 +14,12 @@ import dev.proxyfox.database.records.system.SystemChannelSettingsRecord
 import dev.proxyfox.database.records.system.SystemRecord
 import dev.proxyfox.database.records.system.SystemServerSettingsRecord
 import dev.proxyfox.database.records.system.SystemSwitchRecord
+import org.bson.types.ObjectId
 import java.io.File
+import java.lang.reflect.Type
 import java.time.OffsetDateTime
 import java.time.ZoneOffset
+import java.time.format.DateTimeFormatter
 
 // Created 2022-26-05T19:47:37
 
@@ -144,8 +145,10 @@ import java.time.ZoneOffset
  **/
 class JsonDatabase : Database() {
     private lateinit var systems: MutableMap<String, JsonSystemStruct>
-    private lateinit var users: MutableMap<ULong, UserRecord>
     private lateinit var servers: MutableMap<ULong, ServerSettingsRecord>
+
+    @Transient
+    private val users = HashMap<ULong, JsonSystemStruct>()
 
     @Transient
     private val oldMessageLookup = HashMap<ULong, ProxiedMessageRecord>()
@@ -156,36 +159,39 @@ class JsonDatabase : Database() {
         val file = File("systems.json")
         if(file.exists()) {
             val db = file.reader().use(JsonParser::parseReader)
-            val dbObject = db.asJsonObject
-            if (!dbObject.has("schema")) {
-                throw IllegalStateException("JSON Database missing schema.")
-            }
-            if (dbObject["schema"].asInt == 1) {
-                systems = gson.fromJson(dbObject.getAsJsonObject("systems"), systemMapToken.type)
-                users = gson.fromJson(dbObject.getAsJsonObject("users"), userMapToken.type)
-                servers = gson.fromJson(dbObject.getAsJsonObject("servers"), serverMapToken.type)
-                for((_, system) in systems) {
-                    system.init()
+            if (db != null && db.isJsonObject) {
+                val dbObject = db.asJsonObject
+                if (!dbObject.has("schema")) {
+                    throw IllegalStateException("JSON Database missing schema.")
                 }
+                if (dbObject["schema"].asInt == 1) {
+                    systems = gson.fromJson(dbObject.getAsJsonObject("systems"), systemMapToken.type)
+                    servers = gson.fromJson(dbObject.getAsJsonObject("servers"), serverMapToken.type)
+                    for ((_, system) in systems) {
+                        system.init()
+                    }
+                }
+
+                for (system in systems.values) {
+                    for (account in system.accounts) {
+                        users[account] = system
+                    }
+                }
+
+                return
             }
-        } else {
-            systems = HashMap()
-            users = HashMap()
-            servers = HashMap()
         }
+        systems = HashMap()
+        servers = HashMap()
     }
 
+    @Deprecated(level = DeprecationLevel.ERROR, message = "*")
     override suspend fun getUser(userId: String): UserRecord {
-        return users[userId.toULong()] ?: run {
-            val record = UserRecord()
-            record.id = userId
-            users[userId.toULong()] = record
-            record
-        }
+        throw UnsupportedOperationException()
     }
 
     override suspend fun getSystemByHost(userId: String): SystemRecord? {
-        return systems[getUser(userId).system]?.view()
+        return users[userId.toULong()]?.view()
     }
 
     override suspend fun getSystemById(systemId: String): SystemRecord? {
@@ -193,7 +199,7 @@ class JsonDatabase : Database() {
     }
 
     override suspend fun getMembersByHost(userId: String): List<MemberRecord>? {
-        return systems[getUser(userId).system]?.members?.values?.map(JsonMemberStruct::view)
+        return users[userId.toULong()]?.members?.values?.map(JsonMemberStruct::view)
     }
 
     override suspend fun getMembersBySystem(systemId: String): List<MemberRecord>? {
@@ -201,7 +207,7 @@ class JsonDatabase : Database() {
     }
 
     override suspend fun getMemberByHost(userId: String, memberId: String): MemberRecord? {
-        return systems[getUser(userId).system]?.members?.get(memberId)?.view()
+        return users[userId.toULong()]?.members?.get(memberId)?.view()
     }
 
     override suspend fun getMemberById(systemId: String, memberId: String): MemberRecord? {
@@ -209,7 +215,7 @@ class JsonDatabase : Database() {
     }
 
     override suspend fun getFrontingMembersByHost(userId: String): List<MemberRecord?>? {
-        val system = systems[getUser(userId).system] ?: return null
+        val system = users[userId.toULong()] ?: return null
         return system.switches.values.maxByOrNull { it.timestamp }?.memberIds?.mapNotNull { system.members[it]?.view() }
     }
 
@@ -219,7 +225,7 @@ class JsonDatabase : Database() {
     }
 
     override suspend fun getProxiesByHost(userId: String): List<MemberProxyTagRecord>? {
-        return systems[getUser(userId).system]?.proxyTags
+        return users[userId.toULong()]?.proxyTags
     }
 
     override suspend fun getProxiesById(systemId: String): List<MemberProxyTagRecord>? {
@@ -227,7 +233,7 @@ class JsonDatabase : Database() {
     }
 
     override suspend fun getProxiesByHostAndMember(userId: String, memberId: String): List<MemberProxyTagRecord>? {
-        return systems[getUser(userId).system]?.proxyTags?.filter { it.memberId == memberId }
+        return users[userId.toULong()]?.proxyTags?.filter { it.memberId == memberId }
     }
 
     override suspend fun getProxiesByIdAndMember(systemId: String, memberId: String): List<MemberProxyTagRecord>? {
@@ -235,12 +241,12 @@ class JsonDatabase : Database() {
     }
 
     override suspend fun getMemberFromMessage(userId: String, message: String): MemberRecord? {
-        val system = systems[getUser(userId).system] ?: return null
+        val system = users[userId.toULong()] ?: return null
         return system.members[getProxyTagFromMessage(userId, message)?.memberId]?.view()
     }
 
     override suspend fun getProxyTagFromMessage(userId: String, message: String): MemberProxyTagRecord? {
-        val system = systems[getUser(userId).system] ?: return null
+        val system = users[userId.toULong()] ?: return null
         return system.proxyTags.find { message.startsWith(it.prefix) && message.endsWith(it.suffix) }
     }
 
@@ -249,7 +255,7 @@ class JsonDatabase : Database() {
         userId: String,
         memberId: String
     ): MemberServerSettingsRecord? {
-        return systems[getUser(userId).system]?.members?.get(memberId)?.serverSettings?.get(serverId.toULong())
+        return users[userId.toULong()]?.members?.get(memberId)?.serverSettings?.get(serverId.toULong())
     }
 
     override suspend fun getMemberServerSettingsById(
@@ -261,7 +267,7 @@ class JsonDatabase : Database() {
     }
 
     override suspend fun getServerSettingsByHost(serverId: String, userId: String): SystemServerSettingsRecord? {
-        return systems[getUser(userId).system]?.serverSettings?.get(serverId.toULong())
+        return users[userId.toULong()]?.serverSettings?.get(serverId.toULong())
     }
 
     override suspend fun getServerSettingsById(serverId: String, systemId: String): SystemServerSettingsRecord {
@@ -287,20 +293,25 @@ class JsonDatabase : Database() {
 
     override suspend fun allocateSystem(userId: String): SystemRecord {
         return getSystemByHost(userId) ?: run {
-            val user = getUser(userId)
             val id = ((systems.keys.maxOfOrNull { it.fromPkString() } ?: 0) + 1).toPkString()
             val struct = JsonSystemStruct(id)
             struct.accounts.add(userId.toULong())
-            user.system = id
+            users[userId.toULong()] = struct
             systems[id] = struct
             struct.view()
         }
     }
 
     override suspend fun removeSystem(userId: String): Boolean {
-        val system = getSystemByHost(userId) ?: return false
+        val id = userId.toULong()
+        val system = users[id] ?: return false
 
-        system.users.map(String::toULong).forEach(users::remove)
+        system.accounts.remove(id)
+        users.remove(id, system)
+
+        if (system.accounts.isEmpty()) {
+            systems.remove(system.id)
+        }
 
         return true
     }
@@ -398,7 +409,7 @@ class JsonDatabase : Database() {
     override suspend fun getTotalSystems() = systems.size
 
     override suspend fun getTotalMembersByHost(userId: String): Int? {
-        return systems[users[userId.toULong()]?.system]?.members?.size
+        return users[userId.toULong()]?.members?.size
     }
 
     override suspend fun getTotalMembersById(systemId: String): Int? {
@@ -410,7 +421,7 @@ class JsonDatabase : Database() {
     }
 
     override suspend fun getMemberByHostAndName(userId: String, memberName: String): MemberRecord? {
-        return systems[users[userId.toULong()]?.system]?.membersByName?.get(memberName)?.view()
+        return users[userId.toULong()]?.membersByName?.get(memberName)?.view()
     }
 
     override suspend fun export(other: Database) {
@@ -454,7 +465,16 @@ class JsonDatabase : Database() {
     }
 
     override fun close() {
-        TODO("Not yet implemented")
+        val file = File("systems.json")
+        if (!file.exists()) {
+            file.createNewFile()
+        }
+        val obj = JsonObject()
+        obj.addProperty("schema", 1)
+        obj.add("systems", gson.toJsonTree(systems))
+        obj.add("users", gson.toJsonTree(users))
+        obj.add("servers", gson.toJsonTree(servers))
+        file.writer().use { gson.toJson(obj, it) }
     }
 
     data class JsonSystemStruct(
@@ -479,13 +499,15 @@ class JsonDatabase : Database() {
          * Cached lookup of name to member.
          * */
         @Transient
-        val membersByName = HashMap<String, JsonMemberStruct>()
+        lateinit var membersByName: HashMap<String, JsonMemberStruct>
 
         fun init() {
+            val membersByName = HashMap<String, JsonMemberStruct>()
             for((_, member) in members) {
                 val old = membersByName.put(member.name, member)
                 if(old != null) logger.warn("Member {} collided with {} from {}", member, old, id)
             }
+            this.membersByName = membersByName
         }
 
         fun view(): SystemRecord {
@@ -586,9 +608,28 @@ class JsonDatabase : Database() {
     }
 
     companion object {
-        private val gson = Gson()
+        private val gson = GsonBuilder()
+            .registerTypeAdapter(OffsetDateTime::class.java, object : JsonSerializer<OffsetDateTime>, JsonDeserializer<OffsetDateTime> {
+                override fun serialize(src: OffsetDateTime?, typeOfSrc: Type, context: JsonSerializationContext): JsonElement {
+                    return if (src == null)
+                        JsonNull.INSTANCE
+                    else
+                        JsonPrimitive(DateTimeFormatter.ISO_OFFSET_DATE_TIME.format(src))
+                }
+
+                override fun deserialize(json: JsonElement, typeOfT: Type, context: JsonDeserializationContext): OffsetDateTime {
+                    return DateTimeFormatter.ISO_OFFSET_DATE_TIME.parse(json.asString, OffsetDateTime::from)
+                }
+            }).registerTypeAdapter(ObjectId::class.java, object : JsonSerializer<ObjectId>, JsonDeserializer<ObjectId> {
+                override fun serialize(src: ObjectId?, typeOfSrc: Type?, context: JsonSerializationContext?): JsonElement {
+                    return JsonNull.INSTANCE
+                }
+
+                override fun deserialize(json: JsonElement?, typeOfT: Type?, context: JsonDeserializationContext?): ObjectId {
+                    return ObjectId()
+                }
+            }).create()
         private val systemMapToken = object : TypeToken<HashMap<String, JsonSystemStruct>>() {}
-        private val userMapToken = object : TypeToken<HashMap<ULong, UserRecord>>() {}
         private val serverMapToken = object : TypeToken<HashMap<ULong, ServerSettingsRecord>>() {}
     }
 }
