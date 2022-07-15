@@ -13,9 +13,7 @@ import dev.proxyfox.database.records.system.SystemServerSettingsRecord
 import dev.proxyfox.database.records.system.SystemSwitchRecord
 
 class NopDatabase : Database() {
-    override suspend fun getUser(userId: String): UserRecord? {
-        TODO("Not yet implemented")
-    }
+    override suspend fun setup() = this
 
     override suspend fun getSystemByHost(userId: String): SystemRecord? {
         TODO("Not yet implemented")

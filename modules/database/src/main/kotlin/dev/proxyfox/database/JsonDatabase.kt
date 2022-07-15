@@ -155,7 +155,7 @@ class JsonDatabase : Database() {
     @Transient
     private val newMessageLookup = HashMap<ULong, ProxiedMessageRecord>()
 
-    fun setup() {
+    override suspend fun setup(): JsonDatabase {
         val file = File("systems.json")
         if(file.exists()) {
             val db = file.reader().use(JsonParser::parseReader)
@@ -178,11 +178,13 @@ class JsonDatabase : Database() {
                     }
                 }
 
-                return
+                return this
             }
         }
         systems = HashMap()
         servers = HashMap()
+
+        return this
     }
 
     @Deprecated(level = DeprecationLevel.ERROR, message = "*")

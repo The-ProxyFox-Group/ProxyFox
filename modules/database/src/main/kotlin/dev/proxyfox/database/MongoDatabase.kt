@@ -58,7 +58,7 @@ class MongoDatabase : Database() {
 
     private lateinit var memberServers: KCollection<MemberServerSettingsRecord>
 
-    suspend fun setup() {
+    override suspend fun setup(): MongoDatabase {
         kmongo = KMongo.createClient()
         db = kmongo.getDatabase("ProxyFox")
 
@@ -83,6 +83,8 @@ class MongoDatabase : Database() {
         memberProxies = db.getOrCreateCollection()
 
         memberServers = db.getOrCreateCollection()
+
+        return this
     }
 
     override suspend fun getUser(userId: String): UserRecord {

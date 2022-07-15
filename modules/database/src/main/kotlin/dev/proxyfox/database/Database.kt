@@ -20,6 +20,8 @@ import dev.proxyfox.database.records.system.SystemSwitchRecord
  * @author KJP12
  **/
 abstract class Database : AutoCloseable {
+    abstract suspend fun setup(): Database
+
     abstract suspend fun getUser(userId: String): UserRecord?
 
     // === Systems ===
