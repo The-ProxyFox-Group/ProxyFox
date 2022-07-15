@@ -14,7 +14,7 @@ export class webhookManager {
         let i = 0
         for (let webhook in this.webhooks) {
             i++;
-            if (i > 50) 
+            if (i > 50) this.remove(key)
         }
     }
     public async has(key: string): Promise<boolean> {
