@@ -78,7 +78,7 @@ export const tree = {
     "serverproxy": spTree,
     "time": getTime,
     "help": help,
-    "invite": "Proxyfox invites are temporarily disabled, as we're transitioning to a new bot. Contact Octal#9139 if you need an invite. https://discord.gg/M2uBsJmRNT", //"Use https://discord.com/oauth2/authorize?client_id=872276960951296051&scope=bot&permissions=258302340160 to invite ProxyFox to your server!\nTo get support, head on over to https://discord.gg/q3yF8ay9V7",
+    "invite": "Use https://discord.com/api/oauth2/authorize?client_id=947174063841894500&permissions=277696539728&scope=applications.commands+bot to invite ProxyFox to your server!\nTo get support, head on over to https://discord.gg/q3yF8ay9V7",
     "source": "Source code for ProxyFox is available at <https://github.com/ProxyFox-developers/ProxyFox>!",
     "explain": `ProxyFox is modern Discord bot designed to help systems communicate.
 It uses discord's webhooks to generate "pseudo-users" which different members of the system can use. Someone will likely be willing to explain further if need be.`,
