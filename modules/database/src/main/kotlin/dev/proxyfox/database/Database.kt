@@ -152,7 +152,7 @@ abstract class Database : AutoCloseable {
     abstract suspend fun getServerSettings(serverId: String): ServerSettingsRecord
     abstract suspend fun updateServerSettings(serverSettings: ServerSettingsRecord)
 
-    abstract suspend fun getChannelSettings(serverId: String, systemId: String): SystemChannelSettingsRecord
+    abstract suspend fun getChannelSettings(channelId: String, systemId: String): SystemChannelSettingsRecord
 
     // === Management ===
     /**
