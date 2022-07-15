@@ -11,12 +11,18 @@ export class webhookManager {
     }
     public async put(key: string, value: Webhook) {
         this.webhooks[key] = value;
+        let i = 0
+        for (let webhook in this.webhooks) {
+            i++;
+            if (i > 50) 
+        }
     }
     public async has(key: string): Promise<boolean> {
         if (!this.webhooks[key]) return false;
         try {
             await this.webhooks[key].edit({});
         } catch (e) {
+            this.remove(key)
             return false;
         }
         return true;
