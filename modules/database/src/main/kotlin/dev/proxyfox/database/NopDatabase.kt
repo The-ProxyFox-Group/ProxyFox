@@ -15,81 +15,49 @@ import dev.proxyfox.database.records.system.SystemSwitchRecord
 class NopDatabase : Database() {
     override suspend fun setup() = this
 
-    override suspend fun getSystemByHost(userId: String): SystemRecord? {
-        TODO("Not yet implemented")
-    }
+    override suspend fun getUser(userId: String): UserRecord? = null
 
-    override suspend fun getSystemById(systemId: String): SystemRecord? {
-        TODO("Not yet implemented")
-    }
+    override suspend fun getSystemByHost(userId: String): SystemRecord? = null
 
-    override suspend fun getMembersByHost(userId: String): List<MemberRecord>? {
-        TODO("Not yet implemented")
-    }
+    override suspend fun getSystemById(systemId: String): SystemRecord? = null
 
-    override suspend fun getMembersBySystem(systemId: String): List<MemberRecord>? {
-        TODO("Not yet implemented")
-    }
+    override suspend fun getMembersByHost(userId: String): List<MemberRecord>? = null
 
-    override suspend fun getMemberByHost(userId: String, memberId: String): MemberRecord? {
-        TODO("Not yet implemented")
-    }
+    override suspend fun getMembersBySystem(systemId: String): List<MemberRecord>? = null
 
-    override suspend fun getMemberById(systemId: String, memberId: String): MemberRecord? {
-        TODO("Not yet implemented")
-    }
+    override suspend fun getMemberByHost(userId: String, memberId: String): MemberRecord? = null
 
-    override suspend fun getFrontingMembersByHost(userId: String): List<MemberRecord?>? {
-        TODO("Not yet implemented")
-    }
+    override suspend fun getMemberById(systemId: String, memberId: String): MemberRecord? = null
 
-    override suspend fun getFrontingMembersById(systemId: String): List<MemberRecord?>? {
-        TODO("Not yet implemented")
-    }
+    override suspend fun getFrontingMembersByHost(userId: String): List<MemberRecord?>? = null
 
-    override suspend fun getProxiesByHost(userId: String): List<MemberProxyTagRecord>? {
-        TODO("Not yet implemented")
-    }
+    override suspend fun getFrontingMembersById(systemId: String): List<MemberRecord?>? = null
 
-    override suspend fun getProxiesById(systemId: String): List<MemberProxyTagRecord>? {
-        TODO("Not yet implemented")
-    }
+    override suspend fun getProxiesByHost(userId: String): List<MemberProxyTagRecord>? = null
 
-    override suspend fun getProxiesByHostAndMember(userId: String, memberId: String): List<MemberProxyTagRecord>? {
-        TODO("Not yet implemented")
-    }
+    override suspend fun getProxiesById(systemId: String): List<MemberProxyTagRecord>? = null
 
-    override suspend fun getProxiesByIdAndMember(systemId: String, memberId: String): List<MemberProxyTagRecord>? {
-        TODO("Not yet implemented")
-    }
+    override suspend fun getProxiesByHostAndMember(userId: String, memberId: String): List<MemberProxyTagRecord>? = null
 
-    override suspend fun getMemberFromMessage(userId: String, message: String): MemberRecord? {
-        TODO("Not yet implemented")
-    }
+    override suspend fun getProxiesByIdAndMember(systemId: String, memberId: String): List<MemberProxyTagRecord>? = null
 
-    override suspend fun getProxyTagFromMessage(userId: String, message: String): MemberProxyTagRecord? {
-        TODO("Not yet implemented")
-    }
+    override suspend fun getMemberFromMessage(userId: String, message: String): MemberRecord? = null
+
+    override suspend fun getProxyTagFromMessage(userId: String, message: String): MemberProxyTagRecord? = null
 
     override suspend fun getMemberServerSettingsByHost(
         serverId: String,
         userId: String,
         memberId: String
-    ): MemberServerSettingsRecord? {
-        TODO("Not yet implemented")
-    }
+    ): MemberServerSettingsRecord? = null
 
     override suspend fun getMemberServerSettingsById(
         serverId: String,
         systemId: String,
         memberId: String
-    ): MemberServerSettingsRecord? {
-        TODO("Not yet implemented")
-    }
+    ): MemberServerSettingsRecord? = null
 
-    override suspend fun getServerSettingsByHost(serverId: String, userId: String): SystemServerSettingsRecord? {
-        TODO("Not yet implemented")
-    }
+    override suspend fun getServerSettingsByHost(serverId: String, userId: String): SystemServerSettingsRecord? = null
 
     override suspend fun getServerSettingsById(serverId: String, systemId: String): SystemServerSettingsRecord {
         TODO("Not yet implemented")
@@ -99,11 +67,9 @@ class NopDatabase : Database() {
         TODO("Not yet implemented")
     }
 
-    override suspend fun updateServerSettings(serverSettings: ServerSettingsRecord) {
-        TODO("Not yet implemented")
-    }
+    override suspend fun updateServerSettings(serverSettings: ServerSettingsRecord) {}
 
-    override suspend fun getChannelSettings(serverId: String, systemId: String): SystemChannelSettingsRecord {
+    override suspend fun getChannelSettings(channelId: String, systemId: String): SystemChannelSettingsRecord {
         TODO("Not yet implemented")
     }
 
@@ -111,37 +77,21 @@ class NopDatabase : Database() {
         TODO("Not yet implemented")
     }
 
-    override suspend fun removeSystem(userId: String): Boolean {
-        TODO("Not yet implemented")
-    }
+    override suspend fun removeSystem(userId: String): Boolean = false
 
-    override suspend fun allocateMember(systemId: String, name: String): MemberRecord? {
-        TODO("Not yet implemented")
-    }
+    override suspend fun allocateMember(systemId: String, name: String): MemberRecord? = null
 
-    override suspend fun removeMember(systemId: String, memberId: String): Boolean {
-        TODO("Not yet implemented")
-    }
+    override suspend fun removeMember(systemId: String, memberId: String): Boolean = false
 
-    override suspend fun updateMember(member: MemberRecord) {
-        TODO("Not yet implemented")
-    }
+    override suspend fun updateMember(member: MemberRecord) {}
 
-    override suspend fun updateMemberServerSettings(serverSettings: MemberServerSettingsRecord) {
-        TODO("Not yet implemented")
-    }
+    override suspend fun updateMemberServerSettings(serverSettings: MemberServerSettingsRecord) {}
 
-    override suspend fun updateSystem(system: SystemRecord) {
-        TODO("Not yet implemented")
-    }
+    override suspend fun updateSystem(system: SystemRecord) {}
 
-    override suspend fun updateSystemServerSettings(serverSettings: SystemServerSettingsRecord) {
-        TODO("Not yet implemented")
-    }
+    override suspend fun updateSystemServerSettings(serverSettings: SystemServerSettingsRecord) {}
 
-    override suspend fun updateUser(user: UserRecord) {
-        TODO("Not yet implemented")
-    }
+    override suspend fun updateUser(user: UserRecord) {}
 
     override suspend fun createMessage(
         oldMessageId: Snowflake,
@@ -149,7 +99,6 @@ class NopDatabase : Database() {
         memberId: String,
         systemId: String
     ) {
-        TODO("Not yet implemented")
     }
 
     override suspend fun allocateProxyTag(
@@ -157,75 +106,39 @@ class NopDatabase : Database() {
         memberId: String,
         prefix: String?,
         suffix: String?
-    ): MemberProxyTagRecord? {
-        TODO("Not yet implemented")
-    }
+    ): MemberProxyTagRecord? = null
 
-    override suspend fun removeProxyTag(proxyTag: MemberProxyTagRecord) {
-        TODO("Not yet implemented")
-    }
+    override suspend fun removeProxyTag(proxyTag: MemberProxyTagRecord) {}
 
-    override suspend fun updateTrustLevel(userId: String, trustee: String, level: TrustLevel): Boolean {
-        TODO("Not yet implemented")
-    }
+    override suspend fun updateTrustLevel(userId: String, trustee: String, level: TrustLevel): Boolean = false
 
-    override suspend fun getTrustLevel(userId: String, trustee: String): TrustLevel {
-        TODO("Not yet implemented")
-    }
+    override suspend fun getTrustLevel(userId: String, trustee: String): TrustLevel = TrustLevel.NONE
 
-    override suspend fun getTotalSystems(): Int? {
-        TODO("Not yet implemented")
-    }
+    override suspend fun getTotalSystems(): Int = 0
 
-    override suspend fun getTotalMembersByHost(userId: String): Int? {
-        TODO("Not yet implemented")
-    }
+    override suspend fun getTotalMembersByHost(userId: String): Int? = null
 
-    override suspend fun getTotalMembersById(systemId: String): Int? {
-        TODO("Not yet implemented")
-    }
+    override suspend fun getTotalMembersById(systemId: String): Int? = null
 
-    override suspend fun getMemberByIdAndName(systemId: String, memberName: String): MemberRecord? {
-        TODO("Not yet implemented")
-    }
+    override suspend fun getMemberByIdAndName(systemId: String, memberName: String): MemberRecord? = null
 
-    override suspend fun getMemberByHostAndName(userId: String, memberName: String): MemberRecord? {
-        TODO("Not yet implemented")
-    }
+    override suspend fun getMemberByHostAndName(userId: String, memberName: String): MemberRecord? = null
 
-    override suspend fun export(other: Database) {
-        TODO("Not yet implemented")
-    }
+    override suspend fun export(other: Database) {}
 
-    override suspend fun import(memberProxyTagRecord: MemberProxyTagRecord) {
-        TODO("Not yet implemented")
-    }
+    override suspend fun import(memberProxyTagRecord: MemberProxyTagRecord) {}
 
-    override suspend fun import(memberRecord: MemberRecord) {
-        TODO("Not yet implemented")
-    }
+    override suspend fun import(memberRecord: MemberRecord) {}
 
-    override suspend fun import(memberServerSettingsRecord: MemberServerSettingsRecord) {
-        TODO("Not yet implemented")
-    }
+    override suspend fun import(memberServerSettingsRecord: MemberServerSettingsRecord) {}
 
-    override suspend fun import(serverSettingsRecord: ServerSettingsRecord) {
-        TODO("Not yet implemented")
-    }
+    override suspend fun import(serverSettingsRecord: ServerSettingsRecord) {}
 
-    override suspend fun import(system: SystemRecord) {
-        TODO("Not yet implemented")
-    }
+    override suspend fun import(system: SystemRecord) {}
 
-    override suspend fun import(systemServerSettingsRecord: SystemServerSettingsRecord) {
-        TODO("Not yet implemented")
-    }
+    override suspend fun import(systemServerSettingsRecord: SystemServerSettingsRecord) {}
 
-    override suspend fun import(systemSwitchRecord: SystemSwitchRecord) {
-        TODO("Not yet implemented")
-    }
+    override suspend fun import(systemSwitchRecord: SystemSwitchRecord) {}
 
-    override fun close() {
-        TODO("Not yet implemented")
-    }
+    override fun close() {}
 }
