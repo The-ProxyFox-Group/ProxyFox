@@ -4,8 +4,8 @@ import org.bson.types.ObjectId
 
 class SystemChannelSettingsRecord {
     var _id: ObjectId = ObjectId()
-    val serverId: String = ""
-    val channelId: String = ""
-    val systemId: String = ""
+    var serverId: String = ""
+    var channelId: String = ""
+    var systemId: String = ""
     var proxyEnabled: Boolean = true
 }
