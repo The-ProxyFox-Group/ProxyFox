@@ -6,7 +6,6 @@ import dev.kord.core.event.message.MessageCreateEvent
 import dev.kord.core.on
 import dev.kord.gateway.Intent
 import dev.kord.gateway.PrivilegedIntent
-import dev.proxyfox.*
 import dev.proxyfox.common.printFancy
 import dev.proxyfox.common.printStep
 import kotlinx.coroutines.delay
@@ -54,4 +53,13 @@ suspend fun updatePresence() {
         }
         delay(30000)
     }
+}
+
+fun findUnixValue(args: Array<String>, key: String): String? {
+    for (i in args.indices) {
+        if (args[i].startsWith(key)) {
+            return args[i].substring(key.length)
+        }
+    }
+    return null
 }
