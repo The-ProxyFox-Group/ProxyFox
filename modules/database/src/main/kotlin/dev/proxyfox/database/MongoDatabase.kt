@@ -216,7 +216,7 @@ class MongoDatabase : Database() {
         servers.insertOne(serverSettings).awaitFirst()
     }
 
-    override suspend fun getChannelSettings(serverId: String, systemId: String): SystemChannelSettingsRecord {
+    override suspend fun getChannelSettings(channelId: String, systemId: String): SystemChannelSettingsRecord {
         TODO("Not yet implemented")
     }
 
