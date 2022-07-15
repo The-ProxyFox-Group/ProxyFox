@@ -19,5 +19,5 @@ class SystemServerSettingsRecord {
 
     /** The ID of the member that's currently being auto-proxied. */
     var autoProxy: String? = null
-    var autoProxyMode: AutoProxyMode = AutoProxyMode.OFF
+    var autoProxyMode: AutoProxyMode = AutoProxyMode.FALLBACK
 }
