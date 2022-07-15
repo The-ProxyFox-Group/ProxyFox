@@ -5,13 +5,12 @@ import dev.kord.common.entity.DiscordAttachment
 import dev.kord.common.entity.Snowflake
 import dev.kord.core.entity.Message
 import dev.kord.core.entity.toRawType
-import dev.kord.core.live.live
 import dev.kord.rest.builder.message.create.embed
+import dev.proxyfox.bot.kord
 import dev.proxyfox.database.database
 import dev.proxyfox.database.records.member.MemberProxyTagRecord
 import dev.proxyfox.database.records.member.MemberRecord
 import dev.proxyfox.database.records.member.MemberServerSettingsRecord
-import dev.proxyfox.bot.kord
 
 /**
  * Context for proxying
@@ -34,7 +33,7 @@ data class ProxyContext(
             member.systemId,
             member.id
         ) ?: MemberServerSettingsRecord()
-        val newMessage = kord.rest.webhook.executeWebhook(Snowflake(webhook.id), webhook.token!!, false) {
+        val newMessage = kord.rest.webhook.executeWebhook(Snowflake(webhook.id), webhook.token!!, wait = true /* REQUIRED */) {
             if (messageContent.isNotBlank()) content = messageContent
             username = (serverMember.nickname ?: member.displayName ?: member.name) + " " + (system.tag ?: "")
             avatarUrl = (serverMember.avatarUrl ?: member.avatarUrl ?: system.avatarUrl ?: "")
@@ -47,14 +46,14 @@ data class ProxyContext(
                     color = Color(member.color)
                     field {
                         name = ref.author!!.username + " ↩"
-                        value = "[**Reply to:**](https://discord.com/channels/${ref.getGuild().id}/${ref.channelId}/${ref.id}) ${ref.content.substring(0,100)}"
+                        value = "[**Reply to:**](https://discord.com/channels/${ref.getGuild().id}/${ref.channelId}/${ref.id}) ${ref.content.substring(0, 100)}"
                     }
 
                 }
             }
             return@executeWebhook
-        }
-        database.createMessage(message.id, newMessage!!.id, member.id, member.systemId)
+        }!!
+        database.createMessage(message.id, newMessage.id, member.id, member.systemId)
         message.delete()
     }
 }
