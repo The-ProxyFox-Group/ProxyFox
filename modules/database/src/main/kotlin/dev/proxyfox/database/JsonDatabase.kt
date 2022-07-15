@@ -157,7 +157,7 @@ class JsonDatabase : Database() {
 
     override suspend fun setup(): JsonDatabase {
         val file = File("systems.json")
-        if(file.exists()) {
+        if (file.exists()) {
             val db = file.reader().use(JsonParser::parseReader)
             if (db != null && db.isJsonObject) {
                 val dbObject = db.asJsonObject
@@ -290,7 +290,10 @@ class JsonDatabase : Database() {
     }
 
     override suspend fun getChannelSettings(channelId: String, systemId: String): SystemChannelSettingsRecord {
-        TODO("Not yet implemented")
+        return systems[systemId]?.channelSettings?.get(channelId.toULong()) ?: SystemChannelSettingsRecord().apply {
+            this.channelId = channelId
+            this.systemId = systemId
+        }
     }
 
     override suspend fun allocateSystem(userId: String): SystemRecord {
@@ -494,6 +497,7 @@ class JsonDatabase : Database() {
 
         val members: MutableMap<String, JsonMemberStruct> = HashMap(),
         val serverSettings: MutableMap<ULong, SystemServerSettingsRecord> = HashMap(),
+        val channelSettings: MutableMap<ULong, SystemChannelSettingsRecord> = HashMap(),
         val proxyTags: MutableList<MemberProxyTagRecord> = ArrayList(),
         val switches: MutableMap<String, SystemSwitchRecord> = HashMap()
     ) {
