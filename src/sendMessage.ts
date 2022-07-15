@@ -20,7 +20,7 @@ export async function sendMessageAsWebhook(msg: discord.Message, member: Member,
                     let time2 = new Date().getTime();
                     if (time2 > time + 30000)
                         return;
-                    console.log("No webhook storage made for " + channel.id + ". Generating one.");
+                    //console.log("No webhook storage made for " + channel.id + ". Generating one.");
                     let hookArr = hooks.map(a=>a);
                     for (let i in hookArr) {
                         let user: Object | discord.User = hookArr[i].owner;
@@ -44,7 +44,7 @@ export async function sendMessageAsWebhook(msg: discord.Message, member: Member,
                     let time2 = new Date().getTime();
                     if (time2 > time + 30000)
                         return;
-                    console.log("No webhook storage made for " + channel.id + ". Generating one.");
+                    //console.log("No webhook storage made for " + channel.id + ". Generating one.");
                     let hookArr = hooks.map(a=>a);
                     for (let i in hookArr) {
                         let user: Object | discord.User = hookArr[i].owner;
