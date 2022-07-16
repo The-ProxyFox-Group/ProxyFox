@@ -13,9 +13,8 @@ import kotlinx.coroutines.flow.firstOrNull
  * @author Oliver
  * */
 object WebhookUtil {
-    suspend fun prepareMessage(message: Message, member: MemberRecord, proxy: MemberProxyTagRecord): ProxyContext = ProxyContext(
+    suspend fun prepareMessage(message: Message, member: MemberRecord, proxy: MemberProxyTagRecord?): ProxyContext = ProxyContext(
         message.content,
-        ArrayList(),
         createOrFetchWebhookFromCache(message.channel.asChannel() as TextChannel),
         message,
         member,

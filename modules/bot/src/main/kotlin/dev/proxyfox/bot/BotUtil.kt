@@ -8,14 +8,20 @@ import dev.kord.gateway.Intent
 import dev.kord.gateway.PrivilegedIntent
 import dev.proxyfox.common.printFancy
 import dev.proxyfox.common.printStep
+import io.ktor.client.*
+import io.ktor.client.engine.cio.*
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.flow.count
 import kotlinx.coroutines.launch
 
 lateinit var kord: Kord
+lateinit var http: HttpClient
 
 @OptIn(PrivilegedIntent::class)
 suspend fun login() {
+    printStep("Setting up HTTP client", 1)
+    http = HttpClient(CIO)
+
     printStep("Logging in", 1)
     kord = Kord(System.getenv("PROXYFOX_KEY"))
 

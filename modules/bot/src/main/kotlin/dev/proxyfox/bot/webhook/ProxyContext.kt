@@ -1,16 +1,20 @@
 package dev.proxyfox.bot.webhook
 
 import dev.kord.common.Color
-import dev.kord.common.entity.DiscordAttachment
 import dev.kord.common.entity.Snowflake
 import dev.kord.core.entity.Message
-import dev.kord.core.entity.toRawType
+import dev.kord.rest.NamedFile
 import dev.kord.rest.builder.message.create.embed
+import dev.proxyfox.bot.http
 import dev.proxyfox.bot.kord
 import dev.proxyfox.database.database
 import dev.proxyfox.database.records.member.MemberProxyTagRecord
 import dev.proxyfox.database.records.member.MemberRecord
 import dev.proxyfox.database.records.member.MemberServerSettingsRecord
+import io.ktor.client.request.*
+import io.ktor.client.statement.*
+import io.ktor.http.*
+import io.ktor.utils.io.jvm.javaio.*
 
 /**
  * Context for proxying
@@ -18,14 +22,13 @@ import dev.proxyfox.database.records.member.MemberServerSettingsRecord
  * */
 data class ProxyContext(
     var messageContent: String,
-    var attachments: List<DiscordAttachment>,
-    var webhook: WebhookHolder,
-    var message: Message,
-    var member: MemberRecord,
-    var proxy: MemberProxyTagRecord
+    val webhook: WebhookHolder,
+    val message: Message,
+    val member: MemberRecord,
+    val proxy: MemberProxyTagRecord?
 ) {
     suspend fun send() {
-        if (!member.keepProxy)
+        if (!member.keepProxy && proxy != null)
             messageContent = proxy.trim(messageContent)
         val system = database.getSystemById(member.systemId)!!
         val serverMember = database.getMemberServerSettingsById(
@@ -37,9 +40,12 @@ data class ProxyContext(
             if (messageContent.isNotBlank()) content = messageContent
             username = (serverMember.nickname ?: member.displayName ?: member.name) + " " + (system.tag ?: "")
             avatarUrl = (serverMember.avatarUrl ?: member.avatarUrl ?: system.avatarUrl ?: "")
-            attachments = ArrayList()
-            for (attachment in message.attachments)
-                (attachments as ArrayList<DiscordAttachment>).add(attachment.toRawType())
+            for (attachment in message.attachments) {
+                val response: HttpResponse = http.get(urlString = attachment.url) {
+                    headers { append(HttpHeaders.UserAgent, "ProxyFox/2.0.0 (+https://github.com/ProxyFox-Developers/ProxyFox/; +https://proxyfox.dev/)") }
+                }
+                files.add(NamedFile(attachment.filename, response.content.toInputStream()))
+            }
             if (message.referencedMessage != null) {
                 val ref = message.referencedMessage!!
                 embed {
