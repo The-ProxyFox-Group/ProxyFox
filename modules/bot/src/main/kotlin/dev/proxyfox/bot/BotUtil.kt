@@ -14,6 +14,8 @@ import kotlinx.coroutines.delay
 import kotlinx.coroutines.flow.count
 import kotlinx.coroutines.launch
 
+const val UPLOAD_LIMIT = 1024 * 1024 * 8
+
 lateinit var kord: Kord
 lateinit var http: HttpClient
 
