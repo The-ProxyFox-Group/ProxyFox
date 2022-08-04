@@ -122,7 +122,9 @@ function sendAsHook(hook: discord.Webhook, msg: discord.Message, url: string, na
         let mess = <discord.Message> a;
         const filter = (reaction) => '❌❗❓'.indexOf(reaction.emoji.name) != -1;
         const messageFilter = (message) => /^pf[>;:!]/i.test(message.content) && message.reference && message.reference.messageId == mess.id;
-
+        setTimeout(() => {
+            hook.editMessage(mess, msg.content)
+        }, 500)
         mess.channel.createMessageCollector({filter: messageFilter})
         .on("collect", message => {
             let authorId = message.author.id;
