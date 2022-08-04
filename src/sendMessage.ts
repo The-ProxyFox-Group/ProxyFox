@@ -87,6 +87,8 @@ export function webhook(msg: discord.Message) {
     }
 }
 
+const emojiRegex = /<:.*:[0-9]*>/i
+
 function sendAsHook(hook: discord.Webhook, msg: discord.Message, url: string, name: string, member: Member, embed?:discord.MessageEmbed, thread?: string) {
     if (!webhooks.has(msg.channel.id))
         webhooks.put(msg.channel.id, hook);
@@ -123,7 +125,8 @@ function sendAsHook(hook: discord.Webhook, msg: discord.Message, url: string, na
         const filter = (reaction) => '❌❗❓'.indexOf(reaction.emoji.name) != -1;
         const messageFilter = (message) => /^pf[>;:!]/i.test(message.content) && message.reference && message.reference.messageId == mess.id;
         setTimeout(() => {
-            hook.editMessage(mess, msg.content)
+            if (emojiRegex.test(msg.content))
+                hook.editMessage(mess, msg.content)
         }, 500)
         mess.channel.createMessageCollector({filter: messageFilter})
         .on("collect", message => {
