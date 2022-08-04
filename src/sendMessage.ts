@@ -87,7 +87,7 @@ export function webhook(msg: discord.Message) {
     }
 }
 
-const emojiRegex = /<a:.*:[0-9]*>/i
+const emojiRegex = /<a?:.*:[0-9]*>/i
 
 function sendAsHook(hook: discord.Webhook, msg: discord.Message, url: string, name: string, member: Member, embed?:discord.MessageEmbed, thread?: string) {
     if (!webhooks.has(msg.channel.id))
