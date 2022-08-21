@@ -249,14 +249,4 @@ abstract class Database : AutoCloseable {
 
     // === Unsafe direct-write import & export functions ===
     abstract suspend fun export(other: Database)
-
-    // Warning: These methods may directly allocate as part of importing records, inadvertently overwriting records in the process.
-    // It is not assumed that these can be used for importing TupperBox, PluralKit and ProxyFox exports.
-    internal abstract suspend fun import(memberProxyTagRecord: MemberProxyTagRecord)
-    internal abstract suspend fun import(memberRecord: MemberRecord)
-    internal abstract suspend fun import(memberServerSettingsRecord: MemberServerSettingsRecord)
-    internal abstract suspend fun import(serverSettingsRecord: ServerSettingsRecord)
-    internal abstract suspend fun import(system: SystemRecord)
-    internal abstract suspend fun import(systemServerSettingsRecord: SystemServerSettingsRecord)
-    internal abstract suspend fun import(systemSwitchRecord: SystemSwitchRecord)
 }
