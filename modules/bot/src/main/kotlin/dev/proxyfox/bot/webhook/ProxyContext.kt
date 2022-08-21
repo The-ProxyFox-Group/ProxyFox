@@ -14,6 +14,7 @@ import dev.proxyfox.database.records.member.MemberServerSettingsRecord
 import io.ktor.client.request.*
 import io.ktor.client.statement.*
 import io.ktor.http.*
+import io.ktor.util.*
 import io.ktor.utils.io.jvm.javaio.*
 
 /**
@@ -27,6 +28,7 @@ data class ProxyContext(
     val member: MemberRecord,
     val proxy: MemberProxyTagRecord?
 ) {
+    @OptIn(InternalAPI::class)
     suspend fun send() {
         if (!member.keepProxy && proxy != null)
             messageContent = proxy.trim(messageContent)

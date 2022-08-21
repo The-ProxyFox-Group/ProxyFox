@@ -10,6 +10,7 @@ import dev.proxyfox.common.printFancy
 import dev.proxyfox.common.printStep
 import io.ktor.client.*
 import io.ktor.client.engine.cio.*
+import kotlinx.coroutines.coroutineScope
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.flow.count
 import kotlinx.coroutines.launch
@@ -34,8 +35,10 @@ suspend fun login() {
     }
     kord.on<ReadyEvent> {
         printFancy("ProxyFox initialized")
-        launch {
-            updatePresence()
+        coroutineScope {
+            launch {
+                updatePresence()
+            }
         }
     }
 
