@@ -1,5 +1,5 @@
 plugins {
-    kotlin("jvm") version "1.6.20"
+    kotlin("jvm") version "1.7.10"
 }
 
 repositories {
@@ -21,4 +21,10 @@ dependencies {
     implementation("org.litote.kmongo:kmongo:4.6.0")
     implementation("org.litote.kmongo:kmongo-coroutine:4.6.0")
     implementation("org.litote.kmongo:kmongo-async:4.6.0")
+}
+
+val jar by tasks.getting(Jar::class) {
+    manifest {
+        attributes["Main-Class"] = "dev.proxyfox.database.DatabaseMainKt"
+    }
 }
