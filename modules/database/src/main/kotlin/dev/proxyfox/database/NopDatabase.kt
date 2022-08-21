@@ -126,19 +126,5 @@ class NopDatabase : Database() {
 
     override suspend fun export(other: Database) {}
 
-    override suspend fun import(memberProxyTagRecord: MemberProxyTagRecord) {}
-
-    override suspend fun import(memberRecord: MemberRecord) {}
-
-    override suspend fun import(memberServerSettingsRecord: MemberServerSettingsRecord) {}
-
-    override suspend fun import(serverSettingsRecord: ServerSettingsRecord) {}
-
-    override suspend fun import(system: SystemRecord) {}
-
-    override suspend fun import(systemServerSettingsRecord: SystemServerSettingsRecord) {}
-
-    override suspend fun import(systemSwitchRecord: SystemSwitchRecord) {}
-
     override fun close() {}
 }
