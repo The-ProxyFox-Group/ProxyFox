@@ -1,6 +1,5 @@
 plugins {
     kotlin("jvm") version "1.7.10"
-    application
 }
 
 repositories {
@@ -8,10 +7,6 @@ repositories {
     maven("https://libraries.minecraft.net/")
     maven("https://oss.sonatype.org/content/repositories/snapshots")
     maven("https://jitpack.io")
-}
-
-application {
-    mainClass.set("dev.proxyfox.api.server.ServerMain")
 }
 
 dependencies {
@@ -23,6 +18,6 @@ dependencies {
 
 val jar by tasks.getting(Jar::class) {
     manifest {
-        attributes["Main-Class"] = "dev.proxyfox.api.server.ServerMainKt"
+        attributes["Main-Class"] = "dev.proxyfox.conversion.ConversionMainKt"
     }
 }
