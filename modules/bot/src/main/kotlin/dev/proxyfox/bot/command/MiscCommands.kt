@@ -4,7 +4,8 @@ import dev.kord.core.behavior.channel.createMessage
 import dev.kord.rest.NamedFile
 import dev.proxyfox.database.database
 import dev.proxyfox.database.records.misc.AutoProxyMode
-import dev.proxyfox.bot.exporter.Exporter
+import dev.proxyfox.exporter.Exporter
+import dev.proxyfox.importer.*
 import dev.proxyfox.common.printStep
 import dev.proxyfox.bot.string.dsl.greedy
 import dev.proxyfox.bot.string.dsl.literal
@@ -59,7 +60,7 @@ object MiscCommands {
     private suspend fun importEmpty(ctx: MessageHolder): String {
         if (ctx.message.attachments.isEmpty()) return "Please attach a file or link to import"
         val attach = URL(ctx.message.attachments.toList()[0].url)
-        val importer = dev.proxyfox.bot.importer.import(
+        val importer = import(
             InputStreamReader(attach.openStream()),
             ctx.message.author!!.id.value.toString()
         )
@@ -68,7 +69,7 @@ object MiscCommands {
 
     private suspend fun import(ctx: MessageHolder): String {
         val attach = URL(ctx.params["url"]!!)
-        val importer = dev.proxyfox.bot.importer.import(
+        val importer = import(
             InputStreamReader(attach.openStream()),
             ctx.message.author!!.id.value.toString()
         )

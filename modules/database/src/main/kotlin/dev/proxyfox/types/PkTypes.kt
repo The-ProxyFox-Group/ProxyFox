@@ -1,4 +1,4 @@
-package dev.proxyfox.bot.types
+package dev.proxyfox.types
 
 class PkSystem {
     var name: String? = null
