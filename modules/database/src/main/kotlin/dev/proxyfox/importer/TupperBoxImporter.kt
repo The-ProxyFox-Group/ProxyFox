@@ -1,5 +1,6 @@
-package dev.proxyfox.bot.importer
+package dev.proxyfox.importer
 
+import dev.proxyfox.database.Database
 import dev.proxyfox.database.records.member.MemberProxyTagRecord
 import dev.proxyfox.database.records.member.MemberRecord
 import dev.proxyfox.database.records.system.SystemRecord
@@ -11,6 +12,10 @@ import dev.proxyfox.database.records.system.SystemRecord
  * */
 class TupperBoxImporter : Importer {
     override suspend fun import(string: String, userId: String) {
+        TODO("Not yet implemented")
+    }
+
+    override suspend fun import(database: Database, string: String, userId: String) {
         TODO("Not yet implemented")
     }
 
