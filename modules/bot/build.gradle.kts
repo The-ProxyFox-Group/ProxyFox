@@ -32,7 +32,8 @@ val jar by tasks.getting(Jar::class) {
 }
 
 tasks.named<com.github.jengelman.gradle.plugins.shadow.tasks.ShadowJar>("shadowJar") {
-    classifier = "shadow"
+    archiveBaseName.set("proxyfox")
+    classifier = ""
     mergeServiceFiles()
 }
 tasks.build {
