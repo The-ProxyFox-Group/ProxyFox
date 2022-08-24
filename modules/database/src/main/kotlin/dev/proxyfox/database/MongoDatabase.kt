@@ -117,8 +117,9 @@ class MongoDatabase : Database() {
         return user.system?.let { getMemberById(it, memberId) }
     }
 
-    override suspend fun getMemberById(systemId: String, memberId: String): MemberRecord? =
-        members.findOne("{id:'$memberId', systemId:'$systemId'}")
+    override suspend fun getMemberById(systemId: String, memberId: String): MemberRecord? {
+        return members.findOne("{id:'$memberId', systemId:'$systemId'}")
+    }
 
     override suspend fun getFrontingMembersByHost(userId: String): List<MemberRecord?>? {
         val user = getUser(userId)
@@ -374,7 +375,7 @@ class MongoDatabase : Database() {
     }
 
     override suspend fun getMemberByIdAndName(systemId: String, memberName: String): MemberRecord? {
-        return members.findOne("{systemId:'$systemId',name:'$memberName'}")
+        return members.findOne("{systemId:'$systemId',name:'${memberName.replace("'", "\\'")}'}")
     }
 
     override suspend fun getMemberByHostAndName(userId: String, memberName: String): MemberRecord? {

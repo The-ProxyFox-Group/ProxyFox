@@ -4,6 +4,7 @@ import dev.proxyfox.database.Database
 import dev.proxyfox.database.JsonDatabase
 import dev.proxyfox.database.MongoDatabase
 import dev.proxyfox.database.NopDatabase
+import kotlin.system.exitProcess
 
 suspend fun main(args: Array<String>) {
     var from: String? = null
@@ -32,4 +33,6 @@ suspend fun main(args: Array<String>) {
     outputDatabase.setup()
 
     inputDatabase.export(outputDatabase)
+
+    exitProcess(0)
 }

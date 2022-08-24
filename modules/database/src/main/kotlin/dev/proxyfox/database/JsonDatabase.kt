@@ -3,7 +3,9 @@ package dev.proxyfox.database
 import com.google.gson.*
 import com.google.gson.reflect.TypeToken
 import dev.kord.common.entity.Snowflake
+import dev.proxyfox.common.fromColor
 import dev.proxyfox.common.logger
+import dev.proxyfox.common.toColor
 import dev.proxyfox.database.DatabaseUtil.fromPkString
 import dev.proxyfox.database.DatabaseUtil.toPkString
 import dev.proxyfox.database.records.member.MemberProxyTagRecord
@@ -229,19 +231,41 @@ class JsonDatabase : Database() {
     }
 
     override suspend fun getProxiesByHost(userId: String): List<MemberProxyTagRecord>? {
-        return users[userId]?.proxyTags
+        val systemId = users[userId]?.id ?: return null
+        val out = systems[systemId]?.proxyTags ?: return null
+        val proxyOut = ArrayList<MemberProxyTagRecord>()
+        out.forEach {
+            proxyOut.add(it.view(systemId))
+        }
+        return proxyOut
     }
 
     override suspend fun getProxiesById(systemId: String): List<MemberProxyTagRecord>? {
-        return systems[systemId]?.proxyTags
+        val out = systems[systemId]?.proxyTags ?: return null
+        val proxyOut = ArrayList<MemberProxyTagRecord>()
+        out.forEach {
+            proxyOut.add(it.view(systemId))
+        }
+        return proxyOut
     }
 
     override suspend fun getProxiesByHostAndMember(userId: String, memberId: String): List<MemberProxyTagRecord>? {
-        return users[userId]?.proxyTags?.filter { it.memberId == memberId }
+        val systemId = users[userId]?.id ?: return null
+        val out = systems[systemId]?.proxyTags?.filter { it.member == memberId } ?: return null
+        val proxyOut = ArrayList<MemberProxyTagRecord>()
+        out.forEach {
+            proxyOut.add(it.view(systemId))
+        }
+        return proxyOut
     }
 
     override suspend fun getProxiesByIdAndMember(systemId: String, memberId: String): List<MemberProxyTagRecord>? {
-        return systems[systemId]?.proxyTags?.filter { it.memberId == memberId }
+        val out = systems[systemId]?.proxyTags?.filter { it.member == memberId } ?: return null
+        val proxyOut = ArrayList<MemberProxyTagRecord>()
+        out.forEach {
+            proxyOut.add(it.view(systemId))
+        }
+        return proxyOut
     }
 
     override suspend fun getMemberFromMessage(userId: String, message: String): MemberRecord? {
@@ -251,7 +275,15 @@ class JsonDatabase : Database() {
 
     override suspend fun getProxyTagFromMessage(userId: String, message: String): MemberProxyTagRecord? {
         val system = users[userId] ?: return null
-        return system.proxyTags.find { message.startsWith(it.prefix) && message.endsWith(it.suffix) }
+        return system.proxyTags.find {
+            if (it.prefix != null && it.suffix != null)
+                return@find message.startsWith(it.prefix!!) && message.endsWith(it.suffix!!)
+            if (it.prefix != null)
+                return@find message.startsWith(it.prefix!!)
+            if (it.suffix != null)
+                return@find message.endsWith(it.suffix!!)
+            return@find false
+        }?.view(system.id)
     }
 
     override suspend fun getMemberServerSettingsByHost(
@@ -384,9 +416,9 @@ class JsonDatabase : Database() {
         val proxies = systems[systemId]!!.proxyTags
         for(proxy in proxies) {
             if (proxy.prefix == prefix && proxy.suffix == suffix) {
-                return if(proxy.memberId == memberId) {
+                return if(proxy.member == memberId) {
                     // We would've created the proxy anyways.
-                    proxy
+                    proxy.view(systemId)
                 } else {
                     null
                 }
@@ -397,12 +429,12 @@ class JsonDatabase : Database() {
         proxy.memberId = memberId
         proxy.prefix = prefix ?: ""
         proxy.suffix = suffix ?: ""
-        proxies.add(proxy)
+        proxies.add(JsonProxyStruct.from(proxy))
         return proxy
     }
 
     override suspend fun removeProxyTag(proxyTag: MemberProxyTagRecord) {
-        systems[proxyTag.systemId]!!.proxyTags.remove(proxyTag)
+        systems[proxyTag.systemId]!!.proxyTags.remove(JsonProxyStruct.from(proxyTag))
     }
 
     override suspend fun updateTrustLevel(userId: String, trustee: String, level: TrustLevel): Boolean {
@@ -432,7 +464,9 @@ class JsonDatabase : Database() {
     }
 
     override suspend fun export(other: Database) {
+        var i = 0
         for (system in systems.values) {
+            logger.info(i++.toString())
             val exported = Exporter.export(this, system.accounts[0])
             import(other, exported, system.accounts[0])
         }
@@ -451,6 +485,31 @@ class JsonDatabase : Database() {
         file.writer().use { gson.toJson(obj, it) }
     }
 
+    data class JsonProxyStruct(
+        var member: String,
+        var prefix: String? = null,
+        var suffix: String? = null
+    ) {
+        fun view(systemId: String): MemberProxyTagRecord {
+            val proxy = MemberProxyTagRecord()
+            proxy.memberId = member
+            proxy.systemId = systemId
+            proxy.prefix = prefix
+            proxy.suffix = suffix
+            return proxy
+        }
+
+        companion object {
+            fun from(proxy: MemberProxyTagRecord): JsonProxyStruct {
+                return JsonProxyStruct(proxy.memberId, proxy.prefix, proxy.suffix)
+            }
+        }
+
+        override fun equals(other: Any?): Boolean {
+            if (other !is JsonProxyStruct) return false
+            return member == other.member && suffix == other.suffix && prefix == other.prefix
+        }
+    }
     data class JsonSystemStruct(
         val id: String,
         /** The user must have their snowflake bound to `system` to be included here. */
@@ -460,14 +519,14 @@ class JsonDatabase : Database() {
         var tag: String? = null,
         var avatarUrl: String? = null,
         var timezone: String? = null,
-        var timestamp: OffsetDateTime = OffsetDateTime.now(ZoneOffset.UTC),
+        var timestamp: OffsetDateTime? = OffsetDateTime.now(ZoneOffset.UTC),
         var auto: String? = null,
-        var autoType: AutoProxyMode = AutoProxyMode.OFF,
+        var autoType: AutoProxyMode? = AutoProxyMode.OFF,
 
         val members: MutableMap<String, JsonMemberStruct> = HashMap(),
         val serverSettings: MutableMap<String, SystemServerSettingsRecord> = HashMap(),
         val channelSettings: MutableMap<String, SystemChannelSettingsRecord> = HashMap(),
-        val proxyTags: MutableList<MemberProxyTagRecord> = ArrayList(),
+        val proxyTags: MutableList<JsonProxyStruct> = ArrayList(),
         val switches: MutableMap<String, SystemSwitchRecord> = HashMap()
     ) {
         /**
@@ -480,6 +539,7 @@ class JsonDatabase : Database() {
             val membersByName = HashMap<String, JsonMemberStruct>()
             for((_, member) in members) {
                 val old = membersByName.put(member.name, member)
+                member.systemId = id
                 if(old != null) logger.warn("Member {} collided with {} from {}", member, old, id)
             }
             this.membersByName = membersByName
@@ -494,9 +554,11 @@ class JsonDatabase : Database() {
             record.tag = tag
             record.avatarUrl = avatarUrl
             record.timezone = timezone
-            record.timestamp = timestamp
+            timestamp?.let {record.timestamp = it}
             record.autoProxy = auto
-            record.autoType = autoType
+            autoType?.let {
+                record.autoType = it
+            }
             return record
         }
 
@@ -523,7 +585,7 @@ class JsonDatabase : Database() {
             val struct = members.remove(member) ?: return false
             membersByName.remove(struct.name)
 
-            proxyTags.removeIf { it.memberId == member }
+            proxyTags.removeIf { it.member == member }
 
             return true
         }
@@ -531,7 +593,7 @@ class JsonDatabase : Database() {
 
     data class JsonMemberStruct(
         val id: String,
-        val systemId: String,
+        var systemId: String,
         var name: String,
         var displayName: String? = null,
         var description: String? = null,
@@ -539,11 +601,11 @@ class JsonDatabase : Database() {
         var age: String? = null,
         var role: String? = null,
         var pronouns: String? = null,
-        var color: Int = 0,
+        var color: String? = "000000",
         var avatarUrl: String? = null,
         var keepProxy: Boolean = false,
         var messageCount: Long = 0L,
-        var timestamp: OffsetDateTime = OffsetDateTime.now(ZoneOffset.UTC),
+        var timestamp: OffsetDateTime? = OffsetDateTime.now(ZoneOffset.UTC),
 
         val serverSettings: MutableMap<String, MemberServerSettingsRecord> = HashMap()
     ) {
@@ -558,11 +620,11 @@ class JsonDatabase : Database() {
             record.age = age
             record.role = role
             record.pronouns = pronouns
-            record.color = color
+            record.color = if (color != null) color!!.toColor() else 0
             record.avatarUrl = avatarUrl
             record.keepProxy = keepProxy
             record.messageCount = messageCount
-            record.timestamp = timestamp
+            timestamp?.let {record.timestamp = it}
             return record
         }
 
@@ -574,7 +636,7 @@ class JsonDatabase : Database() {
             age = record.age
             role = record.role
             pronouns = record.pronouns
-            color = record.color
+            color = record.color.fromColor()
             avatarUrl = record.avatarUrl
             keepProxy = record.keepProxy
             messageCount = record.messageCount

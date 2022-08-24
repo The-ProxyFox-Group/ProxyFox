@@ -29,11 +29,16 @@ fun printStep(input: String, step: Int) {
 }
 
 fun String.toColor(): Int {
-    return if (startsWith("#"))
-        Integer.valueOf(substring(1), 16)
-    else if (startsWith("0x"))
-        Integer.decode(this)
-    else toInt(16)
+    return try {
+        if (startsWith("#"))
+            Integer.valueOf(substring(1), 16)
+        else if (startsWith("0x"))
+            Integer.decode(this)
+        else
+            toInt(16)
+    } catch (err: Throwable) {
+        0
+    }
 }
 
 fun Int.fromColor(): String {
