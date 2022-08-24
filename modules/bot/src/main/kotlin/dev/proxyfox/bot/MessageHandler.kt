@@ -11,7 +11,7 @@ import dev.proxyfox.database.records.misc.AutoProxyMode
 
 suspend fun MessageCreateEvent.onMessageCreate() {
     val user = message.author ?: return
-    val channel = message.channel
+    val channel = message.getChannel()
 
     // Return if bot
     if (message.webhookId != null || user.isBot) return
@@ -27,7 +27,7 @@ suspend fun MessageCreateEvent.onMessageCreate() {
         if (output.isNotBlank())
             channel.createMessage(output)
     } else if (channel is GuildMessageChannel) {
-        val guild = message.getGuild()
+        val guild = channel.getGuild()
         val hasStickers = message.stickers.isNotEmpty()
         val hasOversizedFiles = message.attachments.any { it.size >= UPLOAD_LIMIT }
         val isOversizedMessage = message.content.length > 2000
