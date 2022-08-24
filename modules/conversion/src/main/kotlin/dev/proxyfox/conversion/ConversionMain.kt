@@ -1,9 +1,7 @@
 package dev.proxyfox.conversion
 
 import dev.proxyfox.database.Database
-import dev.proxyfox.database.JsonDatabase
-import dev.proxyfox.database.MongoDatabase
-import dev.proxyfox.database.NopDatabase
+import dev.proxyfox.database.DatabaseUtil.databaseFromString
 import kotlin.system.exitProcess
 
 suspend fun main(args: Array<String>) {
@@ -17,19 +15,20 @@ suspend fun main(args: Array<String>) {
             to = arg.substring(4)
     }
 
-    val inputDatabase: Database = when (from) {
-        "json" -> JsonDatabase()
-        "postgres" -> TODO("Postgres db isn't implemented yet!")
-        "mongo" -> MongoDatabase()
-        else -> NopDatabase()
+    if (from == to) {
+        println("Same database specified, exiting.")
+        exitProcess(1)
     }
+
+    val inputDatabase: Database = databaseFromString(from)
+    val outputDatabase = databaseFromString(to)
+
+    if (inputDatabase::class == outputDatabase::class) {
+        println("Same database class specified, exiting.")
+        exitProcess(1)
+    }
+
     inputDatabase.setup()
-    val outputDatabase: Database = when (to) {
-        "json" -> JsonDatabase()
-        "postgres" -> TODO("Postgres db isn't implemented yet!")
-        "mongo" -> MongoDatabase()
-        else -> NopDatabase()
-    }
     outputDatabase.setup()
 
     inputDatabase.export(outputDatabase)

@@ -1,6 +1,7 @@
 package dev.proxyfox.database
 
 import dev.proxyfox.common.printStep
+import dev.proxyfox.database.DatabaseUtil.databaseFromString
 
 lateinit var database: Database
 
@@ -10,12 +11,7 @@ object DatabaseMain {
     suspend fun main(db: String?) {
         printStep("Setup database", 1)
         database = try {
-            when (db) {
-                "nop" -> NopDatabase()
-                "json" -> JsonDatabase()
-                "mongo", null -> MongoDatabase()
-                else -> throw IllegalArgumentException("Unknown database $db")
-            }
+            databaseFromString(db)
         } catch (err: Throwable) {
             printStep("Database setup failed. Falling back to JSON", 2)
             JsonDatabase()

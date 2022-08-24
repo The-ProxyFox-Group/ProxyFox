@@ -37,6 +37,15 @@ object DatabaseUtil {
         return tmp
     }
 
+    fun databaseFromString(db: String?) =
+        when (db) {
+            "nop" -> NopDatabase()
+            "json" -> JsonDatabase()
+            "postgres" -> TODO("Postgres db isn't implemented yet!")
+            "mongo", null -> MongoDatabase()
+            else -> throw IllegalArgumentException("Unknown database $db")
+        }
+
     suspend inline fun <T> KCollection<T>.findOne(filter: String): T? = find().filter(filter).awaitFirstOrNull()
     suspend inline fun <T> KCollection<T>.findAll(filter: String): List<T> = find().filter(filter).toList()
     suspend inline fun <reified T : Any> Mongo.getOrCreateCollection(): MongoCollection<T> {
