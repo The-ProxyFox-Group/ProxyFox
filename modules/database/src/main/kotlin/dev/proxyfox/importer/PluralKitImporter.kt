@@ -59,12 +59,13 @@ class PluralKitImporter : Importer {
         system.avatarUrl = pkSystem.avatar_url ?: system.avatarUrl
         if (pkSystem.members != null)
             for (pkMember in pkSystem.members!!) {
-                var member = database.getMemberById(system.id, pkMember.name)
+                var member = database.getMemberByIdAndName(system.id, pkMember.name)
                 if (member == null) {
                     member = database.allocateMember(system.id, pkMember.name)
                     createdMembers++
                 } else updatedMembers++
                 member!!.displayName = pkMember.display_name ?: member.displayName
+                member.avatarUrl = pkMember.avatar_url
                 member.description = pkMember.description ?: member.description
                 member.pronouns = pkMember.pronouns ?: member.pronouns
                 member.color = (pkMember.color ?: member.color.fromColor()).toColor()

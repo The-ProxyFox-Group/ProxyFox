@@ -17,6 +17,7 @@ class PkMember {
     var keep_proxy: Boolean? = false
     var message_count: Long? = 0
     var proxies: Array<PkProxy>? = arrayOf()
+    var avatar_url: String? = null
 }
 
 class PkProxy {

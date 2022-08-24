@@ -66,19 +66,22 @@ object Exporter {
             pkMember.color = member.color.fromColor()
             pkMember.keep_proxy = member.keepProxy
             pkMember.message_count = member.messageCount
+            pkMember.avatar_url = member.avatarUrl
 
             val proxies = database.getProxiesByIdAndMember(system.id, member.id)
-            pkMember.proxies = Array(proxies!!.size) {
-                val proxy = proxies[it]
-                val pkProxy = PkProxy()
-                pkProxy.prefix = proxy.prefix
-                pkProxy.suffix = proxy.suffix
-                pkProxy
+            val pkProxies = ArrayList<PkProxy>()
+            if (proxies != null) {
+                for (proxy in proxies) {
+                    val pkProxy = PkProxy()
+                    pkProxy.prefix = proxy.prefix
+                    pkProxy.suffix = proxy.suffix
+                    pkProxies.add(pkProxy)
+                }
             }
+            pkMember.proxies = pkProxies.toTypedArray()
 
             pkMember
         }
-
         return gson.toJson(pkSystem)
     }
 }
