@@ -337,6 +337,7 @@ class JsonDatabase : Database() {
             struct.accounts.add(userId)
             users[userId] = struct
             systems[id] = struct
+            struct.init()
             struct.view()
         }
     }
