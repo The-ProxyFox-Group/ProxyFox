@@ -28,10 +28,11 @@ suspend fun main(args: Array<String>) {
         exitProcess(1)
     }
 
-    inputDatabase.setup()
-    outputDatabase.setup()
-
-    inputDatabase.export(outputDatabase)
+    inputDatabase.setup().use { input ->
+        outputDatabase.setup().use { output ->
+            input.export(output)
+        }
+    }
 
     exitProcess(0)
 }
