@@ -466,7 +466,7 @@ class JsonDatabase : Database() {
 
     override suspend fun export(other: Database) {
         val memberLookup = HashMap<String, String>()
-        logger.info("Migrating systems...")
+        logger.info("Migrating {} systems...", systems.size)
         for ((sid, system) in systems) {
             memberLookup.clear()
             logger.info("Migrating {}: {}", sid, system.name)
@@ -476,6 +476,7 @@ class JsonDatabase : Database() {
 
             val nsid = newSystem.id
 
+            logger.info("Migrating {} members...", system.members.size)
             for ((mid, member) in system.members) {
                 logger.info("Migrating {}: {}", mid, member.name)
                 val newMember = other.allocateMember(nsid, member.name)
