@@ -219,7 +219,11 @@ class MongoDatabase : Database() {
     }
 
     override suspend fun getChannelSettings(channelId: String, systemId: String): SystemChannelSettingsRecord {
-        TODO("Not yet implemented")
+        return systemChannels.findOne("{channelId:'$channelId',systemId:'$systemId'}") ?: SystemChannelSettingsRecord().apply {
+            this.channelId = channelId
+            this.systemId = systemId
+            systemChannels.insertOne(this).awaitFirst()
+        }
     }
 
     override suspend fun allocateSystem(userId: String): SystemRecord {
