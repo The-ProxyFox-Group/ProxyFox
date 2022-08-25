@@ -2,15 +2,15 @@ package dev.proxyfox.bot.command
 
 import dev.kord.core.behavior.channel.createMessage
 import dev.kord.rest.NamedFile
-import dev.proxyfox.database.database
-import dev.proxyfox.database.records.misc.AutoProxyMode
-import dev.proxyfox.exporter.Exporter
-import dev.proxyfox.importer.*
-import dev.proxyfox.common.printStep
 import dev.proxyfox.bot.string.dsl.greedy
 import dev.proxyfox.bot.string.dsl.literal
 import dev.proxyfox.bot.string.parser.MessageHolder
 import dev.proxyfox.bot.string.parser.registerCommand
+import dev.proxyfox.common.printStep
+import dev.proxyfox.database.database
+import dev.proxyfox.database.records.misc.AutoProxyMode
+import dev.proxyfox.exporter.Exporter
+import dev.proxyfox.importer.import
 import java.io.File
 import java.io.InputStreamReader
 import java.net.URL
@@ -96,7 +96,7 @@ object MiscCommands {
     }
 
     private suspend fun help(ctx: MessageHolder): String =
-        """To view commands for ProxyFox, visit https://github.com/ProxyFox-developers/ProxyFox/blob/master/commands.md
+        """To view commands for ProxyFox, visit <https://github.com/ProxyFox-developers/ProxyFox/blob/master/commands.md>
 For quick setup:
 - pf>system new name
 - pf>member new John Doe
