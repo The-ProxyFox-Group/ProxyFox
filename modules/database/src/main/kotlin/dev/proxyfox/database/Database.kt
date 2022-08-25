@@ -182,6 +182,7 @@ abstract class Database : AutoCloseable {
     abstract suspend fun updateMemberServerSettings(serverSettings: MemberServerSettingsRecord)
     abstract suspend fun updateSystem(system: SystemRecord)
     abstract suspend fun updateSystemServerSettings(serverSettings: SystemServerSettingsRecord)
+    abstract suspend fun updateSystemChannelSettings(channelSettings: SystemChannelSettingsRecord)
     abstract suspend fun updateUser(user: UserRecord)
 
     abstract suspend fun createMessage(oldMessageId: Snowflake, newMessageId: Snowflake, memberId: String, systemId: String)
