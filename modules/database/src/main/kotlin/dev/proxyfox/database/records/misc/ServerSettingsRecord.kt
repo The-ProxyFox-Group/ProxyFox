@@ -14,4 +14,9 @@ class ServerSettingsRecord {
     var serverId: String = ""
     var proxyRole: String? = null
     var disabledChannels: List<Snowflake>? = null
+
+    fun writeTo(other: ServerSettingsRecord) {
+        other.proxyRole = proxyRole
+        other.disabledChannels = disabledChannels
+    }
 }

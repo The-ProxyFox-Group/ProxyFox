@@ -16,8 +16,6 @@ import dev.proxyfox.database.records.system.SystemChannelSettingsRecord
 import dev.proxyfox.database.records.system.SystemRecord
 import dev.proxyfox.database.records.system.SystemServerSettingsRecord
 import dev.proxyfox.database.records.system.SystemSwitchRecord
-import dev.proxyfox.exporter.Exporter
-import dev.proxyfox.importer.import
 import org.bson.types.ObjectId
 import java.io.File
 import java.lang.reflect.Type
@@ -465,11 +463,63 @@ class JsonDatabase : Database() {
     }
 
     override suspend fun export(other: Database) {
-        var i = 0
-        for (system in systems.values) {
-            logger.info(i++.toString())
-            val exported = Exporter.export(this, system.accounts[0])
-            import(other, exported, system.accounts[0])
+        val memberLookup = HashMap<String, String>()
+        logger.info("Migrating systems...")
+        for ((sid, system) in systems) {
+            memberLookup.clear()
+            logger.info("Migrating {}: {}", sid, system.name)
+            val newSystem = other.allocateSystem(system.accounts[0])
+            system.writeTo(newSystem)
+            other.updateSystem(newSystem)
+
+            val nsid = newSystem.id
+
+            for ((mid, member) in system.members) {
+                logger.info("Migrating {}: {}", mid, member.name)
+                val newMember = other.allocateMember(nsid, member.name)
+                if (newMember == null) {
+                    logger.warn("Unable to import {}: {} didn't return a member for {}/{} ({}/???)?", member.name, other, sid, mid, nsid)
+                } else {
+                    memberLookup[mid] = newMember.id
+                    member.writeTo(newMember)
+                    other.updateMember(newMember)
+                }
+            }
+
+            for ((id, serverSettings) in system.serverSettings) {
+                val newSettings = other.getServerSettingsById(id, nsid)
+                serverSettings.writeTo(newSettings, memberLookup[serverSettings.autoProxy])
+                other.updateSystemServerSettings(newSettings)
+                logger.info("Written server settings for {}", id)
+            }
+
+            for ((id, channelSettings) in system.channelSettings) {
+                val newSettings = other.getChannelSettings(id, nsid)
+                channelSettings.writeTo(newSettings)
+                // TODO: Add channel settings
+                logger.info("Written channel settings for {}", id)
+            }
+
+            for (proxyTag in system.proxyTags) {
+                val member = memberLookup[proxyTag.member]
+                if (member == null) {
+                    logger.warn("Couldn't write proxy tag {}text{} for {}/{} ({}/???)", proxyTag.prefix, proxyTag.suffix, sid, proxyTag.member, nsid)
+                } else {
+                    other.allocateProxyTag(nsid, member, proxyTag.prefix, proxyTag.suffix)
+                    logger.info("Written proxy tag {}text{} for {}", proxyTag.prefix, proxyTag.suffix, member)
+                }
+            }
+
+            for ((id, switch) in system.switches) {
+                // TODO: Add switches
+            }
+        }
+        logger.info("Migrating server settings...")
+        for ((sid, server) in servers) {
+            val newSettings = other.getServerSettings(sid)
+            server.writeTo(newSettings)
+            other.updateServerSettings(newSettings)
+            logger.info("Written server settings for {}", sid)
         }
     }
 
@@ -541,7 +591,7 @@ class JsonDatabase : Database() {
             for((_, member) in members) {
                 val old = membersByName.put(member.name, member)
                 member.systemId = id
-                if(old != null) logger.warn("Member {} collided with {} from {}", member, old, id)
+                if (old != null) logger.warn("Member {} collided with {} from {}", member, old, id)
             }
             this.membersByName = membersByName
         }
@@ -549,18 +599,22 @@ class JsonDatabase : Database() {
         fun view(): SystemRecord {
             val record = SystemRecord()
             record.id = id
+            writeTo(record)
+            return record
+        }
+
+        fun writeTo(record: SystemRecord) {
             record.users.addAll(accounts)
             record.name = name
             record.description = description
             record.tag = tag
             record.avatarUrl = avatarUrl
             record.timezone = timezone
-            timestamp?.let {record.timestamp = it}
+            timestamp?.let { record.timestamp = it }
             record.autoProxy = auto
             autoType?.let {
                 record.autoType = it
             }
-            return record
         }
 
         fun from(record: SystemRecord) {
@@ -614,6 +668,11 @@ class JsonDatabase : Database() {
             val record = MemberRecord()
             record.id = id
             record.systemId = systemId
+            writeTo(record)
+            return record
+        }
+
+        fun writeTo(record: MemberRecord) {
             record.name = name
             record.displayName = displayName
             record.description = description
@@ -626,7 +685,6 @@ class JsonDatabase : Database() {
             record.keepProxy = keepProxy
             record.messageCount = messageCount
             timestamp?.let {record.timestamp = it}
-            return record
         }
 
         fun from(record: MemberRecord) {
