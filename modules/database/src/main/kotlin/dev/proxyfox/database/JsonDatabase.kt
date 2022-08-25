@@ -389,6 +389,11 @@ class JsonDatabase : Database() {
             .serverSettings[serverSettings.serverId] = serverSettings
     }
 
+    override suspend fun updateSystemChannelSettings(channelSettings: SystemChannelSettingsRecord) {
+        systems[channelSettings.systemId]!!
+            .channelSettings[channelSettings.channelId] = channelSettings
+    }
+
     @Deprecated(level = DeprecationLevel.WARNING, message = "Non-native method")
     override suspend fun updateUser(user: UserRecord) {
         if (user.system == null) {
@@ -531,7 +536,7 @@ class JsonDatabase : Database() {
             for ((id, channelSettings) in system.channelSettings) {
                 val newSettings = other.getChannelSettings(id, nsid)
                 channelSettings.writeTo(newSettings)
-                // TODO: Add channel settings
+                updateSystemChannelSettings(newSettings)
                 logger.info("Written channel settings for {}", id)
             }
 

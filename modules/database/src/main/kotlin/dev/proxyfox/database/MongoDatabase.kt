@@ -306,6 +306,11 @@ class MongoDatabase : Database() {
         systemServers.insertOne(serverSettings).awaitFirst()
     }
 
+    override suspend fun updateSystemChannelSettings(channelSettings: SystemChannelSettingsRecord) {
+        systemChannels.deleteOneById(channelSettings._id).awaitFirst()
+        systemChannels.insertOne(channelSettings).awaitFirst()
+    }
+
     override suspend fun updateUser(user: UserRecord) {
         users.deleteOneById(user._id).awaitFirst()
         users.insertOne(user).awaitFirst()

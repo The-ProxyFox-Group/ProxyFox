@@ -91,6 +91,7 @@ class NopDatabase : Database() {
     override suspend fun updateSystem(system: SystemRecord) {}
 
     override suspend fun updateSystemServerSettings(serverSettings: SystemServerSettingsRecord) {}
+    override suspend fun updateSystemChannelSettings(channelSettings: SystemChannelSettingsRecord) {}
 
     override suspend fun updateUser(user: UserRecord) {}
 
