@@ -13,8 +13,6 @@ import dev.proxyfox.bot.string.parser.registerCommand
 import dev.proxyfox.common.printStep
 import dev.proxyfox.database.database
 import kotlinx.coroutines.Job
-import kotlinx.coroutines.flow.forEach
-import kotlinx.coroutines.flow.map
 import kotlinx.coroutines.flow.toList
 import java.time.format.DateTimeFormatter
 
@@ -30,6 +28,7 @@ object SystemCommands {
                 greedy("name", ::create)
             }
             literal("new", ::createEmpty, new)
+            literal("n", ::createEmpty, new)
             literal("create", ::createEmpty, new)
             literal("add", ::createEmpty, new)
 
