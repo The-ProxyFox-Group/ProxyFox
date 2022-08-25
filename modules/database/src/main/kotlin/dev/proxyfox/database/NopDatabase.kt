@@ -11,6 +11,7 @@ import dev.proxyfox.database.records.system.SystemChannelSettingsRecord
 import dev.proxyfox.database.records.system.SystemRecord
 import dev.proxyfox.database.records.system.SystemServerSettingsRecord
 import dev.proxyfox.database.records.system.SystemSwitchRecord
+import java.time.OffsetDateTime
 
 class NopDatabase : Database() {
     override suspend fun setup() = this
@@ -107,6 +108,10 @@ class NopDatabase : Database() {
         prefix: String?,
         suffix: String?
     ): MemberProxyTagRecord? = null
+
+    override suspend fun allocateSwitch(systemId: String, memberId: List<String>, timestamp: OffsetDateTime?): SystemSwitchRecord? = null
+    override suspend fun getSwitchesByHost(userId: String): List<SystemSwitchRecord>? = null
+    override suspend fun getSwitchesById(systemId: String): List<SystemSwitchRecord>? = null
 
     override suspend fun removeProxyTag(proxyTag: MemberProxyTagRecord) {}
 

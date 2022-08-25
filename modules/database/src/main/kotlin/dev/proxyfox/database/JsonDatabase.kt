@@ -442,6 +442,28 @@ class JsonDatabase : Database() {
         return proxy
     }
 
+    override suspend fun allocateSwitch(systemId: String, memberId: List<String>, timestamp: OffsetDateTime?): SystemSwitchRecord? {
+        val system = systems[systemId] ?: return null
+        val switch = SystemSwitchRecord()
+        val id = ((system.switches.keys.maxOfOrNull { it.fromPkString() } ?: 0) + 1).toPkString()
+        switch.id = id
+        switch.systemId = systemId
+        switch.memberIds = memberId
+        timestamp?.let { switch.timestamp = it }
+        system.switches[id] = switch
+        return switch
+    }
+
+    override suspend fun getSwitchesByHost(userId: String): List<SystemSwitchRecord>? {
+        val system = users[userId] ?: return null
+        return system.switches.values.toList()
+    }
+
+    override suspend fun getSwitchesById(systemId: String): List<SystemSwitchRecord>? {
+        val system = systems[systemId] ?: return null
+        return system.switches.values.toList()
+    }
+
     override suspend fun removeProxyTag(proxyTag: MemberProxyTagRecord) {
         systems[proxyTag.systemId]!!.proxyTags.remove(JsonProxyStruct.from(proxyTag))
     }
@@ -524,7 +546,12 @@ class JsonDatabase : Database() {
             }
 
             for ((id, switch) in system.switches) {
-                // TODO: Add switches
+                val newSwitch = other.allocateSwitch(nsid, switch.memberIds.mapNotNull(memberLookup::get), switch.timestamp)
+                if (newSwitch == null) {
+                    logger.warn("Couldn't write switch {}/{} to {}", sid, id, nsid)
+                } else {
+                    logger.info("Written switch {}/{} to {}/{}", sid, id, nsid, newSwitch.id)
+                }
             }
         }
         logger.info("Migrating server settings...")

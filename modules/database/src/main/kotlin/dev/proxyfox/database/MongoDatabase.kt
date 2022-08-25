@@ -24,6 +24,7 @@ import org.litote.kmongo.reactivestreams.KMongo
 import org.litote.kmongo.reactivestreams.countDocuments
 import org.litote.kmongo.reactivestreams.deleteOne
 import org.litote.kmongo.reactivestreams.deleteOneById
+import java.time.OffsetDateTime
 import java.util.concurrent.TimeUnit
 
 
@@ -342,6 +343,26 @@ class MongoDatabase : Database() {
         memberProxies.insertOne(proxy).awaitFirst()
         return proxy
     }
+
+    override suspend fun allocateSwitch(systemId: String, memberId: List<String>, timestamp: OffsetDateTime?): SystemSwitchRecord? {
+        getSystemById(systemId) ?: return null
+        val switches = getSwitchesById(systemId)
+        val switch = SystemSwitchRecord()
+        val id = ((switches.maxOfOrNull { it.id.fromPkString() } ?: 0) + 1).toPkString()
+        switch.id = id
+        switch.systemId = systemId
+        switch.memberIds = memberId
+        timestamp?.let { switch.timestamp = it }
+        systemSwitches.insertOne(switch).awaitFirst()
+        return switch
+    }
+
+    override suspend fun getSwitchesByHost(userId: String): List<SystemSwitchRecord>? {
+        return getSwitchesById(getUser(userId).system ?: return null)
+    }
+
+    override suspend fun getSwitchesById(systemId: String): List<SystemSwitchRecord> =
+        systemSwitches.findAll("{systemId:'$systemId'}")
 
     override suspend fun removeProxyTag(proxyTag: MemberProxyTagRecord) {
         memberProxies.deleteOne("{systemId:'${proxyTag.systemId}',memberId:'${proxyTag.memberId}',prefix:'${proxyTag.prefix}',suffix:'${proxyTag.suffix}'}")
