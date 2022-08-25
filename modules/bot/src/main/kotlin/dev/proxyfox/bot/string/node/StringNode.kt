@@ -5,7 +5,7 @@ import dev.proxyfox.bot.string.parser.MessageHolder
 class StringNode(val name: String, val executor: suspend MessageHolder.() -> String) : Node {
     private val literalNodes: ArrayList<LiteralNode> = ArrayList()
     private val stringNodes: ArrayList<StringNode> = ArrayList()
-    private val greedyNodes: ArrayList<GreedyNode> = ArrayList()
+    private val greedyNodes: ArrayList<Node> = ArrayList()
 
     override fun parse(string: String, index: Int, holder: MessageHolder): Int {
         if (string.length < index) return index
@@ -15,34 +15,34 @@ class StringNode(val name: String, val executor: suspend MessageHolder.() -> Str
                 var out = ""
                 for (i in newString.indices) {
                     if (newString[i] == '"') {
-                        holder.params[name] = out
+                        holder.params[name] = arrayOf(out)
                         return index + i
                     }
                     out += newString[i].toString()
                 }
-                holder.params[name] = out
+                holder.params[name] = arrayOf(out)
             }
             '\'' -> {
                 var out = ""
                 for (i in newString.indices) {
                     if (newString[i] == '\'') {
-                        holder.params[name] = out
+                        holder.params[name] = arrayOf(out)
                         return index + i
                     }
                     out += newString[i].toString()
                 }
-                holder.params[name] = out
+                holder.params[name] = arrayOf(out)
             }
             else -> {
                 var out = ""
                 for (i in newString.indices) {
                     if (newString[i] == ' ') {
-                        holder.params[name] = out
+                        holder.params[name] = arrayOf(out)
                         return index + i
                     }
                     out += newString[i].toString()
                 }
-                holder.params[name] = out
+                holder.params[name] = arrayOf(out)
             }
         }
         return string.length
@@ -60,8 +60,9 @@ class StringNode(val name: String, val executor: suspend MessageHolder.() -> Str
             is LiteralNode -> literalNodes.add(node)
             is StringNode -> stringNodes.add(node)
             is GreedyNode -> greedyNodes.add(node)
+            is StringListNode -> greedyNodes.add(node)
         }
     }
 
-    override suspend fun execute(holder: MessageHolder): String = executor(holder)
+    override suspend fun execute(holder: MessageHolder): String = holder.executor()
 }

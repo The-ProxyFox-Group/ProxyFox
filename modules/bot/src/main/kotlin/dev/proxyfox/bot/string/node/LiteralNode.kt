@@ -5,7 +5,7 @@ import dev.proxyfox.bot.string.parser.MessageHolder
 class LiteralNode(private val literal: String, val executor: suspend MessageHolder.() -> String) : Node {
     private val literalNodes: ArrayList<LiteralNode> = ArrayList()
     private val stringNodes: ArrayList<StringNode> = ArrayList()
-    private val greedyNodes: ArrayList<GreedyNode> = ArrayList()
+    private val greedyNodes: ArrayList<Node> = ArrayList()
 
     override fun parse(string: String, index: Int, holder: MessageHolder): Int {
         if (string.length < literal.length + index) return index
@@ -26,8 +26,9 @@ class LiteralNode(private val literal: String, val executor: suspend MessageHold
             is LiteralNode -> literalNodes.add(node)
             is StringNode -> stringNodes.add(node)
             is GreedyNode -> greedyNodes.add(node)
+            is StringListNode -> greedyNodes.add(node)
         }
     }
 
-    override suspend fun execute(holder: MessageHolder) = executor(holder)
+    override suspend fun execute(holder: MessageHolder) = holder.executor()
 }
