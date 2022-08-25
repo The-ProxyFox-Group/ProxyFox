@@ -68,7 +68,7 @@ object MiscCommands {
     }
 
     private suspend fun import(ctx: MessageHolder): String {
-        val attach = URL(ctx.params["url"]!!)
+        val attach = URL(ctx.params["url"]!![0])
         val importer = import(
             InputStreamReader(attach.openStream()),
             ctx.message.author!!.id.value.toString()
@@ -138,8 +138,8 @@ To get support, head on over to https://discord.gg/q3yF8ay9V7"""
     private suspend fun proxyMember(ctx: MessageHolder): String {
         val system = database.getSystemByHost(ctx.message.author!!.id.value.toString())
             ?: return "System does not exist. Create one using `pf>system new`"
-        val member = database.getMemberByIdAndName(system.id, ctx.params["member"]!!)
-            ?: database.getMemberById(system.id, ctx.params["member"]!!)
+        val member = database.getMemberByIdAndName(system.id, ctx.params["member"]!![0])
+            ?: database.getMemberById(system.id, ctx.params["member"]!![0])
             ?: return "Member does not exist. Create one using `pf>member new`"
         system.autoType = AutoProxyMode.MEMBER
         system.autoProxy = member.id
@@ -188,10 +188,10 @@ To get support, head on over to https://discord.gg/q3yF8ay9V7"""
 
     private suspend fun role(ctx: MessageHolder): String {
         val server = database.getServerSettings(ctx.message.getGuild().id.value.toString())
-        val role = if (Regex("<@&[0-9]*>").containsMatchIn(ctx.params["role"]!!))
-            ctx.params["role"]!!.substring(3, ctx.params["role"]!!.length - 1)
-        else if (Regex("[0-9]*").containsMatchIn(ctx.params["role"]!!))
-            ctx.params["role"]!!
+        val role = if (Regex("<@&[0-9]*>").containsMatchIn(ctx.params["role"]!![0]))
+            ctx.params["role"]!![0].substring(3, ctx.params["role"]!![0].length - 1)
+        else if (Regex("[0-9]*").containsMatchIn(ctx.params["role"]!![0]))
+            ctx.params["role"]!![0]
         else return "Please provide a role to set"
         server.proxyRole = role
         database.updateServerSettings(server)

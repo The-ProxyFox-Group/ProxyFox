@@ -113,7 +113,7 @@ object SystemCommands {
 
     private suspend fun create(ctx: MessageHolder): String {
         val system = database.allocateSystem(ctx.message.author!!.id.value.toString())
-        system.name = ctx.params["name"]
+        system.name = ctx.params["name"]?.get(0)
         database.updateSystem(system)
         return "System created with name ${system.name}! See `pf>help` for how to set up your system further!"
     }
@@ -127,7 +127,7 @@ object SystemCommands {
     private suspend fun rename(ctx: MessageHolder): String {
         val system = database.getSystemByHost(ctx.message.author!!.id.value.toString())
             ?: return "System does not exist. Create one using `pf>system new`"
-        system.name = ctx.params["name"]
+        system.name = ctx.params["name"]?.get(0)
         database.updateSystem(system)
         return "System name updated to ${system.name}!"
     }
@@ -153,7 +153,7 @@ object SystemCommands {
     private suspend fun description(ctx: MessageHolder): String {
         val system = database.getSystemByHost(ctx.message.author!!.id.value.toString())
             ?: return "System does not exist. Create one using `pf>system new`"
-        system.description = ctx.params["desc"]
+        system.description = ctx.params["desc"]?.get(0)
         database.updateSystem(system)
         return "Description updated!"
     }
@@ -173,7 +173,7 @@ object SystemCommands {
     private suspend fun avatar(ctx: MessageHolder): String {
         val system = database.getSystemByHost(ctx.message.author!!.id.value.toString())
             ?: return "System does not exist. Create one using `pf>system new`"
-        system.avatarUrl = ctx.params["avatar"]
+        system.avatarUrl = ctx.params["avatar"]?.get(0)
         database.updateSystem(system)
         return "System avatar updated!"
     }
@@ -193,7 +193,7 @@ object SystemCommands {
     private suspend fun tag(ctx: MessageHolder): String {
         val system = database.getSystemByHost(ctx.message.author!!.id.value.toString())
             ?: return "System does not exist. Create one using `pf>system new`"
-        system.tag = ctx.params["tag"]
+        system.tag = ctx.params["tag"]?.get(0)
         database.updateSystem(system)
         return "System tag updated!"
     }
