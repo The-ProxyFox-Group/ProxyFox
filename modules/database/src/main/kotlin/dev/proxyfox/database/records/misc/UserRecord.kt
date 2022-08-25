@@ -6,5 +6,4 @@ class UserRecord {
     var _id: ObjectId = ObjectId()
     var id: String = ""
     var system: String? = null
-    var trust: HashMap<String, TrustLevel> = HashMap()
 }
