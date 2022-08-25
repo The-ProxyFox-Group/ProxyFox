@@ -8,4 +8,8 @@ class SystemChannelSettingsRecord {
     var channelId: String = ""
     var systemId: String = ""
     var proxyEnabled: Boolean = true
+
+    fun writeTo(other: SystemChannelSettingsRecord) {
+        other.proxyEnabled = proxyEnabled
+    }
 }

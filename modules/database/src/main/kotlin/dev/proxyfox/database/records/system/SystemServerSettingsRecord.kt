@@ -20,4 +20,10 @@ class SystemServerSettingsRecord {
     /** The ID of the member that's currently being auto-proxied. */
     var autoProxy: String? = null
     var autoProxyMode: AutoProxyMode = AutoProxyMode.FALLBACK
+
+    fun writeTo(other: SystemServerSettingsRecord, autoProxy: String?) {
+        other.proxyEnabled = proxyEnabled
+        other.autoProxy = autoProxy
+        other.autoProxyMode = autoProxyMode
+    }
 }
