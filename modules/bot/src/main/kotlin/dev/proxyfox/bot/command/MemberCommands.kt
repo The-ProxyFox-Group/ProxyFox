@@ -7,7 +7,6 @@ import dev.kord.core.event.message.ReactionAddEvent
 import dev.kord.core.on
 import dev.kord.rest.builder.message.create.embed
 import dev.proxyfox.bot.kord
-import dev.proxyfox.database.database
 import dev.proxyfox.bot.string.dsl.greedy
 import dev.proxyfox.bot.string.dsl.literal
 import dev.proxyfox.bot.string.dsl.string
@@ -16,6 +15,7 @@ import dev.proxyfox.bot.string.parser.registerCommand
 import dev.proxyfox.common.fromColor
 import dev.proxyfox.common.printStep
 import dev.proxyfox.common.toColor
+import dev.proxyfox.database.database
 import kotlinx.coroutines.Job
 import kotlinx.coroutines.flow.toList
 
@@ -109,6 +109,9 @@ object MemberCommands {
                 greedy("member", ::delete)
             }
             literal("new", ::createEmpty) {
+                greedy("name", ::create)
+            }
+            literal("n", ::createEmpty) {
                 greedy("name", ::create)
             }
             literal("create", ::createEmpty) {
