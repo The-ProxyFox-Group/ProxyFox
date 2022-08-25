@@ -437,11 +437,13 @@ class JsonDatabase : Database() {
     }
 
     override suspend fun updateTrustLevel(userId: String, trustee: String, level: TrustLevel): Boolean {
-        TODO("Not yet implemented")
+        val system = getSystemById(trustee) ?: return false
+        system.trust[userId] = level
+        return true
     }
 
     override suspend fun getTrustLevel(userId: String, trustee: String): TrustLevel {
-        TODO("Not yet implemented")
+        return getSystemById(trustee)?.trust?.get(userId) ?: TrustLevel.NONE
     }
 
     override suspend fun getTotalSystems() = systems.size
@@ -578,7 +580,8 @@ class JsonDatabase : Database() {
         val serverSettings: MutableMap<String, SystemServerSettingsRecord> = HashMap(),
         val channelSettings: MutableMap<String, SystemChannelSettingsRecord> = HashMap(),
         val proxyTags: MutableList<JsonProxyStruct> = ArrayList(),
-        val switches: MutableMap<String, SystemSwitchRecord> = HashMap()
+        val switches: MutableMap<String, SystemSwitchRecord> = HashMap(),
+        val trust: HashMap<String, TrustLevel> = HashMap()
     ) {
         /**
          * Cached lookup of name to member.
@@ -615,6 +618,7 @@ class JsonDatabase : Database() {
             autoType?.let {
                 record.autoType = it
             }
+            record.trust = trust
         }
 
         fun from(record: SystemRecord) {

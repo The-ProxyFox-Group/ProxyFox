@@ -1,6 +1,7 @@
 package dev.proxyfox.database.records.system
 
 import dev.proxyfox.database.records.misc.AutoProxyMode
+import dev.proxyfox.database.records.misc.TrustLevel
 import org.bson.types.ObjectId
 import java.time.OffsetDateTime
 import java.time.ZoneOffset
@@ -26,4 +27,5 @@ class SystemRecord {
     /** The ID of the member that's currently being auto-proxied. */
     var autoProxy: String? = null
     var autoType: AutoProxyMode = AutoProxyMode.OFF
+    var trust: HashMap<String, TrustLevel> = HashMap()
 }

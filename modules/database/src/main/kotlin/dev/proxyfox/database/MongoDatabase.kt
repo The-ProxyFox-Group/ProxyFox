@@ -349,15 +349,14 @@ class MongoDatabase : Database() {
     }
 
     override suspend fun updateTrustLevel(userId: String, trustee: String, level: TrustLevel): Boolean {
-        val user = getUser(userId)
-        user.trust[trustee] = level
-        updateUser(user)
+        val system = getSystemById(trustee) ?: return false
+        system.trust[userId] = level
+        updateSystem(system)
         return true
     }
 
     override suspend fun getTrustLevel(userId: String, trustee: String): TrustLevel {
-        val user = getUser(userId)
-        return user.trust[trustee] ?: TrustLevel.NONE
+        return getSystemById(trustee)?.trust?.get(userId) ?: TrustLevel.NONE
     }
 
     override suspend fun getTotalSystems(): Int {
