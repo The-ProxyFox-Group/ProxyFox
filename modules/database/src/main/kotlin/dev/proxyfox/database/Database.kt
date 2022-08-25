@@ -11,6 +11,7 @@ import dev.proxyfox.database.records.system.SystemChannelSettingsRecord
 import dev.proxyfox.database.records.system.SystemRecord
 import dev.proxyfox.database.records.system.SystemServerSettingsRecord
 import dev.proxyfox.database.records.system.SystemSwitchRecord
+import java.time.OffsetDateTime
 
 // Created 2022-09-04T14:06:39
 
@@ -199,6 +200,40 @@ abstract class Database : AutoCloseable {
         prefix: String?,
         suffix: String?
     ): MemberProxyTagRecord?
+
+    /**
+     * Allocates a switch
+     *
+     * @param systemId The system ID to assign it to
+     * @param memberId The member IDs for the switch
+     * @param timestamp The timestamp of the switch. May be null for now.
+     * @return A switch if a system exists, null otherwise.
+     * */
+    abstract suspend fun allocateSwitch(
+        systemId: String,
+        memberId: List<String>,
+        timestamp: OffsetDateTime? = null
+    ): SystemSwitchRecord?
+
+    /**
+     * Get switches by user ID
+     *
+     * @param userId The user ID to get all switches by.
+     * @return All switches registered for the system.
+     * */
+    abstract suspend fun getSwitchesByHost(
+        userId: String
+    ): List<SystemSwitchRecord>?
+
+    /**
+     * Get switches by system ID
+     *
+     * @param systemId The system ID to get all switches by.
+     * @return All switches registered for the system.
+     * */
+    abstract suspend fun getSwitchesById(
+        systemId: String
+    ): List<SystemSwitchRecord>?
 
     /**
      * Removes a proxy tag
