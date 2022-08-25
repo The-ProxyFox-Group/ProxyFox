@@ -106,9 +106,9 @@ For quick setup:
         """ProxyFox is modern Discord bot designed to help systems communicate.
 It uses discord's webhooks to generate "pseudo-users" which different members of the system can use. Someone will likely be willing to explain further if need be."""
 
-    private suspend fun invite(ctx: MessageHolder): String {
-        TODO()
-    }
+    private suspend fun invite(ctx: MessageHolder): String =
+        """Use <https://discord.com/api/oauth2/authorize?client_id=${ctx.message.kord.selfId}&permissions=277696539728&scope=applications.commands+bot> to invite ProxyFox to your server!
+To get support, head on over to https://discord.gg/q3yF8ay9V7"""
 
     private suspend fun source(ctx: MessageHolder): String =
         "Source code for ProxyFox is available at https://github.com/ProxyFox-developers/ProxyFox!"
