@@ -189,9 +189,12 @@ class JsonDatabase : Database() {
         return this
     }
 
-    @Deprecated(level = DeprecationLevel.ERROR, message = "*")
+    @Deprecated(level = DeprecationLevel.WARNING, message = "Non-native method")
     override suspend fun getUser(userId: String): UserRecord {
-        throw UnsupportedOperationException()
+        val record = UserRecord()
+        record.id = userId
+        record.system = users[userId]?.id
+        return record
     }
 
     override suspend fun getSystemByHost(userId: String): SystemRecord? {
@@ -386,8 +389,15 @@ class JsonDatabase : Database() {
             .serverSettings[serverSettings.serverId] = serverSettings
     }
 
+    @Deprecated(level = DeprecationLevel.WARNING, message = "Non-native method")
     override suspend fun updateUser(user: UserRecord) {
-        TODO("Not yet implemented")
+        if (user.system == null) {
+            removeSystem(user.id)
+        } else {
+            val system = systems[user.system] ?: throw IllegalArgumentException("No such system ${user.system}")
+            users[user.id] = system
+            system.accounts.add(user.id)
+        }
     }
 
     override suspend fun createMessage(
