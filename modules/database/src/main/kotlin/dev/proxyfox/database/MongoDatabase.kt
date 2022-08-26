@@ -19,12 +19,10 @@ import dev.proxyfox.database.records.system.SystemRecord
 import dev.proxyfox.database.records.system.SystemServerSettingsRecord
 import dev.proxyfox.database.records.system.SystemSwitchRecord
 import kotlinx.coroutines.reactive.awaitFirst
-import org.litote.kmongo.coroutine.toList
-import org.litote.kmongo.reactivestreams.KMongo
-import org.litote.kmongo.reactivestreams.countDocuments
-import org.litote.kmongo.reactivestreams.deleteOne
-import org.litote.kmongo.reactivestreams.deleteOneById
+import kotlinx.coroutines.reactive.awaitFirstOrDefault
+import org.litote.kmongo.reactivestreams.*
 import java.time.OffsetDateTime
+import java.util.*
 import java.util.concurrent.TimeUnit
 
 
@@ -229,14 +227,9 @@ class MongoDatabase : Database() {
     override suspend fun allocateSystem(userId: String): SystemRecord {
         if (getSystemByHost(userId) != null) return getSystemByHost(userId)!!
         val user = getUser(userId)
-        val systems = this.systems.find().toList()
-        var currentId = 0
-        for (system in systems) {
-            if (system.id.fromPkString() > currentId + 1) break
-            currentId = system.id.fromPkString()
-        }
+        val id = this.systems.find().map { it?.id?.fromPkString() ?: -1 }.max(null).awaitFirstOrDefault(-1) + 1
         val system = SystemRecord()
-        system.id = (currentId + 1).toPkString()
+        system.id = id.toPkString()
         system.users.add(userId)
         user.system = system.id
         updateUser(user)
