@@ -1,10 +1,7 @@
 package dev.proxyfox.bot.string.dsl
 
+import dev.proxyfox.bot.string.node.*
 import dev.proxyfox.common.applyAsync
-import dev.proxyfox.bot.string.node.GreedyNode
-import dev.proxyfox.bot.string.node.LiteralNode
-import dev.proxyfox.bot.string.node.Node
-import dev.proxyfox.bot.string.node.StringNode
 import dev.proxyfox.bot.string.parser.MessageHolder
 
 suspend fun literal(
@@ -42,6 +39,15 @@ fun Node.greedy(
     executor: suspend MessageHolder.() -> String
 ): GreedyNode {
     val node = GreedyNode(name, executor)
+    addSubNode(node)
+    return node
+}
+
+fun Node.stringList(
+    name: String,
+    executor: suspend MessageHolder.() -> String
+): StringListNode {
+    val node = StringListNode(name, executor)
     addSubNode(node)
     return node
 }
