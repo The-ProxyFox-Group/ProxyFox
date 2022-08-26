@@ -333,7 +333,15 @@ class JsonDatabase : Database() {
 
     override suspend fun allocateSystem(userId: String): SystemRecord {
         return getSystemByHost(userId) ?: run {
-            val id = ((systems.keys.maxOfOrNull { it.fromPkString() } ?: -1) + 1).toPkString()
+            val ids = systems.keys.map { it.fromPkString() }.sorted()
+            var newId = ids.size
+            for ((index, id) in ids.withIndex()) {
+                if (index != id) {
+                    newId = index
+                    break
+                }
+            }
+            val id = newId.toPkString()
             val struct = JsonSystemStruct(id)
             struct.accounts.add(userId)
             users[userId] = struct
