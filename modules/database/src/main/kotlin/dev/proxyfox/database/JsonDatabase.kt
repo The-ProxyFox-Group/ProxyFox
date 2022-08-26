@@ -584,7 +584,6 @@ class JsonDatabase : Database() {
         val obj = JsonObject()
         obj.addProperty("schema", 1)
         obj.add("systems", gson.toJsonTree(systems))
-        obj.add("users", gson.toJsonTree(users))
         obj.add("servers", gson.toJsonTree(servers))
         file.writer().use { gson.toJson(obj, it) }
     }
