@@ -112,13 +112,6 @@ class MongoDatabase : Database() {
         return members.findOne("{id:'$memberId', systemId:'$systemId'}")
     }
 
-    override suspend fun getFrontingMembersById(systemId: String): List<MemberRecord>? {
-        val switch = systemSwitches.findAll("{systemId:'$systemId'}").minByOrNull {
-            it.timestamp
-        } ?: return null
-        return switch.memberIds.mapNotNull { getMemberById(systemId, it) }
-    }
-
     override suspend fun getProxiesById(systemId: String): List<MemberProxyTagRecord> =
         memberProxies.findAll("{systemId:'$systemId'}")
 
@@ -309,6 +302,11 @@ class MongoDatabase : Database() {
         systemSwitches.insertOne(switch).awaitFirst()
         return switch
     }
+
+    override suspend fun getLatestSwitch(systemId: String) =
+        systemSwitches.findAll("{systemId:'$systemId'}").maxByOrNull {
+            it.timestamp
+        }
 
     override suspend fun getSwitchesById(systemId: String): List<SystemSwitchRecord> =
         systemSwitches.findAll("{systemId:'$systemId'}")
