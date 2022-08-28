@@ -112,11 +112,6 @@ class MongoDatabase : Database() {
         return members.findOne("{id:'$memberId', systemId:'$systemId'}")
     }
 
-    override suspend fun getFrontingMembersByHost(userId: ULong): List<MemberRecord>? {
-        val user = getUser(userId)
-        return user.system?.let { getFrontingMembersById(it) }
-    }
-
     override suspend fun getFrontingMembersById(systemId: String): List<MemberRecord>? {
         val switch = systemSwitches.findAll("{systemId:'$systemId'}").minByOrNull {
             it.timestamp
