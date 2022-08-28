@@ -104,7 +104,9 @@ abstract class Database : AutoCloseable {
      * @param systemId The ID of the system.
      * @return The fronting member of the system tied to the Discord user, if applicable.
      * */
-    abstract suspend fun getFrontingMembersById(systemId: String): List<MemberRecord>?
+    open suspend fun getFrontingMembersById(systemId: String): List<MemberRecord>? {
+        return getLatestSwitch(systemId)?.memberIds?.mapNotNull { getMemberById(systemId, it) }
+    }
 
     open suspend fun getProxiesByHost(userId: ULong) = getUser(userId)?.system?.let { getProxiesById(it) }
 
@@ -264,6 +266,11 @@ abstract class Database : AutoCloseable {
         memberId: List<String>,
         timestamp: OffsetDateTime? = null
     ): SystemSwitchRecord?
+
+    /**
+     *
+     * */
+    abstract suspend fun getLatestSwitch(systemId: String): SystemSwitchRecord?
 
     /**
      * Get switches by user ID

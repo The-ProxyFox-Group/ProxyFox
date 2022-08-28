@@ -215,7 +215,7 @@ class JsonDatabase : Database() {
     @Deprecated(level = DeprecationLevel.ERROR, message = "Non-native method")
     override suspend fun getFrontingMembersById(systemId: String): List<MemberRecord>? {
         val system = systems[systemId] ?: return null
-        return system.switches.values.maxByOrNull { it.timestamp }?.memberIds?.mapNotNull { system.members[it]?.view() }
+        return getLatestSwitch(systemId)?.memberIds?.mapNotNull { system.members[it]?.view() }
     }
 
     @Deprecated(level = DeprecationLevel.ERROR, message = "Non-native method")
@@ -417,6 +417,10 @@ class JsonDatabase : Database() {
         timestamp?.let { switch.timestamp = it }
         system.switches[id] = switch
         return switch
+    }
+
+    override suspend fun getLatestSwitch(systemId: String): SystemSwitchRecord? {
+        return systems[systemId]?.switches?.values?.maxByOrNull { it.timestamp }
     }
 
     override suspend fun getSwitchesById(systemId: String): List<SystemSwitchRecord>? {
