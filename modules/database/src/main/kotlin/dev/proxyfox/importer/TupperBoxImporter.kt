@@ -11,11 +11,7 @@ import dev.proxyfox.database.records.system.SystemRecord
  * @author Oliver
  * */
 class TupperBoxImporter : Importer {
-    override suspend fun import(string: String, userId: String) {
-        TODO("Not yet implemented")
-    }
-
-    override suspend fun import(database: Database, string: String, userId: String) {
+    override suspend fun import(database: Database, string: String, userId: ULong) {
         TODO("Not yet implemented")
     }
 

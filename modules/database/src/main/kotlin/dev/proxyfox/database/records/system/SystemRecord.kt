@@ -16,7 +16,7 @@ import java.time.ZoneOffset
 class SystemRecord {
     var _id: ObjectId = ObjectId()
     var id: String = ""
-    var users: ArrayList<String> = ArrayList()
+    var users: ArrayList<ULong> = ArrayList()
     var name: String? = null
     var description: String? = null
     var tag: String? = null
@@ -27,5 +27,5 @@ class SystemRecord {
     /** The ID of the member that's currently being auto-proxied. */
     var autoProxy: String? = null
     var autoType: AutoProxyMode = AutoProxyMode.OFF
-    var trust: HashMap<String, TrustLevel> = HashMap()
+    var trust: HashMap<ULong, TrustLevel> = HashMap()
 }

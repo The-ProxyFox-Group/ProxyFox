@@ -1,7 +1,9 @@
 package dev.proxyfox.importer
 
 import com.google.gson.Gson
+import dev.kord.core.entity.Entity
 import dev.proxyfox.database.Database
+import dev.proxyfox.database.database
 import dev.proxyfox.database.records.member.MemberProxyTagRecord
 import dev.proxyfox.database.records.member.MemberRecord
 import dev.proxyfox.database.records.system.SystemRecord
@@ -17,10 +19,10 @@ val gson = Gson()
  *
  * @author Oliver
  * */
-suspend fun import(string: String, userId: String): Importer {
+suspend fun import(string: String, user: Entity?): Importer {
     val map = gson.fromJson(string, Map::class.java) as Map<String, *>
     val importer = if (map.containsKey("tuppers")) TupperBoxImporter() else PluralKitImporter()
-    importer.import(string, userId)
+    importer.import(string, user!!.id.value)
     return importer
 }
 
@@ -32,10 +34,10 @@ suspend fun import(string: String, userId: String): Importer {
  *
  * @author Oliver
  * */
-suspend fun import(reader: InputStreamReader, userId: String): Importer {
+suspend fun import(reader: InputStreamReader, user: Entity?): Importer {
     val map = gson.fromJson(reader, Map::class.java)
     val importer = if (map.containsKey("tuppers")) TupperBoxImporter() else PluralKitImporter()
-    importer.import(reader.readText(), userId)
+    importer.import(reader.readText(), user!!.id.value)
     return importer
 }
 
@@ -47,10 +49,10 @@ suspend fun import(reader: InputStreamReader, userId: String): Importer {
  *
  * @author Oliver
  * */
-suspend fun import(database: Database, string: String, userId: String): Importer {
+suspend fun import(database: Database, string: String, user: Entity?): Importer {
     val map = gson.fromJson(string, Map::class.java) as Map<String, *>
     val importer = if (map.containsKey("tuppers")) TupperBoxImporter() else PluralKitImporter()
-    importer.import(database, string, userId)
+    importer.import(database, string, user!!.id.value)
     return importer
 }
 
@@ -62,10 +64,10 @@ suspend fun import(database: Database, string: String, userId: String): Importer
  *
  * @author Oliver
  * */
-suspend fun import(database: Database, reader: InputStreamReader, userId: String): Importer {
+suspend fun import(database: Database, reader: InputStreamReader, user: Entity?): Importer {
     val map = gson.fromJson(reader, Map::class.java)
     val importer = if (map.containsKey("tuppers")) TupperBoxImporter() else PluralKitImporter()
-    importer.import(database, reader.readText(), userId)
+    importer.import(database, reader.readText(), user!!.id.value)
     return importer
 }
 
@@ -75,8 +77,8 @@ suspend fun import(database: Database, reader: InputStreamReader, userId: String
  * @author Oliver
  * */
 interface Importer {
-    suspend fun import(string: String, userId: String)
-    suspend fun import(database: Database, string: String, userId: String)
+    suspend fun import(string: String, userId: ULong) = import(database, string, userId)
+    suspend fun import(database: Database, string: String, userId: ULong)
 
     // Getters:
     suspend fun getSystem(): SystemRecord

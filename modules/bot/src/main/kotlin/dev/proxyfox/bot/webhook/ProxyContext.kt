@@ -34,7 +34,7 @@ data class ProxyContext(
             messageContent = proxy.trim(messageContent)
         val system = database.getSystemById(member.systemId)!!
         val serverMember = database.getMemberServerSettingsById(
-            message.getGuildOrNull()!!.id.value.toString(),
+            message.getGuildOrNull(),
             member.systemId,
             member.id
         ) ?: MemberServerSettingsRecord()

@@ -11,7 +11,7 @@ import org.bson.types.ObjectId
  **/
 class MemberServerSettingsRecord {
     var _id: ObjectId = ObjectId()
-    var serverId: String = ""
+    var serverId: ULong = 0UL
     var systemId: String = ""
     var memberId: String = ""
     var avatarUrl: String? = null
