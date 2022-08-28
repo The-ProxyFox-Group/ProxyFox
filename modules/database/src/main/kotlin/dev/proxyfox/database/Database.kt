@@ -341,7 +341,7 @@ abstract class Database : AutoCloseable {
     /**
      * Gets a member by system ID and either member ID or name.
      * */
-    suspend fun findMember(systemId: String, member: String): MemberRecord? = getMemberById(systemId, member) ?: getMemberByIdAndName(systemId, member)
+    suspend fun findMember(systemId: String, member: String): MemberRecord? = getMemberByIdAndName(systemId, member) ?: getMemberById(systemId, member)
 
     /**
      * Gets a member by user snowflake and member name

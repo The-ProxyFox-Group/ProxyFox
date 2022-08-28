@@ -138,8 +138,7 @@ To get support, head on over to https://discord.gg/q3yF8ay9V7"""
     private suspend fun proxyMember(ctx: MessageHolder): String {
         val system = database.getSystemByHost(ctx.message.author)
             ?: return "System does not exist. Create one using `pf>system new`"
-        val member = database.getMemberByIdAndName(system.id, ctx.params["member"]!![0])
-            ?: database.getMemberById(system.id, ctx.params["member"]!![0])
+        val member = database.findMember(system.id, ctx.params["member"]!![0])
             ?: return "Member does not exist. Create one using `pf>member new`"
         system.autoType = AutoProxyMode.MEMBER
         system.autoProxy = member.id
