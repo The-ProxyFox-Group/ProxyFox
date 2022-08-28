@@ -15,7 +15,6 @@ import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.withContext
 import java.io.InputStreamReader
 import java.net.URL
-import java.util.*
 
 /**
  * Miscellaneous commands
@@ -92,7 +91,7 @@ object MiscCommands {
     }
 
     private fun time(ctx: MessageHolder): String {
-        val date = Calendar.getInstance().timeInMillis / 1000
+        val date = System.currentTimeMillis() / 1000
         return "It is currently <t:$date:f>"
     }
 
