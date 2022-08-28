@@ -11,7 +11,8 @@ import dev.proxyfox.database.database
 import dev.proxyfox.database.records.misc.AutoProxyMode
 import dev.proxyfox.exporter.Exporter
 import dev.proxyfox.importer.import
-import java.io.File
+import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.withContext
 import java.io.InputStreamReader
 import java.net.URL
 import java.util.*
@@ -60,67 +61,67 @@ object MiscCommands {
     private suspend fun importEmpty(ctx: MessageHolder): String {
         if (ctx.message.attachments.isEmpty()) return "Please attach a file or link to import"
         val attach = URL(ctx.message.attachments.toList()[0].url)
-        val importer = import(
-            InputStreamReader(attach.openStream()),
-            ctx.message.author!!.id.value.toString()
-        )
+        val importer = withContext(Dispatchers.IO) {
+            import(
+                InputStreamReader(attach.openStream()),
+                ctx.message.author
+            )
+        }
         return "File imported. created ${importer.getNewMembers()} member(s), updated ${importer.getUpdatedMembers()} member(s)"
     }
 
     private suspend fun import(ctx: MessageHolder): String {
         val attach = URL(ctx.params["url"]!![0])
-        val importer = import(
-            InputStreamReader(attach.openStream()),
-            ctx.message.author!!.id.value.toString()
-        )
+        val importer = withContext(Dispatchers.IO) {
+            import(
+                InputStreamReader(attach.openStream()),
+                ctx.message.author
+            )
+        }
         return "File imported. created ${importer.getNewMembers()} member(s), updated ${importer.getUpdatedMembers()} member(s)"
     }
 
     private suspend fun export(ctx: MessageHolder): String {
-        val system = database.getSystemByHost(ctx.message.author!!.id.value.toString())
+        database.getSystemByHost(ctx.message.author)
             ?: return "System does not exist. Create one using `pf>system new`"
-        val export = Exporter.export(ctx.message.author!!.id)
-        val exportFile = File.createTempFile("export", "json")
-        val exportInputStream = exportFile.inputStream()
-        val exportOutputStream = exportFile.outputStream()
-        exportOutputStream.bufferedWriter().write(export)
-        val message = ctx.message.channel.createMessage {
-            files.add(NamedFile("export", exportInputStream))
+        val export = Exporter.export(ctx.message.author!!.id.value)
+        ctx.message.channel.createMessage {
+            files.add(NamedFile("export", export.byteInputStream()))
         }
         return ""
     }
 
-    private suspend fun time(ctx: MessageHolder): String {
+    private fun time(ctx: MessageHolder): String {
         val date = Calendar.getInstance().timeInMillis / 1000
         return "It is currently <t:$date:f>"
     }
 
-    private suspend fun help(ctx: MessageHolder): String =
+    private fun help(ctx: MessageHolder): String =
         """To view commands for ProxyFox, visit <https://github.com/ProxyFox-developers/ProxyFox/blob/master/commands.md>
 For quick setup:
 - pf>system new name
 - pf>member new John Doe
 - pf>member "John Doe" proxy j:text"""
 
-    private suspend fun explain(ctx: MessageHolder): String =
+    private fun explain(ctx: MessageHolder): String =
         """ProxyFox is modern Discord bot designed to help systems communicate.
 It uses discord's webhooks to generate "pseudo-users" which different members of the system can use. Someone will likely be willing to explain further if need be."""
 
-    private suspend fun invite(ctx: MessageHolder): String =
+    private fun invite(ctx: MessageHolder): String =
         """Use <https://discord.com/api/oauth2/authorize?client_id=${ctx.message.kord.selfId}&permissions=277696539728&scope=applications.commands+bot> to invite ProxyFox to your server!
 To get support, head on over to https://discord.gg/q3yF8ay9V7"""
 
-    private suspend fun source(ctx: MessageHolder): String =
+    private fun source(ctx: MessageHolder): String =
         "Source code for ProxyFox is available at https://github.com/ProxyFox-developers/ProxyFox!"
 
     private suspend fun proxyEmpty(ctx: MessageHolder): String {
-        val system = database.getSystemByHost(ctx.message.author!!.id.value.toString())
+        database.getSystemByHost(ctx.message.author)
             ?: return "System does not exist. Create one using `pf>system new`"
         return "Please provide whether you want autoproxy set to `off`, `latch`, `front`, or a member"
     }
 
     private suspend fun proxyLatch(ctx: MessageHolder): String {
-        val system = database.getSystemByHost(ctx.message.author!!.id.value.toString())
+        val system = database.getSystemByHost(ctx.message.author)
             ?: return "System does not exist. Create one using `pf>system new`"
         system.autoType = AutoProxyMode.LATCH
         database.updateSystem(system)
@@ -128,7 +129,7 @@ To get support, head on over to https://discord.gg/q3yF8ay9V7"""
     }
 
     private suspend fun proxyFront(ctx: MessageHolder): String {
-        val system = database.getSystemByHost(ctx.message.author!!.id.value.toString())
+        val system = database.getSystemByHost(ctx.message.author)
             ?: return "System does not exist. Create one using `pf>system new`"
         system.autoType = AutoProxyMode.FRONT
         database.updateSystem(system)
@@ -136,7 +137,7 @@ To get support, head on over to https://discord.gg/q3yF8ay9V7"""
     }
 
     private suspend fun proxyMember(ctx: MessageHolder): String {
-        val system = database.getSystemByHost(ctx.message.author!!.id.value.toString())
+        val system = database.getSystemByHost(ctx.message.author)
             ?: return "System does not exist. Create one using `pf>system new`"
         val member = database.getMemberByIdAndName(system.id, ctx.params["member"]!![0])
             ?: database.getMemberById(system.id, ctx.params["member"]!![0])
@@ -148,7 +149,7 @@ To get support, head on over to https://discord.gg/q3yF8ay9V7"""
     }
 
     private suspend fun proxyOff(ctx: MessageHolder): String {
-        val system = database.getSystemByHost(ctx.message.author!!.id.value.toString())
+        val system = database.getSystemByHost(ctx.message.author)
             ?: return "System does not exist. Create one using `pf>system new`"
         system.autoType = AutoProxyMode.OFF
         database.updateSystem(system)
@@ -156,38 +157,37 @@ To get support, head on over to https://discord.gg/q3yF8ay9V7"""
     }
 
     private suspend fun serverProxyEmpty(ctx: MessageHolder): String {
-        val system = database.getSystemByHost(ctx.message.author!!.id.value.toString())
+        database.getSystemByHost(ctx.message.author)
             ?: return "System does not exist. Create one using `pf>system new`"
-        val systemServer = database.getServerSettingsById(ctx.message.getGuild().id.value.toString(), system.id)
         return "Please tell me if you want to enable or disable proxy for this server"
     }
 
     private suspend fun serverProxyOn(ctx: MessageHolder): String {
-        val system = database.getSystemByHost(ctx.message.author!!.id.value.toString())
+        val system = database.getSystemByHost(ctx.message.author)
             ?: return "System does not exist. Create one using `pf>system new`"
-        val systemServer = database.getServerSettingsById(ctx.message.getGuild().id.value.toString(), system.id)
+        val systemServer = database.getServerSettingsById(ctx.message.getGuild(), system.id)
         systemServer.autoProxyMode = AutoProxyMode.LATCH
         database.updateSystemServerSettings(systemServer)
         return "Proxy for this server has been enabled"
     }
 
     private suspend fun serverProxyOff(ctx: MessageHolder): String {
-        val system = database.getSystemByHost(ctx.message.author!!.id.value.toString())
+        val system = database.getSystemByHost(ctx.message.author)
             ?: return "System does not exist. Create one using `pf>system new`"
-        val systemServer = database.getServerSettingsById(ctx.message.getGuild().id.value.toString(), system.id)
+        val systemServer = database.getServerSettingsById(ctx.message.getGuild(), system.id)
         systemServer.autoProxyMode = AutoProxyMode.OFF
         database.updateSystemServerSettings(systemServer)
         return "Proxy for this server has been disabled"
     }
 
     private suspend fun roleEmpty(ctx: MessageHolder): String {
-        val server = database.getServerSettings(ctx.message.getGuild().id.value.toString())
+        val server = database.getServerSettings(ctx.message.getGuild())
         if (server.proxyRole == null) return "There is no proxy role set."
         return "Current role is <@&${server.proxyRole}>"
     }
 
     private suspend fun role(ctx: MessageHolder): String {
-        val server = database.getServerSettings(ctx.message.getGuild().id.value.toString())
+        val server = database.getServerSettings(ctx.message.getGuild())
         val role = if (Regex("<@&[0-9]*>").containsMatchIn(ctx.params["role"]!![0]))
             ctx.params["role"]!![0].substring(3, ctx.params["role"]!![0].length - 1)
         else if (Regex("[0-9]*").containsMatchIn(ctx.params["role"]!![0]))
@@ -199,7 +199,7 @@ To get support, head on over to https://discord.gg/q3yF8ay9V7"""
     }
 
     private suspend fun roleClear(ctx: MessageHolder): String {
-        val server = database.getServerSettings(ctx.message.getGuild().id.value.toString())
+        val server = database.getServerSettings(ctx.message.getGuild())
         server.proxyRole = null
         database.updateServerSettings(server)
         return "Role removed!"

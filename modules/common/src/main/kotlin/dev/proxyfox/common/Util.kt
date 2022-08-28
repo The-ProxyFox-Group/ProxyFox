@@ -28,24 +28,11 @@ fun printStep(input: String, step: Int) {
     logger.info(step.toString() + add + input)
 }
 
-fun String.toColor(): Int {
-    return try {
-        if (startsWith("#"))
-            Integer.valueOf(substring(1), 16)
-        else if (startsWith("0x"))
-            Integer.decode(this)
-        else
-            toInt(16)
-    } catch (err: Throwable) {
-        0
-    }
+fun String?.toColor(): Int {
+    return if (this == null) -1 else (toUIntOrNull(16)?.toInt() ?: Integer.decode(this)) and 0xFFFFFF
 }
 
-fun Int.fromColor(): String {
-    var string = toString(16)
-    if (string == "-1") string = "0"
-    return "#${string.padStart(7 - string.length, '0')}"
-}
+fun Int.fromColor() = if (this < 0) null else toString(16).run { "#${padStart(7 - length, '0')}" }
 
 @OptIn(DelicateCoroutinesApi::class)
 fun runAsync(action: suspend () -> Unit): Int {

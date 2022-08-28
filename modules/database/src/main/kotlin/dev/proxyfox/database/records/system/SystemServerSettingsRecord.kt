@@ -13,7 +13,7 @@ import org.bson.types.ObjectId
  **/
 class SystemServerSettingsRecord {
     var _id: ObjectId = ObjectId()
-    var serverId: String = ""
+    var serverId: ULong = 0UL
     var systemId: String = ""
     var proxyEnabled: Boolean = true
 

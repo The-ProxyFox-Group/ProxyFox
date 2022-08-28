@@ -35,28 +35,28 @@ suspend fun MessageCreateEvent.onMessageCreate() {
             return
         }
 
-        val userId = user.id.toString()
+        val userId = user.id.value
 
-        val server = database.getServerSettings(guild.id.toString())
+        val server = database.getServerSettings(guild)
         server.proxyRole?.let {
             if (!user.asMember(guild.id).roleIds.contains(Snowflake(it))) return
         }
 
         val system = database.getSystemByHost(userId) ?: return
 
-        val systemChannel = database.getChannelSettings(channel.id.toString(), system.id)
+        val systemChannel = database.getChannelSettings(channel, system.id)
         if (!systemChannel.proxyEnabled) return
 
-        val systemServer = database.getServerSettingsById(guild.id.toString(), system.id)
+        val systemServer = database.getServerSettingsById(guild, system.id)
         if (!systemServer.proxyEnabled) return
 
         // Proxy the message
-        val proxy = database.getProxyTagFromMessage(message.author!!.id.value.toString(), content)
+        val proxy = database.getProxyTagFromMessage(message.author, content)
         if (proxy != null) {
             val member = database.getMemberById(proxy.systemId, proxy.memberId)!!
 
             // Respect member settings.
-            val memberServer = database.getMemberServerSettingsById(guild.id.toString(), system.id, member.id)
+            val memberServer = database.getMemberServerSettingsById(guild, system.id, member.id)
             if (memberServer?.proxyEnabled == false) return
 
             if (systemServer.autoProxyMode == AutoProxyMode.LATCH) {

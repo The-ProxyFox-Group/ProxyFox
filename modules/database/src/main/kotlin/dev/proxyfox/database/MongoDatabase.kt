@@ -25,7 +25,6 @@ import org.litote.kmongo.reactivestreams.countDocuments
 import org.litote.kmongo.reactivestreams.deleteOne
 import org.litote.kmongo.reactivestreams.deleteOneById
 import java.time.OffsetDateTime
-import java.util.*
 import java.util.concurrent.TimeUnit
 
 
@@ -61,7 +60,12 @@ class MongoDatabase : Database() {
     private lateinit var memberServers: KCollection<MemberServerSettingsRecord>
 
     override suspend fun setup(): MongoDatabase {
-        kmongo = KMongo.createClient()
+        val connectionString = System.getenv("PROXYFOX_MONGO")
+        kmongo =
+            if (connectionString.isNullOrEmpty())
+                KMongo.createClient()
+            else
+                KMongo.createClient(connectionString)
         db = kmongo.getDatabase("ProxyFox")
 
         users = db.getOrCreateCollection()
@@ -89,8 +93,8 @@ class MongoDatabase : Database() {
         return this
     }
 
-    override suspend fun getUser(userId: String): UserRecord {
-        var user = users.findOne("{id:'$userId'}")
+    override suspend fun getUser(userId: ULong): UserRecord {
+        var user = users.findOne("{id:$userId}")
         if (user == null) {
             user = UserRecord()
             user.id = userId
@@ -99,101 +103,41 @@ class MongoDatabase : Database() {
         return user
     }
 
-    override suspend fun getSystemByHost(userId: String): SystemRecord? {
-        val user = getUser(userId)
-        return user.system?.let { getSystemById(it) }
-    }
-
     override suspend fun getSystemById(systemId: String): SystemRecord? = systems.findOne("{id:'$systemId'}")
-
-    override suspend fun getMembersByHost(userId: String): List<MemberRecord>? {
-        val user = getUser(userId)
-        return user.system?.let { getMembersBySystem(it) }
-    }
 
     override suspend fun getMembersBySystem(systemId: String): List<MemberRecord> =
         members.findAll("{systemId:'$systemId'}")
-
-    override suspend fun getMemberByHost(userId: String, memberId: String): MemberRecord? {
-        val user = getUser(userId)
-        return user.system?.let { getMemberById(it, memberId) }
-    }
 
     override suspend fun getMemberById(systemId: String, memberId: String): MemberRecord? {
         return members.findOne("{id:'$memberId', systemId:'$systemId'}")
     }
 
-    override suspend fun getFrontingMembersByHost(userId: String): List<MemberRecord?>? {
+    override suspend fun getFrontingMembersByHost(userId: ULong): List<MemberRecord>? {
         val user = getUser(userId)
         return user.system?.let { getFrontingMembersById(it) }
     }
 
-    override suspend fun getFrontingMembersById(systemId: String): List<MemberRecord?> {
+    override suspend fun getFrontingMembersById(systemId: String): List<MemberRecord>? {
         val switch = systemSwitches.findAll("{systemId:'$systemId'}").minByOrNull {
             it.timestamp
-        }!!
-        val members = ArrayList<MemberRecord?>()
-        for (memberId in switch.memberIds)
-            members.add(getMemberById(systemId, memberId))
-        return members
-    }
-
-    override suspend fun getProxiesByHost(userId: String): List<MemberProxyTagRecord>? {
-        val user = getUser(userId)
-        return user.system?.let { getProxiesById(it) }
+        } ?: return null
+        return switch.memberIds.mapNotNull { getMemberById(systemId, it) }
     }
 
     override suspend fun getProxiesById(systemId: String): List<MemberProxyTagRecord> =
         memberProxies.findAll("{systemId:'$systemId'}")
 
-    override suspend fun getProxiesByHostAndMember(
-        userId: String,
-        memberId: String
-    ): List<MemberProxyTagRecord>? {
-        val user = getUser(userId)
-        return user.system?.let { getProxiesByIdAndMember(it, memberId) }
-    }
-
     override suspend fun getProxiesByIdAndMember(systemId: String, memberId: String): List<MemberProxyTagRecord> =
         memberProxies.findAll("{systemId:'$systemId',memberId:'$memberId'}")
 
-    override suspend fun getMemberFromMessage(
-        userId: String,
-        message: String
-    ): MemberRecord? {
-        val proxyTag = getProxyTagFromMessage(userId, message) ?: return null
-        return getMemberByHost(userId, proxyTag.memberId)
-    }
-
-    override suspend fun getProxyTagFromMessage(userId: String, message: String): MemberProxyTagRecord? {
-        val proxies = getProxiesByHost(userId) ?: return null
-        for (proxy in proxies)
-            if (proxy.test(message)) return proxy
-        return null
-    }
-
-    override suspend fun getMemberServerSettingsByHost(
-        serverId: String,
-        userId: String,
-        memberId: String
-    ): MemberServerSettingsRecord? {
-        val user = getUser(userId)
-        return user.system?.let { getMemberServerSettingsById(serverId, it, memberId) }
-    }
-
     override suspend fun getMemberServerSettingsById(
-        serverId: String,
+        serverId: ULong,
         systemId: String,
         memberId: String
     ): MemberServerSettingsRecord? =
         memberServers.findOne("{serverId:'$serverId',systemId:'$systemId',memberId:'$memberId'}")
 
-    override suspend fun getServerSettingsByHost(serverId: String, userId: String): SystemServerSettingsRecord? {
-        val user = getUser(userId)
-        return user.system?.let { getServerSettingsById(serverId, it) }
-    }
-
-    override suspend fun getServerSettingsById(serverId: String, systemId: String): SystemServerSettingsRecord {
+    override suspend fun getServerSettingsById(serverId: ULong, systemId: String): SystemServerSettingsRecord {
         var serverSettings = systemServers.findOne("{serverId:'$serverId',systemId:'$systemId'}")
         if (serverSettings == null) {
             serverSettings = SystemServerSettingsRecord()
@@ -204,7 +148,7 @@ class MongoDatabase : Database() {
         return serverSettings
     }
 
-    override suspend fun getServerSettings(serverId: String): ServerSettingsRecord {
+    override suspend fun getServerSettings(serverId: ULong): ServerSettingsRecord {
         var serverSettings = servers.findOne("{serverId:'$serverId'}")
         if (serverSettings == null) {
             serverSettings = ServerSettingsRecord()
@@ -219,7 +163,7 @@ class MongoDatabase : Database() {
         servers.insertOne(serverSettings).awaitFirst()
     }
 
-    override suspend fun getChannelSettings(channelId: String, systemId: String): SystemChannelSettingsRecord {
+    override suspend fun getChannelSettings(channelId: ULong, systemId: String): SystemChannelSettingsRecord {
         return systemChannels.findOne("{channelId:'$channelId',systemId:'$systemId'}") ?: SystemChannelSettingsRecord().apply {
             this.channelId = channelId
             this.systemId = systemId
@@ -227,7 +171,7 @@ class MongoDatabase : Database() {
         }
     }
 
-    override suspend fun allocateSystem(userId: String): SystemRecord {
+    override suspend fun allocateSystem(userId: ULong): SystemRecord {
         if (getSystemByHost(userId) != null) return getSystemByHost(userId)!!
         val user = getUser(userId)
         val ids = systems.find().toList().map { it.id.fromPkString() }.sorted()
@@ -249,7 +193,7 @@ class MongoDatabase : Database() {
         return system
     }
 
-    override suspend fun removeSystem(userId: String): Boolean {
+    override suspend fun removeSystem(userId: ULong): Boolean {
         val system = getSystemByHost(userId) ?: return false
         systemServers.findAll("{systemId:'${system.id}'}").forEach {
             systemServers.deleteOneById(it._id).awaitFirst()
@@ -345,10 +289,10 @@ class MongoDatabase : Database() {
         prefix: String?,
         suffix: String?
     ): MemberProxyTagRecord? {
-        if(prefix.isNullOrEmpty() && suffix.isNullOrEmpty()) return null
-        val proxyTags = getProxiesById(systemId)
-        for (proxy in proxyTags)
-            if (prefix == proxy.prefix && suffix == proxy.suffix) return null
+        if (prefix.isNullOrEmpty() && suffix.isNullOrEmpty()) return null
+        getProxiesById(systemId).firstOrNull { prefix == it.prefix && suffix == it.suffix }?.let {
+            return if (it.memberId == memberId) it else null
+        }
         val proxy = MemberProxyTagRecord()
         proxy.prefix = prefix ?: ""
         proxy.suffix = suffix ?: ""
@@ -371,10 +315,6 @@ class MongoDatabase : Database() {
         return switch
     }
 
-    override suspend fun getSwitchesByHost(userId: String): List<SystemSwitchRecord>? {
-        return getSwitchesById(getUser(userId).system ?: return null)
-    }
-
     override suspend fun getSwitchesById(systemId: String): List<SystemSwitchRecord> =
         systemSwitches.findAll("{systemId:'$systemId'}")
 
@@ -383,25 +323,19 @@ class MongoDatabase : Database() {
             .awaitFirst()
     }
 
-    override suspend fun updateTrustLevel(userId: String, trustee: String, level: TrustLevel): Boolean {
-        val system = getSystemById(trustee) ?: return false
-        system.trust[userId] = level
+    override suspend fun updateTrustLevel(systemId: String, trustee: ULong, level: TrustLevel): Boolean {
+        val system = getSystemById(systemId) ?: return false
+        system.trust[trustee] = level
         updateSystem(system)
         return true
     }
 
-    override suspend fun getTrustLevel(userId: String, trustee: String): TrustLevel {
-        return getSystemById(trustee)?.trust?.get(userId) ?: TrustLevel.NONE
+    override suspend fun getTrustLevel(systemId: String, trustee: ULong): TrustLevel {
+        return getSystemById(systemId)?.trust?.get(trustee) ?: TrustLevel.NONE
     }
 
     override suspend fun getTotalSystems(): Int {
         return systems.countDocuments().awaitFirst().toInt()
-    }
-
-    override suspend fun getTotalMembersByHost(userId: String): Int? {
-        val user = getUser(userId)
-        user.system ?: return null
-        return getTotalMembersById(user.system!!)
     }
 
     override suspend fun getTotalMembersById(systemId: String): Int {
@@ -410,11 +344,6 @@ class MongoDatabase : Database() {
 
     override suspend fun getMemberByIdAndName(systemId: String, memberName: String): MemberRecord? {
         return members.findOne("{systemId:'$systemId',name:'${memberName.replace("'", "\\'")}'}")
-    }
-
-    override suspend fun getMemberByHostAndName(userId: String, memberName: String): MemberRecord? {
-        val user = getUser(userId)
-        return user.system?.let { getMemberByIdAndName(it, memberName) }
     }
 
     override suspend fun export(other: Database) {

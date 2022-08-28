@@ -1,6 +1,5 @@
 package dev.proxyfox.database.records.misc
 
-import dev.kord.common.entity.Snowflake
 import org.bson.types.ObjectId
 
 // Created 2022-10-04T21:06:30
@@ -11,9 +10,9 @@ import org.bson.types.ObjectId
  **/
 class ServerSettingsRecord {
     var _id: ObjectId = ObjectId()
-    var serverId: String = ""
+    var serverId: ULong = 0UL
     var proxyRole: String? = null
-    var disabledChannels: List<Snowflake>? = null
+    var disabledChannels: List<ULong>? = null
 
     fun writeTo(other: ServerSettingsRecord) {
         other.proxyRole = proxyRole
