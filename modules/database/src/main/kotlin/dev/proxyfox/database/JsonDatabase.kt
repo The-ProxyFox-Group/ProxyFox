@@ -6,6 +6,7 @@ import dev.kord.common.entity.Snowflake
 import dev.proxyfox.common.fromColor
 import dev.proxyfox.common.logger
 import dev.proxyfox.common.toColor
+import dev.proxyfox.database.DatabaseUtil.firstFree
 import dev.proxyfox.database.DatabaseUtil.fromPkString
 import dev.proxyfox.database.DatabaseUtil.toPkString
 import dev.proxyfox.database.records.member.MemberProxyTagRecord
@@ -291,15 +292,7 @@ class JsonDatabase : Database() {
     @Deprecated(level = DeprecationLevel.ERROR, message = "Non-native method")
     override suspend fun allocateSystem(userId: ULong): SystemRecord {
         return getSystemByHost(userId) ?: run {
-            val ids = systems.keys.map { it.fromPkString() }.sorted()
-            var newId = ids.size
-            for ((index, id) in ids.withIndex()) {
-                if (index != id) {
-                    newId = index
-                    break
-                }
-            }
-            val id = newId.toPkString()
+            val id = systems.keys.firstFree()
             val struct = JsonSystemStruct(id)
             struct.accounts.add(userId)
             users[userId] = struct
@@ -327,9 +320,7 @@ class JsonDatabase : Database() {
     override suspend fun allocateMember(systemId: String, name: String): MemberRecord {
         return getMemberByIdAndName(systemId, name) ?: run {
             val system = systems[systemId]!!
-            val members = system.members
-            val id = ((members.keys.maxOfOrNull { it.fromPkString() } ?: 0) + 1).toPkString()
-            system.putMember(JsonMemberStruct(systemId, id, name))
+            system.putMember(JsonMemberStruct(systemId, system.members.keys.firstFree(), name))
         }
     }
 

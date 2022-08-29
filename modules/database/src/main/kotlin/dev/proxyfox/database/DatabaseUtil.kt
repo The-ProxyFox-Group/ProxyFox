@@ -37,6 +37,24 @@ object DatabaseUtil {
         return tmp
     }
 
+    /**
+     * A rather cursed way to find first free, but it's kinda
+     * hard to come up with anything good here.
+     *
+     * @receiver The collection of PK-compatible IDs to find the first free of.
+     * @return The first free ID.
+     * */
+    fun Collection<String>.firstFree(): String {
+        var newId = size
+        for ((index, id) in map { it.fromPkString() }.sorted().withIndex()) {
+            if (index != id) {
+                newId = index
+                break
+            }
+        }
+        return newId.toPkString()
+    }
+
     fun databaseFromString(db: String?) =
         when (db) {
             "nop" -> NopDatabase()

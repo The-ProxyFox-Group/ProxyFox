@@ -7,6 +7,7 @@ import com.mongodb.reactivestreams.client.MongoCollection
 import dev.kord.common.entity.Snowflake
 import dev.proxyfox.database.DatabaseUtil.findAll
 import dev.proxyfox.database.DatabaseUtil.findOne
+import dev.proxyfox.database.DatabaseUtil.firstFree
 import dev.proxyfox.database.DatabaseUtil.fromPkString
 import dev.proxyfox.database.DatabaseUtil.getOrCreateCollection
 import dev.proxyfox.database.DatabaseUtil.toPkString
@@ -162,18 +163,8 @@ class MongoDatabase : Database() {
     override suspend fun allocateSystem(userId: ULong): SystemRecord {
         if (getSystemByHost(userId) != null) return getSystemByHost(userId)!!
         val user = getUser(userId)
-        val ids = systems.find().toList().map { it.id.fromPkString() }.sorted()
-        // A rather cursed way to find first free, but it's kinda
-        // hard to come up with anything good here.
-        var newId = ids.size
-        for ((index, id) in ids.withIndex()) {
-            if (index != id) {
-                newId = index
-                break
-            }
-        }
         val system = SystemRecord()
-        system.id = newId.toPkString()
+        system.id = systems.find().toList().map(SystemRecord::id).firstFree()
         system.users.add(userId)
         user.system = system.id
         updateUser(user)
@@ -200,15 +191,8 @@ class MongoDatabase : Database() {
 
     override suspend fun allocateMember(systemId: String, name: String): MemberRecord? {
         getSystemById(systemId) ?: return null
-        val members = getMembersBySystem(systemId)
-        var currentId = 0
-        for (member in members) {
-            if (member.name == name) return member
-            if (member.id.fromPkString() > currentId + 1) break
-            currentId = member.id.fromPkString()
-        }
         val member = MemberRecord()
-        member.id = (currentId + 1).toPkString()
+        member.id = getMembersBySystem(systemId).map(MemberRecord::id).firstFree()
         member.name = name
         member.systemId = systemId
         this.members.insertOne(member).awaitFirst()
