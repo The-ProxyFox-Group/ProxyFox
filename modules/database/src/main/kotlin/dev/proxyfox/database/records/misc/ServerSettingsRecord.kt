@@ -11,7 +11,7 @@ import org.bson.types.ObjectId
 class ServerSettingsRecord {
     var _id: ObjectId = ObjectId()
     var serverId: ULong = 0UL
-    var proxyRole: String? = null
+    var proxyRole: ULong = 0UL
     var disabledChannels: List<ULong>? = null
 
     fun writeTo(other: ServerSettingsRecord) {
