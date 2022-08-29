@@ -1,5 +1,6 @@
 package dev.proxyfox.bot
 
+import dev.kord.common.Color
 import dev.kord.core.Kord
 import dev.kord.core.event.gateway.ReadyEvent
 import dev.kord.core.event.message.MessageCreateEvent
@@ -78,3 +79,5 @@ fun findUnixValue(args: Array<String>, key: String): String? {
 }
 
 fun OffsetDateTime.toKtInstant() = Instant.fromEpochSeconds(epochSeconds = toEpochSecond(), nanosecondAdjustment = nano)
+
+fun Int.kordColor() = if (this < 0) null else Color(this)
