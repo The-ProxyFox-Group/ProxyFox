@@ -123,8 +123,12 @@ class MongoDatabase : Database() {
         serverId: ULong,
         systemId: String,
         memberId: String
-    ): MemberServerSettingsRecord? =
-        memberServers.findOne("{serverId:$serverId,systemId:'$systemId',memberId:'$memberId'}")
+    ): MemberServerSettingsRecord =
+        memberServers.findOne("{serverId:$serverId,systemId:'$systemId',memberId:'$memberId'}") ?: MemberServerSettingsRecord().apply {
+            this.serverId = serverId
+            this.systemId = systemId
+            this.memberId = memberId
+        }
 
     override suspend fun getServerSettingsById(serverId: ULong, systemId: String): SystemServerSettingsRecord {
         var serverSettings = systemServers.findOne("{serverId:$serverId,systemId:'$systemId'}")
