@@ -8,6 +8,9 @@ import dev.proxyfox.bot.webhook.WebhookUtil
 import dev.proxyfox.common.prefixRegex
 import dev.proxyfox.database.database
 import dev.proxyfox.database.records.misc.AutoProxyMode
+import org.slf4j.LoggerFactory
+
+private val logger = LoggerFactory.getLogger("MessageHandler")
 
 suspend fun MessageCreateEvent.onMessageCreate() {
     val user = message.author ?: return
@@ -32,14 +35,18 @@ suspend fun MessageCreateEvent.onMessageCreate() {
         val hasOversizedFiles = message.attachments.any { it.size >= UPLOAD_LIMIT }
         val isOversizedMessage = message.content.length > 2000
         if (hasStickers || hasOversizedFiles || isOversizedMessage) {
+            logger.trace("Denying proxying {} ({}) in {} ({}) due to Discord bot constraints", user.tag, user.id, guild.name, guild.id)
             return
         }
 
         val userId = user.id.value
 
         val server = database.getServerSettings(guild)
-        server.proxyRole?.let {
-            if (!user.asMember(guild.id).roleIds.contains(Snowflake(it))) return
+        server.proxyRole.let {
+            if (!user.asMember(guild.id).roleIds.contains(Snowflake(it))) {
+                logger.trace("Denying proxying {} ({}) in {} ({}) due to missing role {}", user.tag, user.id, guild.name, guild.id, it)
+                return
+            }
         }
 
         val system = database.getSystemByHost(userId) ?: return
