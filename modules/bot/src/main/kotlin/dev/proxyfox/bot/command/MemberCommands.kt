@@ -1,17 +1,18 @@
 package dev.proxyfox.bot.command
 
-import dev.kord.common.Color
 import dev.kord.core.behavior.channel.createMessage
 import dev.kord.core.entity.ReactionEmoji
 import dev.kord.core.event.message.ReactionAddEvent
 import dev.kord.core.on
 import dev.kord.rest.builder.message.create.embed
 import dev.proxyfox.bot.kord
+import dev.proxyfox.bot.kordColor
 import dev.proxyfox.bot.string.dsl.greedy
 import dev.proxyfox.bot.string.dsl.literal
 import dev.proxyfox.bot.string.dsl.string
 import dev.proxyfox.bot.string.parser.MessageHolder
 import dev.proxyfox.bot.string.parser.registerCommand
+import dev.proxyfox.bot.toKtInstant
 import dev.proxyfox.common.fromColor
 import dev.proxyfox.common.printStep
 import dev.proxyfox.common.toColor
@@ -133,27 +134,35 @@ object MemberCommands {
             ?: return "Member does not exist. Create one using `pf>member new`"
         ctx.message.channel.createMessage {
             embed {
-                title = "${member.name} [`${member.id}`]"
-                if (member.displayName != null) title = "${member.displayName} (${member.name}) [`${member.id}`]"
-                color = Color(member.color)
-                val desc = member.description
-                if (desc != null) field {
-                    name = "Description"
-                    value = desc
-                    inline = false
+                author {
+                    name = member.displayName?.let { "${member.displayName} (${member.name})" } ?: member.name
+                    icon = member.avatarUrl
                 }
-                val pronouns = member.pronouns
-                if (pronouns != null) field {
-                    name = "Pronouns"
-                    value = pronouns
-                    inline = true
+                member.avatarUrl?.let {
+                    thumbnail {
+                        url = it
+                    }
                 }
-                val birthday = member.birthday
-                if (birthday != null) field {
-                    name = "Birthday"
-                    value = birthday
-                    inline = true
+                color = member.color.kordColor()
+                description = member.description
+                member.pronouns?.let {
+                    field {
+                        name = "Pronouns"
+                        value = it
+                        inline = true
+                    }
                 }
+                member.birthday?.let {
+                    field {
+                        name = "Birthday"
+                        value = it
+                        inline = true
+                    }
+                }
+                footer {
+                    text = "Member ID \u2009• \u2009${member.id}\u2007|\u2007System ID \u2009• \u2009${system.id}\u2007|\u2007Created "
+                }
+                timestamp = system.timestamp.toKtInstant()
             }
         }
         return ""
