@@ -370,8 +370,8 @@ class JsonDatabase : Database() {
         systemId: String
     ) {
         val message = ProxiedMessageRecord()
-        message.oldMessageId = oldMessageId
-        message.newMessageId = newMessageId
+        message.oldMessageId = oldMessageId.value
+        message.newMessageId = newMessageId.value
         message.memberId = memberId
         message.systmId = systemId
         oldMessageLookup[oldMessageId.toString()] = message
