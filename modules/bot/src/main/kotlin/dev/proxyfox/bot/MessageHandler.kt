@@ -43,7 +43,7 @@ suspend fun MessageCreateEvent.onMessageCreate() {
 
         val server = database.getServerSettings(guild)
         server.proxyRole.let {
-            if (!user.asMember(guild.id).roleIds.contains(Snowflake(it))) {
+            if (it != 0UL && !user.asMember(guild.id).roleIds.contains(Snowflake(it))) {
                 logger.trace("Denying proxying {} ({}) in {} ({}) due to missing role {}", user.tag, user.id, guild.name, guild.id, it)
                 return
             }
