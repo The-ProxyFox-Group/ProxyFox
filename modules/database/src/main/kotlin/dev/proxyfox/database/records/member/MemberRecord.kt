@@ -19,7 +19,7 @@ class MemberRecord {
     var displayName: String? = null
     var description: String? = null
     var pronouns: String? = null
-    var color: Int = 0
+    var color: Int = -1
     var avatarUrl: String? = null
 
     /** Whether the proxy tag remains in the message */
