@@ -124,10 +124,10 @@ class MongoDatabase : Database() {
         systemId: String,
         memberId: String
     ): MemberServerSettingsRecord? =
-        memberServers.findOne("{serverId:'$serverId',systemId:'$systemId',memberId:'$memberId'}")
+        memberServers.findOne("{serverId:$serverId,systemId:'$systemId',memberId:'$memberId'}")
 
     override suspend fun getServerSettingsById(serverId: ULong, systemId: String): SystemServerSettingsRecord {
-        var serverSettings = systemServers.findOne("{serverId:'$serverId',systemId:'$systemId'}")
+        var serverSettings = systemServers.findOne("{serverId:$serverId,systemId:'$systemId'}")
         if (serverSettings == null) {
             serverSettings = SystemServerSettingsRecord()
             serverSettings.serverId = serverId
@@ -138,7 +138,7 @@ class MongoDatabase : Database() {
     }
 
     override suspend fun getServerSettings(serverId: ULong): ServerSettingsRecord {
-        var serverSettings = servers.findOne("{serverId:'$serverId'}")
+        var serverSettings = servers.findOne("{serverId:$serverId}")
         if (serverSettings == null) {
             serverSettings = ServerSettingsRecord()
             serverSettings.serverId = serverId
@@ -153,7 +153,7 @@ class MongoDatabase : Database() {
     }
 
     override suspend fun getChannelSettings(channelId: ULong, systemId: String): SystemChannelSettingsRecord {
-        return systemChannels.findOne("{channelId:'$channelId',systemId:'$systemId'}") ?: SystemChannelSettingsRecord().apply {
+        return systemChannels.findOne("{channelId:$channelId,systemId:'$systemId'}") ?: SystemChannelSettingsRecord().apply {
             this.channelId = channelId
             this.systemId = systemId
             systemChannels.insertOne(this).awaitFirst()
@@ -248,8 +248,8 @@ class MongoDatabase : Database() {
         systemId: String
     ) {
         val message = ProxiedMessageRecord()
-        message.oldMessageId = oldMessageId
-        message.newMessageId = newMessageId
+        message.oldMessageId = oldMessageId.value
+        message.newMessageId = newMessageId.value
         message.memberId = memberId
         message.systmId = systemId
         messages.insertOne(message).awaitFirst()

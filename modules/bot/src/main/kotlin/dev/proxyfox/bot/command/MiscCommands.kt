@@ -12,6 +12,8 @@ import dev.proxyfox.database.records.misc.AutoProxyMode
 import dev.proxyfox.exporter.Exporter
 import dev.proxyfox.importer.import
 import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.flow.filter
+import kotlinx.coroutines.flow.firstOrNull
 import kotlinx.coroutines.withContext
 import java.io.InputStreamReader
 import java.net.URL
@@ -21,6 +23,8 @@ import java.net.URL
  * @author Oliver
  * */
 object MiscCommands {
+    private val roleMatcher = Regex("\\d+")
+
     suspend fun register() {
         printStep("Registering misc commands", 2)
         registerCommand(literal("import", ::importEmpty) {
@@ -180,17 +184,16 @@ To get support, head on over to https://discord.gg/q3yF8ay9V7"""
 
     private suspend fun roleEmpty(ctx: MessageHolder): String {
         val server = database.getServerSettings(ctx.message.getGuild())
-        if (server.proxyRole == null) return "There is no proxy role set."
+        if (server.proxyRole == 0UL) return "There is no proxy role set."
         return "Current role is <@&${server.proxyRole}>"
     }
 
     private suspend fun role(ctx: MessageHolder): String {
         val server = database.getServerSettings(ctx.message.getGuild())
-        val role = if (Regex("<@&[0-9]*>").containsMatchIn(ctx.params["role"]!![0]))
-            ctx.params["role"]!![0].substring(3, ctx.params["role"]!![0].length - 1)
-        else if (Regex("[0-9]*").containsMatchIn(ctx.params["role"]!![0]))
-            ctx.params["role"]!![0]
-        else return "Please provide a role to set"
+        val roleRaw = ctx.params["role"]!![0]
+        val role = roleMatcher.find(roleRaw)?.value?.toULong()
+            ?: ctx.message.getGuild().roles.filter { it.name == roleRaw }.firstOrNull()?.id?.value
+            ?: return "Please provide a role to set"
         server.proxyRole = role
         database.updateServerSettings(server)
         return "Role updated!"
@@ -198,7 +201,7 @@ To get support, head on over to https://discord.gg/q3yF8ay9V7"""
 
     private suspend fun roleClear(ctx: MessageHolder): String {
         val server = database.getServerSettings(ctx.message.getGuild())
-        server.proxyRole = null
+        server.proxyRole = 0UL
         database.updateServerSettings(server)
         return "Role removed!"
     }
