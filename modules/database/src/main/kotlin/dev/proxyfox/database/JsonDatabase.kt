@@ -262,7 +262,13 @@ class JsonDatabase : Database() {
         systemId: String,
         memberId: String
     ): MemberServerSettingsRecord? {
-        return systems[systemId]?.members?.get(memberId)?.serverSettings?.get(serverId)
+        return systems[systemId]?.members?.get(memberId)?.serverSettings?.run {
+            get(serverId) ?: MemberServerSettingsRecord().apply {
+                this.serverId = serverId
+                this.systemId = systemId
+                this.memberId = memberId
+            }
+        }
     }
 
     override suspend fun getServerSettingsById(serverId: ULong, systemId: String): SystemServerSettingsRecord {
