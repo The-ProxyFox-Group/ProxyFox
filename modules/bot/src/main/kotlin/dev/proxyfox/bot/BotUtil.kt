@@ -14,6 +14,8 @@ import kotlinx.coroutines.coroutineScope
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.flow.count
 import kotlinx.coroutines.launch
+import kotlinx.datetime.Instant
+import java.time.OffsetDateTime
 
 const val UPLOAD_LIMIT = 1024 * 1024 * 8
 
@@ -74,3 +76,5 @@ fun findUnixValue(args: Array<String>, key: String): String? {
     }
     return null
 }
+
+fun OffsetDateTime.toKtInstant() = Instant.fromEpochSeconds(epochSeconds = toEpochSecond(), nanosecondAdjustment = nano)

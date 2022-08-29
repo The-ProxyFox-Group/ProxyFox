@@ -10,10 +10,10 @@ import dev.proxyfox.bot.string.dsl.greedy
 import dev.proxyfox.bot.string.dsl.literal
 import dev.proxyfox.bot.string.parser.MessageHolder
 import dev.proxyfox.bot.string.parser.registerCommand
+import dev.proxyfox.bot.toKtInstant
 import dev.proxyfox.common.printStep
 import dev.proxyfox.database.database
 import kotlinx.coroutines.Job
-import java.time.format.DateTimeFormatter
 
 /**
  * Commands for accessing and changing system settings
@@ -79,31 +79,32 @@ object SystemCommands {
         val members = database.getTotalMembersByHost(ctx.message.author)
         ctx.message.channel.createMessage {
             embed {
-                title = "${system.name} [`${system.id}`]"
-                val avatar = system.avatarUrl
-                if (avatar != null) thumbnail {
-                    url = avatar
+                title = system.name ?: system.id
+                system.avatarUrl?.let {
+                    thumbnail { url = it }
                 }
-                val tag = system.tag
-                if (tag != null) field {
-                    name = "Tag"
-                    value = tag
-                    inline = true
+                system.tag?.let {
+                    field {
+                        name = "Tag"
+                        value = it
+                        inline = true
+                    }
                 }
                 field {
                     name = "Members (`${members}`)"
                     value = "See `pf>system list`"
                     inline = true
                 }
-                val description = system.description
-                if (description != null) field {
-                    name = "Description"
-                    value = description
+                system.description?.let {
+                    field {
+                        name = "Description"
+                        value = it
+                    }
                 }
                 footer {
-                    val formatter = DateTimeFormatter.ofPattern("E, MMM dd yyyy HH:mm:ss")
-                    text = "Created on ${formatter.format(system.timestamp)}"
+                    text = "ID \u2009• \u2009${system.id}\u2007|\u2007Created "
                 }
+                timestamp = system.timestamp.toKtInstant()
             }
         }
         return ""
