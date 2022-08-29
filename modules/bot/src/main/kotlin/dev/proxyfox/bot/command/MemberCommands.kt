@@ -201,7 +201,7 @@ object MemberCommands {
             ?: return "System does not exist. Create one using `pf>system new`"
         val member = database.findMember(system.id, ctx.params["member"]!![0])
             ?: return "Member does not exist. Create one using `pf>member new`"
-        member.displayName = ctx.params["name"]?.get(0)
+        member.displayName = ctx.params["name"]!![0]
         database.updateMember(member)
         return "Member displayname updated!"
     }
@@ -235,7 +235,7 @@ object MemberCommands {
             ?: return "Member does not exist. Create one using `pf>member new`"
         val serverMember =
             database.getMemberServerSettingsById(ctx.message.getGuild(), system.id, member.id)!!
-        serverMember.nickname = ctx.params["name"]?.get(0)
+        serverMember.nickname = ctx.params["name"]!![0]
         database.updateMemberServerSettings(serverMember)
         return "Member's server nickname updated!"
     }
@@ -277,7 +277,7 @@ object MemberCommands {
             ?: return "System does not exist. Create one using `pf>system new`"
         val member = database.findMember(system.id, ctx.params["member"]!![0])
             ?: return "Member does not exist. Create one using `pf>member new`"
-        member.description = ctx.params["desc"]?.get(0)
+        member.description = ctx.params["desc"]!![0]
         database.updateMember(member)
         return "Member description updated!"
     }
@@ -297,7 +297,7 @@ object MemberCommands {
             ?: return "System does not exist. Create one using `pf>system new`"
         val member = database.findMember(system.id, ctx.params["member"]!![0])
             ?: return "Member does not exist. Create one using `pf>member new`"
-        member.avatarUrl = ctx.params["avatar"]?.get(0)
+        member.avatarUrl = ctx.params["avatar"]!![0]
         database.updateMember(member)
         return "Member avatar updated!"
     }
@@ -334,7 +334,7 @@ object MemberCommands {
             ?: return "Member does not exist. Create one using `pf>member new`"
         val serverMember =
             database.getMemberServerSettingsById(ctx.message.getGuild(), system.id, member.id)!!
-        serverMember.avatarUrl = ctx.params["avatar"]?.get(0)
+        serverMember.avatarUrl = ctx.params["avatar"]!![0]
         database.updateMemberServerSettings(serverMember)
         return "Member server avatar updated!"
     }
@@ -437,7 +437,7 @@ object MemberCommands {
             ?: return "System does not exist. Create one using `pf>system new`"
         val member = database.findMember(system.id, ctx.params["member"]!![0])
             ?: return "Member does not exist. Create one using `pf>member new`"
-        member.pronouns = ctx.params["pronouns"]?.get(0)
+        member.pronouns = ctx.params["pronouns"]!![0]
         database.updateMember(member)
         return "Member's pronouns updated!"
     }
@@ -486,7 +486,7 @@ object MemberCommands {
             ?: return "System does not exist. Create one using `pf>system new`"
         val member = database.findMember(system.id, ctx.params["member"]!![0])
             ?: return "Member does not exist. Create one using `pf>member new`"
-        member.birthday = ctx.params["birthday"]?.get(0)
+        member.birthday = ctx.params["birthday"]!![0]
         database.updateMember(member)
         return "Member's birthday updated!"
     }
