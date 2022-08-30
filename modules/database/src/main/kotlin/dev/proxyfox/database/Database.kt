@@ -254,6 +254,17 @@ abstract class Database : AutoCloseable {
     ): MemberProxyTagRecord?
 
     /**
+     * Lists all proxy tags registered for the member.
+     * @param systemId The system ID to assign it to
+     * @param memberId The member to assign it to
+     * @return All proxy tags registered for the member, else null if the member or system doesn't exist.
+     * */
+    abstract suspend fun listProxyTags(
+        systemId: String,
+        memberId: String
+    ): List<MemberProxyTagRecord>?
+
+    /**
      * Allocates a switch
      *
      * @param systemId The system ID to assign it to

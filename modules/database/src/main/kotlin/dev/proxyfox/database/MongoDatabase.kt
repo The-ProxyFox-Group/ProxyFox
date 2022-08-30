@@ -278,6 +278,9 @@ class MongoDatabase : Database() {
         return proxy
     }
 
+    override suspend fun listProxyTags(systemId: String, memberId: String) =
+        memberProxies.findAll("{systemId:'$systemId',memberId:'$memberId'}")
+
     override suspend fun allocateSwitch(systemId: String, memberId: List<String>, timestamp: OffsetDateTime?): SystemSwitchRecord? {
         getSystemById(systemId) ?: return null
         val switches = getSwitchesById(systemId)
