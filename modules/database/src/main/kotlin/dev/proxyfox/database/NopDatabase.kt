@@ -4,6 +4,7 @@ import dev.kord.common.entity.Snowflake
 import dev.proxyfox.database.records.member.MemberProxyTagRecord
 import dev.proxyfox.database.records.member.MemberRecord
 import dev.proxyfox.database.records.member.MemberServerSettingsRecord
+import dev.proxyfox.database.records.misc.ProxiedMessageRecord
 import dev.proxyfox.database.records.misc.ServerSettingsRecord
 import dev.proxyfox.database.records.misc.TrustLevel
 import dev.proxyfox.database.records.misc.UserRecord
@@ -76,6 +77,13 @@ class NopDatabase : Database() {
         systemId: String
     ) {
     }
+
+    override suspend fun fetchMessage(messageId: Snowflake): ProxiedMessageRecord? = null
+
+    override suspend fun fetchLatestMessage(
+        systemId: String,
+        channelId: Snowflake
+    ): ProxiedMessageRecord? = null
 
     override suspend fun allocateProxyTag(
         systemId: String,

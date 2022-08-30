@@ -259,6 +259,18 @@ class MongoDatabase : Database() {
         messages.insertOne(message).awaitFirst()
     }
 
+    override suspend fun fetchMessage(messageId: Snowflake): ProxiedMessageRecord? =
+        messages.findOne("{'newMessageId': '${messageId.value}'}")
+            ?: messages.findOne("{'oldMessageId': '${messageId.value}'}")
+
+    override suspend fun fetchLatestMessage(
+        systemId: String,
+        channelId: Snowflake
+    ): ProxiedMessageRecord? =
+        messages.findAll("{systemId:'$systemId'}").maxByOrNull {
+            it.creationDate
+        }
+
     override suspend fun allocateProxyTag(
         systemId: String,
         memberId: String,

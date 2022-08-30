@@ -29,7 +29,7 @@ data class ProxyContext(
     val proxy: MemberProxyTagRecord?
 ) {
     @OptIn(InternalAPI::class)
-    suspend fun send() {
+    suspend inline fun send() {
         if (!member.keepProxy && proxy != null)
             messageContent = proxy.trim(messageContent)
         val system = database.getSystemById(member.systemId)!!
@@ -54,9 +54,9 @@ data class ProxyContext(
                     color = Color(member.color)
                     field {
                         name = ref.author!!.username + " ↩"
+                        // TODO: Make sure markdown closes on messages that are too long
                         value = "[**Reply to:**](https://discord.com/channels/${ref.getGuild().id}/${ref.channelId}/${ref.id}) ${ref.content.substring(0, 100)}"
                     }
-
                 }
             }
             return@executeWebhook

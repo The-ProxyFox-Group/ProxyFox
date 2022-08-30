@@ -4,8 +4,10 @@ import dev.kord.common.Color
 import dev.kord.core.Kord
 import dev.kord.core.event.gateway.ReadyEvent
 import dev.kord.core.event.message.MessageCreateEvent
+import dev.kord.core.event.message.ReactionAddEvent
 import dev.kord.core.on
 import dev.kord.gateway.Intent
+import dev.kord.gateway.MessageReactionAdd
 import dev.kord.gateway.PrivilegedIntent
 import dev.proxyfox.common.printFancy
 import dev.proxyfox.common.printStep
@@ -33,9 +35,15 @@ suspend fun login() {
 
     // Register events
     printStep("Registering events", 2)
+
     kord.on<MessageCreateEvent> {
         onMessageCreate()
     }
+
+    kord.on<ReactionAddEvent> {
+        onReactionAdd()
+    }
+
     kord.on<ReadyEvent> {
         printFancy("ProxyFox initialized")
         coroutineScope {
@@ -61,11 +69,12 @@ suspend fun login() {
 
 suspend fun updatePresence() {
     while (true) {
+        // TODO: Cycle between "in x servers", "x systems registered", and "Uptime: DD:HH:MM
         kord.editPresence {
             val servers = kord.guilds.count()
             playing("Run pf>help for help! in $servers servers!")
         }
-        delay(30000)
+        delay(1800000)
     }
 }
 
