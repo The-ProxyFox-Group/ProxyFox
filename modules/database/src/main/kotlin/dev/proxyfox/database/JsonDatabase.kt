@@ -653,7 +653,7 @@ class JsonDatabase : Database() {
         var color: String? = null,
         var avatarUrl: String? = null,
         var keepProxy: Boolean = false,
-        var messageCount: Long = 0L,
+        var messageCount: ULong = 0UL,
         var timestamp: OffsetDateTime? = OffsetDateTime.now(ZoneOffset.UTC),
 
         val serverSettings: MutableMap<ULong, MemberServerSettingsRecord> = HashMap()
