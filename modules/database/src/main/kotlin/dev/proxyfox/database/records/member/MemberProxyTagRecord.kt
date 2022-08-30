@@ -29,4 +29,6 @@ class MemberProxyTagRecord {
         val slength = suffix?.length ?: 0
         return message.substring(pLength, message.length - slength)
     }
+
+    override fun toString() = "${prefix}text$suffix"
 }

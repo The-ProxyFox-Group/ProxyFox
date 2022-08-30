@@ -84,6 +84,8 @@ class NopDatabase : Database() {
         suffix: String?
     ): MemberProxyTagRecord? = null
 
+    override suspend fun listProxyTags(systemId: String, memberId: String): List<MemberProxyTagRecord>? = null
+
     override suspend fun allocateSwitch(systemId: String, memberId: List<String>, timestamp: OffsetDateTime?): SystemSwitchRecord? = null
     override suspend fun getLatestSwitch(systemId: String): SystemSwitchRecord? = null
     override suspend fun getSwitchesById(systemId: String): List<SystemSwitchRecord>? = null

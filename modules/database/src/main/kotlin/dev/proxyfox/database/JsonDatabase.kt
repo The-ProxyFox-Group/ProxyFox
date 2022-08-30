@@ -404,6 +404,9 @@ class JsonDatabase : Database() {
         return proxy
     }
 
+    override suspend fun listProxyTags(systemId: String, memberId: String) =
+        systems[systemId]?.proxyTags?.map { it.view(systemId) }
+
     override suspend fun allocateSwitch(systemId: String, memberId: List<String>, timestamp: OffsetDateTime?): SystemSwitchRecord? {
         val system = systems[systemId] ?: return null
         val switch = SystemSwitchRecord()
