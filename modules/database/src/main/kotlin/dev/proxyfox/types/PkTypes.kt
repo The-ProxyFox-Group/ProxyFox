@@ -15,7 +15,7 @@ class PkMember {
     var pronouns: String? = null
     var color: String? = null
     var keep_proxy: Boolean? = false
-    var message_count: Long? = 0
+    var message_count: ULong? = 0UL
     var proxies: Array<PkProxy>? = arrayOf()
     var avatar_url: String? = null
 }
