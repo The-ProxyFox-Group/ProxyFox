@@ -128,14 +128,17 @@ object MemberCommands {
     }
 
     private suspend fun access(ctx: MessageHolder): String {
+        val guild = ctx.message.getGuildOrNull()
         val system = database.getSystemByHost(ctx.message.author)
             ?: return "System does not exist. Create one using `pf>system new`"
         val member = database.findMember(system.id, ctx.params["member"]!![0])
             ?: return "Member does not exist. Create one using `pf>member new`"
+        val settings = database.getMemberServerSettingsById(guild, system.id, member.id)
         ctx.message.channel.createMessage {
             embed {
+                val systemName = system.name ?: system.id
                 author {
-                    name = member.displayName?.let { "${member.displayName} (${member.name})" } ?: member.name
+                    name = member.displayName?.let { "$it (${member.name})\u2007•\u2007$systemName" } ?: "${member.name}\u2007•\u2007$systemName"
                     icon = member.avatarUrl
                 }
                 member.avatarUrl?.let {
@@ -145,6 +148,13 @@ object MemberCommands {
                 }
                 color = member.color.kordColor()
                 description = member.description
+                settings?.nickname?.let {
+                    field {
+                        name = "Server Name"
+                        value = "> $it\n*For ${guild?.name}*"
+                        inline = true
+                    }
+                }
                 member.pronouns?.let {
                     field {
                         name = "Pronouns"
