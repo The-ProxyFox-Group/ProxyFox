@@ -1,5 +1,6 @@
 package dev.proxyfox.database.records.member
 
+import dev.proxyfox.database.database
 import org.bson.types.ObjectId
 import java.time.OffsetDateTime
 import java.time.ZoneOffset
@@ -29,4 +30,7 @@ class MemberRecord {
     var birthday: String? = null
     var age: String? = null
     var role: String? = null
+
+    suspend fun serverName(serverId: ULong) =
+        if (serverId == 0UL) null else database.getMemberServerSettingsById(serverId, systemId, id)?.nickname
 }
