@@ -384,6 +384,17 @@ class JsonDatabase : Database() {
         newMessageLookup[newMessageId.toString()] = message
     }
 
+    override suspend fun fetchMessage(messageId: Snowflake): ProxiedMessageRecord? {
+        TODO("Not yet implemented")
+    }
+
+    override suspend fun fetchLatestMessage(
+        systemId: String,
+        channelId: Snowflake
+    ): ProxiedMessageRecord? {
+        TODO("Not yet implemented")
+    }
+
     override suspend fun allocateProxyTag(
         systemId: String,
         memberId: String,

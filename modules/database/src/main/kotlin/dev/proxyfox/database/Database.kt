@@ -7,6 +7,7 @@ import dev.kord.core.behavior.channel.ChannelBehavior
 import dev.proxyfox.database.records.member.MemberProxyTagRecord
 import dev.proxyfox.database.records.member.MemberRecord
 import dev.proxyfox.database.records.member.MemberServerSettingsRecord
+import dev.proxyfox.database.records.misc.ProxiedMessageRecord
 import dev.proxyfox.database.records.misc.ServerSettingsRecord
 import dev.proxyfox.database.records.misc.TrustLevel
 import dev.proxyfox.database.records.misc.UserRecord
@@ -237,6 +238,8 @@ abstract class Database : AutoCloseable {
     abstract suspend fun updateUser(user: UserRecord)
 
     abstract suspend fun createMessage(oldMessageId: Snowflake, newMessageId: Snowflake, memberId: String, systemId: String)
+    abstract suspend fun fetchMessage(messageId: Snowflake): ProxiedMessageRecord?
+    abstract suspend fun fetchLatestMessage(systemId: String, channelId: Snowflake): ProxiedMessageRecord?
 
     /**
      * Allocates a proxy tag

@@ -1,14 +1,18 @@
 package dev.proxyfox.bot.command
 
+import dev.kord.common.entity.Snowflake
 import dev.kord.core.behavior.channel.createMessage
+import dev.kord.core.entity.Message
 import dev.kord.rest.NamedFile
 import dev.proxyfox.bot.string.dsl.greedy
 import dev.proxyfox.bot.string.dsl.literal
+import dev.proxyfox.bot.string.dsl.string
 import dev.proxyfox.bot.string.parser.MessageHolder
 import dev.proxyfox.bot.string.parser.registerCommand
 import dev.proxyfox.common.printStep
 import dev.proxyfox.database.database
 import dev.proxyfox.database.records.misc.AutoProxyMode
+import dev.proxyfox.database.records.system.SystemRecord
 import dev.proxyfox.exporter.Exporter
 import dev.proxyfox.importer.import
 import kotlinx.coroutines.Dispatchers
@@ -59,6 +63,34 @@ object MiscCommands {
             literal("clear", ::roleClear)
             greedy("role", ::role)
         })
+
+        val delete: CommandNode = {
+            greedy("message", ::deleteMessage)
+        }
+        registerCommand(literal("delete", ::deleteMessage, delete))
+        registerCommand(literal("del", ::deleteMessage, delete))
+        registerCommand(literal("d", ::deleteMessage, delete))
+
+        val reproxy: CommandNode = {
+            string("message", ::reproxyMessage) {
+                greedy("member", ::reproxyMessage)
+            }
+            greedy("member", ::reproxyMessage)
+        }
+        registerCommand(literal("reproxy", ::reproxyMessage, reproxy))
+        registerCommand(literal("rp", ::reproxyMessage, reproxy))
+
+        val info: CommandNode = {
+            greedy("message", ::fetchMessageInfo)
+        }
+        registerCommand(literal("info", ::fetchMessageInfo, info))
+        registerCommand(literal("i", ::fetchMessageInfo, info))
+
+        val ping: CommandNode = {
+            greedy("message", ::pingMessageAuthor)
+        }
+        registerCommand(literal("ping", ::pingMessageAuthor, ping))
+        registerCommand(literal("p", ::pingMessageAuthor, ping))
     }
 
     private suspend fun importEmpty(ctx: MessageHolder): String {
@@ -204,5 +236,43 @@ To get support, head on over to https://discord.gg/q3yF8ay9V7"""
         server.proxyRole = 0UL
         database.updateServerSettings(server)
         return "Role removed!"
+    }
+
+    private suspend fun getMessageFromContext(system: SystemRecord, ctx: MessageHolder): Message? {
+        val messageIdString = ctx.params["message"]?.get(0)
+        val messageSnowflake: Snowflake? = messageIdString?.let { Snowflake(it) }
+        val channelId = ctx.message.channelId
+        val channel = ctx.message.channel.fetchChannelOrNull()
+        val databaseMessage = database.fetchLatestMessage(system.id, channelId)
+        return if (messageSnowflake != null)
+            channel?.getMessage(messageSnowflake)
+        else ctx.message.referencedMessage
+            ?: databaseMessage?.let { channel?.getMessage(Snowflake(it.newMessageId)) }
+    }
+
+    private suspend fun deleteMessage(ctx: MessageHolder): String {
+        val system = database.getSystemByHost(ctx.message.author)
+            ?: return "System does not exist. Create one using `pf>system new`"
+        val message = getMessageFromContext(system, ctx)
+            ?: return "Unable to find message to delete."
+        try {
+            message.delete("User requested message deletion.")
+        } catch (t: Throwable) {
+            // TODO: Get the proper exception type and provide a more detailed message
+            return "Failed to delete message."
+        }
+        return ""
+    }
+
+    private suspend fun reproxyMessage(ctx: MessageHolder): String {
+        TODO()
+    }
+
+    private suspend fun fetchMessageInfo(ctx: MessageHolder): String {
+        TODO()
+    }
+
+    private suspend fun pingMessageAuthor(ctx: MessageHolder): String {
+        TODO()
     }
 }

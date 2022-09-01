@@ -3,6 +3,7 @@ package dev.proxyfox.bot
 import dev.kord.common.entity.Snowflake
 import dev.kord.core.entity.channel.GuildMessageChannel
 import dev.kord.core.event.message.MessageCreateEvent
+import dev.kord.core.event.message.ReactionAddEvent
 import dev.proxyfox.bot.string.parser.parseString
 import dev.proxyfox.bot.webhook.WebhookUtil
 import dev.proxyfox.common.prefixRegex
@@ -96,4 +97,8 @@ suspend fun MessageCreateEvent.onMessageCreate() {
             WebhookUtil.prepareMessage(message, member, null).send()
         }
     }
+}
+
+suspend fun ReactionAddEvent.onReactionAdd() {
+    TODO("Fetch the reaction and perform operations")
 }
