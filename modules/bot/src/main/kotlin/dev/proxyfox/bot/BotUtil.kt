@@ -7,8 +7,10 @@ import dev.kord.core.event.message.MessageCreateEvent
 import dev.kord.core.on
 import dev.kord.gateway.Intent
 import dev.kord.gateway.PrivilegedIntent
+import dev.kord.rest.builder.message.EmbedBuilder
 import dev.proxyfox.common.printFancy
 import dev.proxyfox.common.printStep
+import dev.proxyfox.database.records.member.MemberRecord
 import io.ktor.client.*
 import io.ktor.client.engine.cio.*
 import kotlinx.coroutines.coroutineScope
@@ -81,3 +83,11 @@ fun findUnixValue(args: Array<String>, key: String): String? {
 fun OffsetDateTime.toKtInstant() = Instant.fromEpochSeconds(epochSeconds = toEpochSecond(), nanosecondAdjustment = nano)
 
 fun Int.kordColor() = if (this < 0) null else Color(this)
+
+suspend fun EmbedBuilder.member(record: MemberRecord, serverId: ULong) {
+    color = record.color.kordColor()
+    author {
+        name = record.serverName(serverId) ?: record.displayName ?: record.name
+        icon = record.avatarUrl
+    }
+}
