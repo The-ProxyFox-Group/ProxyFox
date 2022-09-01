@@ -7,6 +7,7 @@ import dev.kord.core.on
 import dev.kord.rest.builder.message.create.embed
 import dev.proxyfox.bot.kord
 import dev.proxyfox.bot.kordColor
+import dev.proxyfox.bot.member
 import dev.proxyfox.bot.string.dsl.greedy
 import dev.proxyfox.bot.string.dsl.literal
 import dev.proxyfox.bot.string.dsl.string
@@ -402,9 +403,26 @@ object MemberCommands {
     private suspend fun proxyEmpty(ctx: MessageHolder): String {
         val system = database.getSystemByHost(ctx.message.author)
             ?: return "System does not exist. Create one using `pf>system new`"
-        database.findMember(system.id, ctx.params["member"]!![0])
+        val member = database.findMember(system.id, ctx.params["member"]!![0])
             ?: return "Member does not exist. Create one using `pf>member new`"
-        return "Please provide a subcommand or a proxy tag"
+        ctx.message.channel.createMessage {
+            embed {
+                member(member, ctx.message.getGuildOrNull()?.id?.value ?: 0UL)
+                title = "${member.name}'s proxy tags"
+                description = database.listProxyTags(system.id, member.id).run {
+                    if (isNullOrEmpty())
+                        "${member.name} has no tags set."
+                    else
+                        joinToString(
+                            separator = "\n",
+                            limit = 20,
+                            truncated = "\n\u2026"
+                        ) { "``$it``" }
+                }
+            }
+        }
+
+        return ""
     }
 
     private suspend fun proxy(ctx: MessageHolder): String {
