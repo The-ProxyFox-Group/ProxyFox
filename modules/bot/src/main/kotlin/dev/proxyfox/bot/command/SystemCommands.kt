@@ -1,19 +1,15 @@
 package dev.proxyfox.bot.command
 
 import dev.kord.core.behavior.channel.createMessage
-import dev.kord.core.entity.ReactionEmoji
-import dev.kord.core.event.message.ReactionAddEvent
-import dev.kord.core.on
 import dev.kord.rest.builder.message.create.embed
-import dev.proxyfox.bot.kord
 import dev.proxyfox.bot.string.dsl.greedy
 import dev.proxyfox.bot.string.dsl.literal
 import dev.proxyfox.bot.string.parser.MessageHolder
 import dev.proxyfox.bot.string.parser.registerCommand
+import dev.proxyfox.bot.timedYesNoPrompt
 import dev.proxyfox.bot.toKtInstant
 import dev.proxyfox.common.printStep
 import dev.proxyfox.database.database
-import kotlinx.coroutines.Job
 
 /**
  * Commands for accessing and changing system settings
@@ -236,24 +232,10 @@ object SystemCommands {
             ?: return "System does not exist. Create one using `pf>system new`"
         val message1 =
             ctx.message.channel.createMessage("Are you sure you want to delete your system?\nThe data will be lost forever (A long time!)")
-        message1.addReaction(ReactionEmoji.Unicode("❌"))
-        message1.addReaction(ReactionEmoji.Unicode("✅"))
-        var job: Job? = null
-        job = kord.on<ReactionAddEvent> {
-            if (messageId == message1.id && userId == author.id) {
-                when (emoji.name) {
-                    "✅" -> {
-                        database.removeSystem(author)
-                        channel.createMessage("System deleted")
-                        job!!.cancel()
-                    }
-                    "❌" -> {
-                        channel.createMessage("Action cancelled")
-                        job!!.cancel()
-                    }
-                }
-            }
-        }
+        message1.timedYesNoPrompt(runner = author.id, yes = {
+            database.removeSystem(author)
+            channel.createMessage("System deleted")
+        })
         return ""
     }
 }
