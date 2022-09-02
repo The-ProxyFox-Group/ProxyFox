@@ -1,11 +1,7 @@
 package dev.proxyfox.bot.command
 
 import dev.kord.core.behavior.channel.createMessage
-import dev.kord.core.entity.ReactionEmoji
-import dev.kord.core.event.message.ReactionAddEvent
-import dev.kord.core.on
 import dev.kord.rest.builder.message.create.embed
-import dev.proxyfox.bot.kord
 import dev.proxyfox.bot.kordColor
 import dev.proxyfox.bot.member
 import dev.proxyfox.bot.string.dsl.greedy
@@ -13,12 +9,12 @@ import dev.proxyfox.bot.string.dsl.literal
 import dev.proxyfox.bot.string.dsl.string
 import dev.proxyfox.bot.string.parser.MessageHolder
 import dev.proxyfox.bot.string.parser.registerCommand
+import dev.proxyfox.bot.timedYesNoPrompt
 import dev.proxyfox.bot.toKtInstant
 import dev.proxyfox.common.fromColor
 import dev.proxyfox.common.printStep
 import dev.proxyfox.common.toColor
 import dev.proxyfox.database.database
-import kotlinx.coroutines.Job
 
 /**
  * Commands for accessing and changing system  settings
@@ -531,31 +527,16 @@ object MemberCommands {
 
     private suspend fun delete(ctx: MessageHolder): String {
         val author = ctx.message.author!!
-        val channel = ctx.message.channel
         val system = database.getSystemByHost(author)
             ?: return "System does not exist. Create one using `pf>system new`"
         val member = database.findMember(system.id, ctx.params["member"]!![0])
             ?: return "Member does not exist. Create one using `pf>member new`"
 
-        val message1 = channel.createMessage("Are you sure you want to delete member `${member.displayName ?: member.name}`?\nTheir data will be lost forever (A long time!)")
-        message1.addReaction(ReactionEmoji.Unicode("❌"))
-        message1.addReaction(ReactionEmoji.Unicode("✅"))
-        var job: Job? = null
-        job = kord.on<ReactionAddEvent> {
-            if (messageId == message1.id && userId == author.id) {
-                when (emoji.name) {
-                    "✅" -> {
-                        database.removeMember(system.id, member.id)
-                        channel.createMessage("Member deleted")
-                        job!!.cancel()
-                    }
-                    "❌" -> {
-                        channel.createMessage("Action cancelled")
-                        job!!.cancel()
-                    }
-                }
-            }
-        }
+        val message1 = ctx.message.channel.createMessage("Are you sure you want to delete member `${member.asString()}`?\nTheir data will be lost forever (A long time!)")
+        message1.timedYesNoPrompt(runner = author.id, yes = {
+            database.removeMember(system.id, member.id)
+            channel.createMessage("Member deleted")
+        })
 
         return ""
     }
