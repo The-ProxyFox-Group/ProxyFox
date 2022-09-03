@@ -12,7 +12,7 @@ class StringListNode(val name: String, val executor: suspend MessageHolder.() ->
             when (newString[i]) {
                 '"' -> {
                     var out = ""
-                    for (j in newString.indices) {
+                    for (j in newString.substring(1).indices) {
                         if (newString[j] == '"') {
                             arr.add(out)
                             i += j + 1
@@ -24,7 +24,7 @@ class StringListNode(val name: String, val executor: suspend MessageHolder.() ->
                 }
                 '\'' -> {
                     var out = ""
-                    for (j in newString.indices) {
+                    for (j in newString.substring(1).indices) {
                         if (newString[j] == '\'') {
                             arr.add(out)
                             i += j + 1
