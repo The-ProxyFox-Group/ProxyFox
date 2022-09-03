@@ -13,10 +13,10 @@ class StringNode(val name: String, val executor: suspend MessageHolder.() -> Str
         when (newString[0]) {
             '"' -> {
                 var out = ""
-                for (i in newString.indices) {
+                for (i in newString.substring(1).indices) {
                     if (newString[i] == '"') {
                         holder.params[name] = arrayOf(out)
-                        return index + i
+                        return index + i + 1
                     }
                     out += newString[i].toString()
                 }
@@ -24,10 +24,10 @@ class StringNode(val name: String, val executor: suspend MessageHolder.() -> Str
             }
             '\'' -> {
                 var out = ""
-                for (i in newString.indices) {
+                for (i in newString.substring(1).indices) {
                     if (newString[i] == '\'') {
                         holder.params[name] = arrayOf(out)
-                        return index + i
+                        return index + i + 1
                     }
                     out += newString[i].toString()
                 }
