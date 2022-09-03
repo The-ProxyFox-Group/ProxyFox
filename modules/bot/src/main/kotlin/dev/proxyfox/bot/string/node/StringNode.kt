@@ -15,34 +15,34 @@ class StringNode(val name: String, val executor: suspend MessageHolder.() -> Str
                 var out = ""
                 for (i in newString.substring(1).indices) {
                     if (newString[i+1] == '"') {
-                        holder.params["owo"] = arrayOf(out)
+                        holder.params[name] = arrayOf(out)
                         return index + i + 2
                     }
                     out += newString[i+1].toString()
                 }
-                holder.params["owo"] = arrayOf(out)
+                holder.params[name] = arrayOf(out)
             }
             '\'' -> {
                 var out = ""
                 for (i in newString.substring(1).indices) {
                     if (newString[i+1] == '\'') {
-                        holder.params["owo"] = arrayOf(out)
+                        holder.params[name] = arrayOf(out)
                         return index + i + 2
                     }
                     out += newString[i+1].toString()
                 }
-                holder.params["owo"] = arrayOf(out)
+                holder.params[name] = arrayOf(out)
             }
             else -> {
                 var out = ""
                 for (i in newString.indices) {
                     if (newString[i] == ' ') {
-                        holder.params["owo"] = arrayOf(out)
+                        holder.params[name] = arrayOf(out)
                         return index + i
                     }
                     out += newString[i].toString()
                 }
-                holder.params["owo"] = arrayOf(out)
+                holder.params[name] = arrayOf(out)
             }
         }
         return string.length
