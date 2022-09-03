@@ -7,11 +7,11 @@ class LiteralNode(private val literal: String, val executor: suspend MessageHold
     private val stringNodes: ArrayList<StringNode> = ArrayList()
     private val greedyNodes: ArrayList<Node> = ArrayList()
 
-    override fun parse(string: String, index: Int, holder: MessageHolder): Int {
-        if (string.length < literal.length + index) return index
-        if (string.substring(index).lowercase().startsWith(literal.lowercase()))
-            return index + literal.length
-        return index
+    override fun parse(string: String, holder: MessageHolder): Int {
+        if (string.length < literal.length) return 0
+        if (string.lowercase().startsWith(literal.lowercase() + " "))
+            return literal.length
+        return 0
     }
 
     override fun getSubNodes(): Array<Node> {
