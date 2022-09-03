@@ -5,31 +5,61 @@ import dev.proxyfox.common.applyAsync
 import dev.proxyfox.bot.string.parser.MessageHolder
 
 suspend fun literal(
-    vararg name: String,
+    name: String,
     executor: suspend MessageHolder.() -> String,
     action: suspend Node.() -> Unit
-): LiteralNode = LiteralNode(name, executor).applyAsync(action)
+): LiteralNode = LiteralNode(arrayOf(name), executor).applyAsync(action)
 
 fun literal(
-    vararg name: String,
+    name: String,
     executor: suspend MessageHolder.() -> String
-): LiteralNode = LiteralNode(name, executor)
+): LiteralNode = LiteralNode(arrayOf(name), executor)
 
 suspend fun Node.literal(
-    vararg name: String,
+    name: String,
     executor: suspend MessageHolder.() -> String,
     action: suspend Node.() -> Unit
 ): LiteralNode {
-    val node = LiteralNode(name, executor).applyAsync(action)
+    val node = LiteralNode(arrayOf(name), executor).applyAsync(action)
     addSubNode(node)
     return node
 }
 
 fun Node.literal(
-    vararg name: String,
+    name: String,
     executor: suspend suspend MessageHolder.() -> String
 ): LiteralNode {
-    val node = LiteralNode(name, executor)
+    val node = LiteralNode(arrayOf(name), executor)
+    addSubNode(node)
+    return node
+}
+
+suspend fun literal(
+    vararg names: String,
+    executor: suspend MessageHolder.() -> String,
+    action: suspend Node.() -> Unit
+): LiteralNode = LiteralNode(names, executor).applyAsync(action)
+
+fun literal(
+    vararg names: String,
+    executor: suspend MessageHolder.() -> String
+): LiteralNode = LiteralNode(names, executor)
+
+suspend fun Node.literal(
+    vararg names: String,
+    executor: suspend MessageHolder.() -> String,
+    action: suspend Node.() -> Unit
+): LiteralNode {
+    val node = LiteralNode(names, executor).applyAsync(action)
+    addSubNode(node)
+    return node
+}
+
+fun Node.literal(
+    vararg names: String,
+    executor: suspend suspend MessageHolder.() -> String
+): LiteralNode {
+    val node = LiteralNode(names, executor)
     addSubNode(node)
     return node
 }
