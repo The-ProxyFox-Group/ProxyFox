@@ -274,9 +274,7 @@ object MemberCommands {
             ?: return "System does not exist. Create one using `pf>system new`"
         val member = database.findMember(system.id, ctx.params["member"]!![0])
             ?: return "Member does not exist. Create one using `pf>member new`"
-        return if (member.description != null)
-            "`${member.description}`"
-        else "Member doesn't have a description"
+        return member.description?.let { "```md\n$it```" } ?: "There's no description set."
     }
 
     private suspend fun description(ctx: MessageHolder): String {

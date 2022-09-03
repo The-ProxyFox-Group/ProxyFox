@@ -161,7 +161,7 @@ object SystemCommands {
     private suspend fun descriptionRaw(ctx: MessageHolder): String {
         val system = database.getSystemByHost(ctx.message.author)
             ?: return "System does not exist. Create one using `pf>system new`"
-        return "```md\n${system.description}```"
+        return system.description?.let { "```md\n$it```" } ?: "There's no description set."
     }
 
     private suspend fun descriptionEmpty(ctx: MessageHolder): String {
