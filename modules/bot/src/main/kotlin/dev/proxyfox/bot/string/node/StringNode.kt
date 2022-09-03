@@ -7,40 +7,39 @@ class StringNode(val name: String, val executor: suspend MessageHolder.() -> Str
     private val stringNodes: ArrayList<StringNode> = ArrayList()
     private val greedyNodes: ArrayList<Node> = ArrayList()
 
-    override fun parse(string: String, index: Int, holder: MessageHolder): Int {
-        if (string.length < index) return index
-        val newString = string.substring(index)
-        when (newString[0]) {
+    override fun parse(string: String, holder: MessageHolder): Int {
+        if (string.isEmpty()) return 0
+        when (string[0]) {
             '"' -> {
                 var out = ""
-                for (i in newString.substring(1).indices) {
-                    if (newString[i+1] == '"') {
+                for (i in string.substring(1).indices) {
+                    if (string[i+1] == '"') {
                         holder.params[name] = arrayOf(out)
-                        return index + i + 2
+                        return i + 2
                     }
-                    out += newString[i+1].toString()
+                    out += string[i+1].toString()
                 }
                 holder.params[name] = arrayOf(out)
             }
             '\'' -> {
                 var out = ""
-                for (i in newString.substring(1).indices) {
-                    if (newString[i+1] == '\'') {
+                for (i in string.substring(1).indices) {
+                    if (string[i+1] == '\'') {
                         holder.params[name] = arrayOf(out)
-                        return index + i + 2
+                        return i + 2
                     }
-                    out += newString[i+1].toString()
+                    out += string[i+1].toString()
                 }
                 holder.params[name] = arrayOf(out)
             }
             else -> {
                 var out = ""
-                for (i in newString.indices) {
-                    if (newString[i] == ' ') {
+                for (i in string.indices) {
+                    if (string[i] == ' ') {
                         holder.params[name] = arrayOf(out)
-                        return index + i
+                        return i
                     }
-                    out += newString[i].toString()
+                    out += string[i].toString()
                 }
                 holder.params[name] = arrayOf(out)
             }

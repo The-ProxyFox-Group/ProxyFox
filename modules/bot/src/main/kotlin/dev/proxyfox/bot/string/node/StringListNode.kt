@@ -3,46 +3,45 @@ package dev.proxyfox.bot.string.node
 import dev.proxyfox.bot.string.parser.MessageHolder
 
 class StringListNode(val name: String, val executor: suspend MessageHolder.() -> String) : Node {
-    override fun parse(string: String, index: Int, holder: MessageHolder): Int {
-        if (string.length < index) return index
-        val newString = string.substring(index)
-        var i = index
+    override fun parse(string: String, holder: MessageHolder): Int {
+        if (string.isEmpty()) return 0
+        var i = 0
         val arr = ArrayList<String>()
         while (i < string.length) {
-            when (newString[i]) {
+            when (string[i]) {
                 '"' -> {
                     var out = ""
-                    for (j in newString.substring(1).indices) {
-                        if (newString[j] == '"') {
+                    for (j in string.substring(1).indices) {
+                        if (string[j] == '"') {
                             arr.add(out)
                             i += j + 1
                             continue
                         }
-                        out += newString[j].toString()
+                        out += string[j].toString()
                     }
                     arr.add(out)
                 }
                 '\'' -> {
                     var out = ""
-                    for (j in newString.substring(1).indices) {
-                        if (newString[j] == '\'') {
+                    for (j in string.substring(1).indices) {
+                        if (string[j] == '\'') {
                             arr.add(out)
                             i += j + 1
                             continue
                         }
-                        out += newString[j].toString()
+                        out += string[j].toString()
                     }
                     arr.add(out)
                 }
                 else -> {
                     var out = ""
-                    for (j in newString.indices) {
-                        if (newString[j] == ' ') {
+                    for (j in string.indices) {
+                        if (string[j] == ' ') {
                             arr.add(out)
                             i += j
                             continue
                         }
-                        out += newString[j].toString()
+                        out += string[j].toString()
                     }
                     arr.add(out)
                 }
