@@ -14,7 +14,6 @@ import kotlin.contracts.contract
  * */
 
 val logger = LoggerFactory.getLogger("ProxyFox")
-val prefixRegex = Regex("^pf[>;!].*", RegexOption.IGNORE_CASE)
 
 fun printFancy(input: String) {
     val edges = "*".repeat(input.length + 4)
