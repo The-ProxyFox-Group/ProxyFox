@@ -6,10 +6,11 @@ import dev.kord.core.event.message.MessageCreateEvent
 import dev.kord.core.event.message.ReactionAddEvent
 import dev.proxyfox.bot.string.parser.parseString
 import dev.proxyfox.bot.webhook.WebhookUtil
-import dev.proxyfox.common.prefixRegex
 import dev.proxyfox.database.database
 import dev.proxyfox.database.records.misc.AutoProxyMode
 import org.slf4j.LoggerFactory
+
+val prefixRegex = Regex("^(?:(<@!?${kord.selfId}>)|pf[>;!])\\s*", RegexOption.IGNORE_CASE)
 
 private val logger = LoggerFactory.getLogger("MessageHandler")
 
@@ -22,14 +23,20 @@ suspend fun MessageCreateEvent.onMessageCreate() {
 
     // Get message content to check with regex
     val content = message.content
-    if (prefixRegex.matches(content)) {
+    val matcher = prefixRegex.toPattern().matcher(content)
+    if (matcher.find()) {
         // Remove the prefix to pass into dispatcher
-        val contentWithoutRegex = content.substring(3)
-        // Run the command
-        val output = parseString(contentWithoutRegex, message) ?: return
-        // Send output message if exists
-        if (output.isNotBlank())
-            channel.createMessage(output)
+        val contentWithoutRegex = content.substring(matcher.end())
+
+        if (contentWithoutRegex.isBlank() && matcher.start(1) >= 0) {
+            channel.createMessage("Hi, I'm ProxyFox! My prefix is `pf>`.")
+        } else {
+            // Run the command
+            val output = parseString(contentWithoutRegex, message) ?: return
+            // Send output message if exists
+            if (output.isNotBlank())
+                channel.createMessage(output)
+        }
     } else if (channel is GuildMessageChannel) {
         val guild = channel.getGuild()
         val hasStickers = message.stickers.isNotEmpty()
