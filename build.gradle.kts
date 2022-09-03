@@ -34,6 +34,6 @@ tasks {
 
 allprojects {
     tasks.withType<org.jetbrains.kotlin.gradle.tasks.KotlinCompile>().configureEach {
-        this.kotlinOptions.freeCompilerArgs = listOf("-Xcontext-receivers")
+        kotlinOptions.freeCompilerArgs = listOf("-Xcontext-receivers")
     }
 }
