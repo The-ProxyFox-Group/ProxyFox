@@ -9,6 +9,8 @@ class LiteralNode(private val literal: String, val executor: suspend MessageHold
 
     override fun parse(string: String, holder: MessageHolder): Int {
         if (string.length < literal.length) return 0
+        if (string.length == literal.length && string.lowercase() == literal.lowercase())
+            return literal.length
         if (string.lowercase().startsWith(literal.lowercase() + " "))
             return literal.length
         return 0
