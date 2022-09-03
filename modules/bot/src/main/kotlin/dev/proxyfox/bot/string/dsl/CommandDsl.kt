@@ -35,18 +35,18 @@ fun Node.literal(
 }
 
 suspend fun literal(
-    vararg names: String,
+    names: Array<out String>,
     executor: suspend MessageHolder.() -> String,
     action: suspend Node.() -> Unit
 ): LiteralNode = LiteralNode(names, executor).applyAsync(action)
 
 fun literal(
-    vararg names: String,
+    names: Array<out String>,
     executor: suspend MessageHolder.() -> String
 ): LiteralNode = LiteralNode(names, executor)
 
 suspend fun Node.literal(
-    vararg names: String,
+    names: Array<out String>,
     executor: suspend MessageHolder.() -> String,
     action: suspend Node.() -> Unit
 ): LiteralNode {
@@ -56,7 +56,7 @@ suspend fun Node.literal(
 }
 
 fun Node.literal(
-    vararg names: String,
+    names: Array<out String>,
     executor: suspend suspend MessageHolder.() -> String
 ): LiteralNode {
     val node = LiteralNode(names, executor)
