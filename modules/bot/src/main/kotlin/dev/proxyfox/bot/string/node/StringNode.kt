@@ -16,7 +16,7 @@ class StringNode(val name: String, val executor: suspend MessageHolder.() -> Str
                 for (i in newString.indices) {
                     if (newString[i] == '"') {
                         holder.params[name] = arrayOf(out)
-                        return index + i
+                        return index + i + 1
                     }
                     out += newString[i].toString()
                 }
@@ -27,7 +27,7 @@ class StringNode(val name: String, val executor: suspend MessageHolder.() -> Str
                 for (i in newString.indices) {
                     if (newString[i] == '\'') {
                         holder.params[name] = arrayOf(out)
-                        return index + i
+                        return index + i + 1
                     }
                     out += newString[i].toString()
                 }

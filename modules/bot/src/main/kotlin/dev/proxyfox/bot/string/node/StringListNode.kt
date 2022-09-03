@@ -15,7 +15,7 @@ class StringListNode(val name: String, val executor: suspend MessageHolder.() ->
                     for (j in newString.indices) {
                         if (newString[j] == '"') {
                             arr.add(out)
-                            i += j
+                            i += j + 1
                             continue
                         }
                         out += newString[j].toString()
@@ -27,7 +27,7 @@ class StringListNode(val name: String, val executor: suspend MessageHolder.() ->
                     for (j in newString.indices) {
                         if (newString[j] == '\'') {
                             arr.add(out)
-                            i += j
+                            i += j + 1
                             continue
                         }
                         out += newString[j].toString()
