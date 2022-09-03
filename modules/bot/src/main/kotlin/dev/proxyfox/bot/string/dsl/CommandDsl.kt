@@ -5,18 +5,18 @@ import dev.proxyfox.common.applyAsync
 import dev.proxyfox.bot.string.parser.MessageHolder
 
 suspend fun literal(
-    name: String,
+    vararg name: String,
     executor: suspend MessageHolder.() -> String,
     action: suspend Node.() -> Unit
 ): LiteralNode = LiteralNode(name, executor).applyAsync(action)
 
 fun literal(
-    name: String,
+    vararg name: String,
     executor: suspend MessageHolder.() -> String
 ): LiteralNode = LiteralNode(name, executor)
 
 suspend fun Node.literal(
-    name: String,
+    vararg name: String,
     executor: suspend MessageHolder.() -> String,
     action: suspend Node.() -> Unit
 ): LiteralNode {
@@ -26,7 +26,7 @@ suspend fun Node.literal(
 }
 
 fun Node.literal(
-    name: String,
+    vararg name: String,
     executor: suspend suspend MessageHolder.() -> String
 ): LiteralNode {
     val node = LiteralNode(name, executor)
