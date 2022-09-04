@@ -20,6 +20,8 @@ class SystemRecord {
     var name: String? = null
     var description: String? = null
     var tag: String? = null
+    var pronouns: String? = null
+    var color: Int = -1
     var avatarUrl: String? = null
     var timezone: String? = null
     var timestamp: OffsetDateTime = OffsetDateTime.now(ZoneOffset.UTC)
