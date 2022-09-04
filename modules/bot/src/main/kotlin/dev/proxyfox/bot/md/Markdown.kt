@@ -54,6 +54,7 @@ fun parseMarkdown(string: String, symbol: String = "", i: Int = 0): MarkdownNode
     var lastIdx = idx
     while (idx < string.length) {
         val substr = string.substring(idx)
+        if (substr.startsWith(symbol)) return base
         for (sym in MarkdownSymbols.values()) {
             if (substr.startsWith(sym.symbol)) {
                 base.values.add(MarkdownString(string.substring(lastIdx, idx)))
