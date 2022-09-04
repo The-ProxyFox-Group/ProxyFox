@@ -574,6 +574,8 @@ class JsonDatabase : Database() {
         var name: String? = null,
         var description: String? = null,
         var tag: String? = null,
+        var pronouns: String? = null,
+        var color: Int = -1,
         var avatarUrl: String? = null,
         var timezone: String? = null,
         var timestamp: OffsetDateTime? = OffsetDateTime.now(ZoneOffset.UTC),
@@ -615,6 +617,8 @@ class JsonDatabase : Database() {
             record.name = name
             record.description = description
             record.tag = tag
+            record.pronouns = pronouns
+            record.color = color
             record.avatarUrl = avatarUrl
             record.timezone = timezone
             timestamp?.let { record.timestamp = it }
@@ -631,6 +635,8 @@ class JsonDatabase : Database() {
             name = record.name
             description = record.description
             tag = record.tag
+            pronouns = record.pronouns
+            color = record.color
             avatarUrl = record.avatarUrl
             timezone = record.timezone
             timestamp = record.timestamp

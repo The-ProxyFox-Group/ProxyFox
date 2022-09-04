@@ -2,14 +2,18 @@ package dev.proxyfox.bot.command
 
 import dev.kord.core.behavior.channel.createMessage
 import dev.kord.rest.builder.message.create.embed
+import dev.proxyfox.bot.kordColor
 import dev.proxyfox.bot.string.dsl.greedy
 import dev.proxyfox.bot.string.dsl.literal
 import dev.proxyfox.bot.string.dsl.unix
 import dev.proxyfox.bot.string.parser.MessageHolder
 import dev.proxyfox.bot.string.parser.registerCommand
+import dev.proxyfox.bot.system
 import dev.proxyfox.bot.timedYesNoPrompt
 import dev.proxyfox.bot.toKtInstant
+import dev.proxyfox.common.fromColor
 import dev.proxyfox.common.printStep
+import dev.proxyfox.common.toColor
 import dev.proxyfox.database.database
 
 /**
@@ -40,6 +44,15 @@ object SystemCommands {
             }
             literal("list", ::list, list)
             literal("l", ::list, list)
+
+            literal(arrayOf("color", "colour"), ::colorEmpty) {
+                greedy("color", ::color)
+            }
+
+            literal("pronouns", ::pronounsEmpty) {
+                unix("raw", ::pronounsRaw)
+                greedy("pronouns", ::pronouns)
+            }
 
             val desc: CommandNode = {
                 unix("raw", ::descriptionRaw)
@@ -78,12 +91,20 @@ object SystemCommands {
         ctx.message.channel.createMessage {
             embed {
                 title = system.name ?: system.id
+                color = system.color.kordColor()
                 system.avatarUrl?.let {
                     thumbnail { url = it }
                 }
                 system.tag?.let {
                     field {
                         name = "Tag"
+                        value = it
+                        inline = true
+                    }
+                }
+                system.pronouns?.let {
+                    field {
+                        name = "Pronouns"
                         value = it
                         inline = true
                     }
@@ -150,6 +171,41 @@ object SystemCommands {
     private suspend fun listByMessage(ctx: MessageHolder): String {
         // TODO: Make it sort by message count
         return list(ctx)
+    }
+
+    private suspend fun colorEmpty(ctx: MessageHolder): String {
+        val system = database.getSystemByHost(ctx.message.author)
+            ?: return "System does not exist. Create one using `pf>system new`"
+        return system.color.fromColor()?.let { "System's color is `$it` " } ?: "There's no color set."
+
+    }
+
+    private suspend fun color(ctx: MessageHolder): String {
+        val system = database.getSystemByHost(ctx.message.author)
+            ?: return "System does not exist. Create one using `pf>system new`"
+        system.color = ctx.params["color"]!![0].toColor()
+        database.updateSystem(system)
+        return "Member's color updated!"
+    }
+
+    private suspend fun pronouns(ctx: MessageHolder): String {
+        val system = database.getSystemByHost(ctx.message.author)
+            ?: return "System does not exist. Create one using `pf>system new`"
+        system.pronouns = ctx.params["pronouns"]!![0]
+        database.updateSystem(system)
+        return "Pronouns updated!"
+    }
+
+    private suspend fun pronounsRaw(ctx: MessageHolder): String {
+        val system = database.getSystemByHost(ctx.message.author)
+            ?: return "System does not exist. Create one using `pf>system new`"
+        return system.pronouns?.let { "``$it``" } ?: "There's no pronouns set."
+    }
+
+    private suspend fun pronounsEmpty(ctx: MessageHolder): String {
+        val system = database.getSystemByHost(ctx.message.author)
+            ?: return "System does not exist. Create one using `pf>system new`"
+        return system.pronouns?.let { "System's pronouns are set to $it" } ?: "There's no pronouns set."
     }
 
     private suspend fun description(ctx: MessageHolder): String {
