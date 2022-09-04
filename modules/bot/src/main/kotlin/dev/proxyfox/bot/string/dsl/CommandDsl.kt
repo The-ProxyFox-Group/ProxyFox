@@ -1,8 +1,8 @@
 package dev.proxyfox.bot.string.dsl
 
 import dev.proxyfox.bot.string.node.*
-import dev.proxyfox.common.applyAsync
 import dev.proxyfox.bot.string.parser.MessageHolder
+import dev.proxyfox.common.applyAsync
 
 suspend fun literal(
     name: String,
@@ -60,6 +60,15 @@ fun Node.literal(
     executor: suspend suspend MessageHolder.() -> String
 ): LiteralNode {
     val node = LiteralNode(names, executor)
+    addSubNode(node)
+    return node
+}
+
+fun Node.unix(
+    name: String,
+    executor: suspend MessageHolder.() -> String
+): LiteralNode {
+    val node = LiteralNode(arrayOf("-$name", "--$name"), executor)
     addSubNode(node)
     return node
 }

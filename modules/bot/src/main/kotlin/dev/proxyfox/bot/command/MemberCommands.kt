@@ -7,6 +7,7 @@ import dev.proxyfox.bot.member
 import dev.proxyfox.bot.string.dsl.greedy
 import dev.proxyfox.bot.string.dsl.literal
 import dev.proxyfox.bot.string.dsl.string
+import dev.proxyfox.bot.string.dsl.unix
 import dev.proxyfox.bot.string.parser.MessageHolder
 import dev.proxyfox.bot.string.parser.registerCommand
 import dev.proxyfox.bot.timedYesNoPrompt
@@ -32,7 +33,7 @@ object MemberCommands {
                 literal("name", ::renameEmpty, name)
 
                 val nickname: CommandNode = {
-                    literal("--clear", ::nicknameClear)
+                    unix("clear", ::nicknameClear)
                     greedy("name", ::nickname)
                 }
                 literal("nickname", ::nicknameEmpty, nickname)
@@ -41,15 +42,15 @@ object MemberCommands {
                 literal("dn", ::nicknameEmpty, nickname)
 
                 val servername: CommandNode = {
-                    literal("--clear", ::servernameClear)
+                    unix("clear", ::servernameClear)
                     greedy("name", ::servername)
                 }
                 literal("servername", ::servernameEmpty, servername)
                 literal("servernick", ::servernameEmpty, servername)
 
                 val desc: CommandNode = {
-                    literal("--clear", ::descriptionClear)
-                    literal("--raw", ::descriptionRaw)
+                    unix("clear", ::descriptionClear)
+                    unix("raw", ::descriptionRaw)
                     greedy("desc", ::description)
                 }
                 literal("desc", ::descriptionEmpty, desc)
@@ -57,14 +58,14 @@ object MemberCommands {
                 literal("d", ::descriptionEmpty, desc)
 
                 val avatar: CommandNode = {
-                    literal("--clear", ::avatarClear)
+                    unix("clear", ::avatarClear)
                     greedy("avatar", ::avatarLinked)
                 }
                 literal("avatar", ::avatar, avatar)
                 literal("pfp", ::avatar, avatar)
 
                 val serveravatar: CommandNode = {
-                    literal("--clear", ::serverAvatarClear)
+                    unix("clear", ::serverAvatarClear)
                     greedy("avatar", ::serverAvatarLinked)
                 }
                 literal("serveravatar", ::serverAvatar, serveravatar)
@@ -81,8 +82,8 @@ object MemberCommands {
                 }
 
                 literal("pronouns", ::pronounsEmpty) {
-                    literal("--clear", ::pronounsClear)
-                    literal("--raw", ::pronounsRaw)
+                    unix("clear", ::pronounsClear)
+                    unix("raw", ::pronounsRaw)
                     greedy("pronouns", ::pronouns)
                 }
 
@@ -91,7 +92,7 @@ object MemberCommands {
                 }
 
                 literal("birthday", ::birthEmpty) {
-                    literal("--clear", ::birthClear)
+                    unix("clear", ::birthClear)
                     greedy("birthday", ::birth)
                 }
 

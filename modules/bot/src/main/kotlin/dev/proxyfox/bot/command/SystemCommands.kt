@@ -4,6 +4,7 @@ import dev.kord.core.behavior.channel.createMessage
 import dev.kord.rest.builder.message.create.embed
 import dev.proxyfox.bot.string.dsl.greedy
 import dev.proxyfox.bot.string.dsl.literal
+import dev.proxyfox.bot.string.dsl.unix
 import dev.proxyfox.bot.string.parser.MessageHolder
 import dev.proxyfox.bot.string.parser.registerCommand
 import dev.proxyfox.bot.timedYesNoPrompt
@@ -34,13 +35,14 @@ object SystemCommands {
             literal("name", ::accessName, name)
 
             val list: CommandNode = {
-                literal("-by-message-count", ::listByMessage)
+                unix("by-message-count", ::listByMessage)
+                unix("bmc", ::listByMessage)
             }
             literal("list", ::list, list)
             literal("l", ::list, list)
 
             val desc: CommandNode = {
-                literal("-raw", ::descriptionRaw)
+                unix("raw", ::descriptionRaw)
                 greedy("desc", ::description)
             }
             literal("description", ::descriptionEmpty, desc)
@@ -48,18 +50,18 @@ object SystemCommands {
             literal("d", ::descriptionEmpty, desc)
 
             val avatar: CommandNode = {
-                literal("-raw", ::avatarRaw)
-                literal("-clear", ::avatarClear)
-                literal("-delete", ::avatarClear)
+                unix("raw", ::avatarRaw)
+                unix("clear", ::avatarClear)
+                unix("delete", ::avatarClear)
                 greedy("avatar", ::avatar)
             }
             literal("avatar", ::avatarEmpty, avatar)
             literal("pfp", ::avatarEmpty, avatar)
 
             literal("tag", ::tagEmpty) {
-                literal("-raw", ::tagRaw)
-                literal("-clear", ::tagClear)
-                literal("-delete", ::tagClear)
+                unix("raw", ::tagRaw)
+                unix("clear", ::tagClear)
+                unix("delete", ::tagClear)
                 greedy("tag", ::tag)
             }
 
