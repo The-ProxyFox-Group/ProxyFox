@@ -295,6 +295,14 @@ class JsonDatabase : Database() {
         }
     }
 
+    override suspend fun getOrCreateChannel(serverId: ULong, channelId: ULong): ChannelSettingsRecord {
+        TODO("Not yet implemented")
+    }
+
+    override suspend fun updateChannel(channel: ChannelSettingsRecord) {
+        TODO("Not yet implemented")
+    }
+
     @Deprecated(level = DeprecationLevel.ERROR, message = "Non-native method")
     override suspend fun allocateSystem(userId: ULong): SystemRecord {
         return getSystemByHost(userId) ?: run {

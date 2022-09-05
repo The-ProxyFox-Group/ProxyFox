@@ -65,6 +65,9 @@ suspend fun MessageCreateEvent.onMessageCreate() {
         val systemServer = database.getServerSettingsById(guild, system.id)
         if (!systemServer.proxyEnabled) return
 
+        val channel = database.getOrCreateChannel(guildId?.value!!, channel.id.value)
+        if (!channel.proxyEnabled) return
+
         // Proxy the message
         val proxy = database.getProxyTagFromMessage(message.author, content)
         if (proxy != null) {

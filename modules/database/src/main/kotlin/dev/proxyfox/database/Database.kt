@@ -7,10 +7,7 @@ import dev.kord.core.behavior.channel.ChannelBehavior
 import dev.proxyfox.database.records.member.MemberProxyTagRecord
 import dev.proxyfox.database.records.member.MemberRecord
 import dev.proxyfox.database.records.member.MemberServerSettingsRecord
-import dev.proxyfox.database.records.misc.ProxiedMessageRecord
-import dev.proxyfox.database.records.misc.ServerSettingsRecord
-import dev.proxyfox.database.records.misc.TrustLevel
-import dev.proxyfox.database.records.misc.UserRecord
+import dev.proxyfox.database.records.misc.*
 import dev.proxyfox.database.records.system.SystemChannelSettingsRecord
 import dev.proxyfox.database.records.system.SystemRecord
 import dev.proxyfox.database.records.system.SystemServerSettingsRecord
@@ -202,6 +199,9 @@ abstract class Database : AutoCloseable {
     suspend inline fun getChannelSettings(channel: ChannelBehavior, systemId: String) = getChannelSettings(channel.id.value, systemId)
 
     abstract suspend fun getChannelSettings(channelId: ULong, systemId: String): SystemChannelSettingsRecord
+
+    abstract suspend fun getOrCreateChannel(serverId: ULong, channelId: ULong): ChannelSettingsRecord
+    abstract suspend fun updateChannel(channel: ChannelSettingsRecord)
 
     // === Management ===
     /**
