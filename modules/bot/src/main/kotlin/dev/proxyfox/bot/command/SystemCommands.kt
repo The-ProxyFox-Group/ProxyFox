@@ -38,12 +38,10 @@ object SystemCommands {
             literal("rename", ::renameEmpty, name)
             literal("name", ::accessName, name)
 
-            val list: CommandNode = {
-                unix("by-message-count", ::listByMessage)
-                unix("bmc", ::listByMessage)
+            literal(arrayOf("list", "l"), ::list) {
+                unix(arrayOf("by-message-count", "bmc"), ::listByMessage)
+                unix(arrayOf("verbose", "v"), ::listVerbose)
             }
-            literal("list", ::list, list)
-            literal("l", ::list, list)
 
             literal(arrayOf("color", "colour"), ::colorEmpty) {
                 greedy("color", ::color)
@@ -164,13 +162,50 @@ object SystemCommands {
     private suspend fun list(ctx: MessageHolder): String {
         val system = database.getSystemByHost(ctx.message.author)
             ?: return "System does not exist. Create one using `pf>system new`"
-
+        ctx.message.channel.createMessage {
+            embed {
+                system(system, nameTransformer = { "Members of $it" })
+                val proxies = database.getProxiesById(system.id)!!
+                description = buildString {
+                    for (m in database.getMembersBySystem(system.id)!!) {
+                        append("`${m.id}`\u2007•\u2007**${m.name}**")
+                        proxies.filter { it.memberId == m.id }.let {
+                            if (it.isNotEmpty()) {
+                                it.joinTo(this, "\uFEFF``, ``\uFEFF", " (``\uFEFF", "\uFEFF``)\n")
+                            } else {
+                                appendLine()
+                            }
+                        }
+                    }
+                }
+            }
+        }
         return ""
     }
 
     private suspend fun listByMessage(ctx: MessageHolder): String {
         // TODO: Make it sort by message count
         return list(ctx)
+    }
+
+    private suspend fun listVerbose(ctx: MessageHolder): String {
+        val system = database.getSystemByHost(ctx.message.author)
+            ?: return "System does not exist. Create one using `pf>system new`"
+        ctx.message.channel.createMessage {
+            embed {
+                system(system, nameTransformer = { "Members of $it" })
+                val proxies = database.getProxiesById(system.id)
+                for (m in database.getMembersBySystem(system.id)!!) {
+                    val memberProxies = proxies?.filter { it.memberId == m.id }
+                    field {
+                        name = "${m.asString()} [`${m.id}`]"
+                        value = if (memberProxies.isNullOrEmpty()) "*No proxy tags set.*" else memberProxies.joinToString("\uFEFF``\n``\uFEFF", "``\uFEFF", "\uFEFF``")
+                        inline = true
+                    }
+                }
+            }
+        }
+        return ""
     }
 
     private suspend fun colorEmpty(ctx: MessageHolder): String {

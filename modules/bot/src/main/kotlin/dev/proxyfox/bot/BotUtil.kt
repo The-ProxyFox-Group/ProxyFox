@@ -14,7 +14,9 @@ import dev.kord.gateway.PrivilegedIntent
 import dev.kord.rest.builder.message.EmbedBuilder
 import dev.proxyfox.common.printFancy
 import dev.proxyfox.common.printStep
+import dev.proxyfox.common.spacedDot
 import dev.proxyfox.database.records.member.MemberRecord
+import dev.proxyfox.database.records.system.SystemRecord
 import io.ktor.client.*
 import io.ktor.client.engine.cio.*
 import kotlinx.coroutines.*
@@ -102,6 +104,21 @@ suspend fun EmbedBuilder.member(record: MemberRecord, serverId: ULong) {
     author {
         name = record.serverName(serverId) ?: record.displayName ?: record.name
         icon = record.avatarUrl
+    }
+}
+
+suspend fun EmbedBuilder.system(
+    record: SystemRecord,
+    nameTransformer: (String) -> String = { it },
+    footerTransformer: (String) -> String = { "System ID$spacedDot$it" }
+) {
+    color = record.color.kordColor()
+    author {
+        name = nameTransformer(record.name ?: record.id)
+        icon = record.avatarUrl
+    }
+    footer {
+        text = footerTransformer(record.id)
     }
 }
 

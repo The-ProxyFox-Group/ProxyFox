@@ -15,6 +15,8 @@ import kotlin.contracts.contract
 
 val logger = LoggerFactory.getLogger("ProxyFox")
 
+const val spacedDot = " \u2009• \u2009"
+
 fun printFancy(input: String) {
     val edges = "*".repeat(input.length + 4)
     logger.info(edges)
