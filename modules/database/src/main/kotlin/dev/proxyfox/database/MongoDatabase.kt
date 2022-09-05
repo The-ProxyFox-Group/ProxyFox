@@ -164,6 +164,19 @@ class MongoDatabase : Database() {
         }
     }
 
+    override suspend fun getOrCreateChannel(serverId: ULong, channelId: ULong): ChannelSettingsRecord {
+        return channels.findOne("{channelId:$channelId")
+            ?: ChannelSettingsRecord().apply {
+                this.serverId = serverId
+                this.channelId = channelId
+            }
+    }
+
+    override suspend fun updateChannel(channel: ChannelSettingsRecord) {
+        channels.deleteOneById(channel._id).awaitFirst()
+        channels.insertOne(channel).awaitFirst()
+    }
+
     override suspend fun allocateSystem(userId: ULong): SystemRecord {
         if (getSystemByHost(userId) != null) return getSystemByHost(userId)!!
         val user = getUser(userId)

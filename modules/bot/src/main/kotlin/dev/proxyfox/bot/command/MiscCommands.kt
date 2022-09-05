@@ -1,5 +1,6 @@
 package dev.proxyfox.bot.command
 
+import dev.kord.common.entity.Permission
 import dev.kord.common.entity.Snowflake
 import dev.kord.core.behavior.channel.createMessage
 import dev.kord.core.entity.Message
@@ -9,7 +10,7 @@ import dev.proxyfox.bot.string.dsl.literal
 import dev.proxyfox.bot.string.dsl.string
 import dev.proxyfox.bot.string.parser.MessageHolder
 import dev.proxyfox.bot.string.parser.registerCommand
-import dev.proxyfox.common.printStep
+import dev.proxyfox.common.*
 import dev.proxyfox.database.database
 import dev.proxyfox.database.records.misc.AutoProxyMode
 import dev.proxyfox.database.records.system.SystemRecord
@@ -41,56 +42,48 @@ object MiscCommands {
         registerCommand(literal("invite", ::invite))
         registerCommand(literal("source", ::source))
         registerCommand(literal("proxy", ::serverProxyEmpty) {
-            literal("off", ::serverProxyOff)
-            literal("disable", ::serverProxyOff)
-            literal("on", ::serverProxyOn)
-            literal("enable", ::serverProxyOn)
+            literal(arrayOf("off", "disable"), ::serverProxyOff)
+            literal(arrayOf("on", "enable"), ::serverProxyOn)
         })
-        val autoproxy: CommandNode = {
-            literal("off", ::proxyOff)
-            literal("disable", ::proxyOff)
-            literal("latch", ::proxyLatch)
-            literal("l", ::proxyLatch)
-            literal("front", ::proxyFront)
-            literal("f", ::proxyFront)
-            greedy("member", ::proxyMember)
-            greedy("m", ::proxyMember)
-        }
-        registerCommand(literal("autoproxy", ::proxyEmpty, autoproxy))
-        registerCommand(literal("ap", ::proxyEmpty, autoproxy))
+        registerCommand(literal(arrayOf("autoproxy", "ap"), ::proxyEmpty) {
+            literal(arrayOf("off", "disable"), ::proxyOff)
+            literal(arrayOf("latch", "l"), ::proxyLatch)
+            literal(arrayOf("front", "f"), ::proxyFront)
+            greedy("member", MiscCommands::proxyMember)
+        })
 
         registerCommand(literal("role", ::roleEmpty) {
             literal("clear", ::roleClear)
             greedy("role", ::role)
         })
 
-        val delete: CommandNode = {
+        registerCommand(literal(arrayOf("delete", "del", "d"), ::deleteMessage) {
             greedy("message", ::deleteMessage)
-        }
-        registerCommand(literal("delete", ::deleteMessage, delete))
-        registerCommand(literal("del", ::deleteMessage, delete))
-        registerCommand(literal("d", ::deleteMessage, delete))
+        })
 
-        val reproxy: CommandNode = {
+        registerCommand(literal(arrayOf("reproxy", "rp"), ::reproxyMessage) {
             string("message", ::reproxyMessage) {
-                greedy("member", ::reproxyMessage)
+                greedy("member", MiscCommands::reproxyMessage)
             }
-            greedy("member", ::reproxyMessage)
-        }
-        registerCommand(literal("reproxy", ::reproxyMessage, reproxy))
-        registerCommand(literal("rp", ::reproxyMessage, reproxy))
+            greedy("member", MiscCommands::reproxyMessage)
+        })
 
-        val info: CommandNode = {
-            greedy("message", ::fetchMessageInfo)
-        }
-        registerCommand(literal("info", ::fetchMessageInfo, info))
-        registerCommand(literal("i", ::fetchMessageInfo, info))
+        registerCommand(literal(arrayOf("info", "i"), ::fetchMessageInfo) {
+            greedy("message", MiscCommands::fetchMessageInfo)
+        })
 
-        val ping: CommandNode = {
+        registerCommand(literal(arrayOf("ping", "p"), ::pingMessageAuthor) {
             greedy("message", ::pingMessageAuthor)
-        }
-        registerCommand(literal("ping", ::pingMessageAuthor, ping))
-        registerCommand(literal("p", ::pingMessageAuthor, ping))
+        })
+
+        registerCommand(literal(arrayOf("channel", "c"), ::channelEmpty) {
+            literal(arrayOf("proxy", "p"), ::channelProxy) {
+                string("channel", ::channelProxy) {
+                    literal(arrayOf("on", "enable"), ::channelProxyEnable)
+                    literal(arrayOf("of", "disable"), ::channelProxyDisable)
+                }
+            }
+        })
     }
 
     private suspend fun importEmpty(ctx: MessageHolder): String {
@@ -274,5 +267,47 @@ To get support, head on over to https://discord.gg/q3yF8ay9V7"""
 
     private suspend fun pingMessageAuthor(ctx: MessageHolder): String {
         TODO()
+    }
+
+    private suspend fun channelEmpty(ctx: MessageHolder): String {
+        return "Please provide a channel command"
+    }
+
+    private suspend fun channelProxy(ctx: MessageHolder): String {
+        val channel = ctx.params["channel"]?.get(0)
+            ?: ctx.message.channelId.value.toString()
+        val channelId = channel.toULongOrNull()
+            ?: channel.substring(2, channel.length-1).toULongOrNull()
+            ?: return "Provided string is not a valid channel"
+        val channelSettings = database.getOrCreateChannel(ctx.message.getGuild().id.value, channelId)
+        return "Proxying is currently ${channelSettings.proxyEnabled.`??`("enabled", "disabled")} for <#$channelId>."
+    }
+
+    private suspend fun channelProxyEnable(ctx: MessageHolder): String {
+        if (ctx.message.getAuthorAsMember()?.getPermissions()?.contains(Permission.ManageChannels) != true) return "You do not have the proper permissions to run this command"
+        val channel = ctx.params["channel"]?.get(0)
+            ?: ctx.message.channelId.value.toString()
+        val channelId = channel.toULongOrNull()
+            ?: channel.substring(2, channel.length-1).toULongOrNull()
+            ?: return "Provided string is not a valid channel"
+        val channelSettings = database.getOrCreateChannel(ctx.message.getGuild().id.value, channelId)
+        if (channelSettings.proxyEnabled) return "Proxying is already enabled for <#$channelId>"
+        channelSettings.proxyEnabled = true
+        database.updateChannel(channelSettings)
+        return "Proxying is now enabled for <#$channelId>"
+    }
+
+    private suspend fun channelProxyDisable(ctx: MessageHolder): String {
+        if (ctx.message.getAuthorAsMember()?.getPermissions()?.contains(Permission.ManageChannels) != true) return "You do not have the proper permissions to run this command"
+        val channel = ctx.params["channel"]?.get(0)
+            ?: ctx.message.channelId.value.toString()
+        val channelId = channel.toULongOrNull()
+            ?: channel.substring(2, channel.length-1).toULongOrNull()
+            ?: return "Provided string is not a valid channel"
+        val channelSettings = database.getOrCreateChannel(ctx.message.getGuild().id.value, channelId)
+        if (!channelSettings.proxyEnabled) return "Proxying is already disabled for <#$channelId>"
+        channelSettings.proxyEnabled = false
+        database.updateChannel(channelSettings)
+        return "Proxying is now disabled for <#$channelId>"
     }
 }

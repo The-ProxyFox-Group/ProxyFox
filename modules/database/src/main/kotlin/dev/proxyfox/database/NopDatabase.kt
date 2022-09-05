@@ -4,10 +4,7 @@ import dev.kord.common.entity.Snowflake
 import dev.proxyfox.database.records.member.MemberProxyTagRecord
 import dev.proxyfox.database.records.member.MemberRecord
 import dev.proxyfox.database.records.member.MemberServerSettingsRecord
-import dev.proxyfox.database.records.misc.ProxiedMessageRecord
-import dev.proxyfox.database.records.misc.ServerSettingsRecord
-import dev.proxyfox.database.records.misc.TrustLevel
-import dev.proxyfox.database.records.misc.UserRecord
+import dev.proxyfox.database.records.misc.*
 import dev.proxyfox.database.records.system.SystemChannelSettingsRecord
 import dev.proxyfox.database.records.system.SystemRecord
 import dev.proxyfox.database.records.system.SystemServerSettingsRecord
@@ -46,6 +43,14 @@ class NopDatabase : Database() {
     override suspend fun updateServerSettings(serverSettings: ServerSettingsRecord) {}
 
     override suspend fun getChannelSettings(channelId: ULong, systemId: String): SystemChannelSettingsRecord {
+        TODO("Not yet implemented")
+    }
+
+    override suspend fun getOrCreateChannel(serverId: ULong, channelId: ULong): ChannelSettingsRecord {
+        TODO("Not yet implemented")
+    }
+
+    override suspend fun updateChannel(channel: ChannelSettingsRecord) {
         TODO("Not yet implemented")
     }
 
