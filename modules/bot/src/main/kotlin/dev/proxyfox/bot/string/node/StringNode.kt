@@ -3,8 +3,10 @@ package dev.proxyfox.bot.string.node
 import dev.proxyfox.bot.string.parser.MessageHolder
 
 class StringNode(val name: String, val executor: suspend MessageHolder.() -> String) : Node {
-    private val literalNodes: ArrayList<LiteralNode> = ArrayList()
-    private val stringNodes: ArrayList<StringNode> = ArrayList()
+    override val type: NodeType = NodeType.VARIABLE
+
+    private val literalNodes: ArrayList<Node> = ArrayList()
+    private val stringNodes: ArrayList<Node> = ArrayList()
     private val greedyNodes: ArrayList<Node> = ArrayList()
 
     override fun parse(string: String, holder: MessageHolder): Int {
@@ -55,11 +57,10 @@ class StringNode(val name: String, val executor: suspend MessageHolder.() -> Str
     }
 
     override fun addSubNode(node: Node) {
-        when (node) {
-            is LiteralNode -> literalNodes.add(node)
-            is StringNode -> stringNodes.add(node)
-            is GreedyNode -> greedyNodes.add(node)
-            is StringListNode -> greedyNodes.add(node)
+        when (node.type) {
+            NodeType.LITERAL -> literalNodes.add(node)
+            NodeType.VARIABLE -> stringNodes.add(node)
+            NodeType.GREEDY -> greedyNodes.add(node)
         }
     }
 
