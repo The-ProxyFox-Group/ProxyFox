@@ -12,10 +12,8 @@ class ServerSettingsRecord {
     var _id: ObjectId = ObjectId()
     var serverId: ULong = 0UL
     var proxyRole: ULong = 0UL
-    var disabledChannels: List<ULong>? = null
 
     fun writeTo(other: ServerSettingsRecord) {
         other.proxyRole = proxyRole
-        other.disabledChannels = disabledChannels
     }
 }
