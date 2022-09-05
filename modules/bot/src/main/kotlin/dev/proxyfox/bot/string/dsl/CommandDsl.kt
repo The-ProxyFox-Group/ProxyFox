@@ -64,6 +64,16 @@ fun Node.literal(
     return node
 }
 
+suspend fun Node.unix(
+    name: String,
+    executor: suspend MessageHolder.() -> String,
+    action: suspend Node.() -> Unit
+): UnixNode {
+    val node = UnixNode(name, executor).applyAsync(action)
+    addSubNode(node)
+    return node
+}
+
 fun Node.unix(
     name: Array<String>,
     executor: suspend MessageHolder.() -> String
