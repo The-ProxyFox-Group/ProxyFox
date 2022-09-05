@@ -22,13 +22,11 @@ suspend fun parseString(input: String, message: Message): String? {
 suspend fun tryExecuteNode(input: String, node: Node, holder: MessageHolder): String? {
     // Parse out the command node
     val idx = node.parse(input, holder)
-    logger.info(idx.toString())
     // Check if returned index is greater than the string length or zero
     if (idx == 0) return null
     if (idx >= input.length) return execute(node, holder)
     // Get a substring with the index
     val subStr = input.substring(idx).trim()
-    logger.debug(subStr)
     // Loop through sub nodes and try to execute
     for (subNode in node.getSubNodes()) {
         val str = tryExecuteNode(subStr, subNode, holder)
