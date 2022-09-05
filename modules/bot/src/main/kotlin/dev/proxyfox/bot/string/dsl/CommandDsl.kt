@@ -65,6 +65,15 @@ fun Node.literal(
 }
 
 fun Node.unix(
+    name: Array<String>,
+    executor: suspend MessageHolder.() -> String
+): LiteralNode {
+    val node = LiteralNode(name.flatMap { listOf("-$it", "--$it") }.toTypedArray(), executor)
+    addSubNode(node)
+    return node
+}
+
+fun Node.unix(
     name: String,
     executor: suspend MessageHolder.() -> String
 ): LiteralNode {
