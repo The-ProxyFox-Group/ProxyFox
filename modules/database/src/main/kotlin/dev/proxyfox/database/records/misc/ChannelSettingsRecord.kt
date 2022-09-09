@@ -7,4 +7,8 @@ class ChannelSettingsRecord {
     var serverId: ULong = 0UL
     var channelId: ULong = 0UL
     var proxyEnabled: Boolean = true
+
+    fun writeTo(other: ChannelSettingsRecord) {
+        other.proxyEnabled = proxyEnabled
+    }
 }
