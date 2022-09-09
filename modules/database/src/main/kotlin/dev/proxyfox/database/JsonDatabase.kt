@@ -149,6 +149,7 @@ import java.time.format.DateTimeFormatter
 class JsonDatabase : Database() {
     private lateinit var systems: MutableMap<String, JsonSystemStruct>
     private lateinit var servers: MutableMap<ULong, ServerSettingsRecord>
+    private lateinit var channels: MutableMap<ULong, ChannelSettingsRecord>
 
     @Transient
     private val users = HashMap<ULong, JsonSystemStruct>()
@@ -168,8 +169,9 @@ class JsonDatabase : Database() {
                     throw IllegalStateException("JSON Database missing schema.")
                 }
                 if (dbObject["schema"].asInt == 1) {
-                    systems = gson.fromJson(dbObject.getAsJsonObject("systems"), systemMapToken.type)
-                    servers = gson.fromJson(dbObject.getAsJsonObject("servers"), serverMapToken.type)
+                    systems = gson.fromJson(dbObject.getAsJsonObject("systems"), systemMapToken.type) ?: HashMap()
+                    servers = gson.fromJson(dbObject.getAsJsonObject("servers"), serverMapToken.type) ?: HashMap()
+                    channels = gson.fromJson(dbObject.getAsJsonObject("channels"), channelMapToken.type) ?: HashMap()
                     for ((_, system) in systems) {
                         system.init()
                     }
@@ -296,11 +298,14 @@ class JsonDatabase : Database() {
     }
 
     override suspend fun getOrCreateChannel(serverId: ULong, channelId: ULong): ChannelSettingsRecord {
-        TODO("Not yet implemented")
+        return channels[channelId] ?: ChannelSettingsRecord().apply {
+            this.serverId = serverId
+            this.channelId = channelId
+        }
     }
 
     override suspend fun updateChannel(channel: ChannelSettingsRecord) {
-        TODO("Not yet implemented")
+        channels[channel.channelId] = channel
     }
 
     @Deprecated(level = DeprecationLevel.ERROR, message = "Non-native method")
@@ -547,6 +552,7 @@ class JsonDatabase : Database() {
         obj.addProperty("schema", 1)
         obj.add("systems", gson.toJsonTree(systems))
         obj.add("servers", gson.toJsonTree(servers))
+        obj.add("channels", gson.toJsonTree(channels))
         file.writer().use { gson.toJson(obj, it) }
     }
 
@@ -756,6 +762,8 @@ class JsonDatabase : Database() {
                 }
             }).create()
         private val systemMapToken = object : TypeToken<HashMap<String, JsonSystemStruct>>() {}
-        private val serverMapToken = object : TypeToken<HashMap<String, ServerSettingsRecord>>() {}
+        private val serverMapToken = object : TypeToken<HashMap<ULong, ServerSettingsRecord>>() {}
+        private val channelMapToken = object : TypeToken<HashMap<ULong, ChannelSettingsRecord>>() {}
+        private val messageSetToken = object : TypeToken<HashSet<ProxiedMessageRecord>>() {}
     }
 }
