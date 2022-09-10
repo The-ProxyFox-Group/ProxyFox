@@ -61,7 +61,7 @@ data class ProxyContext(
             }
             return@executeWebhook
         }!!
-        database.createMessage(message.id, newMessage.id, member.id, member.systemId)
+        database.createMessage(message.id, newMessage.id, newMessage.channelId, member.id, member.systemId)
         message.delete()
     }
 }

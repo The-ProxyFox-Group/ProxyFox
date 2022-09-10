@@ -150,14 +150,13 @@ class JsonDatabase : Database() {
     private lateinit var systems: MutableMap<String, JsonSystemStruct>
     private lateinit var servers: MutableMap<ULong, ServerSettingsRecord>
     private lateinit var channels: MutableMap<ULong, ChannelSettingsRecord>
+    private lateinit var messages: MutableSet<ProxiedMessageRecord>
 
     @Transient
     private val users = HashMap<ULong, JsonSystemStruct>()
 
     @Transient
-    private val oldMessageLookup = HashMap<String, ProxiedMessageRecord>()
-    @Transient
-    private val newMessageLookup = HashMap<String, ProxiedMessageRecord>()
+    private val messageMap = HashMap<ULong, ProxiedMessageRecord>()
 
     override suspend fun setup(): JsonDatabase {
         val file = File("systems.json")
@@ -172,8 +171,13 @@ class JsonDatabase : Database() {
                     systems = gson.fromJson(dbObject.getAsJsonObject("systems"), systemMapToken.type) ?: HashMap()
                     servers = gson.fromJson(dbObject.getAsJsonObject("servers"), serverMapToken.type) ?: HashMap()
                     channels = gson.fromJson(dbObject.getAsJsonObject("channels"), channelMapToken.type) ?: HashMap()
+                    messages = gson.fromJson(dbObject.getAsJsonObject("messages"), messageSetToken.type) ?: HashSet()
                     for ((_, system) in systems) {
                         system.init()
+                    }
+                    for (message in messages) {
+                        messageMap[message.oldMessageId] = message
+                        messageMap[message.newMessageId] = message
                     }
                 }
 
@@ -385,27 +389,31 @@ class JsonDatabase : Database() {
     override suspend fun createMessage(
         oldMessageId: Snowflake,
         newMessageId: Snowflake,
+        channelId: Snowflake,
         memberId: String,
         systemId: String
     ) {
         val message = ProxiedMessageRecord()
         message.oldMessageId = oldMessageId.value
         message.newMessageId = newMessageId.value
+        message.channelId = channelId.value
         message.memberId = memberId
-        message.systmId = systemId
-        oldMessageLookup[oldMessageId.toString()] = message
-        newMessageLookup[newMessageId.toString()] = message
+        message.systemId = systemId
+        messages.add(message)
+        messageMap[oldMessageId.value] = message
+        messageMap[newMessageId.value] = message
     }
 
     override suspend fun fetchMessage(messageId: Snowflake): ProxiedMessageRecord? {
-        TODO("Not yet implemented")
+        return messageMap[messageId.value]
     }
 
     override suspend fun fetchLatestMessage(
         systemId: String,
         channelId: Snowflake
     ): ProxiedMessageRecord? {
-        TODO("Not yet implemented")
+        // TODO: Better caching logic
+        return messages.firstOrNull { it.channelId == channelId.value && it.systemId == systemId }
     }
 
     override suspend fun allocateProxyTag(
@@ -553,6 +561,7 @@ class JsonDatabase : Database() {
         obj.add("systems", gson.toJsonTree(systems))
         obj.add("servers", gson.toJsonTree(servers))
         obj.add("channels", gson.toJsonTree(channels))
+        obj.add("messages", gson.toJsonTree(messages))
         file.writer().use { gson.toJson(obj, it) }
     }
 

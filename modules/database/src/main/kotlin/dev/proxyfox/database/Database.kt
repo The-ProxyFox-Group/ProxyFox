@@ -237,7 +237,7 @@ abstract class Database : AutoCloseable {
     abstract suspend fun updateSystemChannelSettings(channelSettings: SystemChannelSettingsRecord)
     abstract suspend fun updateUser(user: UserRecord)
 
-    abstract suspend fun createMessage(oldMessageId: Snowflake, newMessageId: Snowflake, memberId: String, systemId: String)
+    abstract suspend fun createMessage(oldMessageId: Snowflake, newMessageId: Snowflake, channelId: Snowflake, memberId: String, systemId: String)
     abstract suspend fun fetchMessage(messageId: Snowflake): ProxiedMessageRecord?
     abstract suspend fun fetchLatestMessage(systemId: String, channelId: Snowflake): ProxiedMessageRecord?
 
