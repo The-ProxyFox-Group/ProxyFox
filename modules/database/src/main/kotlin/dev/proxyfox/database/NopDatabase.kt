@@ -78,6 +78,7 @@ class NopDatabase : Database() {
     override suspend fun createMessage(
         oldMessageId: Snowflake,
         newMessageId: Snowflake,
+        channelId: Snowflake,
         memberId: String,
         systemId: String
     ) {

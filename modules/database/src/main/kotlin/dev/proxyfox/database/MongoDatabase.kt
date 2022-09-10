@@ -20,11 +20,9 @@ import dev.proxyfox.database.records.system.SystemRecord
 import dev.proxyfox.database.records.system.SystemServerSettingsRecord
 import dev.proxyfox.database.records.system.SystemSwitchRecord
 import kotlinx.coroutines.reactive.awaitFirst
+import kotlinx.coroutines.reactive.awaitFirstOrNull
 import org.litote.kmongo.coroutine.toList
-import org.litote.kmongo.reactivestreams.KMongo
-import org.litote.kmongo.reactivestreams.countDocuments
-import org.litote.kmongo.reactivestreams.deleteOne
-import org.litote.kmongo.reactivestreams.deleteOneById
+import org.litote.kmongo.reactivestreams.*
 import java.time.OffsetDateTime
 import java.util.concurrent.TimeUnit
 
@@ -165,7 +163,7 @@ class MongoDatabase : Database() {
     }
 
     override suspend fun getOrCreateChannel(serverId: ULong, channelId: ULong): ChannelSettingsRecord {
-        return channels.findOne("{channelId:$channelId")
+        return channels.findOne("{channelId:$channelId}")
             ?: ChannelSettingsRecord().apply {
                 this.serverId = serverId
                 this.channelId = channelId
@@ -261,28 +259,27 @@ class MongoDatabase : Database() {
     override suspend fun createMessage(
         oldMessageId: Snowflake,
         newMessageId: Snowflake,
+        channelId: Snowflake,
         memberId: String,
         systemId: String
     ) {
         val message = ProxiedMessageRecord()
         message.oldMessageId = oldMessageId.value
         message.newMessageId = newMessageId.value
+        message.channelId = channelId.value
         message.memberId = memberId
-        message.systmId = systemId
+        message.systemId = systemId
         messages.insertOne(message).awaitFirst()
     }
 
     override suspend fun fetchMessage(messageId: Snowflake): ProxiedMessageRecord? =
-        messages.findOne("{'newMessageId': '${messageId.value}'}")
-            ?: messages.findOne("{'oldMessageId': '${messageId.value}'}")
+        messages.findOne("{\$or:[{'newMessageId':$messageId},{'oldMessageId':$messageId}]}")
 
     override suspend fun fetchLatestMessage(
         systemId: String,
         channelId: Snowflake
     ): ProxiedMessageRecord? =
-        messages.findAll("{systemId:'$systemId'}").maxByOrNull {
-            it.creationDate
-        }
+        messages.find().filter("{'systemId':'$systemId','channelId':$channelId}").sort("{'creationDate':-1}").limit(1).awaitFirstOrNull()
 
     override suspend fun allocateProxyTag(
         systemId: String,
