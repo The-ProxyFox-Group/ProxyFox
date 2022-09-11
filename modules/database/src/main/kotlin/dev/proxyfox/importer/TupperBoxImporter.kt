@@ -8,6 +8,7 @@
 
 package dev.proxyfox.importer
 
+import com.google.gson.JsonObject
 import dev.proxyfox.database.Database
 import dev.proxyfox.database.records.member.MemberProxyTagRecord
 import dev.proxyfox.database.records.member.MemberRecord
@@ -19,7 +20,7 @@ import dev.proxyfox.database.records.system.SystemRecord
  * @author Oliver
  * */
 class TupperBoxImporter : Importer {
-    override suspend fun import(database: Database, string: String, userId: ULong) {
+    override suspend fun import(database: Database, json: JsonObject, userId: ULong) {
         TODO("Not yet implemented")
     }
 
