@@ -29,6 +29,8 @@ import java.time.OffsetDateTime
  *
  * @author KJP12
  **/
+// Suppression since unused warnings aren't useful for an API.
+@Suppress("unused")
 abstract class Database : AutoCloseable {
     abstract suspend fun setup(): Database
 

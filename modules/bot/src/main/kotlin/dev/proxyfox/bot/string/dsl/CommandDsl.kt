@@ -6,6 +6,8 @@
  * file, You can obtain one at https://mozilla.org/MPL/2.0/.
  */
 
+@file:Suppress("unused")
+
 package dev.proxyfox.bot.string.dsl
 
 import dev.proxyfox.bot.string.node.*
