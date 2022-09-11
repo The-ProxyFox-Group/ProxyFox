@@ -1,9 +1,17 @@
+/*
+ * Copyright (c) 2022, The ProxyFox Group
+ *
+ * This Source Code is subject to the terms of the Mozilla Public
+ * License, v. 2.0. If a copy of the MPL was not distributed with this
+ * file, You can obtain one at https://mozilla.org/MPL/2.0/.
+ */
+
 package dev.proxyfox.bot.string.parser
 
 import dev.kord.core.entity.Message
-import dev.proxyfox.common.logger
 import dev.proxyfox.bot.string.node.LiteralNode
 import dev.proxyfox.bot.string.node.Node
+import dev.proxyfox.common.logger
 
 val nodes: ArrayList<LiteralNode> = ArrayList()
 
