@@ -110,5 +110,14 @@ suspend fun MessageCreateEvent.onMessageCreate() {
 }
 
 suspend fun ReactionAddEvent.onReactionAdd() {
-    TODO("Fetch the reaction and perform operations")
+    // TODO("Fetch the reaction and perform operations")
+    val system = database.getSystemByHost(userId.value) ?: return
+    val databaseMessage = database.fetchMessage(messageId)
+    if (databaseMessage?.systemId == system.id) {
+        when (emoji.name) {
+            "❌" -> {
+                message.delete("User requested message deletion.")
+            }
+        }
+    }
 }
