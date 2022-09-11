@@ -8,6 +8,7 @@
 
 package dev.proxyfox.importer
 
+import com.google.gson.JsonObject
 import dev.proxyfox.common.fromColor
 import dev.proxyfox.common.toColor
 import dev.proxyfox.database.Database
@@ -28,8 +29,8 @@ class PluralKitImporter : Importer {
     private var createdMembers = 0
     private var updatedMembers = 0
 
-    override suspend fun import(database: Database, string: String, userId: ULong) {
-        val pkSystem = gson.fromJson(string, PkSystem::class.java)
+    override suspend fun import(database: Database, json: JsonObject, userId: ULong) {
+        val pkSystem = gson.fromJson(json, PkSystem::class.java)
         system = database.allocateSystem(userId)
         system.name = pkSystem.name ?: system.name
         system.description = pkSystem.description ?: system.description

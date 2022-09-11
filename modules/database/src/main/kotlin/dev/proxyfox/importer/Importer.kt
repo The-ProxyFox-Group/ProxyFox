@@ -9,6 +9,8 @@
 package dev.proxyfox.importer
 
 import com.google.gson.Gson
+import com.google.gson.JsonObject
+import com.google.gson.JsonParser
 import dev.kord.core.entity.Entity
 import dev.proxyfox.database.Database
 import dev.proxyfox.database.database
@@ -28,9 +30,9 @@ val gson = Gson()
  * @author Oliver
  * */
 suspend fun import(string: String, user: Entity?): Importer {
-    val map = gson.fromJson(string, Map::class.java) as Map<String, *>
-    val importer = if (map.containsKey("tuppers")) TupperBoxImporter() else PluralKitImporter()
-    importer.import(string, user!!.id.value)
+    val map = JsonParser.parseString(string).asJsonObject
+    val importer = if (map.has("tuppers")) TupperBoxImporter() else PluralKitImporter()
+    importer.import(map, user!!.id.value)
     return importer
 }
 
@@ -43,9 +45,9 @@ suspend fun import(string: String, user: Entity?): Importer {
  * @author Oliver
  * */
 suspend fun import(reader: InputStreamReader, user: Entity?): Importer {
-    val map = gson.fromJson(reader, Map::class.java)
-    val importer = if (map.containsKey("tuppers")) TupperBoxImporter() else PluralKitImporter()
-    importer.import(reader.readText(), user!!.id.value)
+    val map = JsonParser.parseReader(reader).asJsonObject
+    val importer = if (map.has("tuppers")) TupperBoxImporter() else PluralKitImporter()
+    importer.import(map, user!!.id.value)
     return importer
 }
 
@@ -58,9 +60,9 @@ suspend fun import(reader: InputStreamReader, user: Entity?): Importer {
  * @author Oliver
  * */
 suspend fun import(database: Database, string: String, user: Entity?): Importer {
-    val map = gson.fromJson(string, Map::class.java) as Map<String, *>
-    val importer = if (map.containsKey("tuppers")) TupperBoxImporter() else PluralKitImporter()
-    importer.import(database, string, user!!.id.value)
+    val map = JsonParser.parseString(string).asJsonObject
+    val importer = if (map.has("tuppers")) TupperBoxImporter() else PluralKitImporter()
+    importer.import(database, map, user!!.id.value)
     return importer
 }
 
@@ -73,9 +75,9 @@ suspend fun import(database: Database, string: String, user: Entity?): Importer 
  * @author Oliver
  * */
 suspend fun import(database: Database, reader: InputStreamReader, user: Entity?): Importer {
-    val map = gson.fromJson(reader, Map::class.java)
-    val importer = if (map.containsKey("tuppers")) TupperBoxImporter() else PluralKitImporter()
-    importer.import(database, reader.readText(), user!!.id.value)
+    val map = JsonParser.parseReader(reader).asJsonObject
+    val importer = if (map.has("tuppers")) TupperBoxImporter() else PluralKitImporter()
+    importer.import(database, map, user!!.id.value)
     return importer
 }
 
@@ -85,8 +87,8 @@ suspend fun import(database: Database, reader: InputStreamReader, user: Entity?)
  * @author Oliver
  * */
 interface Importer {
-    suspend fun import(string: String, userId: ULong) = import(database, string, userId)
-    suspend fun import(database: Database, string: String, userId: ULong)
+    suspend fun import(json: JsonObject, userId: ULong) = import(database, json, userId)
+    suspend fun import(database: Database, json: JsonObject, userId: ULong)
 
     // Getters:
     suspend fun getSystem(): SystemRecord
