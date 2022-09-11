@@ -67,14 +67,14 @@ suspend fun MessageCreateEvent.onMessageCreate() {
 
         val system = database.getSystemByHost(userId) ?: return
 
-        val systemChannel = database.getChannelSettings(channel, system.id)
-        if (!systemChannel.proxyEnabled) return
+        val systemChannelSettings = database.getChannelSettings(channel, system.id)
+        if (!systemChannelSettings.proxyEnabled) return
 
-        val systemServer = database.getServerSettingsById(guild, system.id)
-        if (!systemServer.proxyEnabled) return
+        val systemServerSettings = database.getServerSettingsById(guild, system.id)
+        if (!systemServerSettings.proxyEnabled) return
 
-        val channel = database.getOrCreateChannel(guildId?.value!!, channel.id.value)
-        if (!channel.proxyEnabled) return
+        val channelSettings = database.getOrCreateChannel(guildId?.value!!, channel.id.value)
+        if (!channelSettings.proxyEnabled) return
 
         // Proxy the message
         val proxy = database.getProxyTagFromMessage(message.author, content)
@@ -85,10 +85,10 @@ suspend fun MessageCreateEvent.onMessageCreate() {
             val memberServer = database.getMemberServerSettingsById(guild, system.id, member.id)
             if (memberServer?.proxyEnabled == false) return
 
-            if (systemServer.autoProxyMode == AutoProxyMode.LATCH) {
-                systemServer.autoProxy = proxy.memberId
-                database.updateSystemServerSettings(systemServer)
-            } else if (systemServer.autoProxyMode == AutoProxyMode.FALLBACK && system.autoType == AutoProxyMode.LATCH) {
+            if (systemServerSettings.autoProxyMode == AutoProxyMode.LATCH) {
+                systemServerSettings.autoProxy = proxy.memberId
+                database.updateSystemServerSettings(systemServerSettings)
+            } else if (systemServerSettings.autoProxyMode == AutoProxyMode.FALLBACK && system.autoType == AutoProxyMode.LATCH) {
                 system.autoProxy = proxy.memberId
                 database.updateSystem(system)
             }
@@ -98,18 +98,18 @@ suspend fun MessageCreateEvent.onMessageCreate() {
             // Doesn't proxy just for this message.
             if (content.startsWith("\\\\")) {
                 // Break latch
-                if (systemServer.autoProxyMode == AutoProxyMode.LATCH) {
-                    systemServer.autoProxy = null
-                    database.updateSystemServerSettings(systemServer)
-                } else if (systemServer.autoProxyMode == AutoProxyMode.FALLBACK && system.autoType == AutoProxyMode.LATCH) {
+                if (systemServerSettings.autoProxyMode == AutoProxyMode.LATCH) {
+                    systemServerSettings.autoProxy = null
+                    database.updateSystemServerSettings(systemServerSettings)
+                } else if (systemServerSettings.autoProxyMode == AutoProxyMode.FALLBACK && system.autoType == AutoProxyMode.LATCH) {
                     system.autoProxy = null
                     database.updateSystem(system)
                 }
             }
         } else {
             // Allows AutoProxy to be disabled at a server level.
-            if (systemServer.autoProxyMode == AutoProxyMode.OFF) return
-            val memberId = if (systemServer.autoProxyMode == AutoProxyMode.FALLBACK) system.autoProxy else systemServer.autoProxy
+            if (systemServerSettings.autoProxyMode == AutoProxyMode.OFF) return
+            val memberId = if (systemServerSettings.autoProxyMode == AutoProxyMode.FALLBACK) system.autoProxy else systemServerSettings.autoProxy
             val member = database.getMemberById(system.id, memberId ?: return) ?: return
 
             WebhookUtil.prepareMessage(message, member, null).send()
