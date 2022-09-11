@@ -171,7 +171,7 @@ class JsonDatabase : Database() {
                     systems = gson.fromJson(dbObject.getAsJsonObject("systems"), systemMapToken.type) ?: HashMap()
                     servers = gson.fromJson(dbObject.getAsJsonObject("servers"), serverMapToken.type) ?: HashMap()
                     channels = gson.fromJson(dbObject.getAsJsonObject("channels"), channelMapToken.type) ?: HashMap()
-                    messages = gson.fromJson(dbObject.getAsJsonObject("messages"), messageSetToken.type) ?: HashSet()
+                    messages = gson.fromJson(dbObject.getAsJsonArray("messages"), messageSetToken.type) ?: HashSet()
                     for ((_, system) in systems) {
                         system.init()
                     }
