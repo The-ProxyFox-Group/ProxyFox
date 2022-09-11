@@ -1,3 +1,11 @@
+/*
+ * Copyright (c) 2022, The ProxyFox Group
+ *
+ * This Source Code is subject to the terms of the Mozilla Public
+ * License, v. 2.0. If a copy of the MPL was not distributed with this
+ * file, You can obtain one at https://mozilla.org/MPL/2.0/.
+ */
+
 package dev.proxyfox.bot.string.node
 
 import dev.proxyfox.bot.string.parser.MessageHolder
@@ -23,6 +31,7 @@ class StringListNode(val name: String, val executor: suspend MessageHolder.() ->
                     }
                     arr.add(out)
                 }
+
                 '\'' -> {
                     var out = ""
                     for (j in string.substring(1).indices) {
@@ -35,6 +44,7 @@ class StringListNode(val name: String, val executor: suspend MessageHolder.() ->
                     }
                     arr.add(out)
                 }
+
                 else -> {
                     var out = ""
                     for (j in string.indices) {
