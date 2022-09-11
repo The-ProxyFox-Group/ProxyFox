@@ -111,11 +111,13 @@ suspend fun MessageCreateEvent.onMessageCreate() {
 
 suspend fun ReactionAddEvent.onReactionAdd() {
     // TODO("Fetch the reaction and perform operations")
-    val system = database.getSystemByHost(userId.value) ?: return
-    val databaseMessage = database.fetchMessage(messageId)
-    if (databaseMessage?.systemId == system.id) {
-        when (emoji.name) {
-            "❌" -> {
+    // databaseMessage should be non-null, else it's meaningless here
+    val databaseMessage = database.fetchMessage(messageId) ?: return
+    when (emoji.name) {
+        "❌" -> {
+            // system needs to be non-null.
+            val system = database.getSystemByHost(userId.value) ?: return
+            if (databaseMessage.systemId == system.id) {
                 message.delete("User requested message deletion.")
             }
         }
