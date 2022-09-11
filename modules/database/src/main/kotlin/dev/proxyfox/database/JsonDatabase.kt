@@ -192,6 +192,8 @@ class JsonDatabase : Database() {
         }
         systems = HashMap()
         servers = HashMap()
+        channels = HashMap()
+        messages = HashSet()
 
         return this
     }
