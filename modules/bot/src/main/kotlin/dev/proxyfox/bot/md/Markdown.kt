@@ -10,15 +10,22 @@ package dev.proxyfox.bot.md
 
 interface MarkdownNode {
     val length: Int
+    val trueLength: Int
 
     override fun toString(): String
+    fun substring(len: Int): MarkdownNode
 }
 
 class MarkdownString(val string: String) : MarkdownNode {
     override val length: Int
         get() = string.length
+    override val trueLength: Int
+        get() = string.length
 
     override fun toString(): String = string
+    override fun substring(len: Int): MarkdownNode {
+        return MarkdownString(string.substring(0, len.coerceAtMost(string.length)))
+    }
 }
 
 class BaseMarkdown(val symbol: String) : MarkdownNode {
@@ -26,7 +33,15 @@ class BaseMarkdown(val symbol: String) : MarkdownNode {
 
     override val length: Int
         get() {
-            var int = symbol.length*2
+            var int = 0
+            for (value in values) {
+                int += value.length
+            }
+            return int
+        }
+    override val trueLength: Int
+        get() {
+            var int = symbol.length + symbol.length
             for (value in values) {
                 int += value.length
             }
@@ -40,6 +55,21 @@ class BaseMarkdown(val symbol: String) : MarkdownNode {
             out += value.toString()
         }
         out += symbol
+        return out
+    }
+
+    override fun substring(len: Int): MarkdownNode {
+        if (trueLength < len) return this
+        var i = 0
+        val out = BaseMarkdown(symbol)
+        for (value in values) {
+            if (i + value.length > len) {
+                out.values.add(value.substring(len - i))
+                break
+            }
+            out.values.add(value)
+            i += value.length
+        }
         return out
     }
 }
@@ -56,23 +86,51 @@ enum class MarkdownSymbols(val symbol: String) {
 }
 
 // TODO: Parse out more complex markdowns
-fun parseMarkdown(string: String, symbol: String = "", i: Int = 0): MarkdownNode {
+fun parseMarkdown(string: String, symbol: String = ""): BaseMarkdown {
+    print(symbol)
+    print("string: ")
+    println(string)
     val base = BaseMarkdown(symbol)
-    var idx = i
-    var lastIdx = idx
+    var idx = 0
+    var lastIdx = 0
     while (idx < string.length) {
         val substr = string.substring(idx)
-        if (substr.startsWith(symbol)) return base
+        print(symbol)
+        print("substr: ")
+        println(substr)
         for (sym in MarkdownSymbols.values()) {
             if (substr.startsWith(sym.symbol)) {
-                base.values.add(MarkdownString(string.substring(lastIdx, idx)))
-                val new = parseMarkdown(string, sym.symbol, idx+symbol.length)
-                idx += new.length
-                lastIdx = idx
+                var currIdx = sym.symbol.length
+                while (currIdx < substr.length) {
+                    val subsubstr = substr.substring(currIdx)
+                    print(symbol)
+                    print("subsubstr: ")
+                    println(subsubstr)
+                    if (subsubstr.startsWith(sym.symbol)) {
+                        base.values.add(MarkdownString(string.substring(lastIdx, idx)))
+                        val subsubsubstr = substr.substring(
+                            sym.symbol.length,
+                            (currIdx).coerceAtMost(substr.length)
+                        )
+                        print(symbol)
+                        print("subsubsubstr: ")
+                        println(subsubsubstr)
+                        val md = parseMarkdown(
+                            subsubsubstr,
+                            sym.symbol
+                        )
+                        base.values.add(md)
+                        idx += md.trueLength
+                        lastIdx = idx
+                        break
+                    }
+                    currIdx++
+                }
+                break
             }
         }
         idx++
     }
-    base.values.add(MarkdownString(string.substring(lastIdx)))
+    base.values.add(MarkdownString(string.substring(lastIdx, idx.coerceAtMost(string.length))))
     return base
 }

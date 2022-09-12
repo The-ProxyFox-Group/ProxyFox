@@ -15,6 +15,10 @@ import dev.kord.rest.NamedFile
 import dev.kord.rest.builder.message.create.embed
 import dev.proxyfox.bot.http
 import dev.proxyfox.bot.kord
+import dev.proxyfox.bot.md.BaseMarkdown
+import dev.proxyfox.bot.md.MarkdownNode
+import dev.proxyfox.bot.md.MarkdownString
+import dev.proxyfox.bot.md.parseMarkdown
 import dev.proxyfox.database.database
 import dev.proxyfox.database.records.member.MemberProxyTagRecord
 import dev.proxyfox.database.records.member.MemberRecord
@@ -37,7 +41,7 @@ data class ProxyContext(
     val proxy: MemberProxyTagRecord?
 ) {
     @OptIn(InternalAPI::class)
-    suspend inline fun send() {
+    suspend fun send() {
         if (!member.keepProxy && proxy != null)
             messageContent = proxy.trim(messageContent)
         val system = database.getSystemById(member.systemId)!!
@@ -61,13 +65,17 @@ data class ProxyContext(
                 embed {
                     color = Color(member.color)
                     field {
-                        name = ref.author!!.username + " ↩"
-                        // TODO: Make sure markdown closes on messages that are too long
-                        value = "[**Reply to:**](https://discord.com/channels/${ref.getGuild().id}/${ref.channelId}/${ref.id}) ${ref.content.substring(0, 100)}"
+                        name = ref.author!!.username + " \\↩"
+                        var msgRef = parseMarkdown(ref.content)
+                        if (msgRef.length > 100) {
+                            // We know it's gonna be a BaseMarkdown so
+                            msgRef = msgRef.substring(100) as BaseMarkdown
+                            msgRef.values.add(MarkdownString("..."))
+                        }
+                        value = "[**Reply to:**](https://discord.com/channels/${ref.getGuild().id}/${ref.channelId}/${ref.id}) $msgRef"
                     }
                 }
             }
-            return@executeWebhook
         }!!
         database.createMessage(message.id, newMessage.id, newMessage.channelId, member.id, member.systemId)
         message.delete()
