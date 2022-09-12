@@ -25,7 +25,4 @@ tasks {
         archiveClassifier.set("")
         mergeServiceFiles()
     }
-    build {
-        dependsOn(shadowJar)
-    }
 }
