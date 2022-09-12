@@ -11,6 +11,7 @@
 package dev.proxyfox.bot
 
 import dev.proxyfox.bot.command.Commands
+import dev.proxyfox.bot.md.parseMarkdown
 import dev.proxyfox.bot.terminal.TerminalCommands
 import dev.proxyfox.common.printFancy
 import dev.proxyfox.database.DatabaseMain
