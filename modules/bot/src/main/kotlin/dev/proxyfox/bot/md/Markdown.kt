@@ -87,36 +87,23 @@ enum class MarkdownSymbols(val symbol: String) {
 
 // TODO: Parse out more complex markdowns
 fun parseMarkdown(string: String, symbol: String = ""): BaseMarkdown {
-    print(symbol)
-    print("string: ")
-    println(string)
     val base = BaseMarkdown(symbol)
     var idx = 0
     var lastIdx = 0
     while (idx < string.length) {
         val substr = string.substring(idx)
-        print(symbol)
-        print("substr: ")
-        println(substr)
         for (sym in MarkdownSymbols.values()) {
             if (substr.startsWith(sym.symbol)) {
                 var currIdx = sym.symbol.length
                 while (currIdx < substr.length) {
                     val subsubstr = substr.substring(currIdx)
-                    print(symbol)
-                    print("subsubstr: ")
-                    println(subsubstr)
                     if (subsubstr.startsWith(sym.symbol)) {
                         base.values.add(MarkdownString(string.substring(lastIdx, idx)))
-                        val subsubsubstr = substr.substring(
-                            sym.symbol.length,
-                            (currIdx).coerceAtMost(substr.length)
-                        )
-                        print(symbol)
-                        print("subsubsubstr: ")
-                        println(subsubsubstr)
                         val md = parseMarkdown(
-                            subsubsubstr,
+                            substr.substring(
+                                sym.symbol.length,
+                                (currIdx).coerceAtMost(substr.length)
+                            ),
                             sym.symbol
                         )
                         base.values.add(md)
