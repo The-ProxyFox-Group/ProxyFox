@@ -76,6 +76,7 @@ class BaseMarkdown(val symbol: String) : MarkdownNode {
 
 enum class MarkdownSymbols(val symbol: String) {
     CODE_MULTILINE("```"),
+    CODE_DOUBLE("``"),
     SPOILER("||"),
     BOLD("**"),
     STRIKETHROUGH("~~"),
