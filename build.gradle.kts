@@ -7,27 +7,8 @@
  */
 
 plugins {
-    kotlin("jvm") version "1.7.10"
-    id("com.github.johnrengelman.shadow") version "7.1.2"
-}
-
-group = "dev.proxyfox"
-version = "1.0.0"
-val ktor_version = "1.6.7"
-
-java {
-    sourceCompatibility = JavaVersion.VERSION_17
-    targetCompatibility = JavaVersion.VERSION_17
-}
-
-repositories {
-    mavenCentral()
-    maven("https://libraries.minecraft.net/")
-    maven("https://oss.sonatype.org/content/repositories/snapshots")
-    maven("https://jitpack.io")
-}
-
-dependencies {
+    alias(libs.plugins.kotlin.jvm)
+    alias(libs.plugins.shadow)
 }
 
 tasks {
@@ -39,9 +20,29 @@ tasks {
     }
 }
 
-
 allprojects {
-    tasks.withType<org.jetbrains.kotlin.gradle.tasks.KotlinCompile>().configureEach {
-        kotlinOptions.freeCompilerArgs = listOf("-Xcontext-receivers")
+    apply(plugin = "org.jetbrains.kotlin.jvm")
+
+    java {
+        sourceCompatibility = JavaVersion.VERSION_17
+        targetCompatibility = JavaVersion.VERSION_17
+    }
+
+    repositories {
+        mavenCentral()
+        maven("https://libraries.minecraft.net/")
+        maven("https://oss.sonatype.org/content/repositories/snapshots")
+        maven("https://jitpack.io")
+    }
+
+    tasks {
+        withType<org.jetbrains.kotlin.gradle.tasks.KotlinCompile>().configureEach {
+            kotlinOptions.freeCompilerArgs = listOf("-Xcontext-receivers")
+        }
+        findByName("shadowJar")?.let {
+            build {
+                dependsOn(it)
+            }
+        }
     }
 }

@@ -1,0 +1,44 @@
+[versions]
+guava = "31.1-jre"
+logback = "1.2.11"
+kord = "0.8.0-M16"
+kotlin = "1.7.10"
+kotlinx_coroutines = "1.6.4"
+
+# Database-specific
+postgres = "42.3.3"
+kjdbc = "0.5.2"
+gson = "2.9.0"
+kmongo = "4.6.0"
+
+# Testing
+junit = "5.8.2"
+
+# Plugins
+shadow = "7.1.2"
+
+[libraries]
+guava = { module = "com.google.guava:guava", version.ref = "guava" }
+kord = { module = "dev.kord:kord-core", version.ref = "kord" }
+logback = { module = "ch.qos.logback:logback-classic", version.ref = "logback" }
+
+kotlin_stdlib = { module = "org.jetbrains.kotlin:kotlin-stdlib", version.ref = "kotlin" }
+kotlinx_coroutines = { module = "org.jetbrains.kotlinx:kotlinx-coroutines-core", version.ref = "kotlinx_coroutines" }
+
+gson = { module = "com.google.code.gson:gson", version.ref = "gson" }
+kjdbc = { module = "com.vladsch.kotlin-jdbc:kotlin-jdbc", version.ref = "kjdbc" }
+postgres = { module = "org.postgresql:postgresql", version.ref = "postgres" }
+kmongo_base = { module = "org.litote.kmongo:kmongo", version.ref = "kmongo" }
+kmongo_coroutine = { module = "org.litote.kmongo:kmongo-coroutine", version.ref = "kmongo" }
+kmongo_async = { module = "org.litote.kmongo:kmongo-async", version.ref = "kmongo" }
+
+junit_jupiter_api = { module = "org.junit.jupiter:junit-jupiter-api", version.ref = "junit" }
+junit_jupiter_engine = { module = "org.junit.jupiter:junit-jupiter-engine", version.ref = "junit" }
+
+[bundles]
+base = ["guava", "logback", "kotlin_stdlib", "kotlinx_coroutines", "kord"]
+database = ["gson", "kmongo_base", "kmongo_coroutine", "kmongo_async"]
+
+[plugins]
+kotlin_jvm = { id = "org.jetbrains.kotlin.jvm", version.ref = "kotlin" }
+shadow = { id = "com.github.johnrengelman.shadow", version.ref = "shadow" }
