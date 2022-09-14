@@ -323,13 +323,14 @@ class JsonDatabase : Database() {
     }
 
     @Deprecated(level = DeprecationLevel.ERROR, message = "Non-native method")
-    override suspend fun allocateSystem(userId: ULong): SystemRecord {
+    override suspend fun allocateSystem(userId: ULong, id: String?): SystemRecord {
+        if (id != null && systems.keys.contains(id)) error("Provided ID already exists")
         return getSystemByHost(userId) ?: run {
-            val id = systems.keys.firstFree()
-            val struct = JsonSystemStruct(id)
+            val sysId = id ?: systems.keys.firstFree()
+            val struct = JsonSystemStruct(sysId)
             struct.accounts.add(userId)
             users[userId] = struct
-            systems[id] = struct
+            systems[sysId] = struct
             struct.init()
             struct.view()
         }
@@ -350,7 +351,9 @@ class JsonDatabase : Database() {
     }
 
     @Deprecated(level = DeprecationLevel.ERROR, message = "Non-native method")
-    override suspend fun allocateMember(systemId: String, name: String): MemberRecord {
+    override suspend fun allocateMember(systemId: String, name: String, id: String?): MemberRecord {
+        if (id != null && systems[systemId]?.members?.keys?.contains(id) == true)
+            error("Provided ID already exists")
         return getMemberByIdAndName(systemId, name) ?: run {
             val system = systems[systemId]!!
             system.putMember(JsonMemberStruct(systemId, system.members.keys.firstFree(), name))
