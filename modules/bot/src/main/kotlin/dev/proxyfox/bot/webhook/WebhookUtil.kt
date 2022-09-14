@@ -14,6 +14,8 @@ import dev.kord.core.entity.channel.TextChannel
 import dev.proxyfox.bot.kord
 import dev.proxyfox.database.records.member.MemberProxyTagRecord
 import dev.proxyfox.database.records.member.MemberRecord
+import dev.proxyfox.database.records.member.MemberServerSettingsRecord
+import dev.proxyfox.database.records.system.SystemRecord
 import kotlinx.coroutines.flow.firstOrNull
 
 /**
@@ -21,10 +23,16 @@ import kotlinx.coroutines.flow.firstOrNull
  * @author Oliver
  * */
 object WebhookUtil {
-    suspend fun prepareMessage(message: Message, member: MemberRecord, proxy: MemberProxyTagRecord?): ProxyContext = ProxyContext(
+    suspend fun prepareMessage(
+            message: Message,
+            system: SystemRecord,
+            member: MemberRecord,
+            proxy: MemberProxyTagRecord?
+    ) = ProxyContext(
         message.content,
         createOrFetchWebhookFromCache(message.channel.asChannel() as TextChannel),
         message,
+        system,
         member,
         proxy
     )
@@ -32,7 +40,7 @@ object WebhookUtil {
     private suspend fun createOrFetchWebhookFromCache(channel: TextChannel): WebhookHolder {
         // Try to fetch webhook from cache
         WebhookCache[channel.id]?.let {
-            return it
+            return@createOrFetchWebhookFromCache it
         }
         return createOrFetchWebhook(channel)
     }

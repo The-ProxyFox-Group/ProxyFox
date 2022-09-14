@@ -93,7 +93,7 @@ suspend fun MessageCreateEvent.onMessageCreate() {
                 database.updateSystem(system)
             }
 
-            WebhookUtil.prepareMessage(message, member, proxy).send()
+            WebhookUtil.prepareMessage(message, system, member, proxy).send()
         } else if (content.startsWith('\\')) {
             // Doesn't proxy just for this message.
             if (content.startsWith("\\\\")) {
@@ -112,7 +112,7 @@ suspend fun MessageCreateEvent.onMessageCreate() {
             val memberId = if (systemServerSettings.autoProxyMode == AutoProxyMode.FALLBACK) system.autoProxy else systemServerSettings.autoProxy
             val member = database.getMemberById(system.id, memberId ?: return) ?: return
 
-            WebhookUtil.prepareMessage(message, member, null).send()
+            WebhookUtil.prepareMessage(message, system,  member, null).send()
         }
     }
 }
