@@ -183,11 +183,12 @@ class MongoDatabase : Database() {
         channels.insertOne(channel).awaitFirst()
     }
 
-    override suspend fun allocateSystem(userId: ULong): SystemRecord {
+    override suspend fun allocateSystem(userId: ULong, id: String?): SystemRecord {
         if (getSystemByHost(userId) != null) return getSystemByHost(userId)!!
+        if (id != null && getSystemById(id) != null) error("Provided ID already exists")
         val user = getUser(userId)
         val system = SystemRecord()
-        system.id = systems.find().toList().map(SystemRecord::id).firstFree()
+        system.id = id ?: systems.find().toList().map(SystemRecord::id).firstFree()
         system.users.add(userId)
         user.system = system.id
         updateUser(user)
@@ -212,10 +213,11 @@ class MongoDatabase : Database() {
         return true
     }
 
-    override suspend fun allocateMember(systemId: String, name: String): MemberRecord? {
+    override suspend fun allocateMember(systemId: String, name: String, id: String?): MemberRecord? {
         getSystemById(systemId) ?: return null
+        if (id != null && getMemberById(systemId, id) != null) error("Provided ID already exists")
         val member = MemberRecord()
-        member.id = getMembersBySystem(systemId).map(MemberRecord::id).firstFree()
+        member.id = id ?: getMembersBySystem(systemId).map(MemberRecord::id).firstFree()
         member.name = name
         member.systemId = systemId
         this.members.insertOne(member).awaitFirst()

@@ -62,13 +62,13 @@ class NopDatabase : Database() {
         TODO("Not yet implemented")
     }
 
-    override suspend fun allocateSystem(userId: ULong): SystemRecord {
+    override suspend fun allocateSystem(userId: ULong, id: String?): SystemRecord {
         TODO("Not yet implemented")
     }
 
     override suspend fun removeSystem(userId: ULong): Boolean = false
 
-    override suspend fun allocateMember(systemId: String, name: String): MemberRecord? = null
+    override suspend fun allocateMember(systemId: String, name: String, id: String?): MemberRecord? = null
 
     override suspend fun removeMember(systemId: String, memberId: String): Boolean = false
 

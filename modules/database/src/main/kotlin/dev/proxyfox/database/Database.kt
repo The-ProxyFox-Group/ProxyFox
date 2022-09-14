@@ -220,9 +220,9 @@ abstract class Database : AutoCloseable {
      * @param userId The ID of the Discord user.
      * @return A maybe newly created system. Never null.
      * */
-    abstract suspend fun allocateSystem(userId: ULong): SystemRecord
+    abstract suspend fun allocateSystem(userId: ULong, id: String? = null): SystemRecord
 
-    suspend inline fun allocateSystem(user: UserBehavior) = allocateSystem(user.id.value)
+    suspend inline fun allocateSystem(user: UserBehavior, id: String? = null) = allocateSystem(user.id.value, id)
 
     abstract suspend fun removeSystem(userId: ULong): Boolean
 
@@ -235,7 +235,7 @@ abstract class Database : AutoCloseable {
      * @param name The name of the new member.
      * @return A newly created member. null if system doesn't exist.
      * */
-    abstract suspend fun allocateMember(systemId: String, name: String): MemberRecord?
+    abstract suspend fun allocateMember(systemId: String, name: String, id: String? = null): MemberRecord?
     abstract suspend fun removeMember(systemId: String, memberId: String): Boolean
 
     // TODO: This ideally needs a much better system for updating since this really isn't ideal as is.
