@@ -324,9 +324,10 @@ class JsonDatabase : Database() {
 
     @Deprecated(level = DeprecationLevel.ERROR, message = "Non-native method")
     override suspend fun allocateSystem(userId: ULong, id: String?): SystemRecord {
-        if (id != null && systems.keys.contains(id)) error("Provided ID already exists")
+        var nid = id
+        if (id != null && systems.keys.contains(id)) nid = null
         return getSystemByHost(userId) ?: run {
-            val sysId = id ?: systems.keys.firstFree()
+            val sysId = nid ?: systems.keys.firstFree()
             val struct = JsonSystemStruct(sysId)
             struct.accounts.add(userId)
             users[userId] = struct
@@ -352,11 +353,11 @@ class JsonDatabase : Database() {
 
     @Deprecated(level = DeprecationLevel.ERROR, message = "Non-native method")
     override suspend fun allocateMember(systemId: String, name: String, id: String?): MemberRecord {
-        if (id != null && systems[systemId]?.members?.keys?.contains(id) == true)
-            error("Provided ID already exists")
+        var nid = id
+        if (id != null && systems[systemId]?.members?.keys?.contains(id) == true) nid = null
         return getMemberByIdAndName(systemId, name) ?: run {
             val system = systems[systemId]!!
-            system.putMember(JsonMemberStruct(systemId, system.members.keys.firstFree(), name))
+            system.putMember(JsonMemberStruct(systemId, nid ?: system.members.keys.firstFree(), name))
         }
     }
 
@@ -503,7 +504,7 @@ class JsonDatabase : Database() {
         for ((sid, system) in systems) {
             memberLookup.clear()
             logger.info("Migrating {}: {}", sid, system.name)
-            val newSystem = other.allocateSystem(system.accounts[0])
+            val newSystem = other.allocateSystem(system.accounts[0], sid)
             system.writeTo(newSystem)
             other.updateSystem(newSystem)
 
@@ -512,7 +513,7 @@ class JsonDatabase : Database() {
             logger.info("Migrating {} members...", system.members.size)
             for ((mid, member) in system.members) {
                 logger.info("Migrating {}: {}", mid, member.name)
-                val newMember = other.allocateMember(nsid, member.name)
+                val newMember = other.allocateMember(sid, member.name)
                 if (newMember == null) {
                     logger.warn("Unable to import {}: {} didn't return a member for {}/{} ({}/???)?", member.name, other, sid, mid, nsid)
                 } else {
