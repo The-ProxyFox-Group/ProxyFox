@@ -72,20 +72,20 @@ object MiscCommands {
             greedy("message", ::deleteMessage)
         })
 
-        registerCommand(literal(arrayOf("reproxy", "rp"), ::reproxyMessage) {
-            string("message", ::reproxyMessage) {
-                greedy("member", MiscCommands::reproxyMessage)
-            }
-            greedy("member", MiscCommands::reproxyMessage)
-        })
-
-        registerCommand(literal(arrayOf("info", "i"), ::fetchMessageInfo) {
-            greedy("message", MiscCommands::fetchMessageInfo)
-        })
-
-        registerCommand(literal(arrayOf("ping", "p"), ::pingMessageAuthor) {
-            greedy("message", ::pingMessageAuthor)
-        })
+//        registerCommand(literal(arrayOf("reproxy", "rp"), ::reproxyMessage) {
+//            string("message", ::reproxyMessage) {
+//                greedy("member", MiscCommands::reproxyMessage)
+//            }
+//            greedy("member", MiscCommands::reproxyMessage)
+//        })
+//
+//        registerCommand(literal(arrayOf("info", "i"), ::fetchMessageInfo) {
+//            greedy("message", MiscCommands::fetchMessageInfo)
+//        })
+//
+//        registerCommand(literal(arrayOf("ping", "p"), ::pingMessageAuthor) {
+//            greedy("message", ::pingMessageAuthor)
+//        })
 
         registerCommand(literal(arrayOf("channel", "c"), ::channelEmpty) {
             literal(arrayOf("proxy", "p"), ::channelProxy) {
