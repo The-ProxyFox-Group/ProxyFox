@@ -80,6 +80,8 @@ data class ProxyContext(
                 }
             }
         }!!
+        member.messageCount++
+        database.updateMember(member)
         database.createMessage(message.id, newMessage.id, message.channel, member.id, member.systemId)
         message.delete()
     }
