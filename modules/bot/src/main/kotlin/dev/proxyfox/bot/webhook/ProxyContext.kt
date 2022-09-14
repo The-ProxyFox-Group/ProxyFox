@@ -23,6 +23,7 @@ import dev.proxyfox.database.database
 import dev.proxyfox.database.records.member.MemberProxyTagRecord
 import dev.proxyfox.database.records.member.MemberRecord
 import dev.proxyfox.database.records.member.MemberServerSettingsRecord
+import dev.proxyfox.database.records.system.SystemRecord
 import io.ktor.client.request.*
 import io.ktor.client.statement.*
 import io.ktor.http.*
@@ -37,6 +38,7 @@ data class ProxyContext(
     var messageContent: String,
     val webhook: WebhookHolder,
     val message: Message,
+    val system: SystemRecord,
     val member: MemberRecord,
     val proxy: MemberProxyTagRecord?
 ) {
@@ -44,7 +46,6 @@ data class ProxyContext(
     suspend fun send() {
         if (!member.keepProxy && proxy != null)
             messageContent = proxy.trim(messageContent)
-        val system = database.getSystemById(member.systemId)!!
         val serverMember = database.getMemberServerSettingsById(
             message.getGuildOrNull(),
             member.systemId,
