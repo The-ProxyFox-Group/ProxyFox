@@ -12,10 +12,7 @@ import dev.kord.core.behavior.channel.createMessage
 import dev.kord.rest.builder.message.create.embed
 import dev.proxyfox.bot.kordColor
 import dev.proxyfox.bot.member
-import dev.proxyfox.bot.string.dsl.greedy
-import dev.proxyfox.bot.string.dsl.literal
-import dev.proxyfox.bot.string.dsl.string
-import dev.proxyfox.bot.string.dsl.unix
+import dev.proxyfox.bot.string.dsl.*
 import dev.proxyfox.bot.string.parser.MessageHolder
 import dev.proxyfox.bot.string.parser.registerCommand
 import dev.proxyfox.bot.timedYesNoPrompt
@@ -32,52 +29,36 @@ import dev.proxyfox.database.database
 object MemberCommands {
     suspend fun register() {
         printStep("Registering  commands", 2)
-        val commands: CommandNode = {
+        registerCommand(literal(arrayOf("member", "m"), ::empty) {
             string("member", ::access) {
-                val name: CommandNode = {
+                literal(arrayOf("rename", "name"), ::renameEmpty) {
                     greedy("name", ::rename)
                 }
-                literal("rename", ::renameEmpty, name)
-                literal("name", ::renameEmpty, name)
 
-                val nickname: CommandNode = {
-                    unix("clear", ::nicknameClear)
+                literal(arrayOf("nickname", "nick", "displayname", "dn"), ::nicknameEmpty) {
+                    unixLiteral("clear", ::nicknameClear)
                     greedy("name", ::nickname)
                 }
-                literal("nickname", ::nicknameEmpty, nickname)
-                literal("nick", ::nicknameEmpty, nickname)
-                literal("displayname", ::nicknameEmpty, nickname)
-                literal("dn", ::nicknameEmpty, nickname)
 
-                val servername: CommandNode = {
-                    unix("clear", ::servernameClear)
+                literal(arrayOf("servername", "servernick"), ::servernameEmpty) {
+                    unixLiteral("clear", ::servernameClear)
                     greedy("name", ::servername)
                 }
-                literal("servername", ::servernameEmpty, servername)
-                literal("servernick", ::servernameEmpty, servername)
-
-                val desc: CommandNode = {
-                    unix("clear", ::descriptionClear)
-                    unix("raw", ::descriptionRaw)
+                literal(arrayOf("description", "desc", "d"), ::descriptionEmpty) {
+                    unixLiteral("clear", ::descriptionClear)
+                    unixLiteral("raw", ::descriptionRaw)
                     greedy("desc", ::description)
                 }
-                literal("desc", ::descriptionEmpty, desc)
-                literal("description", ::descriptionEmpty, desc)
-                literal("d", ::descriptionEmpty, desc)
 
-                val avatar: CommandNode = {
-                    unix("clear", ::avatarClear)
+                literal(arrayOf("avatar", "pfp"), ::avatar) {
+                    unixLiteral("clear", ::avatarClear)
                     greedy("avatar", ::avatarLinked)
                 }
-                literal("avatar", ::avatar, avatar)
-                literal("pfp", ::avatar, avatar)
 
-                val serveravatar: CommandNode = {
-                    unix("clear", ::serverAvatarClear)
+                literal(arrayOf("serveravatar", "serverpfp"), ::serverAvatar) {
+                    unixLiteral("clear", ::serverAvatarClear)
                     greedy("avatar", ::serverAvatarLinked)
                 }
-                literal("serveravatar", ::serverAvatar, serveravatar)
-                literal("serverpfp", ::serverAvatar, serveravatar)
 
                 literal("proxy", ::proxyEmpty) {
                     literal("remove", ::removeProxyEmpty) {
@@ -90,8 +71,8 @@ object MemberCommands {
                 }
 
                 literal("pronouns", ::pronounsEmpty) {
-                    unix("clear", ::pronounsClear)
-                    unix("raw", ::pronounsRaw)
+                    unixLiteral("clear", ::pronounsClear)
+                    unixLiteral("raw", ::pronounsRaw)
                     greedy("pronouns", ::pronouns)
                 }
 
@@ -100,7 +81,7 @@ object MemberCommands {
                 }
 
                 literal("birthday", ::birthEmpty) {
-                    unix("clear", ::birthClear)
+                    unixLiteral("clear", ::birthClear)
                     greedy("birthday", ::birth)
                 }
 
@@ -124,9 +105,7 @@ object MemberCommands {
                 greedy("name", ::create)
             }
 
-        }
-        registerCommand(literal("member", ::empty, commands))
-        registerCommand(literal("m", ::empty, commands))
+        })
     }
 
     private fun empty(ctx: MessageHolder): String {

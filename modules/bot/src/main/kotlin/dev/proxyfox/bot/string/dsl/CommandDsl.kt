@@ -83,8 +83,16 @@ suspend fun Node.unix(
     addSubNode(node)
     return node
 }
+suspend fun Node.unix(
+        name: String,
+        executor: suspend MessageHolder.() -> String
+): UnixNode {
+    val node = UnixNode(name, executor)
+    addSubNode(node)
+    return node
+}
 
-fun Node.unix(
+fun Node.unixLiteral(
     name: Array<String>,
     executor: suspend MessageHolder.() -> String
 ): LiteralNode {
@@ -93,7 +101,7 @@ fun Node.unix(
     return node
 }
 
-fun Node.unix(
+fun Node.unixLiteral(
     name: String,
     executor: suspend MessageHolder.() -> String
 ): LiteralNode {

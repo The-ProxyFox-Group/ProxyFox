@@ -13,7 +13,7 @@ import dev.kord.rest.builder.message.create.embed
 import dev.proxyfox.bot.kordColor
 import dev.proxyfox.bot.string.dsl.greedy
 import dev.proxyfox.bot.string.dsl.literal
-import dev.proxyfox.bot.string.dsl.unix
+import dev.proxyfox.bot.string.dsl.unixLiteral
 import dev.proxyfox.bot.string.parser.MessageHolder
 import dev.proxyfox.bot.string.parser.registerCommand
 import dev.proxyfox.bot.system
@@ -31,24 +31,18 @@ import dev.proxyfox.database.database
 object SystemCommands {
     suspend fun register() {
         printStep("Registering system commands", 2)
-        val system: CommandNode = {
-            val new: CommandNode = {
+        registerCommand(literal(arrayOf("system", "s"), ::empty) {
+            literal(arrayOf("new", "n", "create", "add"), ::createEmpty) {
                 greedy("name", ::create)
             }
-            literal("new", ::createEmpty, new)
-            literal("n", ::createEmpty, new)
-            literal("create", ::createEmpty, new)
-            literal("add", ::createEmpty, new)
 
-            val name: CommandNode = {
+            literal(arrayOf("name", "rename"), ::accessName) {
                 greedy("name", ::rename)
             }
-            literal("rename", ::renameEmpty, name)
-            literal("name", ::accessName, name)
 
             literal(arrayOf("list", "l"), ::list) {
-                unix(arrayOf("by-message-count", "bmc"), ::listByMessage)
-                unix(arrayOf("verbose", "v"), ::listVerbose)
+                unixLiteral(arrayOf("by-message-count", "bmc"), ::listByMessage)
+                unixLiteral(arrayOf("verbose", "v"), ::listVerbose)
             }
 
             literal(arrayOf("color", "colour"), ::colorEmpty) {
@@ -56,38 +50,31 @@ object SystemCommands {
             }
 
             literal("pronouns", ::pronounsEmpty) {
-                unix("raw", ::pronounsRaw)
+                unixLiteral("raw", ::pronounsRaw)
                 greedy("pronouns", ::pronouns)
             }
 
-            val desc: CommandNode = {
-                unix("raw", ::descriptionRaw)
+            literal(arrayOf("description", "desc", "d"), ::descriptionEmpty) {
+                unixLiteral("raw", ::descriptionRaw)
                 greedy("desc", ::description)
             }
-            literal("description", ::descriptionEmpty, desc)
-            literal("desc", ::descriptionEmpty, desc)
-            literal("d", ::descriptionEmpty, desc)
 
-            val avatar: CommandNode = {
-                unix("raw", ::avatarRaw)
-                unix("clear", ::avatarClear)
-                unix("delete", ::avatarClear)
+            literal(arrayOf("avatar", "pfp"), ::avatarEmpty) {
+                unixLiteral("raw", ::avatarRaw)
+                unixLiteral("clear", ::avatarClear)
+                unixLiteral("delete", ::avatarClear)
                 greedy("avatar", ::avatar)
             }
-            literal("avatar", ::avatarEmpty, avatar)
-            literal("pfp", ::avatarEmpty, avatar)
 
             literal("tag", ::tagEmpty) {
-                unix("raw", ::tagRaw)
-                unix("clear", ::tagClear)
-                unix("delete", ::tagClear)
+                unixLiteral("raw", ::tagRaw)
+                unixLiteral("clear", ::tagClear)
+                unixLiteral("delete", ::tagClear)
                 greedy("tag", ::tag)
             }
 
             literal("delete", ::delete)
-        }
-        registerCommand(literal("system", ::empty, system))
-        registerCommand(literal("s", ::empty, system))
+        })
     }
 
     private suspend fun empty(ctx: MessageHolder): String {
