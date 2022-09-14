@@ -18,6 +18,7 @@ import dev.proxyfox.bot.string.dsl.literal
 import dev.proxyfox.bot.string.dsl.string
 import dev.proxyfox.bot.string.parser.MessageHolder
 import dev.proxyfox.bot.string.parser.registerCommand
+import dev.proxyfox.bot.webhook.WebhookUtil
 import dev.proxyfox.common.`??`
 import dev.proxyfox.common.printStep
 import dev.proxyfox.database.database
@@ -72,13 +73,13 @@ object MiscCommands {
             greedy("message", ::deleteMessage)
         })
 
-//        registerCommand(literal(arrayOf("reproxy", "rp"), ::reproxyMessage) {
-//            string("message", ::reproxyMessage) {
-//                greedy("member", MiscCommands::reproxyMessage)
-//            }
-//            greedy("member", MiscCommands::reproxyMessage)
-//        })
-//
+        registerCommand(literal(arrayOf("reproxy", "rp"), ::reproxyMessage) {
+            string("message", ::reproxyMessage) {
+                greedy("member", MiscCommands::reproxyMessage)
+            }
+            greedy("member", MiscCommands::reproxyMessage)
+        })
+
 //        registerCommand(literal(arrayOf("info", "i"), ::fetchMessageInfo) {
 //            greedy("message", MiscCommands::fetchMessageInfo)
 //        })
@@ -281,15 +282,50 @@ To get support, head on over to https://discord.gg/q3yF8ay9V7"""
         }
         if (databaseMessage.systemId != system.id) {
             ctx.respond("You weren't the original creator of this message.", true)
+            return ""
         }
         message.delete("User requested message deletion.")
         ctx.message.delete("User requested message deletion")
+        databaseMessage.deleted = true
         database.updateMessage(databaseMessage)
         return ""
     }
 
     private suspend fun reproxyMessage(ctx: MessageHolder): String {
-        TODO()
+        val system = database.getSystemByHost(ctx.message.author)
+        if (system == null) {
+            ctx.respond("System does not exist. Create one using `pf>system new`", true)
+            return ""
+        }
+        val messages = getMessageFromContext(system, ctx)
+        val message = messages.first
+        if (message == null) {
+            ctx.respond("Unable to find message to delete.", true)
+            return ""
+        }
+        val databaseMessage = messages.second
+        if (databaseMessage == null) {
+            ctx.respond("This message is either too old or wasn't proxied by ProxyFox", true)
+            return ""
+        }
+        if (databaseMessage.systemId != system.id) {
+            ctx.respond("You weren't the original creator of this message.", true)
+            return ""
+        }
+        val memberId = ctx.params["member"]?.get(0)!!
+        val member = database.getMemberById(system.id, memberId)
+        if (member == null) {
+            ctx.respond("Couldn't find member to proxy as", true)
+            return ""
+        }
+
+        databaseMessage.deleted = true
+        database.updateMessage(databaseMessage)
+        WebhookUtil.prepareMessage(message, system, member, null).send()
+
+        ctx.message.delete("User requested message deletion")
+
+        return ""
     }
 
     private suspend fun fetchMessageInfo(ctx: MessageHolder): String {
