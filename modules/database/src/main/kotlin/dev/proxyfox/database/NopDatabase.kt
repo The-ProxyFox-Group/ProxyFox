@@ -9,6 +9,7 @@
 package dev.proxyfox.database
 
 import dev.kord.common.entity.Snowflake
+import dev.kord.core.behavior.channel.ChannelBehavior
 import dev.proxyfox.database.records.member.MemberProxyTagRecord
 import dev.proxyfox.database.records.member.MemberRecord
 import dev.proxyfox.database.records.member.MemberServerSettingsRecord
@@ -83,13 +84,11 @@ class NopDatabase : Database() {
 
     override suspend fun updateUser(user: UserRecord) {}
 
-    override suspend fun createMessage(
-        oldMessageId: Snowflake,
-        newMessageId: Snowflake,
-        channelId: Snowflake,
-        memberId: String,
-        systemId: String
-    ) {
+    override suspend fun createMessage(oldMessageId: Snowflake, newMessageId: Snowflake, channelBehavior: ChannelBehavior, memberId: String, systemId: String) {
+    }
+
+    override suspend fun updateMessage(message: ProxiedMessageRecord) {
+        TODO("Not yet implemented")
     }
 
     override suspend fun fetchMessage(messageId: Snowflake): ProxiedMessageRecord? = null
