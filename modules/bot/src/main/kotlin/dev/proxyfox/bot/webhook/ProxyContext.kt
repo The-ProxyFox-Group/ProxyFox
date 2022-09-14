@@ -67,8 +67,11 @@ data class ProxyContext(
                 val ref = message.referencedMessage!!
                 embed {
                     color = Color(member.color)
-                    field {
+                    author {
                         name = ref.author!!.username + " \\↩"
+                        icon = ref.author!!.avatar?.url ?: ref.author!!.defaultAvatar.url
+                    }
+                    field {
                         var msgRef = parseMarkdown(ref.content)
                         if (msgRef.length > 100) {
                             // We know it's gonna be a BaseMarkdown so
