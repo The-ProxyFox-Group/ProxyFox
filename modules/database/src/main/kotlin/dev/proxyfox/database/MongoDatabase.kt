@@ -13,6 +13,8 @@ import com.mongodb.client.model.Indexes
 import com.mongodb.reactivestreams.client.MongoClient
 import com.mongodb.reactivestreams.client.MongoCollection
 import dev.kord.common.entity.Snowflake
+import dev.kord.core.behavior.channel.ChannelBehavior
+import dev.kord.core.entity.channel.thread.ThreadChannel
 import dev.proxyfox.database.DatabaseUtil.findAll
 import dev.proxyfox.database.DatabaseUtil.findOne
 import dev.proxyfox.database.DatabaseUtil.firstFree
@@ -271,16 +273,27 @@ class MongoDatabase : Database() {
     override suspend fun createMessage(
         oldMessageId: Snowflake,
         newMessageId: Snowflake,
-        channelId: Snowflake,
+        channelBehavior: ChannelBehavior,
         memberId: String,
         systemId: String
     ) {
         val message = ProxiedMessageRecord()
         message.oldMessageId = oldMessageId.value
         message.newMessageId = newMessageId.value
-        message.channelId = channelId.value
+        when (val channel = channelBehavior.fetchChannel()) {
+            is ThreadChannel -> {
+                message.channelId = channel.parentId.value
+                message.threadId = channel.id.value
+            }
+            else -> message.channelId = channel.id.value
+        }
         message.memberId = memberId
         message.systemId = systemId
+        messages.insertOne(message).awaitFirst()
+    }
+
+    override suspend fun updateMessage(message: ProxiedMessageRecord) {
+        messages.deleteOneById(message._id).awaitFirst()
         messages.insertOne(message).awaitFirst()
     }
 

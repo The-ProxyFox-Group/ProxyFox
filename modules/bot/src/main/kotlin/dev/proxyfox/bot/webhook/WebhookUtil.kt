@@ -8,9 +8,13 @@
 
 package dev.proxyfox.bot.webhook
 
+import dev.kord.core.behavior.channel.ChannelBehavior
 import dev.kord.core.behavior.channel.createWebhook
+import dev.kord.core.behavior.channel.threads.ThreadChannelBehavior
 import dev.kord.core.entity.Message
+import dev.kord.core.entity.channel.Channel
 import dev.kord.core.entity.channel.TextChannel
+import dev.kord.core.entity.channel.thread.ThreadChannel
 import dev.proxyfox.bot.kord
 import dev.proxyfox.database.records.member.MemberProxyTagRecord
 import dev.proxyfox.database.records.member.MemberRecord
@@ -30,33 +34,44 @@ object WebhookUtil {
             proxy: MemberProxyTagRecord?
     ) = ProxyContext(
         message.content,
-        createOrFetchWebhookFromCache(message.channel.asChannel() as TextChannel),
+        createOrFetchWebhookFromCache(message.channel.asChannel()),
         message,
         system,
         member,
-        proxy
+        proxy,
+        if (message.channel is ThreadChannelBehavior) message.channelId else null
     )
 
-    private suspend fun createOrFetchWebhookFromCache(channel: TextChannel): WebhookHolder {
+    private suspend fun createOrFetchWebhookFromCache(channel: Channel): WebhookHolder {
         // Try to fetch webhook from cache
-        WebhookCache[channel.id]?.let {
+        var id = when(channel) {
+            is ThreadChannel -> channel.parentId.value
+            else -> channel.id.value
+        }
+        WebhookCache[id]?.let {
             return@createOrFetchWebhookFromCache it
         }
         return createOrFetchWebhook(channel)
     }
 
-    private suspend fun createOrFetchWebhook(channel: TextChannel): WebhookHolder {
-        // Try to fetch webhook from channel
-        channel.webhooks.firstOrNull { it.creatorId == kord.selfId }?.let {
-            val holder = it.toHolder()
-            WebhookCache[channel.id] = holder
-            return holder
-        }
-        // Create webhook
-        channel.createWebhook("ProxyFox Webhook") {}.let {
-            val holder = it.toHolder()
-            WebhookCache[channel.id] = holder
-            return holder
+    private suspend fun createOrFetchWebhook(channel: Channel): WebhookHolder {
+        when (channel) {
+            is ThreadChannel -> return createOrFetchWebhook(channel.getParent())
+            is TextChannel -> {
+                // Try to fetch webhook from channel
+                channel.webhooks.firstOrNull { it.creatorId == kord.selfId }?.let {
+                    val holder = it.toHolder()
+                    WebhookCache[channel.id.value] = holder
+                    return holder
+                }
+                // Create webhook
+                channel.createWebhook("ProxyFox Webhook") {}.let {
+                    val holder = it.toHolder()
+                    WebhookCache[channel.id.value] = holder
+                    return holder
+                }
+            }
+            else -> error("Provided channel is not a thread or text channel")
         }
     }
 }

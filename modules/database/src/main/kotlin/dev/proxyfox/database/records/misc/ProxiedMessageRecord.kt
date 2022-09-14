@@ -17,7 +17,10 @@ class ProxiedMessageRecord {
     var creationDate = OffsetDateTime.now(ZoneOffset.UTC)
     var oldMessageId: ULong = 0UL
     var newMessageId: ULong = 0UL
+    var guildId: ULong = 0UL
     var channelId: ULong = 0UL
+    var threadId: ULong? = null
     var memberId: String = ""
     var systemId: String = ""
+    var deleted = false
 }

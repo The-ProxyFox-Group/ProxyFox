@@ -10,6 +10,7 @@ package dev.proxyfox.bot.webhook
 
 import dev.kord.common.Color
 import dev.kord.common.entity.Snowflake
+import dev.kord.core.behavior.channel.threads.ThreadChannelBehavior
 import dev.kord.core.entity.Message
 import dev.kord.rest.NamedFile
 import dev.kord.rest.builder.message.create.embed
@@ -40,7 +41,8 @@ data class ProxyContext(
     val message: Message,
     val system: SystemRecord,
     val member: MemberRecord,
-    val proxy: MemberProxyTagRecord?
+    val proxy: MemberProxyTagRecord?,
+    val threadId: Snowflake?
 ) {
     @OptIn(InternalAPI::class)
     suspend fun send() {
@@ -51,7 +53,7 @@ data class ProxyContext(
             member.systemId,
             member.id
         ) ?: MemberServerSettingsRecord()
-        val newMessage = kord.rest.webhook.executeWebhook(Snowflake(webhook.id), webhook.token!!, wait = true /* REQUIRED */) {
+        val newMessage = kord.rest.webhook.executeWebhook(Snowflake(webhook.id), webhook.token!!, true, threadId) {
             if (messageContent.isNotBlank()) content = messageContent
             username = (serverMember.nickname ?: member.displayName ?: member.name) + " " + (system.tag ?: "")
             avatarUrl = (serverMember.avatarUrl ?: member.avatarUrl ?: system.avatarUrl ?: "")
@@ -78,7 +80,7 @@ data class ProxyContext(
                 }
             }
         }!!
-        database.createMessage(message.id, newMessage.id, newMessage.channelId, member.id, member.systemId)
+        database.createMessage(message.id, newMessage.id, message.channel, member.id, member.systemId)
         message.delete()
     }
 }

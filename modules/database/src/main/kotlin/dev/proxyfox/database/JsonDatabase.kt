@@ -11,6 +11,8 @@ package dev.proxyfox.database
 import com.google.gson.*
 import com.google.gson.reflect.TypeToken
 import dev.kord.common.entity.Snowflake
+import dev.kord.core.behavior.channel.ChannelBehavior
+import dev.kord.core.entity.channel.thread.ThreadChannel
 import dev.proxyfox.common.fromColor
 import dev.proxyfox.common.logger
 import dev.proxyfox.common.toColor
@@ -401,21 +403,31 @@ class JsonDatabase : Database() {
     }
 
     override suspend fun createMessage(
-        oldMessageId: Snowflake,
-        newMessageId: Snowflake,
-        channelId: Snowflake,
-        memberId: String,
-        systemId: String
+            oldMessageId: Snowflake,
+            newMessageId: Snowflake,
+            channelBehavior: ChannelBehavior,
+            memberId: String,
+            systemId: String
     ) {
         val message = ProxiedMessageRecord()
         message.oldMessageId = oldMessageId.value
         message.newMessageId = newMessageId.value
-        message.channelId = channelId.value
+        when (val channel = channelBehavior.fetchChannel()) {
+            is ThreadChannel -> {
+                message.channelId = channel.parentId.value
+                message.threadId = channel.id.value
+            }
+            else -> message.channelId = channel.id.value
+        }
         message.memberId = memberId
         message.systemId = systemId
         messages.add(message)
         messageMap[oldMessageId.value] = message
         messageMap[newMessageId.value] = message
+    }
+
+    override suspend fun updateMessage(message: ProxiedMessageRecord) {
+        TODO("Not yet implemented")
     }
 
     override suspend fun fetchMessage(messageId: Snowflake): ProxiedMessageRecord? {
