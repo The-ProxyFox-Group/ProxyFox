@@ -18,10 +18,10 @@ import java.util.concurrent.TimeUnit
  * @author Oliver
  * */
 object WebhookCache {
-    val webhookCache: Cache<Snowflake, WebhookHolder> = CacheBuilder.newBuilder().expireAfterWrite(1, TimeUnit.DAYS).build<Snowflake, WebhookHolder>()
+    private val webhookCache: Cache<ULong, WebhookHolder> = CacheBuilder.newBuilder().expireAfterWrite(1, TimeUnit.DAYS).build()
 
-    operator fun get(key: Snowflake): WebhookHolder? = webhookCache.getIfPresent(key)
-    operator fun set(key: Snowflake, value: WebhookHolder) {
+    operator fun get(key: ULong): WebhookHolder? = webhookCache.getIfPresent(key)
+    operator fun set(key: ULong, value: WebhookHolder) {
         webhookCache.put(key, value)
     }
 }

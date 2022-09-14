@@ -127,6 +127,8 @@ suspend fun ReactionAddEvent.onReactionAdd() {
             val system = database.getSystemByHost(userId.value) ?: return
             if (databaseMessage.systemId == system.id) {
                 message.delete("User requested message deletion.")
+                databaseMessage.deleted = true
+                database.updateMessage(databaseMessage)
             }
         }
     }

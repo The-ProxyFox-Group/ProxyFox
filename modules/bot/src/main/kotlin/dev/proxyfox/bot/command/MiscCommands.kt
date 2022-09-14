@@ -22,6 +22,7 @@ import dev.proxyfox.common.`??`
 import dev.proxyfox.common.printStep
 import dev.proxyfox.database.database
 import dev.proxyfox.database.records.misc.AutoProxyMode
+import dev.proxyfox.database.records.misc.ProxiedMessageRecord
 import dev.proxyfox.database.records.system.SystemRecord
 import dev.proxyfox.exporter.Exporter
 import dev.proxyfox.importer.import
@@ -29,6 +30,7 @@ import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.flow.filter
 import kotlinx.coroutines.flow.firstOrNull
 import kotlinx.coroutines.withContext
+import org.litote.kmongo.util.idValue
 import java.io.InputStreamReader
 import java.net.URL
 
@@ -240,29 +242,49 @@ To get support, head on over to https://discord.gg/q3yF8ay9V7"""
         return "Role removed!"
     }
 
-    private suspend fun getMessageFromContext(system: SystemRecord, ctx: MessageHolder): Message? {
+    private suspend fun getMessageFromContext(system: SystemRecord, ctx: MessageHolder): Pair<Message?, ProxiedMessageRecord?> {
         val messageIdString = ctx.params["message"]?.get(0)
         val messageSnowflake: Snowflake? = messageIdString?.let { Snowflake(it) }
         val channelId = ctx.message.channelId
         val channel = ctx.message.channel.fetchChannelOrNull()
-        val databaseMessage = database.fetchLatestMessage(system.id, channelId)
-        return if (messageSnowflake != null)
+        var message = if (messageSnowflake != null)
             channel?.getMessage(messageSnowflake)
         else ctx.message.referencedMessage
-            ?: databaseMessage?.let { channel?.getMessage(Snowflake(it.newMessageId)) }
+
+        val databaseMessage = if (message != null)
+            database.fetchMessage(message.id)
+        else {
+            val m = database.fetchLatestMessage(system.id, channelId)
+            message = m?.newMessageId?.let { Snowflake(it) }?.let { channel?.getMessage(it) }
+            m
+        }
+
+        return Pair(message, databaseMessage)
     }
 
     private suspend fun deleteMessage(ctx: MessageHolder): String {
         val system = database.getSystemByHost(ctx.message.author)
-            ?: return "System does not exist. Create one using `pf>system new`"
-        val message = getMessageFromContext(system, ctx)
-            ?: return "Unable to find message to delete."
-        try {
-            message.delete("User requested message deletion.")
-        } catch (t: Throwable) {
-            // TODO: Get the proper exception type and provide a more detailed message
-            return "Failed to delete message."
+        if (system == null) {
+            ctx.respond("System does not exist. Create one using `pf>system new`", true)
+            return ""
         }
+        val messages = getMessageFromContext(system, ctx)
+        val message = messages.first
+        if (message == null) {
+            ctx.respond("Unable to find message to delete.", true)
+            return ""
+        }
+        val databaseMessage = messages.second
+        if (databaseMessage == null) {
+            ctx.respond("This message is either too old or wasn't proxied by ProxyFox", true)
+            return ""
+        }
+        if (databaseMessage.systemId != system.id) {
+            ctx.respond("You weren't the original creator of this message.", true)
+        }
+        message.delete("User requested message deletion.")
+        ctx.message.delete("User requested message deletion")
+        database.updateMessage(databaseMessage)
         return ""
     }
 

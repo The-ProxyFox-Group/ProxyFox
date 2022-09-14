@@ -18,7 +18,7 @@ data class MessageHolder(
     val params: HashMap<String, Array<String>>
 ) {
     // TODO: Check if can send in channels
-    suspend fun respond(msg: String, dm: Boolean, embed: (EmbedBuilder.() -> Unit)? = null) {
+    suspend fun respond(msg: String, dm: Boolean = false, embed: (EmbedBuilder.() -> Unit)? = null) {
         val channel = if (dm)
             message.author?.getDmChannelOrNull()
                 ?: message.channel
