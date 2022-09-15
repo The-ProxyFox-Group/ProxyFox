@@ -341,6 +341,10 @@ class MongoDatabase : Database() {
         return switch
     }
 
+    override suspend fun removeSwitch(switch: SystemSwitchRecord) {
+        systemSwitches.deleteOneById(switch._id)
+    }
+
     override suspend fun getLatestSwitch(systemId: String) =
         systemSwitches.findAll("{systemId:'$systemId'}").maxByOrNull {
             it.timestamp

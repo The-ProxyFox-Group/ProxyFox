@@ -23,6 +23,7 @@ object Commands {
         printStep("Registering commands",1)
         SystemCommands.register()
         MemberCommands.register()
+        SwitchCommands.register()
         MiscCommands.register()
     }
 }

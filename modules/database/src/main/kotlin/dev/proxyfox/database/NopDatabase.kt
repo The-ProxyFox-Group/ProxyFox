@@ -84,12 +84,9 @@ class NopDatabase : Database() {
 
     override suspend fun updateUser(user: UserRecord) {}
 
-    override suspend fun createMessage(oldMessageId: Snowflake, newMessageId: Snowflake, channelBehavior: ChannelBehavior, memberId: String, systemId: String) {
-    }
+    override suspend fun createMessage(oldMessageId: Snowflake, newMessageId: Snowflake, channelBehavior: ChannelBehavior, memberId: String, systemId: String) {}
 
-    override suspend fun updateMessage(message: ProxiedMessageRecord) {
-        TODO("Not yet implemented")
-    }
+    override suspend fun updateMessage(message: ProxiedMessageRecord) {}
 
     override suspend fun fetchMessage(messageId: Snowflake): ProxiedMessageRecord? = null
 
@@ -108,6 +105,8 @@ class NopDatabase : Database() {
     override suspend fun listProxyTags(systemId: String, memberId: String): List<MemberProxyTagRecord>? = null
 
     override suspend fun allocateSwitch(systemId: String, memberId: List<String>, timestamp: OffsetDateTime?): SystemSwitchRecord? = null
+    override suspend fun removeSwitch(switch: SystemSwitchRecord) {}
+
     override suspend fun getLatestSwitch(systemId: String): SystemSwitchRecord? = null
     override suspend fun getSwitchesById(systemId: String): List<SystemSwitchRecord>? = null
 
