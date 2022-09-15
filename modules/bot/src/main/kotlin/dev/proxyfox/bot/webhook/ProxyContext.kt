@@ -12,6 +12,7 @@ import dev.kord.common.Color
 import dev.kord.common.entity.Snowflake
 import dev.kord.core.behavior.channel.threads.ThreadChannelBehavior
 import dev.kord.core.entity.Message
+import dev.kord.core.entity.User
 import dev.kord.rest.NamedFile
 import dev.kord.rest.builder.message.create.embed
 import dev.proxyfox.bot.http
@@ -45,9 +46,10 @@ data class ProxyContext(
     val threadId: Snowflake?
 ) {
     @OptIn(InternalAPI::class)
-    suspend fun send() {
+    suspend fun send(reproxy: Boolean = false) {
         if (!member.keepProxy && proxy != null)
-            messageContent = proxy.trim(messageContent)
+            messageContent = proxy.trim(messageContent).trim()
+        if (messageContent.isBlank()) return
         val serverMember = database.getMemberServerSettingsById(
             message.getGuildOrNull(),
             member.systemId,
@@ -63,23 +65,37 @@ data class ProxyContext(
                 }
                 files.add(NamedFile(attachment.filename, response.content.toInputStream()))
             }
+            if (reproxy) {
+                message.embeds.forEach {
+                    if (it.author?.name?.endsWith(" ↩️") == true) {
+                        embed {
+                            color = Color(member.color)
+                            author {
+                                name = it.author?.name
+                                icon = it.author?.iconUrl
+                            }
+                            description = it.description
+                        }
+                    }
+                }
+            }
             if (message.referencedMessage != null) {
                 val ref = message.referencedMessage!!
+                // Kord's official methods don't return a user if it's a webhook
+                val user = User(ref.data.author, kord)
                 embed {
                     color = Color(member.color)
                     author {
-                        name = ref.author!!.username + " \\↩"
-                        icon = ref.author!!.avatar?.url ?: ref.author!!.defaultAvatar.url
+                        name = user.username + " ↩️"
+                        icon = user.avatar?.url ?: user.defaultAvatar.url
                     }
-                    field {
-                        var msgRef = parseMarkdown(ref.content)
-                        if (msgRef.length > 100) {
-                            // We know it's gonna be a BaseMarkdown so
-                            msgRef = msgRef.substring(100) as BaseMarkdown
-                            msgRef.values.add(MarkdownString("..."))
-                        }
-                        value = "[**Reply to:**](https://discord.com/channels/${ref.getGuild().id}/${ref.channelId}/${ref.id}) $msgRef"
+                    var msgRef = parseMarkdown(ref.content)
+                    if (msgRef.length > 100) {
+                        // We know it's gonna be a BaseMarkdown so
+                        msgRef = msgRef.substring(100) as BaseMarkdown
+                        msgRef.values.add(MarkdownString("..."))
                     }
+                    description = "[**Reply to:**](https://discord.com/channels/${ref.getGuild().id}/${ref.channelId}/${ref.id}) $msgRef"
                 }
             }
         }!!

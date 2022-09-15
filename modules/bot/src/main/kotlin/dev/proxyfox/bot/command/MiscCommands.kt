@@ -74,10 +74,7 @@ object MiscCommands {
         })
 
         registerCommand(literal(arrayOf("reproxy", "rp"), ::reproxyMessage) {
-            string("message", ::reproxyMessage) {
-                greedy("member", MiscCommands::reproxyMessage)
-            }
-            greedy("member", MiscCommands::reproxyMessage)
+            greedy("member", ::reproxyMessage)
         })
 
 //        registerCommand(literal(arrayOf("info", "i"), ::fetchMessageInfo) {
@@ -313,16 +310,17 @@ To get support, head on over to https://discord.gg/q3yF8ay9V7"""
             return ""
         }
         val memberId = ctx.params["member"]?.get(0)!!
-        val member = database.getMemberById(system.id, memberId)
+        val member = database.getMemberByIdAndName(system.id, memberId)
+                ?: database.getMemberById(system.id, memberId)
         if (member == null) {
             ctx.respond("Couldn't find member to proxy as", true)
             return ""
         }
 
+        WebhookUtil.prepareMessage(message, system, member, null).send(true)
+
         databaseMessage.deleted = true
         database.updateMessage(databaseMessage)
-        WebhookUtil.prepareMessage(message, system, member, null).send()
-
         ctx.message.delete("User requested message deletion")
 
         return ""
