@@ -9,6 +9,7 @@
 package dev.proxyfox.bot.command
 
 import dev.kord.core.behavior.channel.createMessage
+import dev.kord.rest.NamedFile
 import dev.kord.rest.builder.message.create.embed
 import dev.proxyfox.bot.kordColor
 import dev.proxyfox.bot.string.dsl.greedy
@@ -23,6 +24,7 @@ import dev.proxyfox.common.fromColor
 import dev.proxyfox.common.printStep
 import dev.proxyfox.common.toColor
 import dev.proxyfox.database.database
+import dev.proxyfox.exporter.Exporter
 
 /**
  * Commands for accessing and changing system settings
@@ -321,6 +323,10 @@ object SystemCommands {
         val message1 =
             ctx.message.channel.createMessage("Are you sure you want to delete your system?\nThe data will be lost forever (A long time!)")
         message1.timedYesNoPrompt(runner = author.id, yes = {
+            val export = Exporter.export(ctx.message.author!!.id.value)
+            ctx.message.author!!.getDmChannel().createMessage {
+                files.add(NamedFile("export", export.byteInputStream()))
+            }
             database.removeSystem(author)
             channel.createMessage("System deleted")
         })
