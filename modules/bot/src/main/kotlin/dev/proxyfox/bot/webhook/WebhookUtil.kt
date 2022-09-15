@@ -8,7 +8,6 @@
 
 package dev.proxyfox.bot.webhook
 
-import dev.kord.core.behavior.channel.ChannelBehavior
 import dev.kord.core.behavior.channel.createWebhook
 import dev.kord.core.behavior.channel.threads.ThreadChannelBehavior
 import dev.kord.core.entity.Message
@@ -18,7 +17,6 @@ import dev.kord.core.entity.channel.thread.ThreadChannel
 import dev.proxyfox.bot.kord
 import dev.proxyfox.database.records.member.MemberProxyTagRecord
 import dev.proxyfox.database.records.member.MemberRecord
-import dev.proxyfox.database.records.member.MemberServerSettingsRecord
 import dev.proxyfox.database.records.system.SystemRecord
 import kotlinx.coroutines.flow.firstOrNull
 
