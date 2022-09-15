@@ -156,7 +156,7 @@ import java.time.format.DateTimeFormatter
  * @author Ampflower, Ram
  * @since ${version}
  **/
-class JsonDatabase : Database() {
+class JsonDatabase(val file: File = File("systems.json")) : Database() {
     private lateinit var systems: MutableMap<String, JsonSystemStruct>
     private lateinit var servers: MutableMap<ULong, ServerSettingsRecord>
     private lateinit var channels: MutableMap<ULong, ChannelSettingsRecord>
@@ -169,7 +169,6 @@ class JsonDatabase : Database() {
     private val messageMap = HashMap<ULong, ProxiedMessageRecord>()
 
     override suspend fun setup(): JsonDatabase {
-        val file = File("systems.json")
         if (file.exists()) {
             val db = file.reader().use(JsonParser::parseReader)
             if (db != null && db.isJsonObject) {
@@ -582,7 +581,6 @@ class JsonDatabase : Database() {
     }
 
     override fun close() {
-        val file = File("systems.json")
         if (!file.exists()) {
             file.createNewFile()
         }
