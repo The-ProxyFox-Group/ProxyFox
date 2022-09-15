@@ -6,6 +6,16 @@
  * file, You can obtain one at https://mozilla.org/MPL/2.0/.
  */
 
+pluginManagement {
+    repositories {
+        maven {
+            name = "Quilt"
+            url = uri("https://maven.quiltmc.org/repository/release")
+        }
+        gradlePluginPortal()
+    }
+}
+
 rootProject.name = "ProxyFox"
 
 include(":modules")

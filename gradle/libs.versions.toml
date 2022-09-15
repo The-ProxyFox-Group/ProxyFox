@@ -16,6 +16,7 @@ junit = "5.8.2"
 
 # Plugins
 shadow = "7.1.2"
+licenser = "1.1.2"
 
 [libraries]
 guava = { module = "com.google.guava:guava", version.ref = "guava" }
@@ -42,3 +43,4 @@ database = ["gson", "kmongo_base", "kmongo_coroutine", "kmongo_async"]
 [plugins]
 kotlin_jvm = { id = "org.jetbrains.kotlin.jvm", version.ref = "kotlin" }
 shadow = { id = "com.github.johnrengelman.shadow", version.ref = "shadow" }
+licenser = { id = "org.quiltmc.gradle.licenser", version.ref = "licenser" }
