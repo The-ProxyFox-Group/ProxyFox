@@ -50,7 +50,7 @@ object SwitchCommands {
         val message1 = ctx.message.channel.createMessage("Are you sure you want to delete the latest switch?\nThe data will be lost forever (A long time!)")
         message1.timedYesNoPrompt(runner = ctx.message.author!!.id, yes = {
             database.removeSwitch(switch)
-            channel.createMessage("Member deleted")
+            channel.createMessage("Switch deleted")
         })
 
         return ""
