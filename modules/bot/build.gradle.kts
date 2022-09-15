@@ -17,7 +17,7 @@ dependencies {
     implementation(project(":modules:database"))
 }
 
-application.mainClass.set("dev.proxyfox.bot.Main")
+application.mainClass.set("dev.proxyfox.bot.BotMainKt")
 
 tasks {
     shadowJar {

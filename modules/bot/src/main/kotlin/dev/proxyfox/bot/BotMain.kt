@@ -6,8 +6,6 @@
  * file, You can obtain one at https://mozilla.org/MPL/2.0/.
  */
 
-@file:JvmName("Main")
-
 package dev.proxyfox.bot
 
 import dev.proxyfox.bot.command.Commands
