@@ -122,10 +122,10 @@ object MiscCommands {
         database.getSystemByHost(ctx.message.author)
             ?: return "System does not exist. Create one using `pf>system new`"
         val export = Exporter.export(ctx.message.author!!.id.value)
-        ctx.message.channel.createMessage {
+        ctx.message.author!!.getDmChannel().createMessage {
             files.add(NamedFile("export", export.byteInputStream()))
         }
-        return ""
+        return "Check your DMs~"
     }
 
     private fun time(ctx: MessageHolder): String {
