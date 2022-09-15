@@ -9,6 +9,7 @@
 plugins {
     alias(libs.plugins.kotlin.jvm)
     alias(libs.plugins.shadow)
+    alias(libs.plugins.licenser)
 }
 
 tasks {
@@ -22,6 +23,12 @@ tasks {
 
 allprojects {
     apply(plugin = "org.jetbrains.kotlin.jvm")
+    apply(plugin = "org.quiltmc.gradle.licenser")
+
+    license {
+        rule(file("${rootProject.projectDir}/HEADER"))
+        include("**/*.kt")
+    }
 
     java {
         sourceCompatibility = JavaVersion.VERSION_17
