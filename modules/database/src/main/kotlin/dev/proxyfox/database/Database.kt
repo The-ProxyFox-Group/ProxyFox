@@ -298,6 +298,8 @@ abstract class Database : AutoCloseable {
         timestamp: OffsetDateTime? = null
     ): SystemSwitchRecord?
 
+    abstract suspend fun removeSwitch(switch: SystemSwitchRecord)
+
     /**
      *
      * */

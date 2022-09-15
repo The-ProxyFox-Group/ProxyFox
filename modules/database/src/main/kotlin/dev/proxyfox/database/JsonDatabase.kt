@@ -477,6 +477,10 @@ class JsonDatabase : Database() {
         return switch
     }
 
+    override suspend fun removeSwitch(switch: SystemSwitchRecord) {
+        TODO("Not yet implemented")
+    }
+
     override suspend fun getLatestSwitch(systemId: String): SystemSwitchRecord? {
         return systems[systemId]?.switches?.values?.maxByOrNull { it.timestamp }
     }
