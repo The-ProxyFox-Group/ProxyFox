@@ -40,7 +40,7 @@ object WebhookUtil {
         if (message.channel is ThreadChannelBehavior) message.channelId else null
     )
 
-    private suspend fun createOrFetchWebhookFromCache(channel: Channel): WebhookHolder {
+    suspend fun createOrFetchWebhookFromCache(channel: Channel): WebhookHolder {
         // Try to fetch webhook from cache
         var id = when(channel) {
             is ThreadChannel -> channel.parentId.value
