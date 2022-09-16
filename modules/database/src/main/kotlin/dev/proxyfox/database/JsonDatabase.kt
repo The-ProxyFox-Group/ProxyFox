@@ -431,7 +431,12 @@ class JsonDatabase(val file: File = File("systems.json")) : Database() {
     }
 
     override suspend fun updateMessage(message: ProxiedMessageRecord) {
-        TODO("Not yet implemented")
+        messageMap[message.oldMessageId]?.let { old ->
+            messageMap.remove(old.newMessageId)
+            messages.remove(message)
+        }
+        messageMap[message.oldMessageId] = message
+        messages.add(message)
     }
 
     override suspend fun fetchMessage(messageId: Snowflake): ProxiedMessageRecord? {
@@ -482,11 +487,11 @@ class JsonDatabase(val file: File = File("systems.json")) : Database() {
     }
 
     override suspend fun removeSwitch(switch: SystemSwitchRecord) {
-        TODO("Not yet implemented")
+        systems[switch.systemId]?.run { switches.remove(switch.id) }
     }
 
     override suspend fun updateSwitch(switch: SystemSwitchRecord) {
-        TODO("Not yet implemented")
+        systems[switch.systemId]?.run { switches[switch.id] = switch }
     }
 
     override suspend fun getSwitchesById(systemId: String): List<SystemSwitchRecord>? {
