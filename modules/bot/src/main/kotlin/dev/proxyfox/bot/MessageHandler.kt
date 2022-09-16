@@ -17,6 +17,8 @@ import dev.proxyfox.bot.webhook.WebhookUtil
 import dev.proxyfox.database.database
 import dev.proxyfox.database.records.misc.AutoProxyMode
 import org.slf4j.LoggerFactory
+import dev.kord.core.behavior.channel.createMessage
+import dev.kord.rest.builder.message.create.embed
 
 val prefixRegex = Regex("^(?:(<@!?${kord.selfId}>)|pf[>;!])\\s*", RegexOption.IGNORE_CASE)
 
@@ -134,6 +136,60 @@ suspend fun ReactionAddEvent.onReactionAdd() {
         "❗", "🔔" -> {
             // TODO: Add a jump to message embed
             message.channel.createMessage("Psst.. ${databaseMessage.memberName} (<@${databaseMessage.userId}>)... You were pinged by <@${userId.value}>")
+            getMessage().deleteReaction(userId, emoji)
+        }
+        "❓", "❔" -> {
+            val system = database.getSystemById(databaseMessage.systemId)
+                ?: return
+
+            val member = database.getMemberById(databaseMessage.systemId, databaseMessage.memberId)
+                ?: return
+
+            val guild = getGuild()
+            val settings = database.getMemberServerSettingsById(guild, system.id, member.id)
+
+            getUser().getDmChannel().createMessage {
+                embed {
+                    val systemName = system.name ?: system.id
+                    author {
+                        name = member.displayName?.let { "$it (${member.name})\u2007•\u2007$systemName" } ?: "${member.name}\u2007•\u2007$systemName"
+                        icon = member.avatarUrl
+                    }
+                    member.avatarUrl?.let {
+                        thumbnail {
+                            url = it
+                        }
+                    }
+                    color = member.color.kordColor()
+                    description = member.description
+                    settings?.nickname?.let {
+                        field {
+                            name = "Server Name"
+                            value = "> $it\n*For ${guild?.name}*"
+                            inline = true
+                        }
+                    }
+                    member.pronouns?.let {
+                        field {
+                            name = "Pronouns"
+                            value = it
+                            inline = true
+                        }
+                    }
+                    member.birthday?.let {
+                        field {
+                            name = "Birthday"
+                            value = it
+                            inline = true
+                        }
+                    }
+                    footer {
+                        text = "Member ID \u2009• \u2009${member.id}\u2007|\u2007System ID \u2009• \u2009${system.id}\u2007|\u2007Created "
+                    }
+                    timestamp = system.timestamp.toKtInstant()
+                }
+            }
+            getMessage().deleteReaction(userId, emoji)
         }
     }
 }
