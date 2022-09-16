@@ -12,7 +12,6 @@ import dev.kord.core.behavior.channel.createMessage
 import dev.kord.core.entity.Message
 import dev.kord.rest.NamedFile
 import dev.kord.rest.builder.message.EmbedBuilder
-import dev.kord.core.behavior.channel.createMessage
 import dev.proxyfox.common.applyAsync
 
 data class MessageHolder(

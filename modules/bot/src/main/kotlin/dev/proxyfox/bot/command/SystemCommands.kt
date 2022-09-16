@@ -49,7 +49,7 @@ object SystemCommands {
                 greedy("color", ::color)
             }
 
-            literal("pronouns", ::pronounsEmpty) {
+            literal(arrayOf("pronouns", "p"), ::pronounsEmpty) {
                 unixLiteral("raw", ::pronounsRaw)
                 greedy("pronouns", ::pronouns)
             }

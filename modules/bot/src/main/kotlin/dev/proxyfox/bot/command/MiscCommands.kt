@@ -12,11 +12,16 @@ import dev.kord.common.entity.Permission
 import dev.kord.common.entity.Snowflake
 import dev.kord.core.entity.Message
 import dev.kord.rest.NamedFile
+import dev.proxyfox.bot.kord
+import dev.proxyfox.bot.kordColor
+import dev.proxyfox.bot.member
 import dev.proxyfox.bot.string.dsl.greedy
 import dev.proxyfox.bot.string.dsl.literal
 import dev.proxyfox.bot.string.dsl.string
 import dev.proxyfox.bot.string.parser.MessageHolder
 import dev.proxyfox.bot.string.parser.registerCommand
+import dev.proxyfox.bot.toKtInstant
+import dev.proxyfox.bot.webhook.WebhookHolder
 import dev.proxyfox.bot.webhook.WebhookUtil
 import dev.proxyfox.common.printStep
 import dev.proxyfox.database.database
@@ -74,13 +79,17 @@ object MiscCommands {
             greedy("member", ::reproxyMessage)
         })
 
-//        registerCommand(literal(arrayOf("info", "i"), ::fetchMessageInfo) {
-//            greedy("message", MiscCommands::fetchMessageInfo)
-//        })
-//
-//        registerCommand(literal(arrayOf("ping", "p"), ::pingMessageAuthor) {
-//            greedy("message", ::pingMessageAuthor)
-//        })
+        registerCommand(literal(arrayOf("info", "i"), ::fetchMessageInfo) {
+            greedy("message", MiscCommands::fetchMessageInfo)
+        })
+
+        registerCommand(literal(arrayOf("ping", "p"), ::pingMessageAuthor) {
+            greedy("message", ::pingMessageAuthor)
+        })
+
+        registerCommand(literal(arrayOf("edit", "e"), ::editMessage) {
+            greedy("content", ::editMessage)
+        })
 
         registerCommand(literal(arrayOf("channel", "c"), ::channelEmpty) {
             literal(arrayOf("proxy", "p"), ::channelProxy) {
@@ -252,7 +261,18 @@ To get support, head on over to https://discord.gg/q3yF8ay9V7"""
             m
         }
 
-        return Pair(message, databaseMessage)
+        return message to databaseMessage
+    }
+    private suspend fun getSystemlessMessage(ctx: MessageHolder): Pair<Message?, ProxiedMessageRecord?> {
+        val messageIdString = ctx.params["message"]?.get(0)
+        val messageSnowflake: Snowflake? = messageIdString?.let { Snowflake(it) }
+        val channel = ctx.message.channel.fetchChannelOrNull()
+        val message = if (messageSnowflake != null)
+            channel?.getMessage(messageSnowflake)
+        else ctx.message.referencedMessage
+        if (message == null) return null to null
+        val databaseMessage = database.fetchMessage(message.id)
+        return message to databaseMessage
     }
 
     private suspend fun deleteMessage(ctx: MessageHolder): String {
@@ -297,11 +317,11 @@ To get support, head on over to https://discord.gg/q3yF8ay9V7"""
         }
         val databaseMessage = messages.second
         if (databaseMessage == null) {
-            ctx.respond("This message is either too old or wasn't proxied by ProxyFox", true)
+            ctx.respond("Targeted message is either too old or wasn't proxied by ProxyFox", true)
             return ""
         }
         if (databaseMessage.systemId != system.id) {
-            ctx.respond("You weren't the original creator of this message.", true)
+            ctx.respond("You weren't the original creator of the targeted message.", true)
             return ""
         }
         val memberId = ctx.params["member"]?.get(0)!!
@@ -322,11 +342,137 @@ To get support, head on over to https://discord.gg/q3yF8ay9V7"""
     }
 
     private suspend fun fetchMessageInfo(ctx: MessageHolder): String {
-        TODO()
+        val messages = getSystemlessMessage(ctx)
+        val discordMessage = messages.first
+        if (discordMessage == null) {
+            ctx.respond("Unable to find message to fetch info of", true)
+            return ""
+        }
+
+        val databaseMessage = messages.second
+        if (databaseMessage == null) {
+            ctx.respond("Targeted message is either too old or wasn't proxied by ProxyFox", true)
+            return ""
+        }
+
+        val system = database.getSystemById(databaseMessage.systemId)
+        if (system == null) {
+            ctx.respond("Targeted message's system has since been deleted.", true)
+            return ""
+        }
+
+        val member = database.getMemberById(databaseMessage.systemId, databaseMessage.memberId)
+        if (member == null) {
+            ctx.respond("Targeted message's member has since been deleted.", true)
+            return ""
+        }
+
+        val guild = discordMessage.getGuild()
+        val settings = database.getMemberServerSettingsById(guild, system.id, member.id)
+
+        ctx.respond(dm=true) {
+            val systemName = system.name ?: system.id
+            author {
+                name = member.displayName?.let { "$it (${member.name})\u2007•\u2007$systemName" } ?: "${member.name}\u2007•\u2007$systemName"
+                icon = member.avatarUrl
+            }
+            member.avatarUrl?.let {
+                thumbnail {
+                    url = it
+                }
+            }
+            color = member.color.kordColor()
+            description = member.description
+            settings?.nickname?.let {
+                field {
+                    name = "Server Name"
+                    value = "> $it\n*For ${guild?.name}*"
+                    inline = true
+                }
+            }
+            member.pronouns?.let {
+                field {
+                    name = "Pronouns"
+                    value = it
+                    inline = true
+                }
+            }
+            member.birthday?.let {
+                field {
+                    name = "Birthday"
+                    value = it
+                    inline = true
+                }
+            }
+            footer {
+                text = "Member ID \u2009• \u2009${member.id}\u2007|\u2007System ID \u2009• \u2009${system.id}\u2007|\u2007Created "
+            }
+            timestamp = system.timestamp.toKtInstant()
+        }
+
+        ctx.message.delete("User requested message deletion")
+
+        return ""
+    }
+
+    private suspend fun editMessage(ctx: MessageHolder): String {
+        val system = database.getSystemByHost(ctx.message.author)
+        if (system == null) {
+            ctx.respond("System does not exist. Create one using `pf>system new`", true)
+            return ""
+        }
+        val messages = getMessageFromContext(system, ctx)
+        val message = messages.first
+        if (message == null) {
+            ctx.respond("Unable to find message to edit.", true)
+            return ""
+        }
+        val channel = message.getChannel()
+        val databaseMessage = messages.second
+        if (databaseMessage == null) {
+            ctx.respond("Targeted message is either too old or wasn't proxied by ProxyFox", true)
+            return ""
+        }
+        if (databaseMessage.systemId != system.id) {
+            ctx.respond("You weren't the original creator of the targeted message.", true)
+            return ""
+        }
+
+        val content = ctx.params["content"]?.get(0)
+        if (content == null) {
+            ctx.respond(
+                "Please provide message content to edit with.\n" +
+                        "To delete the message, run `pf>delete`",
+                true
+            )
+            return ""
+        }
+
+        val webhook = WebhookUtil.createOrFetchWebhookFromCache(channel)
+        kord.rest.webhook.editWebhookMessage(Snowflake(webhook.id), webhook.token!!,
+            message.id, databaseMessage.threadId?.let { Snowflake(it) }) {
+            this.content = content
+        }
+
+        return ""
     }
 
     private suspend fun pingMessageAuthor(ctx: MessageHolder): String {
-        TODO()
+        val messages = getSystemlessMessage(ctx)
+        val discordMessage = messages.first
+        if (discordMessage == null) {
+            ctx.respond("Targeted message doesn't exist.", true)
+            return ""
+        }
+        val databaseMessage = messages.second
+        if (databaseMessage == null) {
+            ctx.respond("Targeted message is either too old or wasn't proxied by ProxyFox")
+            return ""
+        }
+        ctx.message.delete("User requested message deletion")
+        // TODO: Add a jump to message embed
+        ctx.respond("Psst.. ${databaseMessage.memberName} (<@${databaseMessage.userId}>)... You were pinged by <@${ctx.message.author!!.id}>")
+        return ""
     }
 
     private suspend fun channelEmpty(ctx: MessageHolder): String {

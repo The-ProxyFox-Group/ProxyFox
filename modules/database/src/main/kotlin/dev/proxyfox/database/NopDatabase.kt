@@ -84,7 +84,15 @@ class NopDatabase : Database() {
 
     override suspend fun updateUser(user: UserRecord) {}
 
-    override suspend fun createMessage(oldMessageId: Snowflake, newMessageId: Snowflake, channelBehavior: ChannelBehavior, memberId: String, systemId: String) {}
+    override suspend fun createMessage(
+        userId: Snowflake,
+        oldMessageId: Snowflake,
+        newMessageId: Snowflake,
+        channelBehavior: ChannelBehavior,
+        memberId: String,
+        systemId: String,
+        memberName: String
+    ) {}
 
     override suspend fun updateMessage(message: ProxiedMessageRecord) {}
 

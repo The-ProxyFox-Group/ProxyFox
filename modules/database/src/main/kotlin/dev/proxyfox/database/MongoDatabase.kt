@@ -271,16 +271,22 @@ class MongoDatabase : Database() {
     }
 
     override suspend fun createMessage(
+        userId: Snowflake,
         oldMessageId: Snowflake,
         newMessageId: Snowflake,
         channelBehavior: ChannelBehavior,
         memberId: String,
-        systemId: String
+        systemId: String,
+        memberName: String
     ) {
         val message = ProxiedMessageRecord()
+        message.memberName = memberName
+        message.userId = userId.value
         message.oldMessageId = oldMessageId.value
         message.newMessageId = newMessageId.value
-        when (val channel = channelBehavior.fetchChannel()) {
+        val channel = channelBehavior.fetchChannel()
+        message.guildId = channel.data.guildId.value?.value ?: 0UL
+        when (channel) {
             is ThreadChannel -> {
                 message.channelId = channel.parentId.value
                 message.threadId = channel.id.value

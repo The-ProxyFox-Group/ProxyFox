@@ -17,6 +17,8 @@ import dev.proxyfox.bot.webhook.WebhookUtil
 import dev.proxyfox.database.database
 import dev.proxyfox.database.records.misc.AutoProxyMode
 import org.slf4j.LoggerFactory
+import dev.kord.core.behavior.channel.createMessage
+import dev.kord.rest.builder.message.create.embed
 
 val prefixRegex = Regex("^(?:(<@!?${kord.selfId}>)|pf[>;!])\\s*", RegexOption.IGNORE_CASE)
 
@@ -118,18 +120,76 @@ suspend fun MessageCreateEvent.onMessageCreate() {
 }
 
 suspend fun ReactionAddEvent.onReactionAdd() {
-    // TODO("Fetch the reaction and perform operations")
-    // databaseMessage should be non-null, else it's meaningless here
+    // TODO: "Fetch the reaction and perform operations"
+    // DatabaseMessage should be non-null, else it's meaningless here
     val databaseMessage = database.fetchMessage(messageId) ?: return
     when (emoji.name) {
-        "❌" -> {
-            // system needs to be non-null.
+        "❌", "🗑️" -> {
+            // System needs to be non-null.
             val system = database.getSystemByHost(userId.value) ?: return
             if (databaseMessage.systemId == system.id) {
                 message.delete("User requested message deletion.")
                 databaseMessage.deleted = true
                 database.updateMessage(databaseMessage)
             }
+        }
+        "❗", "🔔" -> {
+            // TODO: Add a jump to message embed
+            message.channel.createMessage("Psst.. ${databaseMessage.memberName} (<@${databaseMessage.userId}>)... You were pinged by <@${userId.value}>")
+            getMessage().deleteReaction(userId, emoji)
+        }
+        "❓", "❔" -> {
+            val system = database.getSystemById(databaseMessage.systemId)
+                ?: return
+
+            val member = database.getMemberById(databaseMessage.systemId, databaseMessage.memberId)
+                ?: return
+
+            val guild = getGuild()
+            val settings = database.getMemberServerSettingsById(guild, system.id, member.id)
+
+            getUser().getDmChannel().createMessage {
+                embed {
+                    val systemName = system.name ?: system.id
+                    author {
+                        name = member.displayName?.let { "$it (${member.name})\u2007•\u2007$systemName" } ?: "${member.name}\u2007•\u2007$systemName"
+                        icon = member.avatarUrl
+                    }
+                    member.avatarUrl?.let {
+                        thumbnail {
+                            url = it
+                        }
+                    }
+                    color = member.color.kordColor()
+                    description = member.description
+                    settings?.nickname?.let {
+                        field {
+                            name = "Server Name"
+                            value = "> $it\n*For ${guild?.name}*"
+                            inline = true
+                        }
+                    }
+                    member.pronouns?.let {
+                        field {
+                            name = "Pronouns"
+                            value = it
+                            inline = true
+                        }
+                    }
+                    member.birthday?.let {
+                        field {
+                            name = "Birthday"
+                            value = it
+                            inline = true
+                        }
+                    }
+                    footer {
+                        text = "Member ID \u2009• \u2009${member.id}\u2007|\u2007System ID \u2009• \u2009${system.id}\u2007|\u2007Created "
+                    }
+                    timestamp = system.timestamp.toKtInstant()
+                }
+            }
+            getMessage().deleteReaction(userId, emoji)
         }
     }
 }
