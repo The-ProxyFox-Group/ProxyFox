@@ -345,10 +345,10 @@ class MongoDatabase : Database() {
         systemSwitches.deleteOneById(switch._id)
     }
 
-    override suspend fun getLatestSwitch(systemId: String) =
-        systemSwitches.findAll("{systemId:'$systemId'}").maxByOrNull {
-            it.timestamp
-        }
+    override suspend fun updateSwitch(switch: SystemSwitchRecord) {
+        systemSwitches.deleteOneById(switch._id).awaitFirst()
+        systemSwitches.insertOne(switch)
+    }
 
     override suspend fun getSwitchesById(systemId: String): List<SystemSwitchRecord> =
         systemSwitches.findAll("{systemId:'$systemId'}")

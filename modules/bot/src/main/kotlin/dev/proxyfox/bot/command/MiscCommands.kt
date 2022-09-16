@@ -19,7 +19,6 @@ import dev.proxyfox.bot.string.dsl.string
 import dev.proxyfox.bot.string.parser.MessageHolder
 import dev.proxyfox.bot.string.parser.registerCommand
 import dev.proxyfox.bot.webhook.WebhookUtil
-import dev.proxyfox.common.`??`
 import dev.proxyfox.common.printStep
 import dev.proxyfox.database.database
 import dev.proxyfox.database.records.misc.AutoProxyMode
@@ -345,7 +344,7 @@ To get support, head on over to https://discord.gg/q3yF8ay9V7"""
             ?: channel.substring(2, channel.length-1).toULongOrNull()
             ?: return "Provided string is not a valid channel"
         val channelSettings = database.getOrCreateChannel(ctx.message.getGuild().id.value, channelId)
-        return "Proxying is currently ${channelSettings.proxyEnabled.`??`("enabled", "disabled")} for <#$channelId>."
+        return "Proxying is currently ${if (channelSettings.proxyEnabled) "enabled" else "disabled"} for <#$channelId>."
     }
 
     private suspend fun channelProxyEnable(ctx: MessageHolder): String {
