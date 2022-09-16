@@ -10,7 +10,6 @@ package dev.proxyfox.bot.command
 
 import dev.kord.common.entity.Permission
 import dev.kord.common.entity.Snowflake
-import dev.kord.core.behavior.channel.createMessage
 import dev.kord.core.entity.Message
 import dev.kord.rest.NamedFile
 import dev.proxyfox.bot.string.dsl.greedy
@@ -30,7 +29,6 @@ import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.flow.filter
 import kotlinx.coroutines.flow.firstOrNull
 import kotlinx.coroutines.withContext
-import org.litote.kmongo.util.idValue
 import java.io.InputStreamReader
 import java.net.URL
 
@@ -121,9 +119,7 @@ object MiscCommands {
         database.getSystemByHost(ctx.message.author)
             ?: return "System does not exist. Create one using `pf>system new`"
         val export = Exporter.export(ctx.message.author!!.id.value)
-        ctx.message.author!!.getDmChannel().createMessage {
-            files.add(NamedFile("export", export.byteInputStream()))
-        }
+        ctx.sendFiles(NamedFile("system.json", export.byteInputStream()))
         return "Check your DMs~"
     }
 
