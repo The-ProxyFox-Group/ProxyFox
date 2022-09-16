@@ -8,8 +8,6 @@
 
 package dev.proxyfox.bot.command
 
-import dev.kord.core.behavior.channel.createMessage
-import dev.kord.rest.builder.message.create.embed
 import dev.proxyfox.bot.kordColor
 import dev.proxyfox.bot.member
 import dev.proxyfox.bot.string.dsl.*
@@ -119,46 +117,44 @@ object MemberCommands {
         val member = database.findMember(system.id, ctx.params["member"]!![0])
             ?: return "Member does not exist. Create one using `pf>member new`"
         val settings = database.getMemberServerSettingsById(guild, system.id, member.id)
-        ctx.message.channel.createMessage {
-            embed {
-                val systemName = system.name ?: system.id
-                author {
-                    name = member.displayName?.let { "$it (${member.name})\u2007•\u2007$systemName" } ?: "${member.name}\u2007•\u2007$systemName"
-                    icon = member.avatarUrl
-                }
-                member.avatarUrl?.let {
-                    thumbnail {
-                        url = it
-                    }
-                }
-                color = member.color.kordColor()
-                description = member.description
-                settings?.nickname?.let {
-                    field {
-                        name = "Server Name"
-                        value = "> $it\n*For ${guild?.name}*"
-                        inline = true
-                    }
-                }
-                member.pronouns?.let {
-                    field {
-                        name = "Pronouns"
-                        value = it
-                        inline = true
-                    }
-                }
-                member.birthday?.let {
-                    field {
-                        name = "Birthday"
-                        value = it
-                        inline = true
-                    }
-                }
-                footer {
-                    text = "Member ID \u2009• \u2009${member.id}\u2007|\u2007System ID \u2009• \u2009${system.id}\u2007|\u2007Created "
-                }
-                timestamp = system.timestamp.toKtInstant()
+        ctx.respond {
+            val systemName = system.name ?: system.id
+            author {
+                name = member.displayName?.let { "$it (${member.name})\u2007•\u2007$systemName" } ?: "${member.name}\u2007•\u2007$systemName"
+                icon = member.avatarUrl
             }
+            member.avatarUrl?.let {
+                thumbnail {
+                    url = it
+                }
+            }
+            color = member.color.kordColor()
+            description = member.description
+            settings?.nickname?.let {
+                field {
+                    name = "Server Name"
+                    value = "> $it\n*For ${guild?.name}*"
+                    inline = true
+                }
+            }
+            member.pronouns?.let {
+                field {
+                    name = "Pronouns"
+                    value = it
+                    inline = true
+                }
+            }
+            member.birthday?.let {
+                field {
+                    name = "Birthday"
+                    value = it
+                    inline = true
+                }
+            }
+            footer {
+                text = "Member ID \u2009• \u2009${member.id}\u2007|\u2007System ID \u2009• \u2009${system.id}\u2007|\u2007Created "
+            }
+            timestamp = system.timestamp.toKtInstant()
         }
         return ""
     }
@@ -387,20 +383,18 @@ object MemberCommands {
             ?: return "System does not exist. Create one using `pf>system new`"
         val member = database.findMember(system.id, ctx.params["member"]!![0])
             ?: return "Member does not exist. Create one using `pf>member new`"
-        ctx.message.channel.createMessage {
-            embed {
-                member(member, ctx.message.getGuildOrNull()?.id?.value ?: 0UL)
-                title = "${member.name}'s proxy tags"
-                description = database.listProxyTags(system.id, member.id).run {
-                    if (isNullOrEmpty())
-                        "${member.name} has no tags set."
-                    else
-                        joinToString(
-                            separator = "\n",
-                            limit = 20,
-                            truncated = "\n\u2026"
-                        ) { "``$it``" }
-                }
+        ctx.respond {
+            member(member, ctx.message.getGuildOrNull()?.id?.value ?: 0UL)
+            title = "${member.name}'s proxy tags"
+            description = database.listProxyTags(system.id, member.id).run {
+                if (isNullOrEmpty())
+                    "${member.name} has no tags set."
+                else
+                    joinToString(
+                        separator = "\n",
+                        limit = 20,
+                        truncated = "\n\u2026"
+                    ) { "``$it``" }
             }
         }
 
@@ -518,10 +512,13 @@ object MemberCommands {
         val member = database.findMember(system.id, ctx.params["member"]!![0])
             ?: return "Member does not exist. Create one using `pf>member new`"
 
-        val message1 = ctx.message.channel.createMessage("Are you sure you want to delete member `${member.asString()}`?\nTheir data will be lost forever (A long time!)")
-        message1.timedYesNoPrompt(runner = author.id, yes = {
+        val message = ctx.respond(
+            "Are you sure you want to delete member `${member.asString()}`?\n" +
+                "Their data will be lost forever (A long time!)"
+        )
+        message.timedYesNoPrompt(runner = author.id, yes = {
             database.removeMember(system.id, member.id)
-            channel.createMessage("Member deleted")
+            ctx.respond("Member deleted")
         })
 
         return ""

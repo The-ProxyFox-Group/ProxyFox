@@ -10,7 +10,6 @@ package dev.proxyfox.bot.command
 
 import dev.kord.common.entity.Permission
 import dev.kord.common.entity.Snowflake
-import dev.kord.core.behavior.channel.createMessage
 import dev.kord.core.entity.Message
 import dev.kord.rest.NamedFile
 import dev.proxyfox.bot.string.dsl.greedy
@@ -19,7 +18,6 @@ import dev.proxyfox.bot.string.dsl.string
 import dev.proxyfox.bot.string.parser.MessageHolder
 import dev.proxyfox.bot.string.parser.registerCommand
 import dev.proxyfox.bot.webhook.WebhookUtil
-import dev.proxyfox.common.`??`
 import dev.proxyfox.common.printStep
 import dev.proxyfox.database.database
 import dev.proxyfox.database.records.misc.AutoProxyMode
@@ -31,7 +29,6 @@ import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.flow.filter
 import kotlinx.coroutines.flow.firstOrNull
 import kotlinx.coroutines.withContext
-import org.litote.kmongo.util.idValue
 import java.io.InputStreamReader
 import java.net.URL
 
@@ -122,9 +119,7 @@ object MiscCommands {
         database.getSystemByHost(ctx.message.author)
             ?: return "System does not exist. Create one using `pf>system new`"
         val export = Exporter.export(ctx.message.author!!.id.value)
-        ctx.message.author!!.getDmChannel().createMessage {
-            files.add(NamedFile("export", export.byteInputStream()))
-        }
+        ctx.sendFiles(NamedFile("system.json", export.byteInputStream()))
         return "Check your DMs~"
     }
 
@@ -345,7 +340,7 @@ To get support, head on over to https://discord.gg/q3yF8ay9V7"""
             ?: channel.substring(2, channel.length-1).toULongOrNull()
             ?: return "Provided string is not a valid channel"
         val channelSettings = database.getOrCreateChannel(ctx.message.getGuild().id.value, channelId)
-        return "Proxying is currently ${channelSettings.proxyEnabled.`??`("enabled", "disabled")} for <#$channelId>."
+        return "Proxying is currently ${if (channelSettings.proxyEnabled) "enabled" else "disabled"} for <#$channelId>."
     }
 
     private suspend fun channelProxyEnable(ctx: MessageHolder): String {
