@@ -12,11 +12,14 @@ import dev.kord.common.entity.Permission
 import dev.kord.common.entity.Snowflake
 import dev.kord.core.entity.Message
 import dev.kord.rest.NamedFile
+import dev.proxyfox.bot.kordColor
+import dev.proxyfox.bot.member
 import dev.proxyfox.bot.string.dsl.greedy
 import dev.proxyfox.bot.string.dsl.literal
 import dev.proxyfox.bot.string.dsl.string
 import dev.proxyfox.bot.string.parser.MessageHolder
 import dev.proxyfox.bot.string.parser.registerCommand
+import dev.proxyfox.bot.toKtInstant
 import dev.proxyfox.bot.webhook.WebhookUtil
 import dev.proxyfox.common.printStep
 import dev.proxyfox.database.database
@@ -74,9 +77,9 @@ object MiscCommands {
             greedy("member", ::reproxyMessage)
         })
 
-//        registerCommand(literal(arrayOf("info", "i"), ::fetchMessageInfo) {
-//            greedy("message", MiscCommands::fetchMessageInfo)
-//        })
+        registerCommand(literal(arrayOf("info", "i"), ::fetchMessageInfo) {
+            greedy("message", MiscCommands::fetchMessageInfo)
+        })
 
         registerCommand(literal(arrayOf("ping", "p"), ::pingMessageAuthor) {
             greedy("message", ::pingMessageAuthor)
@@ -339,13 +342,69 @@ To get support, head on over to https://discord.gg/q3yF8ay9V7"""
             ctx.respond("Targeted message doesn't exist.", true)
             return ""
         }
+
         val databaseMessage = messages.second
         if (databaseMessage == null) {
-            ctx.respond("Targeted message is either too old or wasn't proxied by ProxyFox")
+            ctx.respond("Targeted message is either too old or wasn't proxied by ProxyFox", true)
             return ""
         }
 
+        val system = database.getSystemById(databaseMessage.systemId)
+        if (system == null) {
+            ctx.respond("Targeted message's system has since been deleted.", true)
+            return ""
+        }
 
+        val member = database.getMemberById(databaseMessage.systemId, databaseMessage.memberId)
+        if (member == null) {
+            ctx.respond("Targeted message's member has since been deleted.", true)
+            return ""
+        }
+
+        val guild = discordMessage.getGuild()
+        val settings = database.getMemberServerSettingsById(guild, system.id, member.id)
+
+        ctx.respond(dm=true) {
+            val systemName = system.name ?: system.id
+            author {
+                name = member.displayName?.let { "$it (${member.name})\u2007•\u2007$systemName" } ?: "${member.name}\u2007•\u2007$systemName"
+                icon = member.avatarUrl
+            }
+            member.avatarUrl?.let {
+                thumbnail {
+                    url = it
+                }
+            }
+            color = member.color.kordColor()
+            description = member.description
+            settings?.nickname?.let {
+                field {
+                    name = "Server Name"
+                    value = "> $it\n*For ${guild?.name}*"
+                    inline = true
+                }
+            }
+            member.pronouns?.let {
+                field {
+                    name = "Pronouns"
+                    value = it
+                    inline = true
+                }
+            }
+            member.birthday?.let {
+                field {
+                    name = "Birthday"
+                    value = it
+                    inline = true
+                }
+            }
+            footer {
+                text = "Member ID \u2009• \u2009${member.id}\u2007|\u2007System ID \u2009• \u2009${system.id}\u2007|\u2007Created "
+            }
+            timestamp = system.timestamp.toKtInstant()
+        }
+
+        ctx.message.delete("User requested message deletion")
 
         return ""
     }
