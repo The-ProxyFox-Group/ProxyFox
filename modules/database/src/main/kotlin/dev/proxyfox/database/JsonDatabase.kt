@@ -480,13 +480,12 @@ class JsonDatabase(val file: File = File("systems.json")) : Database() {
         TODO("Not yet implemented")
     }
 
-    override suspend fun getLatestSwitch(systemId: String): SystemSwitchRecord? {
-        return systems[systemId]?.switches?.values?.maxByOrNull { it.timestamp }
+    override suspend fun updateSwitch(switch: SystemSwitchRecord) {
+        TODO("Not yet implemented")
     }
 
     override suspend fun getSwitchesById(systemId: String): List<SystemSwitchRecord>? {
-        val system = systems[systemId] ?: return null
-        return system.switches.values.toList()
+        return systems[systemId]?.switches?.values?.toList()
     }
 
     override suspend fun removeProxyTag(proxyTag: MemberProxyTagRecord) {

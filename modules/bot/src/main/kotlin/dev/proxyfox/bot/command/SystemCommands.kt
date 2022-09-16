@@ -8,9 +8,7 @@
 
 package dev.proxyfox.bot.command
 
-import dev.kord.core.behavior.channel.createMessage
 import dev.kord.rest.NamedFile
-import dev.kord.rest.builder.message.create.embed
 import dev.proxyfox.bot.kordColor
 import dev.proxyfox.bot.string.dsl.greedy
 import dev.proxyfox.bot.string.dsl.literal
@@ -83,43 +81,41 @@ object SystemCommands {
         val system = database.getSystemByHost(ctx.message.author)
             ?: return "System does not exist. Create one using `pf>system new`"
         val members = database.getTotalMembersByHost(ctx.message.author)
-        ctx.message.channel.createMessage {
-            embed {
-                title = system.name ?: system.id
-                color = system.color.kordColor()
-                system.avatarUrl?.let {
-                    thumbnail { url = it }
-                }
-                system.tag?.let {
-                    field {
-                        name = "Tag"
-                        value = it
-                        inline = true
-                    }
-                }
-                system.pronouns?.let {
-                    field {
-                        name = "Pronouns"
-                        value = it
-                        inline = true
-                    }
-                }
+        ctx.respond {
+            title = system.name ?: system.id
+            color = system.color.kordColor()
+            system.avatarUrl?.let {
+                thumbnail { url = it }
+            }
+            system.tag?.let {
                 field {
-                    name = "Members (`${members}`)"
-                    value = "See `pf>system list`"
+                    name = "Tag"
+                    value = it
                     inline = true
                 }
-                system.description?.let {
-                    field {
-                        name = "Description"
-                        value = it
-                    }
-                }
-                footer {
-                    text = "ID \u2009• \u2009${system.id}\u2007|\u2007Created "
-                }
-                timestamp = system.timestamp.toKtInstant()
             }
+            system.pronouns?.let {
+                field {
+                    name = "Pronouns"
+                    value = it
+                    inline = true
+                }
+            }
+            field {
+                name = "Members (`${members}`)"
+                value = "See `pf>system list`"
+                inline = true
+            }
+            system.description?.let {
+                field {
+                    name = "Description"
+                    value = it
+                }
+            }
+            footer {
+                text = "ID \u2009• \u2009${system.id}\u2007|\u2007Created "
+            }
+            timestamp = system.timestamp.toKtInstant()
         }
         return ""
     }
@@ -159,19 +155,17 @@ object SystemCommands {
     private suspend fun list(ctx: MessageHolder): String {
         val system = database.getSystemByHost(ctx.message.author)
             ?: return "System does not exist. Create one using `pf>system new`"
-        ctx.message.channel.createMessage {
-            embed {
-                system(system, nameTransformer = { "Members of $it" })
-                val proxies = database.getProxiesById(system.id)!!
-                description = buildString {
-                    for (m in database.getMembersBySystem(system.id)!!) {
-                        append("`${m.id}`\u2007•\u2007**${m.name}**")
-                        proxies.filter { it.memberId == m.id }.let {
-                            if (it.isNotEmpty()) {
-                                it.joinTo(this, "\uFEFF``, ``\uFEFF", " (``\uFEFF", "\uFEFF``)\n")
-                            } else {
-                                appendLine()
-                            }
+        ctx.respond {
+            system(system, nameTransformer = { "Members of $it" })
+            val proxies = database.getProxiesById(system.id)!!
+            description = buildString {
+                for (m in database.getMembersBySystem(system.id)!!) {
+                    append("`${m.id}`\u2007•\u2007**${m.name}**")
+                    proxies.filter { it.memberId == m.id }.let {
+                        if (it.isNotEmpty()) {
+                            it.joinTo(this, "\uFEFF``, ``\uFEFF", " (``\uFEFF", "\uFEFF``)\n")
+                        } else {
+                            appendLine()
                         }
                     }
                 }
@@ -188,17 +182,15 @@ object SystemCommands {
     private suspend fun listVerbose(ctx: MessageHolder): String {
         val system = database.getSystemByHost(ctx.message.author)
             ?: return "System does not exist. Create one using `pf>system new`"
-        ctx.message.channel.createMessage {
-            embed {
-                system(system, nameTransformer = { "Members of $it" })
-                val proxies = database.getProxiesById(system.id)
-                for (m in database.getMembersBySystem(system.id)!!) {
-                    val memberProxies = proxies?.filter { it.memberId == m.id }
-                    field {
-                        name = "${m.asString()} [`${m.id}`]"
-                        value = if (memberProxies.isNullOrEmpty()) "*No proxy tags set.*" else memberProxies.joinToString("\uFEFF``\n``\uFEFF", "``\uFEFF", "\uFEFF``")
-                        inline = true
-                    }
+        ctx.respond {
+            system(system, nameTransformer = { "Members of $it" })
+            val proxies = database.getProxiesById(system.id)
+            for (m in database.getMembersBySystem(system.id)!!) {
+                val memberProxies = proxies?.filter { it.memberId == m.id }
+                field {
+                    name = "${m.asString()} [`${m.id}`]"
+                    value = if (memberProxies.isNullOrEmpty()) "*No proxy tags set.*" else memberProxies.joinToString("\uFEFF``\n``\uFEFF", "``\uFEFF", "\uFEFF``")
+                    inline = true
                 }
             }
         }
@@ -320,15 +312,15 @@ object SystemCommands {
         val author = ctx.message.author!!
         database.getSystemByHost(author)
             ?: return "System does not exist. Create one using `pf>system new`"
-        val message1 =
-            ctx.message.channel.createMessage("Are you sure you want to delete your system?\nThe data will be lost forever (A long time!)")
-        message1.timedYesNoPrompt(runner = author.id, yes = {
+        val message = ctx.respond(
+            "Are you sure you want to delete your system?\n" +
+                    "The data will be lost forever (A long time!)"
+        )
+        message.timedYesNoPrompt(runner = author.id, yes = {
             val export = Exporter.export(ctx.message.author!!.id.value)
-            ctx.message.author!!.getDmChannel().createMessage {
-                files.add(NamedFile("export", export.byteInputStream()))
-            }
+            ctx.sendFiles(NamedFile("system.json", export.byteInputStream()))
             database.removeSystem(author)
-            channel.createMessage("System deleted")
+            ctx.respond("System deleted")
         })
         return ""
     }

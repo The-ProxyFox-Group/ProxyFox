@@ -10,23 +10,31 @@ package dev.proxyfox.bot.string.parser
 
 import dev.kord.core.behavior.channel.createMessage
 import dev.kord.core.entity.Message
+import dev.kord.rest.NamedFile
 import dev.kord.rest.builder.message.EmbedBuilder
-import dev.kord.rest.builder.message.create.embed
+import dev.kord.core.behavior.channel.createMessage
+import dev.proxyfox.common.applyAsync
 
 data class MessageHolder(
     val message: Message,
     val params: HashMap<String, Array<String>>
 ) {
     // TODO: Check if can send in channels
-    suspend fun respond(msg: String, dm: Boolean = false, embed: (EmbedBuilder.() -> Unit)? = null) {
+    suspend fun respond(msg: String = "", dm: Boolean = false, embed: (suspend EmbedBuilder.() -> Unit)? = null): Message {
         val channel = if (dm)
             message.author?.getDmChannelOrNull()
                 ?: message.channel
         else message.channel
 
-        channel.createMessage {
+        return channel.createMessage {
             if (msg.isNotBlank()) content = msg
-            if (embed != null) embed(embed)
+            // TODO: an `embedAsync` helper function
+            if (embed != null) embeds.add(EmbedBuilder().applyAsync(embed))
+        }
+    }
+    suspend fun sendFiles(vararg files: NamedFile) {
+        message.author!!.getDmChannel().createMessage {
+            this.files.addAll(files)
         }
     }
 }

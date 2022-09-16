@@ -8,15 +8,12 @@
 
 package dev.proxyfox.bot.command
 
-import dev.proxyfox.bot.string.node.Node
 import dev.proxyfox.common.printStep
 
 /**
  * General utilities relating to commands
  * @author Oliver
  * */
-
-typealias CommandNode = suspend Node.() -> Unit
 
 object Commands {
     suspend fun register() {
