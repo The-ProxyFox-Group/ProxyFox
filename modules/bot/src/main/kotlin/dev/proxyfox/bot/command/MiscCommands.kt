@@ -12,6 +12,7 @@ import dev.kord.common.entity.Permission
 import dev.kord.common.entity.Snowflake
 import dev.kord.core.entity.Message
 import dev.kord.rest.NamedFile
+import dev.proxyfox.bot.kord
 import dev.proxyfox.bot.kordColor
 import dev.proxyfox.bot.member
 import dev.proxyfox.bot.string.dsl.greedy
@@ -20,6 +21,7 @@ import dev.proxyfox.bot.string.dsl.string
 import dev.proxyfox.bot.string.parser.MessageHolder
 import dev.proxyfox.bot.string.parser.registerCommand
 import dev.proxyfox.bot.toKtInstant
+import dev.proxyfox.bot.webhook.WebhookHolder
 import dev.proxyfox.bot.webhook.WebhookUtil
 import dev.proxyfox.common.printStep
 import dev.proxyfox.database.database
@@ -83,6 +85,10 @@ object MiscCommands {
 
         registerCommand(literal(arrayOf("ping", "p"), ::pingMessageAuthor) {
             greedy("message", ::pingMessageAuthor)
+        })
+
+        registerCommand(literal(arrayOf("edit", "e"), ::editMessage) {
+            greedy("content", ::editMessage)
         })
 
         registerCommand(literal(arrayOf("channel", "c"), ::channelEmpty) {
@@ -339,7 +345,7 @@ To get support, head on over to https://discord.gg/q3yF8ay9V7"""
         val messages = getSystemlessMessage(ctx)
         val discordMessage = messages.first
         if (discordMessage == null) {
-            ctx.respond("Targeted message doesn't exist.", true)
+            ctx.respond("Unable to find message to fetch info of", true)
             return ""
         }
 
@@ -405,6 +411,48 @@ To get support, head on over to https://discord.gg/q3yF8ay9V7"""
         }
 
         ctx.message.delete("User requested message deletion")
+
+        return ""
+    }
+
+    private suspend fun editMessage(ctx: MessageHolder): String {
+        val system = database.getSystemByHost(ctx.message.author)
+        if (system == null) {
+            ctx.respond("System does not exist. Create one using `pf>system new`", true)
+            return ""
+        }
+        val messages = getMessageFromContext(system, ctx)
+        val message = messages.first
+        if (message == null) {
+            ctx.respond("Unable to find message to edit.", true)
+            return ""
+        }
+        val channel = message.getChannel()
+        val databaseMessage = messages.second
+        if (databaseMessage == null) {
+            ctx.respond("Targeted message is either too old or wasn't proxied by ProxyFox", true)
+            return ""
+        }
+        if (databaseMessage.systemId != system.id) {
+            ctx.respond("You weren't the original creator of the targeted message.", true)
+            return ""
+        }
+
+        val content = ctx.params["content"]?.get(0)
+        if (content == null) {
+            ctx.respond(
+                "Please provide message content to edit with.\n" +
+                        "To delete the message, run `pf>delete`",
+                true
+            )
+            return ""
+        }
+
+        val webhook = WebhookUtil.createOrFetchWebhookFromCache(channel)
+        kord.rest.webhook.editWebhookMessage(Snowflake(webhook.id), webhook.token!!,
+            message.id, databaseMessage.threadId?.let { Snowflake(it) }) {
+            this.content = content
+        }
 
         return ""
     }
