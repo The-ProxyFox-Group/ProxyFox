@@ -118,18 +118,22 @@ suspend fun MessageCreateEvent.onMessageCreate() {
 }
 
 suspend fun ReactionAddEvent.onReactionAdd() {
-    // TODO("Fetch the reaction and perform operations")
-    // databaseMessage should be non-null, else it's meaningless here
+    // TODO: "Fetch the reaction and perform operations"
+    // DatabaseMessage should be non-null, else it's meaningless here
     val databaseMessage = database.fetchMessage(messageId) ?: return
     when (emoji.name) {
-        "❌" -> {
-            // system needs to be non-null.
+        "❌", "🗑️" -> {
+            // System needs to be non-null.
             val system = database.getSystemByHost(userId.value) ?: return
             if (databaseMessage.systemId == system.id) {
                 message.delete("User requested message deletion.")
                 databaseMessage.deleted = true
                 database.updateMessage(databaseMessage)
             }
+        }
+        "❗", "🔔" -> {
+            // TODO: Add a jump to message embed
+            message.channel.createMessage("Psst.. ${databaseMessage.memberName} (<@${databaseMessage.userId}>)... You were pinged by <@${userId.value}>")
         }
     }
 }

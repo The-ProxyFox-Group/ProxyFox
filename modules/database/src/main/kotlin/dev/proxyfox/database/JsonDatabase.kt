@@ -403,22 +403,27 @@ class JsonDatabase : Database() {
     }
 
     override suspend fun createMessage(
-            oldMessageId: Snowflake,
-            newMessageId: Snowflake,
-            channelBehavior: ChannelBehavior,
-            memberId: String,
-            systemId: String
+        userId: Snowflake,
+        oldMessageId: Snowflake,
+        newMessageId: Snowflake,
+        channelBehavior: ChannelBehavior,
+        memberId: String,
+        systemId: String,
+        memberName: String
     ) {
         val message = ProxiedMessageRecord()
+        message.memberName = memberName
         message.oldMessageId = oldMessageId.value
         message.newMessageId = newMessageId.value
-        when (val channel = channelBehavior.fetchChannel()) {
+        val channel = channelBehavior.fetchChannel()
+        when (channel) {
             is ThreadChannel -> {
                 message.channelId = channel.parentId.value
                 message.threadId = channel.id.value
             }
             else -> message.channelId = channel.id.value
         }
+        message.guildId = channel.data.guildId.value?.value ?: 0UL
         message.memberId = memberId
         message.systemId = systemId
         messages.add(message)

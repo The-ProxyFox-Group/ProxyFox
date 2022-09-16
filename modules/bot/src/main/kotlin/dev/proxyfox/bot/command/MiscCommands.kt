@@ -77,10 +77,10 @@ object MiscCommands {
 //        registerCommand(literal(arrayOf("info", "i"), ::fetchMessageInfo) {
 //            greedy("message", MiscCommands::fetchMessageInfo)
 //        })
-//
-//        registerCommand(literal(arrayOf("ping", "p"), ::pingMessageAuthor) {
-//            greedy("message", ::pingMessageAuthor)
-//        })
+
+        registerCommand(literal(arrayOf("ping", "p"), ::pingMessageAuthor) {
+            greedy("message", ::pingMessageAuthor)
+        })
 
         registerCommand(literal(arrayOf("channel", "c"), ::channelEmpty) {
             literal(arrayOf("proxy", "p"), ::channelProxy) {
@@ -252,7 +252,18 @@ To get support, head on over to https://discord.gg/q3yF8ay9V7"""
             m
         }
 
-        return Pair(message, databaseMessage)
+        return message to databaseMessage
+    }
+    private suspend fun getSystemlessMessage(ctx: MessageHolder): Pair<Message?, ProxiedMessageRecord?> {
+        val messageIdString = ctx.params["message"]?.get(0)
+        val messageSnowflake: Snowflake? = messageIdString?.let { Snowflake(it) }
+        val channel = ctx.message.channel.fetchChannelOrNull()
+        val message = if (messageSnowflake != null)
+            channel?.getMessage(messageSnowflake)
+        else ctx.message.referencedMessage
+        if (message == null) return null to null
+        val databaseMessage = database.fetchMessage(message.id)
+        return message to databaseMessage
     }
 
     private suspend fun deleteMessage(ctx: MessageHolder): String {
@@ -297,11 +308,11 @@ To get support, head on over to https://discord.gg/q3yF8ay9V7"""
         }
         val databaseMessage = messages.second
         if (databaseMessage == null) {
-            ctx.respond("This message is either too old or wasn't proxied by ProxyFox", true)
+            ctx.respond("Targeted message is either too old or wasn't proxied by ProxyFox", true)
             return ""
         }
         if (databaseMessage.systemId != system.id) {
-            ctx.respond("You weren't the original creator of this message.", true)
+            ctx.respond("You weren't the original creator of the targeted message.", true)
             return ""
         }
         val memberId = ctx.params["member"]?.get(0)!!
@@ -322,11 +333,39 @@ To get support, head on over to https://discord.gg/q3yF8ay9V7"""
     }
 
     private suspend fun fetchMessageInfo(ctx: MessageHolder): String {
-        TODO()
+        val messages = getSystemlessMessage(ctx)
+        val discordMessage = messages.first
+        if (discordMessage == null) {
+            ctx.respond("Targeted message doesn't exist.", true)
+            return ""
+        }
+        val databaseMessage = messages.second
+        if (databaseMessage == null) {
+            ctx.respond("Targeted message is either too old or wasn't proxied by ProxyFox")
+            return ""
+        }
+
+
+
+        return ""
     }
 
     private suspend fun pingMessageAuthor(ctx: MessageHolder): String {
-        TODO()
+        val messages = getSystemlessMessage(ctx)
+        val discordMessage = messages.first
+        if (discordMessage == null) {
+            ctx.respond("Targeted message doesn't exist.", true)
+            return ""
+        }
+        val databaseMessage = messages.second
+        if (databaseMessage == null) {
+            ctx.respond("Targeted message is either too old or wasn't proxied by ProxyFox")
+            return ""
+        }
+        ctx.message.delete("User requested message deletion")
+        // TODO: Add a jump to message embed
+        ctx.respond("Psst.. ${databaseMessage.memberName} (<@${databaseMessage.userId}>)... You were pinged by <@${ctx.message.author!!.id}>")
+        return ""
     }
 
     private suspend fun channelEmpty(ctx: MessageHolder): String {
