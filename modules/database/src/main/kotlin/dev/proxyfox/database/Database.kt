@@ -298,12 +298,42 @@ abstract class Database : AutoCloseable {
         timestamp: OffsetDateTime? = null
     ): SystemSwitchRecord?
 
+    /**
+     *
+     * */
     abstract suspend fun removeSwitch(switch: SystemSwitchRecord)
 
     /**
      *
      * */
-    abstract suspend fun getLatestSwitch(systemId: String): SystemSwitchRecord?
+    abstract suspend fun updateSwitch(switch: SystemSwitchRecord)
+
+    /**
+     *
+     * */
+    suspend fun getLatestSwitch(systemId: String): SystemSwitchRecord? =
+        getSwitchesById(systemId)?.maxByOrNull {
+            it.timestamp
+        }
+
+    /**
+     *
+     * */
+    suspend fun getSecondLatestSwitch(systemId: String): SystemSwitchRecord? {
+        val switches = getSortedSwitchesById(systemId)
+            ?: return null
+
+        if (switches.size < 2) return null
+
+        return switches[1]
+    }
+
+    /**
+     *
+     * */
+    suspend fun getSortedSwitchesById(
+        systemId: String
+    ): List<SystemSwitchRecord>? = getSwitchesById(systemId)?.sortedByDescending { it.timestamp }
 
     /**
      * Get switches by user ID

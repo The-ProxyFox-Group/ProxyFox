@@ -106,8 +106,8 @@ class NopDatabase : Database() {
 
     override suspend fun allocateSwitch(systemId: String, memberId: List<String>, timestamp: OffsetDateTime?): SystemSwitchRecord? = null
     override suspend fun removeSwitch(switch: SystemSwitchRecord) {}
+    override suspend fun updateSwitch(switch: SystemSwitchRecord) {}
 
-    override suspend fun getLatestSwitch(systemId: String): SystemSwitchRecord? = null
     override suspend fun getSwitchesById(systemId: String): List<SystemSwitchRecord>? = null
 
     override suspend fun removeProxyTag(proxyTag: MemberProxyTagRecord) {}

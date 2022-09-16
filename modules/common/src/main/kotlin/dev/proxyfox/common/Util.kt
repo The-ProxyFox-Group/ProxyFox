@@ -59,5 +59,3 @@ suspend inline fun <T> T.applyAsync(block: suspend T.() -> Unit): T {
     block()
     return this
 }
-
-fun <T> Boolean.`??`(a: T, b: T): T = if (this) a else b
