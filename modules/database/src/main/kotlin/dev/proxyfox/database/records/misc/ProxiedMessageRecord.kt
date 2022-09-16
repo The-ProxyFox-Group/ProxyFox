@@ -15,6 +15,8 @@ import java.time.ZoneOffset
 class ProxiedMessageRecord {
     var _id: ObjectId = ObjectId()
     var creationDate = OffsetDateTime.now(ZoneOffset.UTC)
+    var memberName: String = ""
+    var userId: ULong = 0UL
     var oldMessageId: ULong = 0UL
     var newMessageId: ULong = 0UL
     var guildId: ULong = 0UL

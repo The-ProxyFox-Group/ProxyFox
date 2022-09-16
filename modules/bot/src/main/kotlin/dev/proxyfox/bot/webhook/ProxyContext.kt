@@ -101,7 +101,10 @@ data class ProxyContext(
         }!!
         member.messageCount++
         database.updateMember(member)
-        database.createMessage(message.id, newMessage.id, message.channel, member.id, member.systemId)
+        val userId = if (reproxy)
+            Snowflake(database.fetchMessage(message.id)!!.userId)
+        else message.author!!.id
+        database.createMessage(userId, message.id, newMessage.id, message.channel, member.id, member.systemId, serverMember.nickname ?: member.displayName ?: member.name)
         message.delete()
     }
 }

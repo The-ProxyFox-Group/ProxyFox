@@ -248,11 +248,13 @@ abstract class Database : AutoCloseable {
     abstract suspend fun updateUser(user: UserRecord)
 
     abstract suspend fun createMessage(
-            oldMessageId: Snowflake,
-            newMessageId: Snowflake,
-            channelBehavior: ChannelBehavior,
-            memberId: String,
-            systemId: String
+        userId: Snowflake,
+        oldMessageId: Snowflake,
+        newMessageId: Snowflake,
+        channelBehavior: ChannelBehavior,
+        memberId: String,
+        systemId: String,
+        memberName: String
     )
     abstract suspend fun updateMessage(message: ProxiedMessageRecord)
     abstract suspend fun fetchMessage(messageId: Snowflake): ProxiedMessageRecord?
