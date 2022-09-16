@@ -99,6 +99,10 @@ data class ProxyContext(
                 }
             }
         }!!
+        if (newMessage.content != messageContent)
+            kord.rest.webhook.editWebhookMessage(Snowflake(webhook.id), webhook.token, newMessage.id, threadId) {
+                if (messageContent.isNotBlank()) content = messageContent
+            }
         member.messageCount++
         database.updateMember(member)
         val userId = if (reproxy)
