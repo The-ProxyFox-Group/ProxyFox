@@ -42,5 +42,5 @@ class MemberRecord {
     fun asString() = displayName?.let { "$it ($name)" } ?: name
 
     suspend fun serverName(serverId: ULong) =
-        if (serverId == 0UL) null else database.getMemberServerSettingsById(serverId, systemId, id)?.nickname
+        if (serverId == 0UL) null else database.fetchMemberServerSettingsFromSystemAndMember(serverId, systemId, id)?.nickname
 }

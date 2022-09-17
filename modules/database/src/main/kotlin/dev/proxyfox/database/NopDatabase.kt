@@ -23,55 +23,54 @@ import java.time.OffsetDateTime
 class NopDatabase : Database() {
     override suspend fun setup() = this
 
-    override suspend fun getUser(userId: ULong): UserRecord? = null
+    override suspend fun fetchUser(userId: ULong): UserRecord? = null
 
-    override suspend fun getSystemById(systemId: String): SystemRecord? = null
+    override suspend fun fetchSystemFromId(systemId: String): SystemRecord? = null
 
-    override suspend fun getMembersBySystem(systemId: String): List<MemberRecord>? = null
+    override suspend fun fetchMembersFromSystem(systemId: String): List<MemberRecord>? = null
 
-    override suspend fun getMemberById(systemId: String, memberId: String): MemberRecord? = null
+    override suspend fun fetchMemberFromSystem(systemId: String, memberId: String): MemberRecord? = null
 
-    override suspend fun getProxiesById(systemId: String): List<MemberProxyTagRecord>? = null
+    override suspend fun fetchProxiesFromSystem(systemId: String): List<MemberProxyTagRecord>? = null
 
-    override suspend fun getProxiesByIdAndMember(systemId: String, memberId: String): List<MemberProxyTagRecord>? = null
+    override suspend fun fetchProxiesFromSystemAndMember(systemId: String, memberId: String): List<MemberProxyTagRecord>? = null
 
-    override suspend fun getMemberServerSettingsById(
+    override suspend fun fetchMemberServerSettingsFromSystemAndMember(
         serverId: ULong,
         systemId: String,
         memberId: String
     ): MemberServerSettingsRecord? = null
 
-    override suspend fun getServerSettingsById(serverId: ULong, systemId: String): SystemServerSettingsRecord {
-        TODO("Not yet implemented")
+    override suspend fun getOrCreateServerSettingsFromSystem(serverId: ULong, systemId: String): SystemServerSettingsRecord {
+        fail("No such system $systemId (got server $serverId)")
     }
 
-    override suspend fun getServerSettings(serverId: ULong): ServerSettingsRecord {
-        TODO("Not yet implemented")
+    override suspend fun getOrCreateServerSettings(serverId: ULong): ServerSettingsRecord {
+        fail("Cannot store server settings for $serverId")
     }
 
     override suspend fun updateServerSettings(serverSettings: ServerSettingsRecord) {}
 
-    override suspend fun getChannelSettings(channelId: ULong, systemId: String): SystemChannelSettingsRecord {
-        TODO("Not yet implemented")
+    override suspend fun getOrCreateChannelSettingsFromSystem(channelId: ULong, systemId: String): SystemChannelSettingsRecord {
+        fail("No such system $systemId (got channel $channelId)")
     }
 
     override suspend fun getOrCreateChannel(serverId: ULong, channelId: ULong): ChannelSettingsRecord {
-        TODO("Not yet implemented")
+        fail("Cannot store channel settings for $serverId -> $channelId.")
     }
 
     override suspend fun updateChannel(channel: ChannelSettingsRecord) {
-        TODO("Not yet implemented")
     }
 
-    override suspend fun allocateSystem(userId: ULong, id: String?): SystemRecord {
-        TODO("Not yet implemented")
+    override suspend fun getOrCreateSystem(userId: ULong, id: String?): SystemRecord {
+        fail("Cannot store system for $userId -> $id.")
     }
 
-    override suspend fun removeSystem(userId: ULong): Boolean = false
+    override suspend fun dropSystem(userId: ULong): Boolean = false
 
-    override suspend fun allocateMember(systemId: String, name: String, id: String?): MemberRecord? = null
+    override suspend fun getOrCreateMember(systemId: String, name: String, id: String?): MemberRecord? = null
 
-    override suspend fun removeMember(systemId: String, memberId: String): Boolean = false
+    override suspend fun dropMember(systemId: String, memberId: String): Boolean = false
 
     override suspend fun updateMember(member: MemberRecord) {}
 
@@ -103,32 +102,32 @@ class NopDatabase : Database() {
         channelId: Snowflake
     ): ProxiedMessageRecord? = null
 
-    override suspend fun allocateProxyTag(
+    override suspend fun createProxyTag(
         systemId: String,
         memberId: String,
         prefix: String?,
         suffix: String?
     ): MemberProxyTagRecord? = null
 
-    override suspend fun listProxyTags(systemId: String, memberId: String): List<MemberProxyTagRecord>? = null
+    override suspend fun fetchProxyTags(systemId: String, memberId: String): List<MemberProxyTagRecord>? = null
 
-    override suspend fun allocateSwitch(systemId: String, memberId: List<String>, timestamp: OffsetDateTime?): SystemSwitchRecord? = null
-    override suspend fun removeSwitch(switch: SystemSwitchRecord) {}
+    override suspend fun createSwitch(systemId: String, memberId: List<String>, timestamp: OffsetDateTime?): SystemSwitchRecord? = null
+    override suspend fun dropSwitch(switch: SystemSwitchRecord) {}
     override suspend fun updateSwitch(switch: SystemSwitchRecord) {}
 
-    override suspend fun getSwitchesById(systemId: String): List<SystemSwitchRecord>? = null
+    override suspend fun fetchSwitchesFromSystem(systemId: String): List<SystemSwitchRecord>? = null
 
-    override suspend fun removeProxyTag(proxyTag: MemberProxyTagRecord) {}
+    override suspend fun dropProxyTag(proxyTag: MemberProxyTagRecord) {}
 
     override suspend fun updateTrustLevel(systemId: String, trustee: ULong, level: TrustLevel): Boolean = false
 
-    override suspend fun getTrustLevel(systemId: String, trustee: ULong): TrustLevel = TrustLevel.NONE
+    override suspend fun fetchTrustLevel(systemId: String, trustee: ULong): TrustLevel = TrustLevel.NONE
 
-    override suspend fun getTotalSystems(): Int = 0
+    override suspend fun fetchTotalSystems(): Int = 0
 
-    override suspend fun getTotalMembersById(systemId: String): Int? = null
+    override suspend fun fetchTotalMembersFromSystem(systemId: String): Int? = null
 
-    override suspend fun getMemberByIdAndName(systemId: String, memberName: String): MemberRecord? = null
+    override suspend fun fetchMemberFromSystemAndName(systemId: String, memberName: String): MemberRecord? = null
 
     override suspend fun export(other: Database) {}
 
