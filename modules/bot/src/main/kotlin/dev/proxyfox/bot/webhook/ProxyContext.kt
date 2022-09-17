@@ -10,7 +10,6 @@ package dev.proxyfox.bot.webhook
 
 import dev.kord.common.Color
 import dev.kord.common.entity.Snowflake
-import dev.kord.core.behavior.channel.threads.ThreadChannelBehavior
 import dev.kord.core.entity.Message
 import dev.kord.core.entity.User
 import dev.kord.rest.NamedFile
@@ -18,7 +17,6 @@ import dev.kord.rest.builder.message.create.embed
 import dev.proxyfox.bot.http
 import dev.proxyfox.bot.kord
 import dev.proxyfox.bot.md.BaseMarkdown
-import dev.proxyfox.bot.md.MarkdownNode
 import dev.proxyfox.bot.md.MarkdownString
 import dev.proxyfox.bot.md.parseMarkdown
 import dev.proxyfox.database.database
@@ -50,7 +48,7 @@ data class ProxyContext(
         if (!member.keepProxy && proxy != null)
             messageContent = proxy.trim(messageContent).trim()
         if (messageContent.isBlank()) return
-        val serverMember = database.getMemberServerSettingsById(
+        val serverMember = database.fetchMemberServerSettingsFromSystemAndMember(
             message.getGuildOrNull(),
             member.systemId,
             member.id

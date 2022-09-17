@@ -11,6 +11,7 @@ package dev.proxyfox.bot.command
 import dev.kord.rest.builder.message.EmbedBuilder
 import dev.proxyfox.bot.string.dsl.greedy
 import dev.proxyfox.bot.string.dsl.literal
+import dev.proxyfox.bot.string.dsl.stringList
 import dev.proxyfox.bot.string.parser.MessageHolder
 import dev.proxyfox.bot.string.parser.registerCommand
 import dev.proxyfox.bot.timedYesNoPrompt
@@ -18,10 +19,9 @@ import dev.proxyfox.common.printStep
 import dev.proxyfox.database.database
 import dev.proxyfox.database.records.system.SystemRecord
 import dev.proxyfox.database.records.system.SystemSwitchRecord
-import org.litote.kmongo.minute
 import java.time.OffsetDateTime
-import java.time.temporal.TemporalUnit
 import kotlin.math.floor
+import kotlin.math.min
 
 object SwitchCommands {
     suspend fun register() {
@@ -33,26 +33,26 @@ object SwitchCommands {
             }
             literal(arrayOf("delete", "del", "d", "remove", "rem"), ::delete)
             literal(arrayOf("list", "l"), ::list)
-            greedy("members", ::switch)
+            stringList("members", ::switch)
         })
     }
 
     private suspend fun empty(ctx: MessageHolder): String = "Make sure to provide a switch command!"
 
     private suspend fun out(ctx: MessageHolder): String {
-        val system = database.getSystemByHost(ctx.message.author)
-                ?: return "System does not exist. Create one using `pf>system new`"
-        database.allocateSwitch(system.id, listOf(), OffsetDateTime.now())
+        val system = database.fetchSystemFromUser(ctx.message.author)
+            ?: return "System does not exist. Create one using `pf>system new`"
+        database.createSwitch(system.id, listOf(), OffsetDateTime.now())
         return "Switch registered."
     }
 
     private suspend fun moveEmpty(ctx: MessageHolder): String = "Please provide a time to move the switch back"
     private suspend fun move(ctx: MessageHolder): String {
-        val system = database.getSystemByHost(ctx.message.author)
-                ?: return "System does not exist. Create one using `pf>system new`"
-        val switch = database.getLatestSwitch(system.id)
-                ?: return "It looks like you haven't registered any switches yet"
-        val oldSwitch = database.getSecondLatestSwitch(system.id)
+        val system = database.fetchSystemFromUser(ctx.message.author)
+            ?: return "System does not exist. Create one using `pf>system new`"
+        val switch = database.fetchLatestSwitch(system.id)
+            ?: return "It looks like you haven't registered any switches yet"
+        val oldSwitch = database.fetchSecondLatestSwitch(system.id)
         val time = ctx.params["time"]!![0].split(Regex("\\s")).joinToString("")
 
         var years = -1L
@@ -142,15 +142,15 @@ object SwitchCommands {
     }
 
     private suspend fun delete(ctx: MessageHolder): String {
-        val system = database.getSystemByHost(ctx.message.author)
-                ?: return "System does not exist. Create one using `pf>system new`"
-        val switch = database.getLatestSwitch(system.id)
-                ?: return "No switches registered"
+        val system = database.fetchSystemFromUser(ctx.message.author)
+            ?: return "System does not exist. Create one using `pf>system new`"
+        val switch = database.fetchLatestSwitch(system.id)
+            ?: return "No switches registered"
 
         // TODO: Give more information about the switch
         val message = ctx.message.channel.createMessage("Are you sure you want to delete the latest switch?\nThe data will be lost forever (A long time!)")
         message.timedYesNoPrompt(runner = ctx.message.author!!.id, yes = {
-            database.removeSwitch(switch)
+            database.dropSwitch(switch)
             channel.createMessage("Switch deleted.")
         })
 
@@ -163,24 +163,22 @@ object SwitchCommands {
         else "${system.name} [`${system.id}`]"
         title = "Front history of $append"
 
-        var descString = ""
-        for (i in idx*20 until idx*20+20) {
-            if (i > list.size) break
-            val switch = list[i]
-            val members = switch.memberIds.mapNotNull {
-                val member = database.getMemberById(system.id, it)
-                member?.displayName ?: member?.name
+        description = buildString {
+            for (i in idx * 20 until min(idx * 20 + 20, list.size)) {
+                val switch = list[i]
+                switch.memberIds.map {
+                    database.fetchMemberFromSystem(system.id, it)?.run { displayName ?: name } ?: "*Unknown*"
+                }.joinTo(this, ", ", "**", "**")
+                append(" (<t:${switch.timestamp.toEpochSecond()}:R>)\n")
             }
-
-
         }
     }
 
     private suspend fun list(ctx: MessageHolder): String {
-        val system = database.getSystemByHost(ctx.message.author)
+        val system = database.fetchSystemFromUser(ctx.message.author)
             ?: return "System does not exist. Create one using `pf>system new`"
         // We know the system exists here, will be non-null
-        val switches = database.getSortedSwitchesById(system.id)!!
+        val switches = database.fetchSortedSwitchesFromSystem(system.id)!!
 
         val idx = 0
 
@@ -194,22 +192,20 @@ object SwitchCommands {
     }
 
     private suspend fun switch(ctx: MessageHolder): String {
-        val system = database.getSystemByHost(ctx.message.author)
-                ?: return "System does not exist. Create one using `pf>system new`"
+        val system = database.fetchSystemFromUser(ctx.message.author)
+            ?: return "System does not exist. Create one using `pf>system new`"
         val members = ArrayList<String>()
         var memberString = ""
-        ctx.params["members"]?.forEach {
-            val member = database.getMemberByIdAndName(system.id, it)
-                    ?: database.getMemberById(system.id, it)
-                    ?: return "Couldn't find member `$it`, do they exist?"
+        ctx.params["members"]!!.forEach {
+            val member = database.findMember(system.id, it) ?: return "Couldn't find member `$it`, do they exist?"
             members += member.id
             memberString += "`${
                 member.displayName
-                        ?: member.name
+                    ?: member.name
             }`, "
         }
-        memberString = memberString.substring(0, memberString.length-2)
-        database.allocateSwitch(system.id, ctx.params["members"]!!.asList(), OffsetDateTime.now())
+        memberString = memberString.substring(0, memberString.length - 2)
+        database.createSwitch(system.id, members, OffsetDateTime.now())
 
 
         return "Switch registered, current fronters: $memberString"

@@ -9,7 +9,7 @@
 package dev.proxyfox.conversion
 
 import dev.proxyfox.database.Database
-import dev.proxyfox.database.DatabaseUtil.databaseFromString
+import dev.proxyfox.database.databaseFromString
 import kotlin.system.exitProcess
 
 suspend fun main(args: Array<String>) {

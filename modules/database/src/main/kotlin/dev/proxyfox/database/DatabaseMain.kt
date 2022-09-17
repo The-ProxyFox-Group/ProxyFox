@@ -9,7 +9,6 @@
 package dev.proxyfox.database
 
 import dev.proxyfox.common.printStep
-import dev.proxyfox.database.DatabaseUtil.databaseFromString
 
 lateinit var database: Database
 
