@@ -46,7 +46,7 @@ typealias KCollection<T> = MongoCollection<T>
  * @author KJP12, Emma
  * @since ${version}
  **/
-class MongoDatabase : Database() {
+class MongoDatabase(private val dbName: String = "ProxyFox") : Database() {
     private lateinit var kmongo: MongoClient
     private lateinit var db: Mongo
 
@@ -75,7 +75,7 @@ class MongoDatabase : Database() {
                 KMongo.createClient()
             else
                 KMongo.createClient(connectionString)
-        db = kmongo.getDatabase("ProxyFox")
+        db = kmongo.getDatabase(dbName)
 
         users = db.getOrCreateCollection()
 
