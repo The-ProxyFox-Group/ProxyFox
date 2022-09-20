@@ -20,7 +20,7 @@ object Exporter {
     suspend inline fun export(userId: ULong) = export(database, userId)
 
     suspend fun export(database: Database, userId: ULong): String {
-        val system = database.getSystemByHost(userId) ?: return ""
+        val system = database.fetchSystemFromUser(userId) ?: return ""
 
         val pkSystem = PkSystem()
         pkSystem.name = system.name
@@ -28,7 +28,7 @@ object Exporter {
         pkSystem.tag = system.tag
         pkSystem.avatar_url = system.avatarUrl
 
-        val members = database.getMembersBySystem(system.id) ?: ArrayList()
+        val members = database.fetchMembersFromSystem(system.id) ?: ArrayList()
         pkSystem.members = Array(members.size) {
             val member = members[it]
             val pkMember = PkMember()
@@ -41,7 +41,7 @@ object Exporter {
             pkMember.message_count = member.messageCount
             pkMember.avatar_url = member.avatarUrl
 
-            val proxies = database.getProxiesByIdAndMember(system.id, member.id)
+            val proxies = database.fetchProxiesFromSystemAndMember(system.id, member.id)
             val pkProxies = ArrayList<PkProxy>()
             if (proxies != null) {
                 for (proxy in proxies) {

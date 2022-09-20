@@ -12,6 +12,7 @@ import dev.kord.common.entity.Snowflake
 import dev.kord.core.behavior.GuildBehavior
 import dev.kord.core.behavior.UserBehavior
 import dev.kord.core.behavior.channel.ChannelBehavior
+import dev.proxyfox.database.records.DatabaseException
 import dev.proxyfox.database.records.member.MemberProxyTagRecord
 import dev.proxyfox.database.records.member.MemberRecord
 import dev.proxyfox.database.records.member.MemberServerSettingsRecord
@@ -21,6 +22,8 @@ import dev.proxyfox.database.records.system.SystemRecord
 import dev.proxyfox.database.records.system.SystemServerSettingsRecord
 import dev.proxyfox.database.records.system.SystemSwitchRecord
 import java.time.OffsetDateTime
+import kotlin.contracts.ExperimentalContracts
+import kotlin.contracts.contract
 
 // Created 2022-09-04T14:06:39
 
@@ -34,8 +37,8 @@ import java.time.OffsetDateTime
 abstract class Database : AutoCloseable {
     abstract suspend fun setup(): Database
 
-    abstract suspend fun getUser(userId: ULong): UserRecord?
-    suspend inline fun getUser(user: UserBehavior?) = user?.run { getUser(id.value) }
+    abstract suspend fun fetchUser(userId: ULong): UserRecord?
+    suspend inline fun fetchUser(user: UserBehavior?) = user?.run { fetchUser(id.value) }
 
     // === Systems ===
 
@@ -45,9 +48,9 @@ abstract class Database : AutoCloseable {
      * @param userId The ID of the Discord user.
      * @return The system tied to the Discord user.
      * */
-    open suspend fun getSystemByHost(userId: ULong) = getUser(userId)?.system?.let { getSystemById(it) }
+    open suspend fun fetchSystemFromUser(userId: ULong) = fetchUser(userId)?.system?.let { fetchSystemFromId(it) }
 
-    suspend inline fun getSystemByHost(user: UserBehavior?) = user?.run { getSystemByHost(id.value) }
+    suspend inline fun fetchSystemFromUser(user: UserBehavior?) = user?.run { fetchSystemFromUser(id.value) }
 
     /**
      * Gets a [system][SystemRecord] by system ID.
@@ -55,7 +58,7 @@ abstract class Database : AutoCloseable {
      * @param systemId The ID of the system.
      * @return The system as registered by ID.
      * */
-    abstract suspend fun getSystemById(systemId: String): SystemRecord?
+    abstract suspend fun fetchSystemFromId(systemId: String): SystemRecord?
 
     // === Members ===
     /**
@@ -64,9 +67,9 @@ abstract class Database : AutoCloseable {
      * @param userId The ID of the Discord user.
      * @return A list of members registered to the system tied to the Discord user.
      * */
-    open suspend fun getMembersByHost(userId: ULong) = getUser(userId)?.system?.let { getMembersBySystem(it) }
+    open suspend fun fetchMembersFromUser(userId: ULong) = fetchUser(userId)?.system?.let { fetchMembersFromSystem(it) }
 
-    suspend inline fun getMembersByHost(user: UserBehavior?) = user?.run { getMembersByHost(id.value) }
+    suspend inline fun fetchMembersFromUser(user: UserBehavior?) = user?.run { fetchMembersFromUser(id.value) }
 
     /**
      * Gets a list of [members][MemberRecord] by system ID.
@@ -74,7 +77,7 @@ abstract class Database : AutoCloseable {
      * @param systemId The ID of the system.
      * @return A list of members registered to the system.
      * */
-    abstract suspend fun getMembersBySystem(systemId: String): List<MemberRecord>?
+    abstract suspend fun fetchMembersFromSystem(systemId: String): List<MemberRecord>?
 
     /**
      * Gets the [member][MemberRecord] by both Discord & member IDs.
@@ -83,9 +86,9 @@ abstract class Database : AutoCloseable {
      * @param memberId The ID of the member in the system tied to the Discord user.
      * @return The member of the system tied to the Discord user.
      * */
-    open suspend fun getMemberByHost(userId: ULong, memberId: String) = getUser(userId)?.system?.let { getMemberById(it, memberId) }
+    open suspend fun fetchMemberFromUser(userId: ULong, memberId: String) = fetchUser(userId)?.system?.let { fetchMemberFromSystem(it, memberId) }
 
-    suspend inline fun getMemberByHost(user: UserBehavior?, memberId: String) = user?.run { getMemberByHost(id.value, memberId) }
+    suspend inline fun fetchMemberFromUser(user: UserBehavior?, memberId: String) = user?.run { fetchMemberFromUser(id.value, memberId) }
 
     /**
      * Gets the [member][MemberRecord] by both system & member IDs.
@@ -94,7 +97,7 @@ abstract class Database : AutoCloseable {
      * @param memberId The ID of the member in the system.
      * @return The member of the system.
      * */
-    abstract suspend fun getMemberById(systemId: String, memberId: String): MemberRecord?
+    abstract suspend fun fetchMemberFromSystem(systemId: String, memberId: String): MemberRecord?
 
     /**
      * Gets the fronting [member][MemberRecord] by Discord ID.
@@ -102,9 +105,9 @@ abstract class Database : AutoCloseable {
      * @param userId The ID of the Discord user.
      * @return The fronting member of the system tied to the Discord user, if applicable.
      * */
-    open suspend fun getFrontingMembersByHost(userId: ULong) = getUser(userId)?.system?.let { getFrontingMembersById(it) }
+    open suspend fun fetchFrontingMembersFromUser(userId: ULong) = fetchUser(userId)?.system?.let { fetchFrontingMembersFromSystem(it) }
 
-    suspend inline fun getFrontingMembersByHost(user: UserBehavior?) = user?.run { getFrontingMembersByHost(id.value) }
+    suspend inline fun fetchFrontingMembersFromUser(user: UserBehavior?) = user?.run { fetchFrontingMembersFromUser(id.value) }
 
     /**
      * Gets the fronting [member][MemberRecord] by Discord ID.
@@ -112,21 +115,21 @@ abstract class Database : AutoCloseable {
      * @param systemId The ID of the system.
      * @return The fronting member of the system tied to the Discord user, if applicable.
      * */
-    open suspend fun getFrontingMembersById(systemId: String): List<MemberRecord>? {
-        return getLatestSwitch(systemId)?.memberIds?.mapNotNull { getMemberById(systemId, it) }
+    open suspend fun fetchFrontingMembersFromSystem(systemId: String): List<MemberRecord>? {
+        return fetchLatestSwitch(systemId)?.memberIds?.mapNotNull { fetchMemberFromSystem(systemId, it) }
     }
 
-    open suspend fun getProxiesByHost(userId: ULong) = getUser(userId)?.system?.let { getProxiesById(it) }
+    open suspend fun fetchProxiesFromUser(userId: ULong) = fetchUser(userId)?.system?.let { fetchProxiesFromSystem(it) }
 
-    suspend inline fun getProxiesByHost(user: UserBehavior) = getProxiesByHost(user.id.value)
+    suspend inline fun fetchProxiesFromUser(user: UserBehavior) = fetchProxiesFromUser(user.id.value)
 
-    abstract suspend fun getProxiesById(systemId: String): List<MemberProxyTagRecord>?
+    abstract suspend fun fetchProxiesFromSystem(systemId: String): List<MemberProxyTagRecord>?
 
-    suspend inline fun getProxiesByHostAndMember(user: UserBehavior, memberId: String) = getProxiesByHostAndMember(user.id.value, memberId)
+    suspend inline fun fetchProxiesFromUserAndMember(user: UserBehavior, memberId: String) = fetchProxiesFromUserAndMember(user.id.value, memberId)
 
-    open suspend fun getProxiesByHostAndMember(userId: ULong, memberId: String) = getUser(userId)?.system?.let { getProxiesByIdAndMember(it, memberId) }
+    open suspend fun fetchProxiesFromUserAndMember(userId: ULong, memberId: String) = fetchUser(userId)?.system?.let { fetchProxiesFromSystemAndMember(it, memberId) }
 
-    abstract suspend fun getProxiesByIdAndMember(systemId: String, memberId: String): List<MemberProxyTagRecord>?
+    abstract suspend fun fetchProxiesFromSystemAndMember(systemId: String, memberId: String): List<MemberProxyTagRecord>?
 
     /**
      * Gets the [proxy][MemberProxyTagRecord] by Discord ID and proxy tags.
@@ -135,13 +138,13 @@ abstract class Database : AutoCloseable {
      * @param message The message to check proxy tags against.
      * @return The ProxyTag associated with the message
      * */
-    open suspend fun getMemberFromMessage(userId: ULong, message: String) = getProxyTagFromMessage(userId, message)?.memberId?.let { getMemberByHost(userId, it) }
+    open suspend fun fetchMemberFromMessage(userId: ULong, message: String) = fetchProxyTagFromMessage(userId, message)?.memberId?.let { fetchMemberFromUser(userId, it) }
 
-    suspend inline fun getMemberFromMessage(user: UserBehavior?, message: String) = user?.run { getMemberFromMessage(id.value, message) }
+    suspend inline fun fetchMemberFromMessage(user: UserBehavior?, message: String) = user?.run { fetchMemberFromMessage(id.value, message) }
 
-    open suspend fun getProxyTagFromMessage(userId: ULong, message: String) = getProxiesByHost(userId)?.find { it.test(message) }
+    open suspend fun fetchProxyTagFromMessage(userId: ULong, message: String) = fetchProxiesFromUser(userId)?.find { it.test(message) }
 
-    suspend inline fun getProxyTagFromMessage(user: UserBehavior?, message: String) = user?.run { getProxyTagFromMessage(id.value, message) }
+    suspend inline fun fetchProxyTagFromMessage(user: UserBehavior?, message: String) = user?.run { fetchProxyTagFromMessage(id.value, message) }
 
     // === Server Settings ===
     /**
@@ -152,17 +155,17 @@ abstract class Database : AutoCloseable {
      * @param memberId The ID of the member in the system tied to the Discord user.
      * @return The member's settings for the server.
      * */
-    open suspend fun getMemberServerSettingsByHost(
+    open suspend fun fetchMemberServerSettingsFromUserAndMember(
         serverId: ULong,
         userId: ULong,
         memberId: String
-    ) = getUser(userId)?.system?.let { getMemberServerSettingsById(serverId, it, memberId) }
+    ) = fetchUser(userId)?.system?.let { fetchMemberServerSettingsFromSystemAndMember(serverId, it, memberId) }
 
-    suspend inline fun getMemberServerSettingsByHost(
+    suspend inline fun fetchMemberServerSettingsFromUserAndMember(
         server: GuildBehavior,
         user: UserBehavior,
         memberId: String
-    ) = getMemberServerSettingsByHost(server.id.value, user.id.value, memberId)
+    ) = fetchMemberServerSettingsFromUserAndMember(server.id.value, user.id.value, memberId)
 
     /**
      * Gets the [member's server settings][MemberServerSettingsRecord] by server, system & member IDs.
@@ -172,17 +175,17 @@ abstract class Database : AutoCloseable {
      * @param memberId The ID of the member in the system tied to the Discord user.
      * @return The member's settings for the server.
      * */
-    abstract suspend fun getMemberServerSettingsById(
+    abstract suspend fun fetchMemberServerSettingsFromSystemAndMember(
         serverId: ULong,
         systemId: String,
         memberId: String
     ): MemberServerSettingsRecord?
 
-    suspend inline fun getMemberServerSettingsById(
+    suspend inline fun fetchMemberServerSettingsFromSystemAndMember(
         server: GuildBehavior?,
         systemId: String,
         memberId: String
-    ) = server?.run { getMemberServerSettingsById(id.value, systemId, memberId) }
+    ) = server?.run { fetchMemberServerSettingsFromSystemAndMember(id.value, systemId, memberId) }
 
     /**
      * Gets the [system's server settings][SystemServerSettingsRecord] by server & Discord IDs.
@@ -191,24 +194,24 @@ abstract class Database : AutoCloseable {
      * @param userId The ID of the Discord user.
      * @return The system's settings for the server.
      * */
-    open suspend fun getServerSettingsByHost(serverId: ULong, userId: ULong) =
-        getUser(userId)?.system?.let { getServerSettingsById(serverId, it) }
+    open suspend fun getOrCreateServerSettingsFromUser(serverId: ULong, userId: ULong) =
+        fetchUser(userId)?.system?.let { getOrCreateServerSettingsFromSystem(serverId, it) }
 
-    suspend inline fun getServerSettingsByHost(server: GuildBehavior, user: UserBehavior) = getServerSettingsByHost(server.id.value, user.id.value)
+    suspend inline fun getOrCreateServerSettingsFromUser(server: GuildBehavior, user: UserBehavior) = getOrCreateServerSettingsFromUser(server.id.value, user.id.value)
 
-    abstract suspend fun getServerSettingsById(serverId: ULong, systemId: String): SystemServerSettingsRecord
+    abstract suspend fun getOrCreateServerSettingsFromSystem(serverId: ULong, systemId: String): SystemServerSettingsRecord
 
-    suspend inline fun getServerSettingsById(server: GuildBehavior, systemId: String) = getServerSettingsById(server.id.value, systemId)
+    suspend inline fun getOrCreateServerSettingsFromSystem(server: GuildBehavior, systemId: String) = getOrCreateServerSettingsFromSystem(server.id.value, systemId)
 
-    suspend inline fun getServerSettings(server: GuildBehavior) = getServerSettings(server.id.value)
+    suspend inline fun getOrCreateServerSettings(server: GuildBehavior) = getOrCreateServerSettings(server.id.value)
 
-    abstract suspend fun getServerSettings(serverId: ULong): ServerSettingsRecord
+    abstract suspend fun getOrCreateServerSettings(serverId: ULong): ServerSettingsRecord
 
     abstract suspend fun updateServerSettings(serverSettings: ServerSettingsRecord)
 
-    suspend inline fun getChannelSettings(channel: ChannelBehavior, systemId: String) = getChannelSettings(channel.id.value, systemId)
+    suspend inline fun getOrCreateChannelSettingsFromSystem(channel: ChannelBehavior, systemId: String) = getOrCreateChannelSettingsFromSystem(channel.id.value, systemId)
 
-    abstract suspend fun getChannelSettings(channelId: ULong, systemId: String): SystemChannelSettingsRecord
+    abstract suspend fun getOrCreateChannelSettingsFromSystem(channelId: ULong, systemId: String): SystemChannelSettingsRecord
 
     abstract suspend fun getOrCreateChannel(serverId: ULong, channelId: ULong): ChannelSettingsRecord
     abstract suspend fun updateChannel(channel: ChannelSettingsRecord)
@@ -220,13 +223,15 @@ abstract class Database : AutoCloseable {
      * @param userId The ID of the Discord user.
      * @return A maybe newly created system. Never null.
      * */
-    abstract suspend fun allocateSystem(userId: ULong, id: String? = null): SystemRecord
+    abstract suspend fun getOrCreateSystem(userId: ULong, id: String? = null): SystemRecord
 
-    suspend inline fun allocateSystem(user: UserBehavior, id: String? = null) = allocateSystem(user.id.value, id)
+    suspend inline fun getOrCreateSystem(user: UserBehavior, id: String? = null) = getOrCreateSystem(user.id.value, id)
 
-    abstract suspend fun removeSystem(userId: ULong): Boolean
+    open suspend fun containsSystem(systemId: String) = fetchSystemFromId(systemId) != null
 
-    suspend inline fun removeSystem(user: UserBehavior) = removeSystem(user.id.value)
+    abstract suspend fun dropSystem(userId: ULong): Boolean
+
+    suspend inline fun dropSystem(user: UserBehavior) = dropSystem(user.id.value)
 
     /**
      * Allocates a member ID in the database.
@@ -235,8 +240,11 @@ abstract class Database : AutoCloseable {
      * @param name The name of the new member.
      * @return A newly created member. null if system doesn't exist.
      * */
-    abstract suspend fun allocateMember(systemId: String, name: String, id: String? = null): MemberRecord?
-    abstract suspend fun removeMember(systemId: String, memberId: String): Boolean
+    abstract suspend fun getOrCreateMember(systemId: String, name: String, id: String? = null): MemberRecord?
+
+    open suspend fun containsMember(systemId: String, memberId: String) = fetchMemberFromSystem(systemId, memberId) != null
+
+    abstract suspend fun dropMember(systemId: String, memberId: String): Boolean
 
     // TODO: This ideally needs a much better system for updating since this really isn't ideal as is.
     //  This applies to the following 4 methods below.
@@ -268,7 +276,7 @@ abstract class Database : AutoCloseable {
      * @param suffix the suffix of the proxy
      * @return The newly created proxy tag, if one with the same prefix and suffix exists already, return null
      * */
-    abstract suspend fun allocateProxyTag(
+    abstract suspend fun createProxyTag(
         systemId: String,
         memberId: String,
         prefix: String?,
@@ -281,7 +289,7 @@ abstract class Database : AutoCloseable {
      * @param memberId The member to assign it to
      * @return All proxy tags registered for the member, else null if the member or system doesn't exist.
      * */
-    abstract suspend fun listProxyTags(
+    abstract suspend fun fetchProxyTags(
         systemId: String,
         memberId: String
     ): List<MemberProxyTagRecord>?
@@ -294,7 +302,7 @@ abstract class Database : AutoCloseable {
      * @param timestamp The timestamp of the switch. May be null for now.
      * @return A switch if a system exists, null otherwise.
      * */
-    abstract suspend fun allocateSwitch(
+    abstract suspend fun createSwitch(
         systemId: String,
         memberId: List<String>,
         timestamp: OffsetDateTime? = null
@@ -303,7 +311,7 @@ abstract class Database : AutoCloseable {
     /**
      *
      * */
-    abstract suspend fun removeSwitch(switch: SystemSwitchRecord)
+    abstract suspend fun dropSwitch(switch: SystemSwitchRecord)
 
     /**
      *
@@ -313,16 +321,16 @@ abstract class Database : AutoCloseable {
     /**
      *
      * */
-    suspend fun getLatestSwitch(systemId: String): SystemSwitchRecord? =
-        getSwitchesById(systemId)?.maxByOrNull {
+    suspend fun fetchLatestSwitch(systemId: String): SystemSwitchRecord? =
+        fetchSwitchesFromSystem(systemId)?.maxByOrNull {
             it.timestamp
         }
 
     /**
      *
      * */
-    suspend fun getSecondLatestSwitch(systemId: String): SystemSwitchRecord? {
-        val switches = getSortedSwitchesById(systemId)
+    suspend fun fetchSecondLatestSwitch(systemId: String): SystemSwitchRecord? {
+        val switches = fetchSortedSwitchesFromSystem(systemId)
             ?: return null
 
         if (switches.size < 2) return null
@@ -333,9 +341,9 @@ abstract class Database : AutoCloseable {
     /**
      *
      * */
-    suspend fun getSortedSwitchesById(
+    suspend fun fetchSortedSwitchesFromSystem(
         systemId: String
-    ): List<SystemSwitchRecord>? = getSwitchesById(systemId)?.sortedByDescending { it.timestamp }
+    ): List<SystemSwitchRecord>? = fetchSwitchesFromSystem(systemId)?.sortedByDescending { it.timestamp }
 
     /**
      * Get switches by user ID
@@ -343,13 +351,13 @@ abstract class Database : AutoCloseable {
      * @param userId The user ID to get all switches by.
      * @return All switches registered for the system.
      * */
-    open suspend fun getSwitchesByHost(
+    open suspend fun fetchSwitchesFromUser(
         userId: ULong
-    ) = getUser(userId)?.system?.let { getSwitchesById(it) }
+    ) = fetchUser(userId)?.system?.let { fetchSwitchesFromSystem(it) }
 
-    suspend inline fun getSwitchesByHost(
+    suspend inline fun fetchSwitchesFromUser(
         user: UserBehavior?
-    ) = user?.run { getSwitchesByHost(id.value) }
+    ) = user?.run { fetchSwitchesFromUser(id.value) }
 
     /**
      * Get switches by system ID
@@ -357,7 +365,7 @@ abstract class Database : AutoCloseable {
      * @param systemId The system ID to get all switches by.
      * @return All switches registered for the system.
      * */
-    abstract suspend fun getSwitchesById(
+    abstract suspend fun fetchSwitchesFromSystem(
         systemId: String
     ): List<SystemSwitchRecord>?
 
@@ -365,7 +373,7 @@ abstract class Database : AutoCloseable {
      * Removes a proxy tag
      * @param proxyTag The proxy tag to remove
      * */
-    abstract suspend fun removeProxyTag(proxyTag: MemberProxyTagRecord)
+    abstract suspend fun dropProxyTag(proxyTag: MemberProxyTagRecord)
 
     /**
      * Updates the trust level for the trustee
@@ -375,44 +383,75 @@ abstract class Database : AutoCloseable {
      * */
     abstract suspend fun updateTrustLevel(systemId: String, trustee: ULong, level: TrustLevel): Boolean
 
-    abstract suspend fun getTrustLevel(systemId: String, trustee: ULong): TrustLevel
+    abstract suspend fun fetchTrustLevel(systemId: String, trustee: ULong): TrustLevel
 
     /**
      * Gets the total number of systems registered
      *
      * Implementation requirements: return an int with the total systems in the database
      * */
-    abstract suspend fun getTotalSystems(): Int?
+    abstract suspend fun fetchTotalSystems(): Int?
 
     /**
      * Gets the total number of members registered in a system by discord ID.
      *
      * Implementation requirements: return an int with the total members registered
      * */
-    suspend inline fun getTotalMembersByHost(user: UserBehavior?) = getUser(user)?.system?.let { getTotalMembersById(it) } ?: -1
+    suspend inline fun fetchTotalMembersFromUser(user: UserBehavior?) = fetchUser(user)?.system?.let { fetchTotalMembersFromSystem(it) } ?: -1
 
     /**
      * Gets the total number of members registered in a system by discord ID.
      *
      * Implementation requirements: return an int with the total members registered
      * */
-    abstract suspend fun getTotalMembersById(systemId: String): Int?
+    abstract suspend fun fetchTotalMembersFromSystem(systemId: String): Int?
 
     /**
      * Gets a member by system ID and member name
      * */
-    abstract suspend fun getMemberByIdAndName(systemId: String, memberName: String): MemberRecord?
+    abstract suspend fun fetchMemberFromSystemAndName(systemId: String, memberName: String): MemberRecord?
 
     /**
      * Gets a member by system ID and either member ID or name.
      * */
-    suspend fun findMember(systemId: String, member: String): MemberRecord? = getMemberByIdAndName(systemId, member) ?: getMemberById(systemId, member)
+    suspend fun findMember(systemId: String, member: String): MemberRecord? = fetchMemberFromSystemAndName(systemId, member) ?: fetchMemberFromSystem(systemId, member)
 
     /**
      * Gets a member by user snowflake and member name
      * */
-    suspend inline fun getMemberByHostAndName(user: UserBehavior, memberName: String) = getUser(user)?.system?.let { getMemberByIdAndName(it, memberName) }
+    suspend inline fun fetchMemberFromUserAndName(user: UserBehavior, memberName: String) = fetchUser(user)?.system?.let { fetchMemberFromSystemAndName(it, memberName) }
 
     // === Unsafe direct-write import & export functions ===
     abstract suspend fun export(other: Database)
+
+    protected fun fail(message: String): Nothing = throw DatabaseException(message)
+
+    /**
+     * Checks to see if the system ID is reserved by the database in any form.
+     *
+     * @param systemId The system ID to check
+     * @return true if the ID is reserved or unusable, false otherwise, implying non-null systemId.
+     */
+    @OptIn(ExperimentalContracts::class)
+    protected suspend fun isSystemIdReserved(systemId: String?): Boolean {
+        contract {
+            returns(false) implies (systemId != null)
+        }
+        return !systemId.isValidPkString() || containsSystem(systemId)
+    }
+
+    /**
+     * Checks to see if the member ID is reserved by the database in any form.
+     *
+     * @param systemId The system ID to check.
+     * @param memberId The member ID to check.
+     * @return true if the ID is reserved or unusable, false otherwise, implying non-null memberId.
+     */
+    @OptIn(ExperimentalContracts::class)
+    protected suspend fun isMemberIdReserved(systemId: String, memberId: String?): Boolean {
+        contract {
+            returns(false) implies (memberId != null)
+        }
+        return !systemId.isValidPkString() || !memberId.isValidPkString() || containsMember(systemId, memberId)
+    }
 }

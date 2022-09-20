@@ -78,9 +78,9 @@ object SystemCommands {
     }
 
     private suspend fun empty(ctx: MessageHolder): String {
-        val system = database.getSystemByHost(ctx.message.author)
+        val system = database.fetchSystemFromUser(ctx.message.author)
             ?: return "System does not exist. Create one using `pf>system new`"
-        val members = database.getTotalMembersByHost(ctx.message.author)
+        val members = database.fetchTotalMembersFromUser(ctx.message.author)
         ctx.respond {
             title = system.name ?: system.id
             color = system.color.kordColor()
@@ -121,25 +121,25 @@ object SystemCommands {
     }
 
     private suspend fun createEmpty(ctx: MessageHolder): String {
-        database.allocateSystem(ctx.message.author!!)
+        database.getOrCreateSystem(ctx.message.author!!)
         return "System created! See `pf>help` for how to set up your system further!"
     }
 
     private suspend fun create(ctx: MessageHolder): String {
-        val system = database.allocateSystem(ctx.message.author!!)
+        val system = database.getOrCreateSystem(ctx.message.author!!)
         system.name = ctx.params["name"]!![0]
         database.updateSystem(system)
         return "System created with name ${system.name}! See `pf>help` for how to set up your system further!"
     }
 
     private suspend fun renameEmpty(ctx: MessageHolder): String {
-        database.getSystemByHost(ctx.message.author)
+        database.fetchSystemFromUser(ctx.message.author)
             ?: return "System does not exist. Create one using `pf>system new`"
         return "Make sure to provide me with a name to update your system!"
     }
 
     private suspend fun rename(ctx: MessageHolder): String {
-        val system = database.getSystemByHost(ctx.message.author)
+        val system = database.fetchSystemFromUser(ctx.message.author)
             ?: return "System does not exist. Create one using `pf>system new`"
         system.name = ctx.params["name"]!![0]
         database.updateSystem(system)
@@ -147,19 +147,19 @@ object SystemCommands {
     }
 
     private suspend fun accessName(ctx: MessageHolder): String {
-        val system = database.getSystemByHost(ctx.message.author)
+        val system = database.fetchSystemFromUser(ctx.message.author)
             ?: return "System does not exist. Create one using `pf>system new`"
         return "System's name is ${system.name}"
     }
 
     private suspend fun list(ctx: MessageHolder): String {
-        val system = database.getSystemByHost(ctx.message.author)
+        val system = database.fetchSystemFromUser(ctx.message.author)
             ?: return "System does not exist. Create one using `pf>system new`"
         ctx.respond {
             system(system, nameTransformer = { "Members of $it" })
-            val proxies = database.getProxiesById(system.id)!!
+            val proxies = database.fetchProxiesFromSystem(system.id)!!
             description = buildString {
-                for (m in database.getMembersBySystem(system.id)!!) {
+                for (m in database.fetchMembersFromSystem(system.id)!!) {
                     append("`${m.id}`\u2007•\u2007**${m.name}**")
                     proxies.filter { it.memberId == m.id }.let {
                         if (it.isNotEmpty()) {
@@ -180,12 +180,12 @@ object SystemCommands {
     }
 
     private suspend fun listVerbose(ctx: MessageHolder): String {
-        val system = database.getSystemByHost(ctx.message.author)
+        val system = database.fetchSystemFromUser(ctx.message.author)
             ?: return "System does not exist. Create one using `pf>system new`"
         ctx.respond {
             system(system, nameTransformer = { "Members of $it" })
-            val proxies = database.getProxiesById(system.id)
-            for (m in database.getMembersBySystem(system.id)!!) {
+            val proxies = database.fetchProxiesFromSystem(system.id)
+            for (m in database.fetchMembersFromSystem(system.id)!!) {
                 val memberProxies = proxies?.filter { it.memberId == m.id }
                 field {
                     name = "${m.asString()} [`${m.id}`]"
@@ -198,14 +198,14 @@ object SystemCommands {
     }
 
     private suspend fun colorEmpty(ctx: MessageHolder): String {
-        val system = database.getSystemByHost(ctx.message.author)
+        val system = database.fetchSystemFromUser(ctx.message.author)
             ?: return "System does not exist. Create one using `pf>system new`"
         return system.color.fromColor()?.let { "System's color is `$it` " } ?: "There's no color set."
 
     }
 
     private suspend fun color(ctx: MessageHolder): String {
-        val system = database.getSystemByHost(ctx.message.author)
+        val system = database.fetchSystemFromUser(ctx.message.author)
             ?: return "System does not exist. Create one using `pf>system new`"
         system.color = ctx.params["color"]!![0].toColor()
         database.updateSystem(system)
@@ -213,7 +213,7 @@ object SystemCommands {
     }
 
     private suspend fun pronouns(ctx: MessageHolder): String {
-        val system = database.getSystemByHost(ctx.message.author)
+        val system = database.fetchSystemFromUser(ctx.message.author)
             ?: return "System does not exist. Create one using `pf>system new`"
         system.pronouns = ctx.params["pronouns"]!![0]
         database.updateSystem(system)
@@ -221,19 +221,19 @@ object SystemCommands {
     }
 
     private suspend fun pronounsRaw(ctx: MessageHolder): String {
-        val system = database.getSystemByHost(ctx.message.author)
+        val system = database.fetchSystemFromUser(ctx.message.author)
             ?: return "System does not exist. Create one using `pf>system new`"
         return system.pronouns?.let { "``$it``" } ?: "There's no pronouns set."
     }
 
     private suspend fun pronounsEmpty(ctx: MessageHolder): String {
-        val system = database.getSystemByHost(ctx.message.author)
+        val system = database.fetchSystemFromUser(ctx.message.author)
             ?: return "System does not exist. Create one using `pf>system new`"
         return system.pronouns?.let { "System's pronouns are set to $it" } ?: "There's no pronouns set."
     }
 
     private suspend fun description(ctx: MessageHolder): String {
-        val system = database.getSystemByHost(ctx.message.author)
+        val system = database.fetchSystemFromUser(ctx.message.author)
             ?: return "System does not exist. Create one using `pf>system new`"
         system.description = ctx.params["desc"]!![0]
         database.updateSystem(system)
@@ -241,19 +241,19 @@ object SystemCommands {
     }
 
     private suspend fun descriptionRaw(ctx: MessageHolder): String {
-        val system = database.getSystemByHost(ctx.message.author)
+        val system = database.fetchSystemFromUser(ctx.message.author)
             ?: return "System does not exist. Create one using `pf>system new`"
         return system.description?.let { "```md\n$it```" } ?: "There's no description set."
     }
 
     private suspend fun descriptionEmpty(ctx: MessageHolder): String {
-        val system = database.getSystemByHost(ctx.message.author)
+        val system = database.fetchSystemFromUser(ctx.message.author)
             ?: return "System does not exist. Create one using `pf>system new`"
         return system.description ?: "Description not set."
     }
 
     private suspend fun avatar(ctx: MessageHolder): String {
-        val system = database.getSystemByHost(ctx.message.author)
+        val system = database.fetchSystemFromUser(ctx.message.author)
             ?: return "System does not exist. Create one using `pf>system new`"
         system.avatarUrl = ctx.params["avatar"]!![0]
         database.updateSystem(system)
@@ -261,7 +261,7 @@ object SystemCommands {
     }
 
     private suspend fun avatarClear(ctx: MessageHolder): String {
-        val system = database.getSystemByHost(ctx.message.author)
+        val system = database.fetchSystemFromUser(ctx.message.author)
             ?: return "System does not exist. Create one using `pf>system new`"
         system.avatarUrl = null
         database.updateSystem(system)
@@ -269,19 +269,19 @@ object SystemCommands {
     }
 
     private suspend fun avatarRaw(ctx: MessageHolder): String {
-        val system = database.getSystemByHost(ctx.message.author)
+        val system = database.fetchSystemFromUser(ctx.message.author)
             ?: return "System does not exist. Create one using `pf>system new`"
         return "`${system.avatarUrl}`"
     }
 
     private suspend fun avatarEmpty(ctx: MessageHolder): String {
-        val system = database.getSystemByHost(ctx.message.author)
+        val system = database.fetchSystemFromUser(ctx.message.author)
             ?: return "System does not exist. Create one using `pf>system new`"
         return system.avatarUrl ?: "System avatar not set."
     }
 
     private suspend fun tag(ctx: MessageHolder): String {
-        val system = database.getSystemByHost(ctx.message.author)
+        val system = database.fetchSystemFromUser(ctx.message.author)
             ?: return "System does not exist. Create one using `pf>system new`"
         system.tag = ctx.params["tag"]!![0]
         database.updateSystem(system)
@@ -289,7 +289,7 @@ object SystemCommands {
     }
 
     private suspend fun tagClear(ctx: MessageHolder): String {
-        val system = database.getSystemByHost(ctx.message.author)
+        val system = database.fetchSystemFromUser(ctx.message.author)
             ?: return "System does not exist. Create one using `pf>system new`"
         system.tag = null
         database.updateSystem(system)
@@ -297,20 +297,20 @@ object SystemCommands {
     }
 
     private suspend fun tagRaw(ctx: MessageHolder): String {
-        val system = database.getSystemByHost(ctx.message.author)
+        val system = database.fetchSystemFromUser(ctx.message.author)
             ?: return "System does not exist. Create one using `pf>system new`"
         return "`${system.tag}`"
     }
 
     private suspend fun tagEmpty(ctx: MessageHolder): String {
-        val system = database.getSystemByHost(ctx.message.author)
+        val system = database.fetchSystemFromUser(ctx.message.author)
             ?: return "System does not exist. Create one using `pf>system new`"
         return system.tag ?: "System tag not set."
     }
 
     private suspend fun delete(ctx: MessageHolder): String {
         val author = ctx.message.author!!
-        database.getSystemByHost(author)
+        database.fetchSystemFromUser(author)
             ?: return "System does not exist. Create one using `pf>system new`"
         val message = ctx.respond(
             "Are you sure you want to delete your system?\n" +
@@ -319,7 +319,7 @@ object SystemCommands {
         message.timedYesNoPrompt(runner = author.id, yes = {
             val export = Exporter.export(ctx.message.author!!.id.value)
             ctx.sendFiles(NamedFile("system.json", export.byteInputStream()))
-            database.removeSystem(author)
+            database.dropSystem(author)
             ctx.respond("System deleted")
         })
         return ""
