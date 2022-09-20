@@ -38,7 +38,7 @@ object MemberCommands {
                     greedy("name", ::nickname)
                 }
 
-                literal(arrayOf("servername", "servernick"), ::servernameEmpty) {
+                literal(arrayOf("servername", "servernick", "sn"), ::servernameEmpty) {
                     unixLiteral("clear", ::servernameClear)
                     greedy("name", ::servername)
                 }
@@ -53,12 +53,12 @@ object MemberCommands {
                     greedy("avatar", ::avatarLinked)
                 }
 
-                literal(arrayOf("serveravatar", "serverpfp"), ::serverAvatar) {
+                literal(arrayOf("serveravatar", "serverpfp", "sp"), ::serverAvatar) {
                     unixLiteral("clear", ::serverAvatarClear)
                     greedy("avatar", ::serverAvatarLinked)
                 }
 
-                literal("proxy", ::proxyEmpty) {
+                literal(arrayOf("proxy", "p"), ::proxyEmpty) {
                     literal("remove", ::removeProxyEmpty) {
                         greedy("proxy", ::removeProxy)
                     }
@@ -83,23 +83,13 @@ object MemberCommands {
                     greedy("birthday", ::birth)
                 }
 
-                literal("delete", ::delete)
-                literal("remove", ::delete)
+                literal(arrayOf("delete", "remove", "del"), ::delete)
             }
 
-            literal("delete", ::deleteEmpty) {
+            literal(arrayOf("delete", "remove", "del"), ::deleteEmpty) {
                 greedy("member", ::delete)
             }
-            literal("remove", ::deleteEmpty) {
-                greedy("member", ::delete)
-            }
-            literal("new", ::createEmpty) {
-                greedy("name", ::create)
-            }
-            literal("n", ::createEmpty) {
-                greedy("name", ::create)
-            }
-            literal("create", ::createEmpty) {
+            literal(arrayOf("new", "n", "create"), ::createEmpty) {
                 greedy("name", ::create)
             }
 
