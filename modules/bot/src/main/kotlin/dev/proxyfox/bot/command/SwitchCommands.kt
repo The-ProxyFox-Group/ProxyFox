@@ -31,7 +31,7 @@ object SwitchCommands {
             literal(arrayOf("move", "m"), ::moveEmpty) {
                 greedy("time", ::move)
             }
-            literal(arrayOf("delete", "del", "d", "remove", "rem"), ::delete)
+            literal(arrayOf("delete", "del", "remove"), ::delete)
             literal(arrayOf("list", "l"), ::list)
             greedy("members", ::switch)
         })

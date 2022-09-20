@@ -73,7 +73,7 @@ object SystemCommands {
                 greedy("tag", ::tag)
             }
 
-            literal("delete", ::delete)
+            literal(arrayOf("delete", "del", "remove"), ::delete)
         })
     }
 

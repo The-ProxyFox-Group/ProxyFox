@@ -49,13 +49,14 @@ object MiscCommands {
         registerCommand(literal("import", ::importEmpty) {
             greedy("url", ::import)
         })
+        //TODO: export --full
         registerCommand(literal("export", ::export))
         registerCommand(literal("time", ::time))
         registerCommand(literal("help", ::help))
         registerCommand(literal("explain", ::explain))
         registerCommand(literal("invite", ::invite))
         registerCommand(literal("source", ::source))
-        registerCommand(literal("proxy", ::serverProxyEmpty) {
+        registerCommand(literal(arrayOf("proxy", "p"), ::serverProxyEmpty) {
             literal(arrayOf("off", "disable"), ::serverProxyOff)
             literal(arrayOf("on", "enable"), ::serverProxyOn)
         })
@@ -71,7 +72,7 @@ object MiscCommands {
             greedy("role", ::role)
         })
 
-        registerCommand(literal(arrayOf("delete", "del", "d"), ::deleteMessage) {
+        registerCommand(literal(arrayOf("delete", "del"), ::deleteMessage) {
             greedy("message", ::deleteMessage)
         })
 
