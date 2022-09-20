@@ -12,6 +12,7 @@ import kotlinx.coroutines.DelicateCoroutinesApi
 import kotlinx.coroutines.GlobalScope
 import kotlinx.coroutines.launch
 import org.slf4j.LoggerFactory
+import java.time.OffsetDateTime
 import kotlin.contracts.ExperimentalContracts
 import kotlin.contracts.InvocationKind
 import kotlin.contracts.contract
@@ -42,6 +43,9 @@ fun String?.toColor(): Int {
 }
 
 fun Int.fromColor() = if (this < 0) null else toString(16).run { "#${padStart(7 - length, '0')}" }
+
+val OffsetDateTime.epochMilli
+    get() = (toEpochSecond() * 1000L) + (nano / 1000000)
 
 @OptIn(DelicateCoroutinesApi::class)
 fun runAsync(action: suspend () -> Unit): Int {

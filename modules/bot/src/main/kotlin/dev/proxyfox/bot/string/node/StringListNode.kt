@@ -24,6 +24,7 @@ class StringListNode(val name: String, val executor: suspend MessageHolder.() ->
                     for (j in string.substring(1).indices) {
                         if (string[j] == '"') {
                             arr.add(out)
+                            out = ""
                             i += j + 1
                             continue
                         }
@@ -37,6 +38,7 @@ class StringListNode(val name: String, val executor: suspend MessageHolder.() ->
                     for (j in string.substring(1).indices) {
                         if (string[j] == '\'') {
                             arr.add(out)
+                            out = ""
                             i += j + 1
                             continue
                         }
@@ -50,6 +52,7 @@ class StringListNode(val name: String, val executor: suspend MessageHolder.() ->
                     for (j in string.indices) {
                         if (string[j] == ' ') {
                             arr.add(out)
+                            out = ""
                             i += j
                             continue
                         }

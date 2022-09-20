@@ -15,12 +15,6 @@ import com.mongodb.reactivestreams.client.MongoCollection
 import dev.kord.common.entity.Snowflake
 import dev.kord.core.behavior.channel.ChannelBehavior
 import dev.kord.core.entity.channel.thread.ThreadChannel
-import dev.proxyfox.database.DatabaseUtil.findAll
-import dev.proxyfox.database.DatabaseUtil.findOne
-import dev.proxyfox.database.DatabaseUtil.firstFree
-import dev.proxyfox.database.DatabaseUtil.fromPkString
-import dev.proxyfox.database.DatabaseUtil.getOrCreateCollection
-import dev.proxyfox.database.DatabaseUtil.toPkString
 import dev.proxyfox.database.records.member.MemberProxyTagRecord
 import dev.proxyfox.database.records.member.MemberRecord
 import dev.proxyfox.database.records.member.MemberServerSettingsRecord
@@ -33,6 +27,7 @@ import kotlinx.coroutines.reactive.awaitFirst
 import kotlinx.coroutines.reactive.awaitFirstOrNull
 import org.litote.kmongo.coroutine.toList
 import org.litote.kmongo.reactivestreams.*
+import org.litote.kmongo.util.KMongoUtil
 import java.time.OffsetDateTime
 import java.util.concurrent.TimeUnit
 
@@ -46,7 +41,7 @@ typealias KCollection<T> = MongoCollection<T>
  * @author KJP12, Emma
  * @since ${version}
  **/
-class MongoDatabase : Database() {
+class MongoDatabase(private val dbName: String = "ProxyFox") : Database() {
     private lateinit var kmongo: MongoClient
     private lateinit var db: Mongo
 
@@ -75,7 +70,7 @@ class MongoDatabase : Database() {
                 KMongo.createClient()
             else
                 KMongo.createClient(connectionString)
-        db = kmongo.getDatabase("ProxyFox")
+        db = kmongo.getDatabase(dbName)
 
         users = db.getOrCreateCollection()
 
@@ -102,7 +97,7 @@ class MongoDatabase : Database() {
         return this
     }
 
-    override suspend fun getUser(userId: ULong): UserRecord {
+    override suspend fun fetchUser(userId: ULong): UserRecord {
         var user = users.findOne("{id:$userId}")
         if (user == null) {
             user = UserRecord()
@@ -112,22 +107,22 @@ class MongoDatabase : Database() {
         return user
     }
 
-    override suspend fun getSystemById(systemId: String): SystemRecord? = systems.findOne("{id:'$systemId'}")
+    override suspend fun fetchSystemFromId(systemId: String): SystemRecord? = systems.findOne("{id:'$systemId'}")
 
-    override suspend fun getMembersBySystem(systemId: String): List<MemberRecord> =
+    override suspend fun fetchMembersFromSystem(systemId: String): List<MemberRecord> =
         members.findAll("{systemId:'$systemId'}")
 
-    override suspend fun getMemberById(systemId: String, memberId: String): MemberRecord? {
+    override suspend fun fetchMemberFromSystem(systemId: String, memberId: String): MemberRecord? {
         return members.findOne("{id:'$memberId', systemId:'$systemId'}")
     }
 
-    override suspend fun getProxiesById(systemId: String): List<MemberProxyTagRecord> =
+    override suspend fun fetchProxiesFromSystem(systemId: String): List<MemberProxyTagRecord> =
         memberProxies.findAll("{systemId:'$systemId'}")
 
-    override suspend fun getProxiesByIdAndMember(systemId: String, memberId: String): List<MemberProxyTagRecord> =
+    override suspend fun fetchProxiesFromSystemAndMember(systemId: String, memberId: String): List<MemberProxyTagRecord> =
         memberProxies.findAll("{systemId:'$systemId',memberId:'$memberId'}")
 
-    override suspend fun getMemberServerSettingsById(
+    override suspend fun fetchMemberServerSettingsFromSystemAndMember(
         serverId: ULong,
         systemId: String,
         memberId: String
@@ -138,7 +133,7 @@ class MongoDatabase : Database() {
             this.memberId = memberId
         }
 
-    override suspend fun getServerSettingsById(serverId: ULong, systemId: String): SystemServerSettingsRecord {
+    override suspend fun getOrCreateServerSettingsFromSystem(serverId: ULong, systemId: String): SystemServerSettingsRecord {
         var serverSettings = systemServers.findOne("{serverId:$serverId,systemId:'$systemId'}")
         if (serverSettings == null) {
             serverSettings = SystemServerSettingsRecord()
@@ -149,7 +144,7 @@ class MongoDatabase : Database() {
         return serverSettings
     }
 
-    override suspend fun getServerSettings(serverId: ULong): ServerSettingsRecord {
+    override suspend fun getOrCreateServerSettings(serverId: ULong): ServerSettingsRecord {
         var serverSettings = servers.findOne("{serverId:$serverId}")
         if (serverSettings == null) {
             serverSettings = ServerSettingsRecord()
@@ -164,7 +159,7 @@ class MongoDatabase : Database() {
         servers.insertOne(serverSettings).awaitFirst()
     }
 
-    override suspend fun getChannelSettings(channelId: ULong, systemId: String): SystemChannelSettingsRecord {
+    override suspend fun getOrCreateChannelSettingsFromSystem(channelId: ULong, systemId: String): SystemChannelSettingsRecord {
         return systemChannels.findOne("{channelId:$channelId,systemId:'$systemId'}") ?: SystemChannelSettingsRecord().apply {
             this.channelId = channelId
             this.systemId = systemId
@@ -185,57 +180,49 @@ class MongoDatabase : Database() {
         channels.insertOne(channel).awaitFirst()
     }
 
-    override suspend fun allocateSystem(userId: ULong, id: String?): SystemRecord {
-        if (getSystemByHost(userId) != null) return getSystemByHost(userId)!!
-        var nid = id
-        if (id != null && getSystemById(id) != null) nid = null
-        val user = getUser(userId)
-        val system = SystemRecord()
-        system.id = nid ?: systems.find().toList().map(SystemRecord::id).firstFree()
-        system.users.add(userId)
-        user.system = system.id
-        updateUser(user)
-        this.systems.insertOne(system).awaitFirst()
-        return system
+    override suspend fun getOrCreateSystem(userId: ULong, id: String?): SystemRecord {
+        return fetchSystemFromUser(userId) ?: run {
+            val user = fetchUser(userId)
+            val system = SystemRecord()
+            system.id = if (isSystemIdReserved(id)) systems.find().toList().map(SystemRecord::id).firstFree() else id
+            system.users.add(userId)
+            user.system = system.id
+            updateUser(user)
+            this.systems.insertOne(system).awaitFirst()
+            system
+        }
     }
 
-    override suspend fun removeSystem(userId: ULong): Boolean {
-        val system = getSystemByHost(userId) ?: return false
-        systemServers.findAll("{systemId:'${system.id}'}").forEach {
-            systemServers.deleteOneById(it._id).awaitFirst()
-        }
-        systemChannels.findAll("{systemId:'${system.id}'}").forEach {
-            systemChannels.deleteOneById(it._id).awaitFirst()
-        }
-        getMembersBySystem(system.id).forEach {
-            removeMember(system.id, it.id)
-        }
+    override suspend fun dropSystem(userId: ULong): Boolean {
+        val system = fetchSystemFromUser(userId) ?: return false
+        val filter = KMongoUtil.toBson("{systemId:'${system.id}'}")
+        systemServers.deleteMany(filter).awaitFirst()
+        systemChannels.deleteMany(filter).awaitFirst()
+        systemSwitches.deleteMany(filter).awaitFirst()
+        memberProxies.deleteMany(filter).awaitFirst()
+        memberServers.deleteMany(filter).awaitFirst()
+        members.deleteMany(filter).awaitFirst()
         systems.deleteOneById(system._id).awaitFirst()
-        val user = getUser(userId)
+        val user = fetchUser(userId)
         users.deleteOneById(user._id).awaitFirst()
         return true
     }
 
-    override suspend fun allocateMember(systemId: String, name: String, id: String?): MemberRecord? {
-        getSystemById(systemId) ?: return null
-        var nid = id
-        if (id != null && getMemberById(systemId, id) != null) nid = null
+    override suspend fun getOrCreateMember(systemId: String, name: String, id: String?): MemberRecord? {
+        fetchSystemFromId(systemId) ?: return null
         val member = MemberRecord()
-        member.id = nid ?: getMembersBySystem(systemId).map(MemberRecord::id).firstFree()
+        member.id = if (isMemberIdReserved(systemId, id)) fetchMembersFromSystem(systemId).map(MemberRecord::id).firstFree() else id
         member.name = name
         member.systemId = systemId
         this.members.insertOne(member).awaitFirst()
         return member
     }
 
-    override suspend fun removeMember(systemId: String, memberId: String): Boolean {
-        val member = getMemberById(systemId, memberId) ?: return false
-        getProxiesByIdAndMember(systemId, memberId).forEach {
-            memberProxies.deleteOneById(it._id).awaitFirst()
-        }
-        memberServers.findAll("{systemId:'$systemId',memberId:'${member.id}'}").forEach {
-            memberServers.deleteOneById(it._id).awaitFirst()
-        }
+    override suspend fun dropMember(systemId: String, memberId: String): Boolean {
+        val member = fetchMemberFromSystem(systemId, memberId) ?: return false
+        val filter = KMongoUtil.toBson("{systemId:'$systemId',memberId:'$memberId'}")
+        memberProxies.deleteMany(filter).awaitFirst()
+        memberServers.deleteMany(filter).awaitFirst()
         members.deleteOneById(member._id).awaitFirst()
         return true
     }
@@ -312,14 +299,14 @@ class MongoDatabase : Database() {
     ): ProxiedMessageRecord? =
         messages.find().filter("{'systemId':'$systemId','channelId':$channelId}").sort("{'creationDate':-1}").limit(1).awaitFirstOrNull()
 
-    override suspend fun allocateProxyTag(
+    override suspend fun createProxyTag(
         systemId: String,
         memberId: String,
         prefix: String?,
         suffix: String?
     ): MemberProxyTagRecord? {
         if (prefix.isNullOrEmpty() && suffix.isNullOrEmpty()) return null
-        getProxiesById(systemId).firstOrNull { prefix == it.prefix && suffix == it.suffix }?.let {
+        fetchProxiesFromSystem(systemId).firstOrNull { prefix == it.prefix && suffix == it.suffix }?.let {
             return if (it.memberId == memberId) it else null
         }
         val proxy = MemberProxyTagRecord()
@@ -331,12 +318,12 @@ class MongoDatabase : Database() {
         return proxy
     }
 
-    override suspend fun listProxyTags(systemId: String, memberId: String) =
+    override suspend fun fetchProxyTags(systemId: String, memberId: String) =
         memberProxies.findAll("{systemId:'$systemId',memberId:'$memberId'}")
 
-    override suspend fun allocateSwitch(systemId: String, memberId: List<String>, timestamp: OffsetDateTime?): SystemSwitchRecord? {
-        getSystemById(systemId) ?: return null
-        val switches = getSwitchesById(systemId)
+    override suspend fun createSwitch(systemId: String, memberId: List<String>, timestamp: OffsetDateTime?): SystemSwitchRecord? {
+        fetchSystemFromId(systemId) ?: return null
+        val switches = fetchSwitchesFromSystem(systemId)
         val switch = SystemSwitchRecord()
         val id = ((switches.maxOfOrNull { it.id.fromPkString() } ?: 0) + 1).toPkString()
         switch.id = id
@@ -347,43 +334,43 @@ class MongoDatabase : Database() {
         return switch
     }
 
-    override suspend fun removeSwitch(switch: SystemSwitchRecord) {
-        systemSwitches.deleteOneById(switch._id)
+    override suspend fun dropSwitch(switch: SystemSwitchRecord) {
+        systemSwitches.deleteOneById(switch._id).awaitFirst()
     }
 
     override suspend fun updateSwitch(switch: SystemSwitchRecord) {
         systemSwitches.deleteOneById(switch._id).awaitFirst()
-        systemSwitches.insertOne(switch)
+        systemSwitches.insertOne(switch).awaitFirst()
     }
 
-    override suspend fun getSwitchesById(systemId: String): List<SystemSwitchRecord> =
+    override suspend fun fetchSwitchesFromSystem(systemId: String): List<SystemSwitchRecord> =
         systemSwitches.findAll("{systemId:'$systemId'}")
 
-    override suspend fun removeProxyTag(proxyTag: MemberProxyTagRecord) {
+    override suspend fun dropProxyTag(proxyTag: MemberProxyTagRecord) {
         memberProxies.deleteOne("{systemId:'${proxyTag.systemId}',memberId:'${proxyTag.memberId}',prefix:'${proxyTag.prefix}',suffix:'${proxyTag.suffix}'}")
             .awaitFirst()
     }
 
     override suspend fun updateTrustLevel(systemId: String, trustee: ULong, level: TrustLevel): Boolean {
-        val system = getSystemById(systemId) ?: return false
+        val system = fetchSystemFromId(systemId) ?: return false
         system.trust[trustee] = level
         updateSystem(system)
         return true
     }
 
-    override suspend fun getTrustLevel(systemId: String, trustee: ULong): TrustLevel {
-        return getSystemById(systemId)?.trust?.get(trustee) ?: TrustLevel.NONE
+    override suspend fun fetchTrustLevel(systemId: String, trustee: ULong): TrustLevel {
+        return fetchSystemFromId(systemId)?.trust?.get(trustee) ?: TrustLevel.NONE
     }
 
-    override suspend fun getTotalSystems(): Int {
+    override suspend fun fetchTotalSystems(): Int {
         return systems.countDocuments().awaitFirst().toInt()
     }
 
-    override suspend fun getTotalMembersById(systemId: String): Int {
+    override suspend fun fetchTotalMembersFromSystem(systemId: String): Int {
         return members.countDocuments("{systemId:'$systemId'}").awaitFirst().toInt()
     }
 
-    override suspend fun getMemberByIdAndName(systemId: String, memberName: String): MemberRecord? {
+    override suspend fun fetchMemberFromSystemAndName(systemId: String, memberName: String): MemberRecord? {
         return members.findOne("{systemId:'$systemId',name:'${memberName.replace("'", "\\'")}'}")
     }
 

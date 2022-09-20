@@ -16,9 +16,6 @@ import dev.kord.core.entity.channel.thread.ThreadChannel
 import dev.proxyfox.common.fromColor
 import dev.proxyfox.common.logger
 import dev.proxyfox.common.toColor
-import dev.proxyfox.database.DatabaseUtil.firstFree
-import dev.proxyfox.database.DatabaseUtil.fromPkString
-import dev.proxyfox.database.DatabaseUtil.toPkString
 import dev.proxyfox.database.records.member.MemberProxyTagRecord
 import dev.proxyfox.database.records.member.MemberRecord
 import dev.proxyfox.database.records.member.MemberServerSettingsRecord
@@ -156,7 +153,7 @@ import java.time.format.DateTimeFormatter
  * @author KJP12, Ram
  * @since ${version}
  **/
-class JsonDatabase : Database() {
+class JsonDatabase(val file: File = File("systems.json")) : Database() {
     private lateinit var systems: MutableMap<String, JsonSystemStruct>
     private lateinit var servers: MutableMap<ULong, ServerSettingsRecord>
     private lateinit var channels: MutableMap<ULong, ChannelSettingsRecord>
@@ -169,7 +166,6 @@ class JsonDatabase : Database() {
     private val messageMap = HashMap<ULong, ProxiedMessageRecord>()
 
     override suspend fun setup(): JsonDatabase {
-        val file = File("systems.json")
         if (file.exists()) {
             val db = file.reader().use(JsonParser::parseReader)
             if (db != null && db.isJsonObject) {
@@ -209,7 +205,7 @@ class JsonDatabase : Database() {
     }
 
     @Deprecated(level = DeprecationLevel.ERROR, message = "Non-native method")
-    override suspend fun getUser(userId: ULong): UserRecord {
+    override suspend fun fetchUser(userId: ULong): UserRecord {
         val record = UserRecord()
         record.id = userId
         record.system = users[userId]?.id
@@ -217,28 +213,28 @@ class JsonDatabase : Database() {
     }
 
     @Deprecated(level = DeprecationLevel.ERROR, message = "Non-native method")
-    override suspend fun getSystemById(systemId: String): SystemRecord? {
+    override suspend fun fetchSystemFromId(systemId: String): SystemRecord? {
         return systems[systemId]?.view()
     }
 
     @Deprecated(level = DeprecationLevel.ERROR, message = "Non-native method")
-    override suspend fun getMembersBySystem(systemId: String): List<MemberRecord>? {
+    override suspend fun fetchMembersFromSystem(systemId: String): List<MemberRecord>? {
         return systems[systemId]?.members?.values?.map(JsonMemberStruct::view)
     }
 
     @Deprecated(level = DeprecationLevel.ERROR, message = "Non-native method")
-    override suspend fun getMemberById(systemId: String, memberId: String): MemberRecord? {
+    override suspend fun fetchMemberFromSystem(systemId: String, memberId: String): MemberRecord? {
         return systems[systemId]?.members?.get(memberId)?.view()
     }
 
     @Deprecated(level = DeprecationLevel.ERROR, message = "Non-native method")
-    override suspend fun getFrontingMembersById(systemId: String): List<MemberRecord>? {
+    override suspend fun fetchFrontingMembersFromSystem(systemId: String): List<MemberRecord>? {
         val system = systems[systemId] ?: return null
-        return getLatestSwitch(systemId)?.memberIds?.mapNotNull { system.members[it]?.view() }
+        return fetchLatestSwitch(systemId)?.memberIds?.mapNotNull { system.members[it]?.view() }
     }
 
     @Deprecated(level = DeprecationLevel.ERROR, message = "Non-native method")
-    override suspend fun getProxiesById(systemId: String): List<MemberProxyTagRecord>? {
+    override suspend fun fetchProxiesFromSystem(systemId: String): List<MemberProxyTagRecord>? {
         val out = systems[systemId]?.proxyTags ?: return null
         val proxyOut = ArrayList<MemberProxyTagRecord>()
         out.forEach {
@@ -248,7 +244,7 @@ class JsonDatabase : Database() {
     }
 
     @Deprecated(level = DeprecationLevel.ERROR, message = "Non-native method")
-    override suspend fun getProxiesByIdAndMember(systemId: String, memberId: String): List<MemberProxyTagRecord>? {
+    override suspend fun fetchProxiesFromSystemAndMember(systemId: String, memberId: String): List<MemberProxyTagRecord>? {
         val out = systems[systemId]?.proxyTags?.filter { it.member == memberId } ?: return null
         val proxyOut = ArrayList<MemberProxyTagRecord>()
         out.forEach {
@@ -257,12 +253,12 @@ class JsonDatabase : Database() {
         return proxyOut
     }
 
-    override suspend fun getMemberFromMessage(userId: ULong, message: String): MemberRecord? {
+    override suspend fun fetchMemberFromMessage(userId: ULong, message: String): MemberRecord? {
         val system = users[userId] ?: return null
-        return system.members[getProxyTagFromMessage(userId, message)?.memberId]?.view()
+        return system.members[fetchProxyTagFromMessage(userId, message)?.memberId]?.view()
     }
 
-    override suspend fun getProxyTagFromMessage(userId: ULong, message: String): MemberProxyTagRecord? {
+    override suspend fun fetchProxyTagFromMessage(userId: ULong, message: String): MemberProxyTagRecord? {
         val system = users[userId] ?: return null
         return system.proxyTags.find {
             if (it.prefix != null && it.suffix != null)
@@ -275,7 +271,7 @@ class JsonDatabase : Database() {
         }?.view(system.id)
     }
 
-    override suspend fun getMemberServerSettingsById(
+    override suspend fun fetchMemberServerSettingsFromSystemAndMember(
         serverId: ULong,
         systemId: String,
         memberId: String
@@ -289,14 +285,16 @@ class JsonDatabase : Database() {
         }
     }
 
-    override suspend fun getServerSettingsById(serverId: ULong, systemId: String): SystemServerSettingsRecord {
-        return systems[systemId]?.serverSettings?.get(serverId) ?: SystemServerSettingsRecord().apply {
-            this.serverId = serverId
-            this.systemId = systemId
-        }
+    override suspend fun getOrCreateServerSettingsFromSystem(serverId: ULong, systemId: String): SystemServerSettingsRecord {
+        return systems[systemId]?.serverSettings?.let {
+            it[serverId] ?: SystemServerSettingsRecord().apply {
+                this.serverId = serverId
+                this.systemId = systemId
+            }
+        } ?: fail("No such system $systemId")
     }
 
-    override suspend fun getServerSettings(serverId: ULong): ServerSettingsRecord {
+    override suspend fun getOrCreateServerSettings(serverId: ULong): ServerSettingsRecord {
         return servers[serverId] ?: ServerSettingsRecord().apply {
             this.serverId = serverId
         }
@@ -306,11 +304,13 @@ class JsonDatabase : Database() {
         servers[serverSettings.serverId] = serverSettings
     }
 
-    override suspend fun getChannelSettings(channelId: ULong, systemId: String): SystemChannelSettingsRecord {
-        return systems[systemId]?.channelSettings?.get(channelId) ?: SystemChannelSettingsRecord().apply {
-            this.channelId = channelId
-            this.systemId = systemId
-        }
+    override suspend fun getOrCreateChannelSettingsFromSystem(channelId: ULong, systemId: String): SystemChannelSettingsRecord {
+        return systems[systemId]?.channelSettings?.let {
+            it[channelId] ?: SystemChannelSettingsRecord().apply {
+                this.channelId = channelId
+                this.systemId = systemId
+            }
+        } ?: fail("No such system $systemId")
     }
 
     override suspend fun getOrCreateChannel(serverId: ULong, channelId: ULong): ChannelSettingsRecord {
@@ -325,11 +325,9 @@ class JsonDatabase : Database() {
     }
 
     @Deprecated(level = DeprecationLevel.ERROR, message = "Non-native method")
-    override suspend fun allocateSystem(userId: ULong, id: String?): SystemRecord {
-        var nid = id
-        if (id != null && systems.keys.contains(id)) nid = null
-        return getSystemByHost(userId) ?: run {
-            val sysId = nid ?: systems.keys.firstFree()
+    override suspend fun getOrCreateSystem(userId: ULong, id: String?): SystemRecord {
+        return fetchSystemFromUser(userId) ?: run {
+            val sysId = if (id == null || systems.containsKey(id)) systems.keys.firstFree() else id
             val struct = JsonSystemStruct(sysId)
             struct.accounts.add(userId)
             users[userId] = struct
@@ -339,12 +337,15 @@ class JsonDatabase : Database() {
         }
     }
 
-    override suspend fun removeSystem(userId: ULong): Boolean {
-        val id = userId
-        val system = users[id] ?: return false
+    override suspend fun containsSystem(systemId: String): Boolean {
+        return systems.containsKey(systemId)
+    }
 
-        system.accounts.remove(id)
-        users.remove(id, system)
+    override suspend fun dropSystem(userId: ULong): Boolean {
+        val system = users[userId] ?: return false
+
+        system.accounts.remove(userId)
+        users.remove(userId, system)
 
         if (system.accounts.isEmpty()) {
             systems.remove(system.id)
@@ -354,16 +355,19 @@ class JsonDatabase : Database() {
     }
 
     @Deprecated(level = DeprecationLevel.ERROR, message = "Non-native method")
-    override suspend fun allocateMember(systemId: String, name: String, id: String?): MemberRecord {
-        var nid = id
-        if (id != null && systems[systemId]?.members?.keys?.contains(id) == true) nid = null
-        return getMemberByIdAndName(systemId, name) ?: run {
-            val system = systems[systemId]!!
-            system.putMember(JsonMemberStruct(systemId, nid ?: system.members.keys.firstFree(), name))
+    override suspend fun getOrCreateMember(systemId: String, name: String, id: String?): MemberRecord? {
+        return fetchMemberFromSystemAndName(systemId, name) ?: run {
+            val system = systems[systemId] ?: return null
+            val memId = if (id == null || system.members.containsKey(id)) system.members.keys.firstFree() else id
+            system.putMember(JsonMemberStruct(systemId, memId, name))
         }
     }
 
-    override suspend fun removeMember(systemId: String, memberId: String): Boolean {
+    override suspend fun containsMember(systemId: String, memberId: String): Boolean {
+        return systems[systemId]?.members?.containsKey(memberId) ?: false
+    }
+
+    override suspend fun dropMember(systemId: String, memberId: String): Boolean {
         return systems[systemId]?.removeMember(memberId) ?: false
     }
 
@@ -394,7 +398,7 @@ class JsonDatabase : Database() {
     @Deprecated(level = DeprecationLevel.ERROR, message = "Non-native method")
     override suspend fun updateUser(user: UserRecord) {
         if (user.system == null) {
-            removeSystem(user.id)
+            dropSystem(user.id)
         } else {
             val system = systems[user.system] ?: throw IllegalArgumentException("No such system ${user.system}")
             users[user.id] = system
@@ -432,7 +436,12 @@ class JsonDatabase : Database() {
     }
 
     override suspend fun updateMessage(message: ProxiedMessageRecord) {
-        TODO("Not yet implemented")
+        messageMap[message.oldMessageId]?.let { old ->
+            messageMap.remove(old.newMessageId)
+            messages.remove(message)
+        }
+        messageMap[message.oldMessageId] = message
+        messages.add(message)
     }
 
     override suspend fun fetchMessage(messageId: Snowflake): ProxiedMessageRecord? {
@@ -447,7 +456,7 @@ class JsonDatabase : Database() {
         return messages.firstOrNull { it.channelId == channelId.value && it.systemId == systemId }
     }
 
-    override suspend fun allocateProxyTag(
+    override suspend fun createProxyTag(
         systemId: String,
         memberId: String,
         prefix: String?,
@@ -467,10 +476,10 @@ class JsonDatabase : Database() {
         return proxy
     }
 
-    override suspend fun listProxyTags(systemId: String, memberId: String) =
+    override suspend fun fetchProxyTags(systemId: String, memberId: String) =
         systems[systemId]?.proxyTags?.map { it.view(systemId) }
 
-    override suspend fun allocateSwitch(systemId: String, memberId: List<String>, timestamp: OffsetDateTime?): SystemSwitchRecord? {
+    override suspend fun createSwitch(systemId: String, memberId: List<String>, timestamp: OffsetDateTime?): SystemSwitchRecord? {
         val system = systems[systemId] ?: return null
         val switch = SystemSwitchRecord()
         val id = ((system.switches.keys.maxOfOrNull { it.fromPkString() } ?: 0) + 1).toPkString()
@@ -482,19 +491,19 @@ class JsonDatabase : Database() {
         return switch
     }
 
-    override suspend fun removeSwitch(switch: SystemSwitchRecord) {
-        TODO("Not yet implemented")
+    override suspend fun dropSwitch(switch: SystemSwitchRecord) {
+        systems[switch.systemId]?.run { switches.remove(switch.id) }
     }
 
     override suspend fun updateSwitch(switch: SystemSwitchRecord) {
-        TODO("Not yet implemented")
+        systems[switch.systemId]?.run { switches[switch.id] = switch }
     }
 
-    override suspend fun getSwitchesById(systemId: String): List<SystemSwitchRecord>? {
+    override suspend fun fetchSwitchesFromSystem(systemId: String): List<SystemSwitchRecord>? {
         return systems[systemId]?.switches?.values?.toList()
     }
 
-    override suspend fun removeProxyTag(proxyTag: MemberProxyTagRecord) {
+    override suspend fun dropProxyTag(proxyTag: MemberProxyTagRecord) {
         systems[proxyTag.systemId]!!.proxyTags.remove(JsonProxyStruct.from(proxyTag))
     }
 
@@ -504,17 +513,17 @@ class JsonDatabase : Database() {
         return true
     }
 
-    override suspend fun getTrustLevel(systemId: String, trustee: ULong): TrustLevel {
+    override suspend fun fetchTrustLevel(systemId: String, trustee: ULong): TrustLevel {
         return systems[systemId]?.trust?.get(trustee) ?: TrustLevel.NONE
     }
 
-    override suspend fun getTotalSystems() = systems.size
+    override suspend fun fetchTotalSystems() = systems.size
 
-    override suspend fun getTotalMembersById(systemId: String): Int? {
+    override suspend fun fetchTotalMembersFromSystem(systemId: String): Int? {
         return systems[systemId]?.members?.size
     }
 
-    override suspend fun getMemberByIdAndName(systemId: String, memberName: String): MemberRecord? {
+    override suspend fun fetchMemberFromSystemAndName(systemId: String, memberName: String): MemberRecord? {
         return systems[systemId]?.membersByName?.get(memberName)?.view()
     }
 
@@ -524,7 +533,7 @@ class JsonDatabase : Database() {
         for ((sid, system) in systems) {
             memberLookup.clear()
             logger.info("Migrating {}: {}", sid, system.name)
-            val newSystem = other.allocateSystem(system.accounts[0], sid)
+            val newSystem = other.getOrCreateSystem(system.accounts[0], sid)
             system.writeTo(newSystem)
             other.updateSystem(newSystem)
 
@@ -533,7 +542,7 @@ class JsonDatabase : Database() {
             logger.info("Migrating {} members...", system.members.size)
             for ((mid, member) in system.members) {
                 logger.info("Migrating {}: {}", mid, member.name)
-                val newMember = other.allocateMember(sid, member.name)
+                val newMember = other.getOrCreateMember(sid, member.name, mid)
                 if (newMember == null) {
                     logger.warn("Unable to import {}: {} didn't return a member for {}/{} ({}/???)?", member.name, other, sid, mid, nsid)
                 } else {
@@ -544,14 +553,14 @@ class JsonDatabase : Database() {
             }
 
             for ((id, serverSettings) in system.serverSettings) {
-                val newSettings = other.getServerSettingsById(id, nsid)
+                val newSettings = other.getOrCreateServerSettingsFromSystem(id, nsid)
                 serverSettings.writeTo(newSettings, memberLookup[serverSettings.autoProxy])
                 other.updateSystemServerSettings(newSettings)
                 logger.info("Written server settings for {}", id)
             }
 
             for ((id, channelSettings) in system.channelSettings) {
-                val newSettings = other.getChannelSettings(id, nsid)
+                val newSettings = other.getOrCreateChannelSettingsFromSystem(id, nsid)
                 channelSettings.writeTo(newSettings)
                 updateSystemChannelSettings(newSettings)
                 logger.info("Written channel settings for {}", id)
@@ -562,13 +571,13 @@ class JsonDatabase : Database() {
                 if (member == null) {
                     logger.warn("Couldn't write proxy tag {}text{} for {}/{} ({}/???)", proxyTag.prefix, proxyTag.suffix, sid, proxyTag.member, nsid)
                 } else {
-                    other.allocateProxyTag(nsid, member, proxyTag.prefix, proxyTag.suffix)
+                    other.createProxyTag(nsid, member, proxyTag.prefix, proxyTag.suffix)
                     logger.info("Written proxy tag {}text{} for {}", proxyTag.prefix, proxyTag.suffix, member)
                 }
             }
 
             for ((id, switch) in system.switches) {
-                val newSwitch = other.allocateSwitch(nsid, switch.memberIds.mapNotNull(memberLookup::get), switch.timestamp)
+                val newSwitch = other.createSwitch(nsid, switch.memberIds.mapNotNull(memberLookup::get), switch.timestamp)
                 if (newSwitch == null) {
                     logger.warn("Couldn't write switch {}/{} to {}", sid, id, nsid)
                 } else {
@@ -578,7 +587,7 @@ class JsonDatabase : Database() {
         }
         logger.info("Migrating server settings...")
         for ((sid, server) in servers) {
-            val newSettings = other.getServerSettings(sid)
+            val newSettings = other.getOrCreateServerSettings(sid)
             server.writeTo(newSettings)
             other.updateServerSettings(newSettings)
             logger.info("Written server settings for {}", sid)
@@ -586,7 +595,6 @@ class JsonDatabase : Database() {
     }
 
     override fun close() {
-        val file = File("systems.json")
         if (!file.exists()) {
             file.createNewFile()
         }

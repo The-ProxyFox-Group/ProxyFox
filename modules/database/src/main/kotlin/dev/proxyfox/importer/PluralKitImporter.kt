@@ -31,16 +31,16 @@ class PluralKitImporter : Importer {
 
     override suspend fun import(database: Database, json: JsonObject, userId: ULong) {
         val pkSystem = gson.fromJson(json, PkSystem::class.java)
-        system = database.allocateSystem(userId)
+        system = database.getOrCreateSystem(userId)
         system.name = pkSystem.name ?: system.name
         system.description = pkSystem.description ?: system.description
         system.tag = pkSystem.tag ?: system.tag
         system.avatarUrl = pkSystem.avatar_url ?: system.avatarUrl
         if (pkSystem.members != null)
             for (pkMember in pkSystem.members!!) {
-                var member = database.getMemberByIdAndName(system.id, pkMember.name)
+                var member = database.fetchMemberFromSystemAndName(system.id, pkMember.name)
                 if (member == null) {
-                    member = database.allocateMember(system.id, pkMember.name)
+                    member = database.getOrCreateMember(system.id, pkMember.name)
                     createdMembers++
                 } else updatedMembers++
                 member!!.displayName = pkMember.display_name ?: member.displayName
@@ -52,7 +52,7 @@ class PluralKitImporter : Importer {
                 member.messageCount = pkMember.message_count ?: member.messageCount
                 if (pkMember.proxies != null)
                     for (pkProxy in pkMember.proxies!!) {
-                        database.allocateProxyTag(system.id, member.id, pkProxy.prefix, pkProxy.suffix)
+                        database.createProxyTag(system.id, member.id, pkProxy.prefix, pkProxy.suffix)
                     }
                 database.updateMember(member)
             }

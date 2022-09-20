@@ -9,18 +9,18 @@
 package dev.proxyfox.bot
 
 import dev.kord.common.entity.Snowflake
+import dev.kord.core.behavior.channel.createMessage
 import dev.kord.core.entity.channel.GuildMessageChannel
 import dev.kord.core.event.message.MessageCreateEvent
 import dev.kord.core.event.message.ReactionAddEvent
+import dev.kord.rest.builder.message.create.embed
 import dev.proxyfox.bot.string.parser.parseString
 import dev.proxyfox.bot.webhook.WebhookUtil
 import dev.proxyfox.database.database
 import dev.proxyfox.database.records.misc.AutoProxyMode
 import org.slf4j.LoggerFactory
-import dev.kord.core.behavior.channel.createMessage
-import dev.kord.rest.builder.message.create.embed
 
-val prefixRegex = Regex("^(?:(<@!?${kord.selfId}>)|pf[>;!])\\s*", RegexOption.IGNORE_CASE)
+val prefixRegex = Regex("^(?:(<@!?${kord.selfId}>)|pf[>;!:])\\s*", RegexOption.IGNORE_CASE)
 
 private val logger = LoggerFactory.getLogger("MessageHandler")
 
@@ -59,7 +59,7 @@ suspend fun MessageCreateEvent.onMessageCreate() {
 
         val userId = user.id.value
 
-        val server = database.getServerSettings(guild)
+        val server = database.getOrCreateServerSettings(guild)
         server.proxyRole.let {
             if (it != 0UL && !user.asMember(guild.id).roleIds.contains(Snowflake(it))) {
                 logger.trace("Denying proxying {} ({}) in {} ({}) due to missing role {}", user.tag, user.id, guild.name, guild.id, it)
@@ -67,24 +67,24 @@ suspend fun MessageCreateEvent.onMessageCreate() {
             }
         }
 
-        val system = database.getSystemByHost(userId) ?: return
+        val system = database.fetchSystemFromUser(userId) ?: return
 
-        val systemChannelSettings = database.getChannelSettings(channel, system.id)
+        val systemChannelSettings = database.getOrCreateChannelSettingsFromSystem(channel, system.id)
         if (!systemChannelSettings.proxyEnabled) return
 
-        val systemServerSettings = database.getServerSettingsById(guild, system.id)
+        val systemServerSettings = database.getOrCreateServerSettingsFromSystem(guild, system.id)
         if (!systemServerSettings.proxyEnabled) return
 
-        val channelSettings = database.getOrCreateChannel(guildId?.value!!, channel.id.value)
+        val channelSettings = database.getOrCreateChannel(guild.id.value, channel.id.value)
         if (!channelSettings.proxyEnabled) return
 
         // Proxy the message
-        val proxy = database.getProxyTagFromMessage(message.author, content)
+        val proxy = database.fetchProxyTagFromMessage(message.author, content)
         if (proxy != null) {
-            val member = database.getMemberById(proxy.systemId, proxy.memberId)!!
+            val member = database.fetchMemberFromSystem(proxy.systemId, proxy.memberId)!!
 
             // Respect member settings.
-            val memberServer = database.getMemberServerSettingsById(guild, system.id, member.id)
+            val memberServer = database.fetchMemberServerSettingsFromSystemAndMember(guild, system.id, member.id)
             if (memberServer?.proxyEnabled == false) return
 
             if (systemServerSettings.autoProxyMode == AutoProxyMode.LATCH) {
@@ -112,7 +112,7 @@ suspend fun MessageCreateEvent.onMessageCreate() {
             // Allows AutoProxy to be disabled at a server level.
             if (systemServerSettings.autoProxyMode == AutoProxyMode.OFF) return
             val memberId = if (systemServerSettings.autoProxyMode == AutoProxyMode.FALLBACK) system.autoProxy else systemServerSettings.autoProxy
-            val member = database.getMemberById(system.id, memberId ?: return) ?: return
+            val member = database.fetchMemberFromSystem(system.id, memberId ?: return) ?: return
 
             WebhookUtil.prepareMessage(message, system,  member, null).send()
         }
@@ -126,7 +126,7 @@ suspend fun ReactionAddEvent.onReactionAdd() {
     when (emoji.name) {
         "❌", "🗑️" -> {
             // System needs to be non-null.
-            val system = database.getSystemByHost(userId.value) ?: return
+            val system = database.fetchSystemFromUser(userId.value) ?: return
             if (databaseMessage.systemId == system.id) {
                 message.delete("User requested message deletion.")
                 databaseMessage.deleted = true
@@ -139,14 +139,14 @@ suspend fun ReactionAddEvent.onReactionAdd() {
             getMessage().deleteReaction(userId, emoji)
         }
         "❓", "❔" -> {
-            val system = database.getSystemById(databaseMessage.systemId)
+            val system = database.fetchSystemFromId(databaseMessage.systemId)
                 ?: return
 
-            val member = database.getMemberById(databaseMessage.systemId, databaseMessage.memberId)
+            val member = database.fetchMemberFromSystem(databaseMessage.systemId, databaseMessage.memberId)
                 ?: return
 
             val guild = getGuild()
-            val settings = database.getMemberServerSettingsById(guild, system.id, member.id)
+            val settings = database.fetchMemberServerSettingsFromSystemAndMember(guild, system.id, member.id)
 
             getUser().getDmChannel().createMessage {
                 embed {
