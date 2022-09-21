@@ -51,7 +51,7 @@ object Exporter {
                     pkProxies.add(pkProxy)
                 }
             }
-            pkMember.proxies = pkProxies.toTypedArray()
+            pkMember.proxy_tags = pkProxies.toTypedArray()
 
             pkMember
         }
