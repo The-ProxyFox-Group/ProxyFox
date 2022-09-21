@@ -14,7 +14,9 @@ For the most compatible database implementation, it's recommended to [install Mo
 
 ### 1c. Environment Variables
 
-ProxyFox requires an environment variable set, called `PROXYFOX_KEY`, that contains the token for the bot
+ProxyFox requires an environment variable set, called `PROXYFOX_KEY`, that contains the token for the bot.
+
+More information can be found at https://dis.gs/docs and [the developer portal](https://discord.com/developers). Make sure to enable Message Content Intents in the dashboard.
 
 ## 2. Building
 
@@ -38,7 +40,7 @@ Run the `build` Gradle task
 
 ## 3 Running ProxyFox
 
-Take the `proxyfox.jar` (name may vary), put it into a separate folder, and run the following command
+Take the `proxyfox.jar` (name may vary, but will have `proxyfox` in it somewhere), found in `modules/bot/build/libs` put it into a separate folder, and run the following command
 (Replace `proxyfox.jar` with the name of the file)
 ```batch
 java -jar proxyfox.jar
