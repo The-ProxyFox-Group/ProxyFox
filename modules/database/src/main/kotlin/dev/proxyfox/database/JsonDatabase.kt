@@ -205,11 +205,8 @@ class JsonDatabase(val file: File = File("systems.json")) : Database() {
     }
 
     @Deprecated(level = DeprecationLevel.ERROR, message = "Non-native method")
-    override suspend fun fetchUser(userId: ULong): UserRecord {
-        val record = UserRecord()
-        record.id = userId
-        record.systemId = users[userId]?.id
-        return record
+    override suspend fun fetchUser(userId: ULong): UserRecord? {
+        return users[userId]?.let { UserRecord().apply { id = userId; systemId = it.id } }
     }
 
     @Deprecated(level = DeprecationLevel.ERROR, message = "Non-native method")
