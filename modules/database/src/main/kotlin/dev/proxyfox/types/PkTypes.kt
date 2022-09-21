@@ -24,7 +24,7 @@ class PkMember {
     var color: String? = null
     var keep_proxy: Boolean? = false
     var message_count: ULong? = 0UL
-    var proxies: Array<PkProxy>? = arrayOf()
+    var proxy_tags: Array<PkProxy>? = arrayOf()
     var avatar_url: String? = null
 }
 

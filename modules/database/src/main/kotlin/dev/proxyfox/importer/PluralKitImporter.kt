@@ -50,8 +50,8 @@ class PluralKitImporter : Importer {
                 member.color = (pkMember.color ?: member.color.fromColor()).toColor()
                 member.keepProxy = pkMember.keep_proxy ?: member.keepProxy
                 member.messageCount = pkMember.message_count ?: member.messageCount
-                if (pkMember.proxies != null)
-                    for (pkProxy in pkMember.proxies!!) {
+                if (pkMember.proxy_tags != null)
+                    for (pkProxy in pkMember.proxy_tags!!) {
                         database.createProxyTag(system.id, member.id, pkProxy.prefix, pkProxy.suffix)
                     }
                 database.updateMember(member)
