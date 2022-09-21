@@ -10,7 +10,7 @@ ProxyFox runs on top of Java 17, so you need to install the proper JDK, we recom
 
 ### 1b. MongoDB (Optional, but recommended)
 
-Before ProxyFox can start, you need to [install MongoDB](https://www.mongodb.com/docs/manual/installation/)
+For the most compatible database implementation, it's recommended to [install MongoDB](https://www.mongodb.com/docs/manual/installation/)
 
 ### 1c. Environment Variables
 
