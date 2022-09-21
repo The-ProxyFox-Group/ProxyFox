@@ -208,7 +208,7 @@ class JsonDatabase(val file: File = File("systems.json")) : Database() {
     override suspend fun fetchUser(userId: ULong): UserRecord {
         val record = UserRecord()
         record.id = userId
-        record.system = users[userId]?.id
+        record.systemId = users[userId]?.id
         return record
     }
 
@@ -397,10 +397,10 @@ class JsonDatabase(val file: File = File("systems.json")) : Database() {
 
     @Deprecated(level = DeprecationLevel.ERROR, message = "Non-native method")
     override suspend fun updateUser(user: UserRecord) {
-        if (user.system == null) {
+        if (user.systemId == null) {
             dropSystem(user.id)
         } else {
-            val system = systems[user.system] ?: throw IllegalArgumentException("No such system ${user.system}")
+            val system = systems[user.systemId] ?: throw IllegalArgumentException("No such system ${user.systemId}")
             users[user.id] = system
             system.accounts.add(user.id)
         }
