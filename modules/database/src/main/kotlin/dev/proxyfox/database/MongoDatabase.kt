@@ -186,7 +186,7 @@ class MongoDatabase(private val dbName: String = "ProxyFox") : Database() {
             val system = SystemRecord()
             system.id = if (isSystemIdReserved(id)) systems.find().toList().map(SystemRecord::id).firstFree() else id
             system.users.add(userId)
-            user.system = system.id
+            user.systemId = system.id
             updateUser(user)
             this.systems.insertOne(system).awaitFirst()
             system
@@ -203,8 +203,7 @@ class MongoDatabase(private val dbName: String = "ProxyFox") : Database() {
         memberServers.deleteMany(filter).awaitFirst()
         members.deleteMany(filter).awaitFirst()
         systems.deleteOneById(system._id).awaitFirst()
-        val user = fetchUser(userId)
-        users.deleteOneById(user._id).awaitFirst()
+        users.deleteMany(filter).awaitFirst()
         return true
     }
 

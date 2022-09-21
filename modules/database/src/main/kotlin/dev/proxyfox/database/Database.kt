@@ -48,7 +48,7 @@ abstract class Database : AutoCloseable {
      * @param userId The ID of the Discord user.
      * @return The system tied to the Discord user.
      * */
-    open suspend fun fetchSystemFromUser(userId: ULong) = fetchUser(userId)?.system?.let { fetchSystemFromId(it) }
+    open suspend fun fetchSystemFromUser(userId: ULong) = fetchUser(userId)?.systemId?.let { fetchSystemFromId(it) }
 
     suspend inline fun fetchSystemFromUser(user: UserBehavior?) = user?.run { fetchSystemFromUser(id.value) }
 
@@ -67,7 +67,7 @@ abstract class Database : AutoCloseable {
      * @param userId The ID of the Discord user.
      * @return A list of members registered to the system tied to the Discord user.
      * */
-    open suspend fun fetchMembersFromUser(userId: ULong) = fetchUser(userId)?.system?.let { fetchMembersFromSystem(it) }
+    open suspend fun fetchMembersFromUser(userId: ULong) = fetchUser(userId)?.systemId?.let { fetchMembersFromSystem(it) }
 
     suspend inline fun fetchMembersFromUser(user: UserBehavior?) = user?.run { fetchMembersFromUser(id.value) }
 
@@ -86,7 +86,7 @@ abstract class Database : AutoCloseable {
      * @param memberId The ID of the member in the system tied to the Discord user.
      * @return The member of the system tied to the Discord user.
      * */
-    open suspend fun fetchMemberFromUser(userId: ULong, memberId: String) = fetchUser(userId)?.system?.let { fetchMemberFromSystem(it, memberId) }
+    open suspend fun fetchMemberFromUser(userId: ULong, memberId: String) = fetchUser(userId)?.systemId?.let { fetchMemberFromSystem(it, memberId) }
 
     suspend inline fun fetchMemberFromUser(user: UserBehavior?, memberId: String) = user?.run { fetchMemberFromUser(id.value, memberId) }
 
@@ -105,7 +105,7 @@ abstract class Database : AutoCloseable {
      * @param userId The ID of the Discord user.
      * @return The fronting member of the system tied to the Discord user, if applicable.
      * */
-    open suspend fun fetchFrontingMembersFromUser(userId: ULong) = fetchUser(userId)?.system?.let { fetchFrontingMembersFromSystem(it) }
+    open suspend fun fetchFrontingMembersFromUser(userId: ULong) = fetchUser(userId)?.systemId?.let { fetchFrontingMembersFromSystem(it) }
 
     suspend inline fun fetchFrontingMembersFromUser(user: UserBehavior?) = user?.run { fetchFrontingMembersFromUser(id.value) }
 
@@ -119,7 +119,7 @@ abstract class Database : AutoCloseable {
         return fetchLatestSwitch(systemId)?.memberIds?.mapNotNull { fetchMemberFromSystem(systemId, it) }
     }
 
-    open suspend fun fetchProxiesFromUser(userId: ULong) = fetchUser(userId)?.system?.let { fetchProxiesFromSystem(it) }
+    open suspend fun fetchProxiesFromUser(userId: ULong) = fetchUser(userId)?.systemId?.let { fetchProxiesFromSystem(it) }
 
     suspend inline fun fetchProxiesFromUser(user: UserBehavior) = fetchProxiesFromUser(user.id.value)
 
@@ -127,7 +127,7 @@ abstract class Database : AutoCloseable {
 
     suspend inline fun fetchProxiesFromUserAndMember(user: UserBehavior, memberId: String) = fetchProxiesFromUserAndMember(user.id.value, memberId)
 
-    open suspend fun fetchProxiesFromUserAndMember(userId: ULong, memberId: String) = fetchUser(userId)?.system?.let { fetchProxiesFromSystemAndMember(it, memberId) }
+    open suspend fun fetchProxiesFromUserAndMember(userId: ULong, memberId: String) = fetchUser(userId)?.systemId?.let { fetchProxiesFromSystemAndMember(it, memberId) }
 
     abstract suspend fun fetchProxiesFromSystemAndMember(systemId: String, memberId: String): List<MemberProxyTagRecord>?
 
@@ -159,7 +159,7 @@ abstract class Database : AutoCloseable {
         serverId: ULong,
         userId: ULong,
         memberId: String
-    ) = fetchUser(userId)?.system?.let { fetchMemberServerSettingsFromSystemAndMember(serverId, it, memberId) }
+    ) = fetchUser(userId)?.systemId?.let { fetchMemberServerSettingsFromSystemAndMember(serverId, it, memberId) }
 
     suspend inline fun fetchMemberServerSettingsFromUserAndMember(
         server: GuildBehavior,
@@ -195,7 +195,7 @@ abstract class Database : AutoCloseable {
      * @return The system's settings for the server.
      * */
     open suspend fun getOrCreateServerSettingsFromUser(serverId: ULong, userId: ULong) =
-        fetchUser(userId)?.system?.let { getOrCreateServerSettingsFromSystem(serverId, it) }
+        fetchUser(userId)?.systemId?.let { getOrCreateServerSettingsFromSystem(serverId, it) }
 
     suspend inline fun getOrCreateServerSettingsFromUser(server: GuildBehavior, user: UserBehavior) = getOrCreateServerSettingsFromUser(server.id.value, user.id.value)
 
@@ -353,7 +353,7 @@ abstract class Database : AutoCloseable {
      * */
     open suspend fun fetchSwitchesFromUser(
         userId: ULong
-    ) = fetchUser(userId)?.system?.let { fetchSwitchesFromSystem(it) }
+    ) = fetchUser(userId)?.systemId?.let { fetchSwitchesFromSystem(it) }
 
     suspend inline fun fetchSwitchesFromUser(
         user: UserBehavior?
@@ -397,7 +397,7 @@ abstract class Database : AutoCloseable {
      *
      * Implementation requirements: return an int with the total members registered
      * */
-    suspend inline fun fetchTotalMembersFromUser(user: UserBehavior?) = fetchUser(user)?.system?.let { fetchTotalMembersFromSystem(it) } ?: -1
+    suspend inline fun fetchTotalMembersFromUser(user: UserBehavior?) = fetchUser(user)?.systemId?.let { fetchTotalMembersFromSystem(it) } ?: -1
 
     /**
      * Gets the total number of members registered in a system by discord ID.
@@ -419,7 +419,7 @@ abstract class Database : AutoCloseable {
     /**
      * Gets a member by user snowflake and member name
      * */
-    suspend inline fun fetchMemberFromUserAndName(user: UserBehavior, memberName: String) = fetchUser(user)?.system?.let { fetchMemberFromSystemAndName(it, memberName) }
+    suspend inline fun fetchMemberFromUserAndName(user: UserBehavior, memberName: String) = fetchUser(user)?.systemId?.let { fetchMemberFromSystemAndName(it, memberName) }
 
     // === Unsafe direct-write import & export functions ===
     abstract suspend fun export(other: Database)
