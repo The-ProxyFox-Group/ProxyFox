@@ -2,39 +2,39 @@
 
 As ProxyFox is privacy-focused, giving instructions on setting up your own instance is a must
 
-## 1. Building
+## 1. Prerequisites
+
+### 1a. Java Development Kit
+
+ProxyFox runs on top of Java 17, so you need to install the proper JDK, we recommend [Adoptium OpenJDK](https://adoptium.net/)
+
+### 1b. MongoDB (Optional, but recommended)
+
+Before ProxyFox can start, you need to [install MongoDB](https://www.mongodb.com/docs/manual/installation/)
+
+### 1c. Environment Variables
+
+ProxyFox requires an environment variable set, called `PROXYFOX_KEY`, that contains the token for the bot
+
+## 2. Building
 
 ProxyFox uses a Gradle build system. You can follow the building instructions for your platform
 
-### 1a. Windows (Command Prompt)
+### 2a. Windows (Command Prompt)
 
 ```bash
 gradlew build
 ```
 
-### 1b. Windows (PowerShell), Linux (Bash, Shell), Mac (Terminal)
+### 2b. Windows (PowerShell), Linux (Bash, Shell), Mac (Terminal)
 
 ```bash
 ./gradlew build
 ```
 
-### 1c. Intellij IDEA
+### 2c. Intellij IDEA
 
 Run the `build` Gradle task
-
-## 2. Pre-launch
-
-### 2a. Java Development Kit
-
-ProxyFox runs on top of Java 17, so you need to install the proper JDK, we recommend [Adoptium OpenJDK](https://adoptium.net/)
-
-### 2b. MongoDB
-
-Before ProxyFox can start, you need to [install MongoDB](https://www.mongodb.com/docs/manual/installation/)
-
-### 2c. Environment Variables
-
-ProxyFox requires an environment variable set, called `PROXYFOX_KEY`, that contains the token for the bot
 
 ## 3 Running ProxyFox
 
