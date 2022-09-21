@@ -97,14 +97,8 @@ class MongoDatabase(private val dbName: String = "ProxyFox") : Database() {
         return this
     }
 
-    override suspend fun fetchUser(userId: ULong): UserRecord {
-        var user = users.findOne("{id:$userId}")
-        if (user == null) {
-            user = UserRecord()
-            user.id = userId
-            users.insertOne(user).awaitFirst()
-        }
-        return user
+    override suspend fun fetchUser(userId: ULong): UserRecord? {
+        return users.findOne("{id:$userId}")
     }
 
     override suspend fun fetchSystemFromId(systemId: String): SystemRecord? = systems.findOne("{id:'$systemId'}")
@@ -182,7 +176,7 @@ class MongoDatabase(private val dbName: String = "ProxyFox") : Database() {
 
     override suspend fun getOrCreateSystem(userId: ULong, id: String?): SystemRecord {
         return fetchSystemFromUser(userId) ?: run {
-            val user = fetchUser(userId)
+            val user = getOrCreateUser(userId)
             val system = SystemRecord()
             system.id = if (isSystemIdReserved(id)) systems.find().toList().map(SystemRecord::id).firstFree() else id
             system.users.add(userId)

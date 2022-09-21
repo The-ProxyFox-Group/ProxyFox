@@ -40,6 +40,12 @@ abstract class Database : AutoCloseable {
     abstract suspend fun fetchUser(userId: ULong): UserRecord?
     suspend inline fun fetchUser(user: UserBehavior?) = user?.run { fetchUser(id.value) }
 
+    open suspend fun getOrCreateUser(userId: ULong): UserRecord {
+        return fetchUser(userId) ?: UserRecord().apply { id = userId }
+    }
+
+    suspend inline fun getOrCreateUser(user: UserBehavior?) = getOrCreateUser(user!!.id.value)
+
     // === Systems ===
 
     /**
