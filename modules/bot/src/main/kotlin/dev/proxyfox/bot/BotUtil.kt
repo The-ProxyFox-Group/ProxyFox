@@ -21,6 +21,7 @@ import dev.kord.core.on
 import dev.kord.gateway.Intent
 import dev.kord.gateway.PrivilegedIntent
 import dev.kord.gateway.builder.Shards
+import dev.kord.gateway.editPresence
 import dev.kord.rest.builder.message.EmbedBuilder
 import dev.proxyfox.common.logger
 import dev.proxyfox.common.printFancy
@@ -38,6 +39,7 @@ import kotlinx.datetime.Instant
 import java.time.OffsetDateTime
 import kotlin.time.Duration
 import kotlin.time.Duration.Companion.minutes
+import kotlin.time.DurationUnit
 
 const val UPLOAD_LIMIT = 1024 * 1024 * 8
 
@@ -97,6 +99,10 @@ suspend fun login() {
         intents += Intent.DirectMessages
         intents += Intent.DirectMessagesReactions
         intents += Intent.MessageContent
+
+        presence {
+            watching("for pf>help!")
+        }
     }
 }
 
@@ -117,7 +123,7 @@ suspend fun updatePresence() {
             }
             2 -> {
                 val time = Clock.System.now() - start
-                "uptime: $time"
+                "uptime: ${time.toString(DurationUnit.HOURS)} hours!"
             }
             else -> throw IllegalStateException("Count is not 0, 1, or 2!")
         }
