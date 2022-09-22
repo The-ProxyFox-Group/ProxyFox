@@ -11,6 +11,7 @@ package dev.proxyfox.bot
 import dev.kord.common.Color
 import dev.kord.common.entity.Snowflake
 import dev.kord.core.Kord
+import dev.kord.core.builder.kord.KordBuilder
 import dev.kord.core.entity.Message
 import dev.kord.core.entity.ReactionEmoji
 import dev.kord.core.event.gateway.ReadyEvent
@@ -19,16 +20,20 @@ import dev.kord.core.event.message.ReactionAddEvent
 import dev.kord.core.on
 import dev.kord.gateway.Intent
 import dev.kord.gateway.PrivilegedIntent
+import dev.kord.gateway.builder.Shards
 import dev.kord.rest.builder.message.EmbedBuilder
+import dev.proxyfox.common.logger
 import dev.proxyfox.common.printFancy
 import dev.proxyfox.common.printStep
 import dev.proxyfox.common.spacedDot
+import dev.proxyfox.database.database
 import dev.proxyfox.database.records.member.MemberRecord
 import dev.proxyfox.database.records.system.SystemRecord
 import io.ktor.client.*
 import io.ktor.client.engine.cio.*
 import kotlinx.coroutines.*
 import kotlinx.coroutines.flow.count
+import kotlinx.datetime.Clock
 import kotlinx.datetime.Instant
 import java.time.OffsetDateTime
 import kotlin.time.Duration
@@ -49,7 +54,14 @@ suspend fun login() {
     scope = CoroutineScope(Dispatchers.Default)
 
     printStep("Logging in", 1)
-    kord = Kord(System.getenv("PROXYFOX_KEY"))
+    val builder = KordBuilder(System.getenv("PROXYFOX_KEY"))
+
+    builder.sharding {
+        printStep("Setting up sharding with ${it+2} shards.", 2)
+        Shards(it+2)
+    }
+
+    kord = builder.build()
 
     // Register events
     printStep("Registering events", 2)
@@ -61,12 +73,17 @@ suspend fun login() {
     kord.on<ReactionAddEvent> {
         onReactionAdd()
     }
-
+    var initialized = false
     kord.on<ReadyEvent> {
-        printFancy("ProxyFox initialized")
-        scope.launch {
-            updatePresence()
+        if (!initialized) {
+            printFancy("ProxyFox initialized")
+            scope.launch {
+                updatePresence()
+            }
+            initialized = true
         }
+
+        logger.info("Shard online: $shard")
     }
 
     // Login
@@ -84,13 +101,30 @@ suspend fun login() {
 }
 
 suspend fun updatePresence() {
+    val start = Clock.System.now()
+    var count = 0
     while (true) {
-        // TODO: Cycle between "in x servers", "x systems registered", and "Uptime: DD:HH:MM
-        kord.editPresence {
-            val servers = kord.guilds.count()
-            playing("Run pf>help for help! in $servers servers!")
+        count++
+        count %= 3
+        val append = when (count) {
+            0 -> {
+                val servers = kord.guilds.count()
+                "in $servers servers!"
+            }
+            1 -> {
+                val systemCount = database.fetchTotalSystems()
+                "$systemCount systems registered!"
+            }
+            2 -> {
+                val time = Clock.System.now() - start
+                "uptime: $time"
+            }
+            else -> throw IllegalStateException("Count is not 0, 1, or 2!")
         }
-        delay(1800000)
+        kord.editPresence {
+            watching("for pf>help! $append")
+        }
+        delay(120000)
     }
 }
 
