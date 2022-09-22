@@ -25,6 +25,8 @@ class NopDatabase : Database() {
 
     override suspend fun fetchUser(userId: ULong): UserRecord? = null
 
+    override suspend fun getOrCreateUser(userId: ULong): UserRecord = fail("Cannot store user for $userId")
+
     override suspend fun fetchSystemFromId(systemId: String): SystemRecord? = null
 
     override suspend fun fetchMembersFromSystem(systemId: String): List<MemberRecord>? = null
