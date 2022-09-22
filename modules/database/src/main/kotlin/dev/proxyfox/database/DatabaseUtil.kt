@@ -29,14 +29,16 @@ fun Int.toPkString(): String {
         i++
         tmp /= 26
     }
-    return "a".repeat(5 - i) + String(arr.sliceArray(0 until i))
+    val slice = arr.sliceArray(0 until i)
+    slice.reverse()
+    return "a".repeat(5 - i) + String(slice)
 }
 
 fun String.fromPkString(): Int {
     var tmp = 0
     var i = 0
     while (i < length) {
-        tmp += this[i] - 'a'
+        tmp = (tmp * 26) + (this[i] - 'a')
         i++
     }
     return tmp
