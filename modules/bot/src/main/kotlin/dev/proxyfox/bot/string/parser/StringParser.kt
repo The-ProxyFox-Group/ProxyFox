@@ -41,25 +41,9 @@ suspend fun tryExecuteNode(input: String, node: Node, holder: MessageHolder): St
         if (str != null) return str
     }
     // Try to run the executor
-    return try {
-        execute(node, holder)
-    } catch (err: Throwable) {
-        // Catch any errors and log them
-        val timestamp = System.currentTimeMillis()
-        logger.warn(timestamp.toString())
-        logger.warn(err.stackTraceToString())
-        "An unexpected error occurred.\nTimestamp: `$timestamp`"
-    }
+    return execute(node, holder)
 }
 
 suspend fun execute(node: Node, holder: MessageHolder): String {
-    return try {
-        node.execute(holder)
-    } catch (err: Throwable) {
-        // Catch any errors and log them
-        val timestamp = System.currentTimeMillis()
-        logger.warn(timestamp.toString())
-        logger.warn(err.stackTraceToString())
-        "An unexpected error occurred.\nTimestamp: `$timestamp`"
-    }
+    return node.execute(holder)
 }

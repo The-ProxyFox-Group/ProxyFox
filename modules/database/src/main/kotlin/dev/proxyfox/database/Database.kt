@@ -21,6 +21,7 @@ import dev.proxyfox.database.records.system.SystemChannelSettingsRecord
 import dev.proxyfox.database.records.system.SystemRecord
 import dev.proxyfox.database.records.system.SystemServerSettingsRecord
 import dev.proxyfox.database.records.system.SystemSwitchRecord
+import kotlin.time.Duration
 import java.time.OffsetDateTime
 import kotlin.contracts.ExperimentalContracts
 import kotlin.contracts.contract
@@ -36,6 +37,7 @@ import kotlin.contracts.contract
 @Suppress("unused")
 abstract class Database : AutoCloseable {
     abstract suspend fun setup(): Database
+    abstract suspend fun ping(): Duration
 
     abstract suspend fun fetchUser(userId: ULong): UserRecord?
     suspend inline fun fetchUser(user: UserBehavior?) = user?.run { fetchUser(id.value) }

@@ -12,15 +12,14 @@ import dev.kord.common.entity.Permission
 import dev.kord.common.entity.Snowflake
 import dev.kord.core.entity.Message
 import dev.kord.rest.NamedFile
-import dev.proxyfox.bot.kord
-import dev.proxyfox.bot.kordColor
+import dev.proxyfox.bot.*
 import dev.proxyfox.bot.string.dsl.greedy
 import dev.proxyfox.bot.string.dsl.literal
 import dev.proxyfox.bot.string.dsl.string
 import dev.proxyfox.bot.string.parser.MessageHolder
 import dev.proxyfox.bot.string.parser.registerCommand
-import dev.proxyfox.bot.toKtInstant
 import dev.proxyfox.bot.webhook.WebhookUtil
+import dev.proxyfox.common.DebugException
 import dev.proxyfox.common.printStep
 import dev.proxyfox.database.database
 import dev.proxyfox.database.records.misc.AutoProxyMode
@@ -32,8 +31,11 @@ import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.flow.filter
 import kotlinx.coroutines.flow.firstOrNull
 import kotlinx.coroutines.withContext
+import kotlinx.datetime.Clock
 import java.io.InputStreamReader
 import java.net.URL
+import kotlin.time.Duration
+import kotlin.time.DurationUnit
 
 /**
  * Miscellaneous commands
@@ -97,6 +99,49 @@ object MiscCommands {
                     literal(arrayOf("of", "disable"), ::channelProxyDisable)
                 }
             }
+        })
+
+        registerCommand(literal("debug") {
+            val shardid = message.getGuildOrNull()?.id?.value?.toShard() ?: -1
+            respond {
+                title = "ProxyFox Debug"
+                var gatewayPing = Duration.ZERO
+                if (shardid != -1) {
+                    gatewayPing = message.kord.gateway.gateways[shardid]!!.ping.value!!
+
+                    field {
+                        inline = true
+                        name = "Shard ID"
+                        value = "$shardid"
+                    }
+                    field {
+                        inline = true
+                        name = "Gateway Ping"
+                        value = "$gatewayPing"
+                    }
+                }
+                val databasePing = database.ping()
+                field {
+                    inline = true
+                    name = "Database Ping"
+                    value = "$databasePing"
+                }
+
+                val totalPing = gatewayPing + databasePing
+                field {
+                    inline = true
+                    name = "Total Ping"
+                    value = "$totalPing"
+                }
+
+                field {
+                    inline = true
+                    name = "Uptime"
+                    value = "${(Clock.System.now() - startTime).inWholeHours} hours"
+                }
+            }
+
+            throw DebugException()
         })
     }
 
@@ -452,6 +497,7 @@ To get support, head on over to https://discord.gg/q3yF8ay9V7"""
             message.id, databaseMessage.threadId?.let { Snowflake(it) }) {
             this.content = content
         }
+        ctx.message.delete("User requested message deletion")
 
         return ""
     }
