@@ -18,10 +18,14 @@ import dev.proxyfox.database.records.system.SystemChannelSettingsRecord
 import dev.proxyfox.database.records.system.SystemRecord
 import dev.proxyfox.database.records.system.SystemServerSettingsRecord
 import dev.proxyfox.database.records.system.SystemSwitchRecord
+import kotlin.time.Duration
 import java.time.OffsetDateTime
 
 class NopDatabase : Database() {
     override suspend fun setup() = this
+    override suspend fun ping(): Duration {
+        return Duration.ZERO
+    }
 
     override suspend fun fetchUser(userId: ULong): UserRecord? = null
 

@@ -30,6 +30,7 @@ import java.lang.reflect.Type
 import java.time.OffsetDateTime
 import java.time.ZoneOffset
 import java.time.format.DateTimeFormatter
+import kotlin.time.Duration
 
 // Created 2022-26-05T19:47:37
 
@@ -202,6 +203,10 @@ class JsonDatabase(val file: File = File("systems.json")) : Database() {
         messages = HashSet()
 
         return this
+    }
+
+    override suspend fun ping(): Duration {
+        return Duration.ZERO
     }
 
     @Deprecated(level = DeprecationLevel.ERROR, message = "Non-native method")

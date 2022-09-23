@@ -30,6 +30,9 @@ import org.litote.kmongo.reactivestreams.*
 import org.litote.kmongo.util.KMongoUtil
 import java.time.OffsetDateTime
 import java.util.concurrent.TimeUnit
+import kotlin.time.ExperimentalTime
+import kotlin.time.measureTime
+import kotlin.time.Duration
 
 
 // Created 2022-26-05T22:43:40
@@ -95,6 +98,13 @@ class MongoDatabase(private val dbName: String = "ProxyFox") : Database() {
         memberServers = db.getOrCreateCollection()
 
         return this
+    }
+
+    @OptIn(ExperimentalTime::class)
+    override suspend fun ping(): Duration {
+        return measureTime {
+            db.runCommand<Any>("{ping: 1}").awaitFirst()
+        }
     }
 
     override suspend fun fetchUser(userId: ULong): UserRecord? {

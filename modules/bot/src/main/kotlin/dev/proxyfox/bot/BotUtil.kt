@@ -46,6 +46,8 @@ const val UPLOAD_LIMIT = 1024 * 1024 * 8
 lateinit var scope: CoroutineScope
 lateinit var kord: Kord
 lateinit var http: HttpClient
+lateinit var startTime: Instant
+var shardCount: Int = 0
 
 @OptIn(PrivilegedIntent::class)
 suspend fun login() {
@@ -59,8 +61,9 @@ suspend fun login() {
     val builder = KordBuilder(System.getenv("PROXYFOX_KEY"))
 
     builder.sharding {
-        printStep("Setting up sharding with ${it+2} shards.", 2)
-        Shards(it+2)
+        shardCount = it+2
+        printStep("Setting up sharding with $shardCount shards", 2)
+        Shards(shardCount)
     }
 
     kord = builder.build()
@@ -69,12 +72,30 @@ suspend fun login() {
     printStep("Registering events", 2)
 
     kord.on<MessageCreateEvent> {
-        onMessageCreate()
+        try {
+            onMessageCreate()
+        } catch (err: Throwable) {
+            // Catch any errors and log them
+            val timestamp = System.currentTimeMillis()
+            logger.warn(timestamp.toString())
+            logger.warn(err.stackTraceToString())
+            val reason = err.message
+            var cause = ""
+            err.stackTrace.forEach {
+                if (it.toString().startsWith("dev.proxyfox")) {
+                    cause += "  at $it\n"
+                }
+            }
+            message.channel.createMessage(
+                "An unexpected error occurred.\nTimestamp: `$timestamp`\n```\n${err.javaClass.name}: $reason\n$cause\n```"
+            )
+        }
     }
 
     kord.on<ReactionAddEvent> {
         onReactionAdd()
     }
+
     var initialized = false
     kord.on<ReadyEvent> {
         if (!initialized) {
@@ -107,7 +128,7 @@ suspend fun login() {
 }
 
 suspend fun updatePresence() {
-    val start = Clock.System.now()
+    startTime = Clock.System.now()
     var count = 0
     while (true) {
         count++
@@ -122,8 +143,7 @@ suspend fun updatePresence() {
                 "$systemCount systems registered!"
             }
             2 -> {
-                val time = Clock.System.now() - start
-                "uptime: ${time.toString(DurationUnit.HOURS)} hours!"
+                "uptime: ${(Clock.System.now() - startTime).inWholeHours} hours!"
             }
             else -> throw IllegalStateException("Count is not 0, 1, or 2!")
         }
@@ -210,3 +230,5 @@ suspend fun Message.timedYesNoPrompt(
     }
     job.invokeOnCompletion { micro.cancel() }
 }
+
+fun ULong.toShard() = ((this shr 22) % shardCount.toULong()).toInt()
