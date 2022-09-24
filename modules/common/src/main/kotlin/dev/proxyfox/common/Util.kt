@@ -64,4 +64,4 @@ suspend inline fun <T> T.applyAsync(block: suspend T.() -> Unit): T {
     return this
 }
 
-class DebugException: Exception("Debug Exception")
+class DebugException: Exception("Debug Exception - Do Not Report")
