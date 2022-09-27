@@ -8,7 +8,6 @@
 
 package dev.proxyfox.importer
 
-import com.google.gson.Gson
 import com.google.gson.JsonObject
 import com.google.gson.JsonParser
 import dev.kord.core.entity.Entity
@@ -18,8 +17,6 @@ import dev.proxyfox.database.records.member.MemberProxyTagRecord
 import dev.proxyfox.database.records.member.MemberRecord
 import dev.proxyfox.database.records.system.SystemRecord
 import java.io.InputStreamReader
-
-val gson = Gson()
 
 /**
  * Imports a system file from a [String]. Supports both PluralKit and TupperBox formats.

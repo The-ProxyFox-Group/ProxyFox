@@ -8,17 +8,28 @@
 
 package dev.proxyfox.database
 
+import com.google.gson.*
 import com.mongodb.reactivestreams.client.MongoCollection
 import kotlinx.coroutines.reactive.awaitFirst
 import kotlinx.coroutines.reactive.awaitFirstOrNull
+import org.bson.types.ObjectId
 import org.litote.kmongo.coroutine.toList
 import org.litote.kmongo.reactivestreams.filter
 import org.litote.kmongo.reactivestreams.getCollection
 import org.litote.kmongo.util.KMongoUtil
+import java.lang.reflect.Type
+import java.time.OffsetDateTime
+import java.time.format.DateTimeFormatter
 import kotlin.contracts.ExperimentalContracts
 import kotlin.contracts.contract
 
 // Created 2022-11-04T14:58:16
+
+val gson = GsonBuilder()
+    .registerTypeAdapter(OffsetDateTime::class.java, OffsetDateTimeAdaptor)
+    .registerTypeAdapter(ObjectId::class.java, ObjectIdNullifier)
+    .registerTypeAdapter(ULong::class.java, ULongAdaptor)
+    .create()!!
 
 fun Int.toPkString(): String {
     val arr = CharArray(5)
@@ -88,4 +99,37 @@ suspend inline fun <reified T : Any> Mongo.getOrCreateCollection(): MongoCollect
         } catch (ignored: Throwable) {
         }
     return getCollection()
+}
+
+object OffsetDateTimeAdaptor : JsonSerializer<OffsetDateTime>, JsonDeserializer<OffsetDateTime> {
+    override fun serialize(src: OffsetDateTime?, typeOfSrc: Type, context: JsonSerializationContext): JsonElement {
+        return if (src == null)
+            JsonNull.INSTANCE
+        else
+            JsonPrimitive(DateTimeFormatter.ISO_OFFSET_DATE_TIME.format(src))
+    }
+
+    override fun deserialize(json: JsonElement, typeOfT: Type, context: JsonDeserializationContext): OffsetDateTime {
+        return DateTimeFormatter.ISO_OFFSET_DATE_TIME.parse(json.asString, OffsetDateTime::from)
+    }
+}
+
+object ObjectIdNullifier : JsonSerializer<ObjectId>, JsonDeserializer<ObjectId> {
+    override fun serialize(src: ObjectId?, typeOfSrc: Type?, context: JsonSerializationContext?): JsonElement {
+        return JsonNull.INSTANCE
+    }
+
+    override fun deserialize(json: JsonElement?, typeOfT: Type?, context: JsonDeserializationContext?): ObjectId {
+        return ObjectId()
+    }
+}
+
+object ULongAdaptor : JsonSerializer<ULong>, JsonDeserializer<ULong> {
+    override fun serialize(src: ULong?, typeOfSrc: Type?, context: JsonSerializationContext?): JsonElement {
+        return if (src == null) JsonNull.INSTANCE else JsonPrimitive(src.toLong())
+    }
+
+    override fun deserialize(json: JsonElement, typeOfT: Type?, context: JsonDeserializationContext?): ULong {
+        return json.asLong.toULong()
+    }
 }

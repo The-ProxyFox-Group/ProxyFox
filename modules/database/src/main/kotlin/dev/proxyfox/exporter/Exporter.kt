@@ -11,7 +11,7 @@ package dev.proxyfox.exporter
 import dev.proxyfox.common.fromColor
 import dev.proxyfox.database.Database
 import dev.proxyfox.database.database
-import dev.proxyfox.importer.gson
+import dev.proxyfox.database.gson
 import dev.proxyfox.types.PkMember
 import dev.proxyfox.types.PkProxy
 import dev.proxyfox.types.PkSystem
