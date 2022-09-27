@@ -32,10 +32,8 @@ import kotlinx.coroutines.flow.filter
 import kotlinx.coroutines.flow.firstOrNull
 import kotlinx.coroutines.withContext
 import kotlinx.datetime.Clock
-import java.io.InputStreamReader
 import java.net.URL
 import kotlin.time.Duration
-import kotlin.time.DurationUnit
 
 /**
  * Miscellaneous commands
@@ -149,10 +147,7 @@ object MiscCommands {
         if (ctx.message.attachments.isEmpty()) return "Please attach a file or link to import"
         val attach = URL(ctx.message.attachments.toList()[0].url)
         val importer = withContext(Dispatchers.IO) {
-            import(
-                InputStreamReader(attach.openStream()),
-                ctx.message.author
-            )
+            attach.openStream().reader().use { import(it, ctx.message.author) }
         }
         return "File imported. created ${importer.getNewMembers()} member(s), updated ${importer.getUpdatedMembers()} member(s)"
     }
@@ -160,10 +155,7 @@ object MiscCommands {
     private suspend fun import(ctx: MessageHolder): String {
         val attach = URL(ctx.params["url"]!![0])
         val importer = withContext(Dispatchers.IO) {
-            import(
-                InputStreamReader(attach.openStream()),
-                ctx.message.author
-            )
+            attach.openStream().reader().use { import(it, ctx.message.author) }
         }
         return "File imported. created ${importer.getNewMembers()} member(s), updated ${importer.getUpdatedMembers()} member(s)"
     }
