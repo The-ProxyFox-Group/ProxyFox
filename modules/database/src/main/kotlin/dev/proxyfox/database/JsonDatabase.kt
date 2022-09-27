@@ -8,7 +8,8 @@
 
 package dev.proxyfox.database
 
-import com.google.gson.*
+import com.google.gson.JsonObject
+import com.google.gson.JsonParser
 import com.google.gson.reflect.TypeToken
 import dev.kord.common.entity.Snowflake
 import dev.kord.core.behavior.channel.ChannelBehavior
@@ -24,12 +25,9 @@ import dev.proxyfox.database.records.system.SystemChannelSettingsRecord
 import dev.proxyfox.database.records.system.SystemRecord
 import dev.proxyfox.database.records.system.SystemServerSettingsRecord
 import dev.proxyfox.database.records.system.SystemSwitchRecord
-import org.bson.types.ObjectId
 import java.io.File
-import java.lang.reflect.Type
 import java.time.OffsetDateTime
 import java.time.ZoneOffset
-import java.time.format.DateTimeFormatter
 import kotlin.time.Duration
 
 // Created 2022-26-05T19:47:37
@@ -786,35 +784,6 @@ class JsonDatabase(val file: File = File("systems.json")) : Database() {
     }
 
     companion object {
-        private val gson = GsonBuilder()
-            .registerTypeAdapter(OffsetDateTime::class.java, object : JsonSerializer<OffsetDateTime>, JsonDeserializer<OffsetDateTime> {
-                override fun serialize(src: OffsetDateTime?, typeOfSrc: Type, context: JsonSerializationContext): JsonElement {
-                    return if (src == null)
-                        JsonNull.INSTANCE
-                    else
-                        JsonPrimitive(DateTimeFormatter.ISO_OFFSET_DATE_TIME.format(src))
-                }
-
-                override fun deserialize(json: JsonElement, typeOfT: Type, context: JsonDeserializationContext): OffsetDateTime {
-                    return DateTimeFormatter.ISO_OFFSET_DATE_TIME.parse(json.asString, OffsetDateTime::from)
-                }
-            }).registerTypeAdapter(ObjectId::class.java, object : JsonSerializer<ObjectId>, JsonDeserializer<ObjectId> {
-                override fun serialize(src: ObjectId?, typeOfSrc: Type?, context: JsonSerializationContext?): JsonElement {
-                    return JsonNull.INSTANCE
-                }
-
-                override fun deserialize(json: JsonElement?, typeOfT: Type?, context: JsonDeserializationContext?): ObjectId {
-                    return ObjectId()
-                }
-            }).registerTypeAdapter(ULong::class.java, object : JsonSerializer<ULong>, JsonDeserializer<ULong> {
-                override fun serialize(src: ULong?, typeOfSrc: Type?, context: JsonSerializationContext?): JsonElement {
-                    return if (src == null) JsonNull.INSTANCE else JsonPrimitive(src.toLong())
-                }
-
-                override fun deserialize(json: JsonElement, typeOfT: Type?, context: JsonDeserializationContext?): ULong {
-                    return json.asLong.toULong()
-                }
-            }).create()
         private val systemMapToken = object : TypeToken<HashMap<String, JsonSystemStruct>>() {}
         private val serverMapToken = object : TypeToken<HashMap<ULong, ServerSettingsRecord>>() {}
         private val channelMapToken = object : TypeToken<HashMap<ULong, ChannelSettingsRecord>>() {}
