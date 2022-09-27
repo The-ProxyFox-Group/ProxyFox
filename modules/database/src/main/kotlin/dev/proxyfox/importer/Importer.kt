@@ -17,6 +17,7 @@ import dev.proxyfox.database.records.member.MemberProxyTagRecord
 import dev.proxyfox.database.records.member.MemberRecord
 import dev.proxyfox.database.records.system.SystemRecord
 import java.io.InputStreamReader
+import java.io.Reader
 
 /**
  * Imports a system file from a [String]. Supports both PluralKit and TupperBox formats.
@@ -41,7 +42,7 @@ suspend fun import(string: String, user: Entity?): Importer {
  *
  * @author Oliver
  * */
-suspend fun import(reader: InputStreamReader, user: Entity?): Importer {
+suspend fun import(reader: Reader, user: Entity?): Importer {
     val map = JsonParser.parseReader(reader).asJsonObject
     val importer = if (map.has("tuppers")) TupperBoxImporter() else PluralKitImporter()
     importer.import(map, user!!.id.value)
@@ -71,7 +72,7 @@ suspend fun import(database: Database, string: String, user: Entity?): Importer 
  *
  * @author Oliver
  * */
-suspend fun import(database: Database, reader: InputStreamReader, user: Entity?): Importer {
+suspend fun import(database: Database, reader: Reader, user: Entity?): Importer {
     val map = JsonParser.parseReader(reader).asJsonObject
     val importer = if (map.has("tuppers")) TupperBoxImporter() else PluralKitImporter()
     importer.import(database, map, user!!.id.value)
