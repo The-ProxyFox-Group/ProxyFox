@@ -12,14 +12,18 @@ import dev.kord.common.entity.Permission
 import dev.kord.common.entity.Snowflake
 import dev.kord.core.entity.Message
 import dev.kord.rest.NamedFile
-import dev.proxyfox.bot.*
+import dev.proxyfox.bot.kordColor
+import dev.proxyfox.bot.startTime
 import dev.proxyfox.bot.string.dsl.greedy
 import dev.proxyfox.bot.string.dsl.literal
 import dev.proxyfox.bot.string.dsl.string
 import dev.proxyfox.bot.string.parser.MessageHolder
 import dev.proxyfox.bot.string.parser.registerCommand
+import dev.proxyfox.bot.toKtInstant
+import dev.proxyfox.bot.toShard
 import dev.proxyfox.bot.webhook.WebhookUtil
 import dev.proxyfox.common.DebugException
+import dev.proxyfox.common.ellipsis
 import dev.proxyfox.common.printStep
 import dev.proxyfox.database.database
 import dev.proxyfox.database.records.misc.AutoProxyMode
@@ -507,7 +511,7 @@ To get support, head on over to https://discord.gg/q3yF8ay9V7"""
         }
         ctx.message.delete("User requested message deletion")
         // TODO: Add a jump to message embed
-        ctx.respond("Psst.. ${databaseMessage.memberName} (<@${databaseMessage.userId}>)... You were pinged by <@${ctx.message.author!!.id}>")
+        ctx.respond("Psst.. ${databaseMessage.memberName} (<@${databaseMessage.userId}>)$ellipsis You were pinged by <@${ctx.message.author!!.id}>")
         return ""
     }
 
