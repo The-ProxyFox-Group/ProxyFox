@@ -110,6 +110,19 @@ data class ProxyContext(
             Snowflake(database.fetchMessage(message.id)!!.userId)
         else message.author!!.id
         database.createMessage(userId, message.id, newMessage.id, message.channel, member.id, member.systemId, serverMember.nickname ?: member.displayName ?: member.name)
-        message.delete()
+        try {
+            message.delete()
+        } catch (e: KtorRequestException) {
+            if (e.httpResponse.status == HttpStatusCode.NotFound) {
+                try {
+                    webhook.delete(newMessage.id, threadId)
+                } catch (e2: KtorRequestException) {
+                    if (e2.httpResponse.status != HttpStatusCode.NotFound) {
+                        e2.addSuppressed(e)
+                        throw e2
+                    }
+                }
+            } else throw e
+        }
     }
 }
