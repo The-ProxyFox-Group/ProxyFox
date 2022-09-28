@@ -16,6 +16,7 @@ import dev.kord.core.event.message.ReactionAddEvent
 import dev.kord.rest.builder.message.create.embed
 import dev.proxyfox.bot.string.parser.parseString
 import dev.proxyfox.bot.webhook.WebhookUtil
+import dev.proxyfox.common.ellipsis
 import dev.proxyfox.database.database
 import dev.proxyfox.database.records.misc.AutoProxyMode
 import org.slf4j.LoggerFactory
@@ -135,7 +136,7 @@ suspend fun ReactionAddEvent.onReactionAdd() {
         }
         "❗", "🔔" -> {
             // TODO: Add a jump to message embed
-            message.channel.createMessage("Psst.. ${databaseMessage.memberName} (<@${databaseMessage.userId}>)... You were pinged by <@${userId.value}>")
+            message.channel.createMessage("Psst.. ${databaseMessage.memberName} (<@${databaseMessage.userId}>)$ellipsis You were pinged by <@${userId.value}>")
             getMessage().deleteReaction(userId, emoji)
         }
         "❓", "❔" -> {

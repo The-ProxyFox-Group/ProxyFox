@@ -14,6 +14,7 @@ import com.google.gson.reflect.TypeToken
 import dev.kord.common.entity.Snowflake
 import dev.kord.core.behavior.channel.ChannelBehavior
 import dev.kord.core.entity.channel.thread.ThreadChannel
+import dev.proxyfox.common.ellipsis
 import dev.proxyfox.common.fromColor
 import dev.proxyfox.common.logger
 import dev.proxyfox.common.toColor
@@ -529,7 +530,7 @@ class JsonDatabase(val file: File = File("systems.json")) : Database() {
 
     override suspend fun export(other: Database) {
         val memberLookup = HashMap<String, String>()
-        logger.info("Migrating {} systems...", systems.size)
+        logger.info("Migrating {} systems$ellipsis", systems.size)
         for ((sid, system) in systems) {
             memberLookup.clear()
             logger.info("Migrating {}: {}", sid, system.name)
@@ -539,7 +540,7 @@ class JsonDatabase(val file: File = File("systems.json")) : Database() {
 
             val nsid = newSystem.id
 
-            logger.info("Migrating {} members...", system.members.size)
+            logger.info("Migrating {} members$ellipsis", system.members.size)
             for ((mid, member) in system.members) {
                 logger.info("Migrating {}: {}", mid, member.name)
                 val newMember = other.getOrCreateMember(sid, member.name, mid)
@@ -585,7 +586,7 @@ class JsonDatabase(val file: File = File("systems.json")) : Database() {
                 }
             }
         }
-        logger.info("Migrating server settings...")
+        logger.info("Migrating server settings$ellipsis")
         for ((sid, server) in servers) {
             val newSettings = other.getOrCreateServerSettings(sid)
             server.writeTo(newSettings)

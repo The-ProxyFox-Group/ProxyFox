@@ -20,6 +20,7 @@ import dev.proxyfox.bot.kord
 import dev.proxyfox.bot.md.BaseMarkdown
 import dev.proxyfox.bot.md.MarkdownString
 import dev.proxyfox.bot.md.parseMarkdown
+import dev.proxyfox.common.ellipsis
 import dev.proxyfox.database.database
 import dev.proxyfox.database.records.member.MemberProxyTagRecord
 import dev.proxyfox.database.records.member.MemberRecord
@@ -94,7 +95,7 @@ data class ProxyContext(
                     if (msgRef.length > 100) {
                         // We know it's gonna be a BaseMarkdown so
                         msgRef = msgRef.substring(100) as BaseMarkdown
-                        msgRef.values.add(MarkdownString("..."))
+                        msgRef.values.add(MarkdownString(ellipsis))
                     }
                     description = "[**Reply to:**]($link) $msgRef"
                 }
