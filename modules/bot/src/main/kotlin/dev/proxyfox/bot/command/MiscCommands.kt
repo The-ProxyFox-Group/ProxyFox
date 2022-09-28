@@ -485,8 +485,7 @@ To get support, head on over to https://discord.gg/q3yF8ay9V7"""
         }
 
         val webhook = WebhookUtil.createOrFetchWebhookFromCache(channel)
-        kord.rest.webhook.editWebhookMessage(Snowflake(webhook.id), webhook.token!!,
-            message.id, databaseMessage.threadId?.let { Snowflake(it) }) {
+        webhook.edit(message.id, databaseMessage.threadId?.let(::Snowflake)) {
             this.content = content
         }
         ctx.message.delete("User requested message deletion")

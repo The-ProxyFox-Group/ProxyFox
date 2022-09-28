@@ -10,7 +10,6 @@ package dev.proxyfox.bot.webhook
 
 import com.google.common.cache.Cache
 import com.google.common.cache.CacheBuilder
-import dev.kord.common.entity.Snowflake
 import java.util.concurrent.TimeUnit
 
 /**
