@@ -9,14 +9,19 @@
 package dev.proxyfox.types
 
 class PkSystem {
+    var id: String? = null
     var name: String? = null
     var description: String? = null
     var tag: String? = null
     var avatar_url: String? = null
     var members: Array<PkMember>? = arrayOf()
+
+    // Required for PK to accept the export.
+    var switches: Array<Any> = arrayOf()
 }
 
 class PkMember {
+    var id: String? = null
     var name: String = ""
     var display_name: String? = null
     var description: String? = null
