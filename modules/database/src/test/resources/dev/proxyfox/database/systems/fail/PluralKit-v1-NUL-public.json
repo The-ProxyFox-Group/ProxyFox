@@ -1,0 +1,104 @@
+{
+  "version": 1,
+  "id": "\u0000",
+  "name": "\u0000",
+  "description": "\u0000",
+  "tag": "\u0000",
+  "avatar_url": null,
+  "banner": null,
+  "color": null,
+  "created": "\u0000",
+  "tz": "\u0000",
+  "timezone": "\u0000",
+  "description_privacy": "public",
+  "member_list_privacy": "public",
+  "group_list_privacy": "public",
+  "front_privacy": "public",
+  "front_history_privacy": "public",
+  "config": {
+    "timezone": "\u0000",
+    "pings_enabled": true,
+    "latch_timeout": null,
+    "member_default_private": false,
+    "group_default_private": false,
+    "show_private_info": true,
+    "member_limit": 1000,
+    "group_limit": 250
+  },
+  "accounts": [
+    0
+  ],
+  "members": [
+    {
+      "id": "\u0000",
+      "name": "\u0000",
+      "display_name": "\u0000",
+      "color": null,
+      "birthday": "\u0000",
+      "pronouns": "\u0000",
+      "avatar_url": null,
+      "banner": null,
+      "description": "\u0000",
+      "created": "\u0000",
+      "keep_proxy": false,
+      "proxy_tags": [
+        {
+          "prefix": "\u0000",
+          "suffix": null
+        },
+        {
+          "prefix": null,
+          "suffix": "\u0000"
+        },
+        {
+          "prefix": "\u0000",
+          "suffix": "\u0000"
+        }
+      ],
+      "privacy": "\u0000",
+      "visibility": "\u0000",
+      "name_privacy": "public",
+      "description_privacy": "public",
+      "birthday_privacy": "public",
+      "pronoun_privacy": "public",
+      "avatar_privacy": "public",
+      "metadata_privacy": "public"
+    }
+  ],
+  "groups": [
+    {
+      "id": "\u0000",
+      "uuid": "\u0000",
+      "name": "\u0000",
+      "display_name": "\u0000",
+      "description": "\u0000",
+      "icon": null,
+      "banner": null,
+      "color": null,
+      "created": "\u0000",
+      "members": [
+        "\u0000"
+      ],
+      "privacy": {
+        "name_privacy": "public",
+        "description_privacy": "public",
+        "icon_privacy": "public",
+        "list_privacy": "public",
+        "metadata_privacy": "public",
+        "visibility": "public"
+      }
+    }
+  ],
+  "switches": [
+    {
+      "timestamp": "\u0000",
+      "members": [
+        "\u0000"
+      ]
+    },
+    {
+      "timestamp": "\u0000",
+      "members": []
+    }
+  ]
+}

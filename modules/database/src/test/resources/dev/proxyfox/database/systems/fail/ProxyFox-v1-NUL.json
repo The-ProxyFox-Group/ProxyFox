@@ -1,0 +1,37 @@
+{
+  "version": 1,
+  "id": "\u0000",
+  "name": "\u0000",
+  "description": "\u0000",
+  "tag": "\u0000",
+  "avatar_url": "\u0000",
+  "members": [
+    {
+      "id": "\u0000",
+      "name": "\u0000",
+      "display_name": "\u0000",
+      "description": "\u0000",
+      "birthday": "\u0000",
+      "pronouns": "\u0000",
+      "color": "\u0000",
+      "avatar_url": "\u0000",
+      "proxy_tags": [
+        {
+          "prefix": "\u0000"
+        },
+        {
+          "suffix": "\u0000"
+        },
+        {
+          "prefix": "\u0000",
+          "suffix": "\u0000"
+        }
+      ],
+      "keep_proxy": false,
+      "message_count": 0,
+      "created": "\u0000"
+    }
+  ],
+  "switches": [],
+  "created": "\u0000"
+}

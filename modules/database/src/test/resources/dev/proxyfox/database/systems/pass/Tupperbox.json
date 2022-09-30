@@ -1,0 +1,54 @@
+{
+  "tuppers": [
+    {
+      "id": 77356256,
+      "user_id": "196188877885538304",
+      "name": "Test",
+      "position": 1,
+      "avatar_url": "https://cdn.discordapp.com/attachments/856310495694946335/1022656627352031352/unknown.png",
+      "brackets": [
+        "",
+        "-te"
+      ],
+      "posts": 0,
+      "show_brackets": false,
+      "birthday": "9999-12-25T00:00:00.000Z",
+      "description": "Very test",
+      "tag": null,
+      "group_id": 665575,
+      "group_pos": 0,
+      "created_at": "2022-09-22T00:00:00.000Z",
+      "nick": "Globally?"
+    },
+    {
+      "id": 77356247,
+      "user_id": "196188877885538304",
+      "name": "Null",
+      "position": 0,
+      "avatar_url": "",
+      "brackets": [
+        "",
+        "-nu"
+      ],
+      "posts": 0,
+      "show_brackets": false,
+      "birthday": null,
+      "description": null,
+      "tag": "| &((int*)0) = 0",
+      "group_id": null,
+      "group_pos": null,
+      "created_at": "2022-09-22T00:00:00.000Z",
+      "nick": null
+    }
+  ],
+  "groups": [
+    {
+      "id": 665575,
+      "user_id": "196188877885538304",
+      "name": "Test",
+      "description": null,
+      "tag": "| Yes",
+      "position": 0
+    }
+  ]
+}

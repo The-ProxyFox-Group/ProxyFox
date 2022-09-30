@@ -1,0 +1,63 @@
+{
+  "version": 1,
+  "id": "dfgju",
+  "created": "2022-03-23T20:25:38.379578Z",
+  "tz": "UTC",
+  "description_privacy": "private",
+  "member_list_privacy": "private",
+  "group_list_privacy": "private",
+  "front_privacy": "private",
+  "front_history_privacy": "private",
+  "members": [
+    {
+      "id": "zoego",
+      "name": "Azalea",
+      "created": "2022-03-23T20:25:48.002136Z",
+      "keep_proxy": false,
+      "proxy_tags": [
+        {
+          "prefix": "az:",
+          "suffix": null
+        }
+      ],
+      "privacy": "public",
+      "visibility": "public",
+      "name_privacy": "public",
+      "description_privacy": "public",
+      "birthday_privacy": "public",
+      "pronoun_privacy": "public",
+      "avatar_privacy": "public",
+      "metadata_privacy": "public"
+    }
+  ],
+  "groups": [
+    {
+      "id": "aflwr",
+      "name": "Flowers",
+      "created": "2022-03-23T20:35:24.942786Z",
+      "members": [
+        "zoego"
+      ],
+      "privacy": {
+        "name_privacy": "public",
+        "description_privacy": "public",
+        "icon_privacy": "public",
+        "list_privacy": "public",
+        "metadata_privacy": "public",
+        "visibility": "public"
+      }
+    }
+  ],
+  "switches": [
+    {
+      "timestamp": "2022-03-23T21:32:38.124657Z",
+      "members": [
+        "zoego"
+      ]
+    },
+    {
+      "timestamp": "2022-03-24T16:24:32.184576Z",
+      "members": []
+    }
+  ]
+}

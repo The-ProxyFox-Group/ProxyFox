@@ -1,0 +1,54 @@
+{
+  "tuppers": [
+    {
+      "id": 978979788,
+      "user_id": null,
+      "name": null,
+      "position": 0,
+      "avatar_url": null,
+      "brackets": [
+        null,
+        null
+      ],
+      "posts": 0,
+      "show_brackets": false,
+      "birthday": null,
+      "description": null,
+      "tag": null,
+      "group_id": 4156465756,
+      "group_pos": 0,
+      "created_at": null,
+      "nick": null
+    },
+    {
+      "id": 2146745247,
+      "user_id": null,
+      "name": null,
+      "position": 0,
+      "avatar_url": null,
+      "brackets": [
+        null,
+        null
+      ],
+      "posts": 0,
+      "show_brackets": false,
+      "birthday": null,
+      "description": null,
+      "tag": null,
+      "group_id": null,
+      "group_pos": null,
+      "created_at": null,
+      "nick": null
+    }
+  ],
+  "groups": [
+    {
+      "id": 4156465756,
+      "user_id": null,
+      "name": null,
+      "description": null,
+      "tag": null,
+      "position": 0
+    }
+  ]
+}

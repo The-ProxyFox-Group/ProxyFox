@@ -1,0 +1,104 @@
+{
+  "version": 1,
+  "id": null,
+  "name": null,
+  "description": null,
+  "tag": null,
+  "avatar_url": null,
+  "banner": null,
+  "color": null,
+  "created": null,
+  "tz": null,
+  "timezone": null,
+  "description_privacy": null,
+  "member_list_privacy": null,
+  "group_list_privacy": null,
+  "front_privacy": null,
+  "front_history_privacy": null,
+  "config": {
+    "timezone": null,
+    "pings_enabled": true,
+    "latch_timeout": null,
+    "member_default_private": false,
+    "group_default_private": false,
+    "show_private_info": true,
+    "member_limit": 1000,
+    "group_limit": 250
+  },
+  "accounts": [
+    0
+  ],
+  "members": [
+    {
+      "id": null,
+      "name": null,
+      "display_name": null,
+      "color": null,
+      "birthday": null,
+      "pronouns": null,
+      "avatar_url": null,
+      "banner": null,
+      "description": null,
+      "created": null,
+      "keep_proxy": false,
+      "proxy_tags": [
+        {
+          "prefix": null,
+          "suffix": null
+        },
+        {
+          "prefix": null,
+          "suffix": null
+        },
+        {
+          "prefix": null,
+          "suffix": null
+        }
+      ],
+      "privacy": null,
+      "visibility": null,
+      "name_privacy": null,
+      "description_privacy": null,
+      "birthday_privacy": null,
+      "pronoun_privacy": null,
+      "avatar_privacy": null,
+      "metadata_privacy": null
+    }
+  ],
+  "groups": [
+    {
+      "id": null,
+      "uuid": null,
+      "name": null,
+      "display_name": null,
+      "description": null,
+      "icon": null,
+      "banner": null,
+      "color": null,
+      "created": null,
+      "members": [
+        null
+      ],
+      "privacy": {
+        "name_privacy": null,
+        "description_privacy": null,
+        "icon_privacy": null,
+        "list_privacy": null,
+        "metadata_privacy": null,
+        "visibility": null
+      }
+    }
+  ],
+  "switches": [
+    {
+      "timestamp": null,
+      "members": [
+        null
+      ]
+    },
+    {
+      "timestamp": null,
+      "members": []
+    }
+  ]
+}

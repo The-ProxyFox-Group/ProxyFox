@@ -1,0 +1,54 @@
+{
+  "tuppers": [
+    {
+      "id": 77356256,
+      "user_id": "\u0000",
+      "name": "\u0000",
+      "position": 0,
+      "avatar_url": "\u0000",
+      "brackets": [
+        "",
+        "\u0000"
+      ],
+      "posts": 0,
+      "show_brackets": false,
+      "birthday": "\u0000",
+      "description": "\u0000",
+      "tag": "\u0000",
+      "group_id": 665575,
+      "group_pos": 0,
+      "created_at": "\u0000",
+      "nick": "\u0000"
+    },
+    {
+      "id": 77356247,
+      "user_id": "\u0000",
+      "name": "\u0000",
+      "position": 0,
+      "avatar_url": "\u0000",
+      "brackets": [
+        "\u0000",
+        ""
+      ],
+      "posts": 0,
+      "show_brackets": false,
+      "birthday": "\u0000",
+      "description": "\u0000",
+      "tag": "\u0000",
+      "group_id": null,
+      "group_pos": null,
+      "created_at": "\u0000",
+      "nick": "\u0000"
+    }
+  ],
+  "groups": [
+    {
+      "id": 665575,
+      "user_id": "\u0000",
+      "name": "\u0000",
+      "description": "\u0000",
+      "tag": "\u0000",
+      "position": 0
+    }
+  ]
+}
