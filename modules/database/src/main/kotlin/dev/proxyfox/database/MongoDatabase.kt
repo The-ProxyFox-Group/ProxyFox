@@ -30,9 +30,9 @@ import org.litote.kmongo.reactivestreams.*
 import org.litote.kmongo.util.KMongoUtil
 import java.time.OffsetDateTime
 import java.util.concurrent.TimeUnit
+import kotlin.time.Duration
 import kotlin.time.ExperimentalTime
 import kotlin.time.measureTime
-import kotlin.time.Duration
 
 
 // Created 2022-26-05T22:43:40
@@ -379,6 +379,12 @@ class MongoDatabase(private val dbName: String = "ProxyFox") : Database() {
 
     override suspend fun export(other: Database) {
         TODO("Not yet implemented")
+    }
+
+    @Deprecated("Not for regular use.", level = DeprecationLevel.ERROR)
+    override suspend fun drop() {
+        db.drop().awaitFirstOrNull()
+        kmongo.close()
     }
 
     override fun close() {

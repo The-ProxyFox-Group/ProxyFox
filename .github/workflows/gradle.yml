@@ -26,3 +26,11 @@ jobs:
         with:
           name: Artifacts
           path: build/libs/
+      - name: capture test reports on failure
+        uses: actions/upload-artifacts@v3
+        if: failure()
+        with:
+          name: Logs
+          path: |
+            build/reports
+            modules/**/build/reports

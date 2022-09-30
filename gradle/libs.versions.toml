@@ -12,7 +12,8 @@ gson = "2.9.0"
 kmongo = "4.6.0"
 
 # Testing
-junit = "5.8.2"
+testng = "7.6.1"
+mockk = "1.+"
 
 # Plugins
 shadow = "7.1.2"
@@ -24,7 +25,7 @@ kord = { module = "dev.kord:kord-core", version.ref = "kord" }
 logback = { module = "ch.qos.logback:logback-classic", version.ref = "logback" }
 
 kotlin_stdlib = { module = "org.jetbrains.kotlin:kotlin-stdlib", version.ref = "kotlin" }
-kotlinx_coroutines = { module = "org.jetbrains.kotlinx:kotlinx-coroutines-core", version.ref = "kotlinx_coroutines" }
+kotlinx_coroutines_core = { module = "org.jetbrains.kotlinx:kotlinx-coroutines-core", version.ref = "kotlinx_coroutines" }
 
 gson = { module = "com.google.code.gson:gson", version.ref = "gson" }
 kjdbc = { module = "com.vladsch.kotlin-jdbc:kotlin-jdbc", version.ref = "kjdbc" }
@@ -33,11 +34,13 @@ kmongo_base = { module = "org.litote.kmongo:kmongo", version.ref = "kmongo" }
 kmongo_coroutine = { module = "org.litote.kmongo:kmongo-coroutine", version.ref = "kmongo" }
 kmongo_async = { module = "org.litote.kmongo:kmongo-async", version.ref = "kmongo" }
 
-junit_jupiter_api = { module = "org.junit.jupiter:junit-jupiter-api", version.ref = "junit" }
-junit_jupiter_engine = { module = "org.junit.jupiter:junit-jupiter-engine", version.ref = "junit" }
+testng = { module = "org.testng:testng", version.ref = "testng" }
+mockk = { module = "io.mockk:mockk", version.ref = "mockk" }
+kotlinx_coroutines_test = { module = "org.jetbrains.kotlinx:kotlinx-coroutines-test", version.ref = "kotlinx_coroutines" }
 
 [bundles]
-base = ["guava", "logback", "kotlin_stdlib", "kotlinx_coroutines", "kord"]
+base = ["guava", "logback", "kotlin_stdlib", "kotlinx_coroutines_core", "kord"]
+test = ["testng", "kotlinx_coroutines_test", "mockk"]
 database = ["gson", "kmongo_base", "kmongo_coroutine", "kmongo_async"]
 
 [plugins]

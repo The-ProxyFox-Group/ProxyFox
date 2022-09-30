@@ -26,6 +26,7 @@ import dev.proxyfox.database.records.system.SystemChannelSettingsRecord
 import dev.proxyfox.database.records.system.SystemRecord
 import dev.proxyfox.database.records.system.SystemServerSettingsRecord
 import dev.proxyfox.database.records.system.SystemSwitchRecord
+import org.jetbrains.annotations.TestOnly
 import java.io.File
 import java.time.OffsetDateTime
 import java.time.ZoneOffset
@@ -160,48 +161,63 @@ class JsonDatabase(val file: File = File("systems.json")) : Database() {
     private lateinit var messages: MutableSet<ProxiedMessageRecord>
 
     @Transient
-    private val users = HashMap<ULong, JsonSystemStruct>()
+    private lateinit var users: MutableMap<ULong, JsonSystemStruct>
 
     @Transient
-    private val messageMap = HashMap<ULong, ProxiedMessageRecord>()
+    private lateinit var messageMap: MutableMap<ULong, ProxiedMessageRecord>
+
+    @Volatile
+    private var dropped: Boolean = false
 
     override suspend fun setup(): JsonDatabase {
+        users = HashMap()
+        messageMap = HashMap()
         if (file.exists()) {
             val db = file.reader().use(JsonParser::parseReader)
             if (db != null && db.isJsonObject) {
-                val dbObject = db.asJsonObject
-                if (!dbObject.has("schema")) {
-                    throw IllegalStateException("JSON Database missing schema.")
-                }
-                if (dbObject["schema"].asInt == 1) {
-                    systems = gson.fromJson(dbObject.getAsJsonObject("systems"), systemMapToken.type) ?: HashMap()
-                    servers = gson.fromJson(dbObject.getAsJsonObject("servers"), serverMapToken.type) ?: HashMap()
-                    channels = gson.fromJson(dbObject.getAsJsonObject("channels"), channelMapToken.type) ?: HashMap()
-                    messages = gson.fromJson(dbObject.getAsJsonArray("messages"), messageSetToken.type) ?: HashSet()
-                    for ((_, system) in systems) {
-                        system.init()
-                    }
-                    for (message in messages) {
-                        messageMap[message.oldMessageId] = message
-                        messageMap[message.newMessageId] = message
-                    }
-                }
-
-                for (system in systems.values) {
-                    for (account in system.accounts) {
-                        users[account] = system
-                    }
-                }
+                read(db.asJsonObject)
 
                 return this
             }
         }
+        init()
+
+        return this
+    }
+
+    @TestOnly
+    fun read(dbObject: JsonObject) {
+        if (!dbObject.has("schema")) {
+            throw IllegalStateException("JSON Database missing schema.")
+        }
+        if (dbObject["schema"].asInt == 1) {
+            systems = gson.fromJson(dbObject.getAsJsonObject("systems"), systemMapToken.type) ?: HashMap()
+            servers = gson.fromJson(dbObject.getAsJsonObject("servers"), serverMapToken.type) ?: HashMap()
+            channels = gson.fromJson(dbObject.getAsJsonObject("channels"), channelMapToken.type) ?: HashMap()
+            messages = gson.fromJson(dbObject.getAsJsonArray("messages"), messageSetToken.type) ?: HashSet()
+            for ((_, system) in systems) {
+                system.init()
+            }
+            for (message in messages) {
+                messageMap[message.oldMessageId] = message
+                messageMap[message.newMessageId] = message
+            }
+        }
+
+        for (system in systems.values) {
+            for (account in system.accounts) {
+                users[account] = system
+            }
+        }
+        OffsetDateTime.now().offset.totalSeconds
+    }
+
+    @TestOnly
+    fun init() {
         systems = HashMap()
         servers = HashMap()
         channels = HashMap()
         messages = HashSet()
-
-        return this
     }
 
     override suspend fun ping(): Duration {
@@ -595,10 +611,24 @@ class JsonDatabase(val file: File = File("systems.json")) : Database() {
         }
     }
 
-    override fun close() {
-        if (!file.exists()) {
-            file.createNewFile()
+    @Deprecated("Not for regular use.", level = DeprecationLevel.ERROR)
+    override suspend fun drop() {
+        dropped = true
+
+        systems.clear()
+        servers.clear()
+        channels.clear()
+        messages.clear()
+        users.clear()
+        messageMap.clear()
+
+        if (file.exists()) {
+            file.delete()
         }
+    }
+
+    override fun close() {
+        if (dropped) return
         val obj = JsonObject()
         obj.addProperty("schema", 1)
         obj.add("systems", gson.toJsonTree(systems))

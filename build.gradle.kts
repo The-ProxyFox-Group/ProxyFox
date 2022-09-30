@@ -42,6 +42,10 @@ allprojects {
         maven("https://jitpack.io")
     }
 
+    dependencies {
+        testImplementation(rootProject.libs.bundles.test)
+    }
+
     tasks {
         withType<org.jetbrains.kotlin.gradle.tasks.KotlinCompile>().configureEach {
             kotlinOptions.freeCompilerArgs = listOf("-Xcontext-receivers")
@@ -50,6 +54,9 @@ allprojects {
             build {
                 dependsOn(it)
             }
+        }
+        test {
+            useTestNG()
         }
     }
 }
