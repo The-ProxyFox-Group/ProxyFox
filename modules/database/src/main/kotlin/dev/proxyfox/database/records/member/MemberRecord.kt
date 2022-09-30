@@ -22,6 +22,8 @@ import java.time.ZoneOffset
  **/
 class MemberRecord {
     var _id: ObjectId = ObjectId()
+
+    @JvmField
     var id: String = ""
     var systemId: String = ""
     var name: String = ""

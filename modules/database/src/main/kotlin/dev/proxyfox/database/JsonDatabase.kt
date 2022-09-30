@@ -30,6 +30,7 @@ import org.jetbrains.annotations.TestOnly
 import java.io.File
 import java.time.OffsetDateTime
 import java.time.ZoneOffset
+import java.util.concurrent.ConcurrentHashMap
 import kotlin.time.Duration
 
 // Created 2022-26-05T19:47:37
@@ -170,8 +171,8 @@ class JsonDatabase(val file: File = File("systems.json")) : Database() {
     private var dropped: Boolean = false
 
     override suspend fun setup(): JsonDatabase {
-        users = HashMap()
-        messageMap = HashMap()
+        users = ConcurrentHashMap()
+        messageMap = ConcurrentHashMap()
         if (file.exists()) {
             val db = file.reader().use(JsonParser::parseReader)
             if (db != null && db.isJsonObject) {
@@ -191,9 +192,9 @@ class JsonDatabase(val file: File = File("systems.json")) : Database() {
             throw IllegalStateException("JSON Database missing schema.")
         }
         if (dbObject["schema"].asInt == 1) {
-            systems = gson.fromJson(dbObject.getAsJsonObject("systems"), systemMapToken.type) ?: HashMap()
-            servers = gson.fromJson(dbObject.getAsJsonObject("servers"), serverMapToken.type) ?: HashMap()
-            channels = gson.fromJson(dbObject.getAsJsonObject("channels"), channelMapToken.type) ?: HashMap()
+            systems = gson.fromJson(dbObject.getAsJsonObject("systems"), systemMapToken.type) ?: ConcurrentHashMap()
+            servers = gson.fromJson(dbObject.getAsJsonObject("servers"), serverMapToken.type) ?: ConcurrentHashMap()
+            channels = gson.fromJson(dbObject.getAsJsonObject("channels"), channelMapToken.type) ?: ConcurrentHashMap()
             messages = gson.fromJson(dbObject.getAsJsonArray("messages"), messageSetToken.type) ?: HashSet()
             for ((_, system) in systems) {
                 system.init()
@@ -214,9 +215,9 @@ class JsonDatabase(val file: File = File("systems.json")) : Database() {
 
     @TestOnly
     fun init() {
-        systems = HashMap()
-        servers = HashMap()
-        channels = HashMap()
+        systems = ConcurrentHashMap()
+        servers = ConcurrentHashMap()
+        channels = ConcurrentHashMap()
         messages = HashSet()
     }
 
@@ -376,7 +377,7 @@ class JsonDatabase(val file: File = File("systems.json")) : Database() {
         return fetchMemberFromSystemAndName(systemId, name) ?: run {
             val system = systems[systemId] ?: return null
             val memId = if (id == null || system.members.containsKey(id)) system.members.keys.firstFree() else id
-            system.putMember(JsonMemberStruct(systemId, memId, name))
+            system.putMember(JsonMemberStruct(id = memId, systemId = systemId, name = name))
         }
     }
 
@@ -742,6 +743,7 @@ class JsonDatabase(val file: File = File("systems.json")) : Database() {
         }
 
         fun putMember(member: JsonMemberStruct): MemberRecord {
+            assert(member.systemId == id) { "systemId != id" }
             members[member.id] = member
             membersByName[member.name] = member
             return member.view()
@@ -815,9 +817,9 @@ class JsonDatabase(val file: File = File("systems.json")) : Database() {
     }
 
     companion object {
-        private val systemMapToken = object : TypeToken<HashMap<String, JsonSystemStruct>>() {}
-        private val serverMapToken = object : TypeToken<HashMap<ULong, ServerSettingsRecord>>() {}
-        private val channelMapToken = object : TypeToken<HashMap<ULong, ChannelSettingsRecord>>() {}
+        private val systemMapToken = object : TypeToken<ConcurrentHashMap<String, JsonSystemStruct>>() {}
+        private val serverMapToken = object : TypeToken<ConcurrentHashMap<ULong, ServerSettingsRecord>>() {}
+        private val channelMapToken = object : TypeToken<ConcurrentHashMap<ULong, ChannelSettingsRecord>>() {}
         private val messageSetToken = object : TypeToken<HashSet<ProxiedMessageRecord>>() {}
     }
 }
