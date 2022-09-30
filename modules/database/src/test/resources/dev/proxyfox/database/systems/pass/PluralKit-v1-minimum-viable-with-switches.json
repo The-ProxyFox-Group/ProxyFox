@@ -1,0 +1,29 @@
+{
+  "members": [
+    {
+      "id": "",
+      "name": "Azalea"
+    }
+  ],
+  "groups": [
+    {
+      "id": "",
+      "name": "Flowers",
+      "members": [
+        ""
+      ]
+    }
+  ],
+  "switches": [
+    {
+      "timestamp": "2022-03-23T21:32:38.124657Z",
+      "members": [
+        ""
+      ]
+    },
+    {
+      "timestamp": "2022-03-24T16:24:32.184576Z",
+      "members": []
+    }
+  ]
+}
