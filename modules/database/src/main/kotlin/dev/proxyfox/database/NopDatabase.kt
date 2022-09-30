@@ -18,8 +18,8 @@ import dev.proxyfox.database.records.system.SystemChannelSettingsRecord
 import dev.proxyfox.database.records.system.SystemRecord
 import dev.proxyfox.database.records.system.SystemServerSettingsRecord
 import dev.proxyfox.database.records.system.SystemSwitchRecord
-import kotlin.time.Duration
 import java.time.OffsetDateTime
+import kotlin.time.Duration
 
 class NopDatabase : Database() {
     override suspend fun setup() = this
@@ -136,6 +136,10 @@ class NopDatabase : Database() {
     override suspend fun fetchMemberFromSystemAndName(systemId: String, memberName: String): MemberRecord? = null
 
     override suspend fun export(other: Database) {}
+
+    @Deprecated("Not for regular use.", level = DeprecationLevel.ERROR)
+    override suspend fun drop() {
+    }
 
     override fun close() {}
 }

@@ -21,10 +21,11 @@ import dev.proxyfox.database.records.system.SystemChannelSettingsRecord
 import dev.proxyfox.database.records.system.SystemRecord
 import dev.proxyfox.database.records.system.SystemServerSettingsRecord
 import dev.proxyfox.database.records.system.SystemSwitchRecord
-import kotlin.time.Duration
+import org.jetbrains.annotations.TestOnly
 import java.time.OffsetDateTime
 import kotlin.contracts.ExperimentalContracts
 import kotlin.contracts.contract
+import kotlin.time.Duration
 
 // Created 2022-09-04T14:06:39
 
@@ -148,11 +149,13 @@ abstract class Database : AutoCloseable {
      * */
     open suspend fun fetchMemberFromMessage(userId: ULong, message: String) = fetchProxyTagFromMessage(userId, message)?.memberId?.let { fetchMemberFromUser(userId, it) }
 
-    suspend inline fun fetchMemberFromMessage(user: UserBehavior?, message: String) = user?.run { fetchMemberFromMessage(id.value, message) }
+    // Not inlined due to breaking under oddly specific conditions of bulk testing with kotlin function references.
+    suspend fun fetchMemberFromMessage(user: UserBehavior?, message: String) = user?.run { fetchMemberFromMessage(id.value, message) }
 
     open suspend fun fetchProxyTagFromMessage(userId: ULong, message: String) = fetchProxiesFromUser(userId)?.find { it.test(message) }
 
-    suspend inline fun fetchProxyTagFromMessage(user: UserBehavior?, message: String) = user?.run { fetchProxyTagFromMessage(id.value, message) }
+    // Not inlined due to breaking under oddly specific conditions of bulk testing with kotlin function references.
+    suspend fun fetchProxyTagFromMessage(user: UserBehavior?, message: String) = user?.run { fetchProxyTagFromMessage(id.value, message) }
 
     // === Server Settings ===
     /**
@@ -432,6 +435,9 @@ abstract class Database : AutoCloseable {
     // === Unsafe direct-write import & export functions ===
     abstract suspend fun export(other: Database)
 
+    @TestOnly
+    @Deprecated(level = DeprecationLevel.ERROR, message = "Not for regular use.")
+    abstract suspend fun drop()
     protected fun fail(message: String): Nothing = throw DatabaseException(message)
 
     /**
