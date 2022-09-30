@@ -9,13 +9,14 @@
 package dev.proxyfox.importer
 
 import com.google.gson.JsonObject
-import dev.proxyfox.common.fromColor
 import dev.proxyfox.common.toColor
 import dev.proxyfox.database.Database
 import dev.proxyfox.database.gson
 import dev.proxyfox.database.records.member.MemberProxyTagRecord
 import dev.proxyfox.database.records.member.MemberRecord
 import dev.proxyfox.database.records.system.SystemRecord
+import dev.proxyfox.database.sanitise
+import dev.proxyfox.database.validate
 import dev.proxyfox.types.PkSystem
 
 /**
@@ -33,28 +34,25 @@ class PluralKitImporter : Importer {
     override suspend fun import(database: Database, json: JsonObject, userId: ULong) {
         val pkSystem = gson.fromJson(json, PkSystem::class.java)
         system = database.getOrCreateSystem(userId)
-        system.name = pkSystem.name ?: system.name
-        system.description = pkSystem.description ?: system.description
-        system.tag = pkSystem.tag ?: system.tag
-        system.avatarUrl = pkSystem.avatar_url ?: system.avatarUrl
+        system.name = pkSystem.name.sanitise() ?: system.name
+        system.description = pkSystem.description.sanitise() ?: system.description
+        system.tag = pkSystem.tag.sanitise() ?: system.tag
+        system.avatarUrl = pkSystem.avatar_url.sanitise() ?: system.avatarUrl
         if (pkSystem.members != null)
             for (pkMember in pkSystem.members!!) {
-                var member = database.fetchMemberFromSystemAndName(system.id, pkMember.name)
-                if (member == null) {
-                    member = database.getOrCreateMember(system.id, pkMember.name)
-                    createdMembers++
-                } else updatedMembers++
-                member!!.displayName = pkMember.display_name ?: member.displayName
-                member.avatarUrl = pkMember.avatar_url
-                member.description = pkMember.description ?: member.description
-                member.pronouns = pkMember.pronouns ?: member.pronouns
-                member.color = (pkMember.color ?: member.color.fromColor()).toColor()
+                val member = database.fetchMemberFromSystemAndName(system.id, pkMember.name.validate("members/name"))?.apply { updatedMembers++ }
+                    ?: database.getOrCreateMember(system.id, pkMember.name.validate("members/name"))?.apply { createdMembers++ }
+                    ?: throw ImporterException("Database didn't create member")
+                member.displayName = pkMember.display_name.sanitise() ?: member.displayName
+                member.avatarUrl = pkMember.avatar_url.sanitise() ?: member.avatarUrl
+                member.description = pkMember.description.sanitise() ?: member.description
+                member.pronouns = pkMember.pronouns.sanitise() ?: member.pronouns
+                member.color = pkMember.color?.validate("members[${pkMember.id} (${pkMember.name})]/color")?.toColor() ?: member.color
                 member.keepProxy = pkMember.keep_proxy ?: member.keepProxy
                 member.messageCount = pkMember.message_count ?: member.messageCount
-                if (pkMember.proxy_tags != null)
-                    for (pkProxy in pkMember.proxy_tags!!) {
-                        database.createProxyTag(system.id, member.id, pkProxy.prefix, pkProxy.suffix)
-                    }
+                pkMember.proxy_tags?.forEach { pkProxy ->
+                    database.createProxyTag(system.id, member.id, pkProxy.prefix, pkProxy.suffix)
+                }
                 database.updateMember(member)
             }
         database.updateSystem(system)

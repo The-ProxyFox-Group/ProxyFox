@@ -9,7 +9,7 @@
 package dev.proxyfox.types
 
 import dev.proxyfox.database.records.member.MemberRecord
-import java.time.OffsetDateTime
+import dev.proxyfox.database.sanitise
 
 // Created 2022-29-09T22:20:20
 
@@ -28,20 +28,20 @@ class TbMember {
     var avatar_url: String? = null
     var brackets: Array<String>? = null
     var show_brackets: Boolean = false
-    var birthday: OffsetDateTime? = null
+    var birthday: String? = null
     var description: String? = null
     var tag: String? = null
     var group_id: Int? = null
     var nick: String? = null
 
     fun applyTo(record: MemberRecord) {
-        record.name = name
+        record.name = name.sanitise()
         record.keepProxy = show_brackets
 
-        avatar_url?.let { record.avatarUrl = it }
-        nick?.let { record.displayName = it }
-        birthday?.let { record.birthday = it.toString() }
-        description?.let { record.description = it }
+        avatar_url?.let { record.avatarUrl = it.sanitise() }
+        nick?.let { record.displayName = it.sanitise() }
+        birthday?.let { record.birthday = it.sanitise() }
+        description?.let { record.description = it.sanitise() }
     }
 }
 

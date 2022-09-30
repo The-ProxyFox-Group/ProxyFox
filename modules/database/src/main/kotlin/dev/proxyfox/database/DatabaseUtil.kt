@@ -10,6 +10,7 @@ package dev.proxyfox.database
 
 import com.google.gson.*
 import com.mongodb.reactivestreams.client.MongoCollection
+import dev.proxyfox.importer.ImporterException
 import kotlinx.coroutines.reactive.awaitFirst
 import kotlinx.coroutines.reactive.awaitFirstOrNull
 import org.bson.types.ObjectId
@@ -30,6 +31,19 @@ val gson = GsonBuilder()
     .registerTypeAdapter(ObjectId::class.java, ObjectIdNullifier)
     .registerTypeAdapter(ULong::class.java, ULongAdaptor)
     .create()!!
+
+fun String.sanitise(): String {
+    return replace("\u0000", "").trim()
+}
+
+@JvmName("sanitiseNullable")
+fun String?.sanitise(): String? {
+    return this?.sanitise()
+}
+
+fun String?.validate(name: String? = "Unknown field"): String {
+    return sanitise().apply { if (isNullOrBlank()) throw ImporterException("Invalid string given for $name: \"$this\"") }!!
+}
 
 fun Int.toPkString(): String {
     val arr = CharArray(5)
