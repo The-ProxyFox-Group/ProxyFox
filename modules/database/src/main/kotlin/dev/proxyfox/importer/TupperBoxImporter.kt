@@ -14,6 +14,7 @@ import dev.proxyfox.database.gson
 import dev.proxyfox.database.records.member.MemberProxyTagRecord
 import dev.proxyfox.database.records.member.MemberRecord
 import dev.proxyfox.database.records.system.SystemRecord
+import dev.proxyfox.database.validate
 import dev.proxyfox.types.TbSystem
 
 /**
@@ -34,8 +35,8 @@ class TupperBoxImporter : Importer {
 
         tbSystem.tuppers?.let { tbMembers ->
             for (tbMember in tbMembers) {
-                val member = database.fetchMemberFromSystemAndName(system.id, tbMember.name)?.apply { updatedMembers++ }
-                    ?: database.getOrCreateMember(system.id, tbMember.name)?.apply { createdMembers++ }
+                val member = database.fetchMemberFromSystemAndName(system.id, tbMember.name.validate("tuppers/name"))?.apply { updatedMembers++ }
+                    ?: database.getOrCreateMember(system.id, tbMember.name.validate("tuppers/name"))?.apply { createdMembers++ }
                     ?: continue
                 tbMember.applyTo(member)
                 tbMember.brackets?.let {
