@@ -8,7 +8,7 @@
 
 package dev.proxyfox.exporter
 
-import dev.proxyfox.common.fromColor
+import dev.proxyfox.common.fromColorForExport
 import dev.proxyfox.database.Database
 import dev.proxyfox.database.database
 import dev.proxyfox.database.gson
@@ -23,6 +23,7 @@ object Exporter {
         val system = database.fetchSystemFromUser(userId) ?: return ""
 
         val pkSystem = PkSystem()
+        pkSystem.id = system.id
         pkSystem.name = system.name
         pkSystem.description = system.description
         pkSystem.tag = system.tag
@@ -32,11 +33,12 @@ object Exporter {
         pkSystem.members = Array(members.size) {
             val member = members[it]
             val pkMember = PkMember()
+            pkMember.id = member.id
             pkMember.name = member.name
             pkMember.display_name = member.displayName
             pkMember.description = member.description
             pkMember.pronouns = member.pronouns
-            pkMember.color = member.color.fromColor()
+            pkMember.color = member.color.fromColorForExport()
             pkMember.keep_proxy = member.keepProxy
             pkMember.message_count = member.messageCount
             pkMember.avatar_url = member.avatarUrl
