@@ -9,6 +9,11 @@
 package dev.proxyfox.database
 
 import com.google.gson.*
+import com.google.gson.internal.`$Gson$Types`
+import com.google.gson.reflect.TypeToken
+import com.google.gson.stream.JsonReader
+import com.google.gson.stream.JsonToken
+import com.google.gson.stream.JsonWriter
 import com.mongodb.reactivestreams.client.MongoCollection
 import dev.proxyfox.importer.ImporterException
 import kotlinx.coroutines.reactive.awaitFirst
@@ -18,6 +23,7 @@ import org.litote.kmongo.coroutine.toList
 import org.litote.kmongo.reactivestreams.filter
 import org.litote.kmongo.reactivestreams.getCollection
 import org.litote.kmongo.util.KMongoUtil
+import java.lang.reflect.RecordComponent
 import java.lang.reflect.Type
 import java.time.OffsetDateTime
 import java.time.format.DateTimeFormatter
@@ -30,6 +36,7 @@ val gson = GsonBuilder()
     .registerTypeAdapter(OffsetDateTime::class.java, OffsetDateTimeAdaptor)
     .registerTypeAdapter(ObjectId::class.java, ObjectIdNullifier)
     .registerTypeAdapter(ULong::class.java, ULongAdaptor)
+    .registerTypeAdapterFactory(RecordAdapterFactory)
     .create()!!
 
 fun String.sanitise(): String {
@@ -104,6 +111,10 @@ fun databaseFromString(db: String?) =
         else -> throw IllegalArgumentException("Unknown database $db")
     }
 
+inline fun <T, reified R> Array<out T>.mapArray(action: (T) -> R): Array<R> {
+    return Array(size) { action(this[it]) }
+}
+
 suspend inline fun <T> KCollection<T>.findOne(filter: String): T? = find().filter(filter).awaitFirstOrNull()
 suspend inline fun <T> KCollection<T>.findAll(filter: String): List<T> = find().filter(filter).toList()
 suspend inline fun <reified T : Any> Mongo.getOrCreateCollection(): MongoCollection<T> {
@@ -146,4 +157,76 @@ object ULongAdaptor : JsonSerializer<ULong>, JsonDeserializer<ULong> {
     override fun deserialize(json: JsonElement, typeOfT: Type?, context: JsonDeserializationContext?): ULong {
         return json.asLong.toULong()
     }
+}
+
+object RecordAdapterFactory : TypeAdapterFactory {
+    @Suppress("UNCHECKED_CAST")
+    override fun <T : Any?> create(gson: Gson, type: TypeToken<T>): TypeAdapter<T>? {
+        if (Record::class.java.isAssignableFrom(type.rawType)) {
+            return RecordAdapter(gson, type.type, type.rawType as Class<Record>) as TypeAdapter<T>
+        }
+        return null
+    }
+}
+
+class RecordAdapter<T : Record>(private val gson: Gson, private val type: Type, private val rawType: Class<T>) : TypeAdapter<T>() {
+
+    private val componentMap = HashMap<String, RecordComponent>()
+
+    init {
+        assert(Record::class.java.isAssignableFrom(rawType)) { "Invalid class $rawType ($type)" }
+        for (component in rawType.recordComponents) {
+            componentMap[component.name] = component
+        }
+    }
+
+    override fun write(out: JsonWriter, value: T) {
+        out.beginObject()
+        for (component in value.javaClass.recordComponents!!) {
+            out.name(component.name)
+            val v = component.accessor.invoke(value)
+            gson.getAdapter(v.javaClass).write(out, v)
+        }
+        out.endObject()
+    }
+
+    override fun read(reader: JsonReader): T {
+        val list = ArrayList<Throwable>()
+        val map = HashMap<String, Any?>()
+        val generic = gson.getAdapter(JsonElement::class.java)
+
+        try {
+            reader.beginObject()
+
+            while (reader.peek() == JsonToken.NAME) {
+                val name = reader.nextName()
+                val component = componentMap[name]
+
+                if (component == null) {
+                    val path = reader.path
+                    val location = reader.toString()
+                    list.add(ImporterException("Bad entry at $path: $name -> ${generic.read(reader)} @ $location"))
+                } else {
+                    map[name] = gson.getAdapter(TypeToken.get(`$Gson$Types`.resolve(type, rawType, componentMap[name]!!.genericType))).read(reader)
+                }
+            }
+
+            reader.endObject()
+        } catch (e: Throwable) {
+            list.forEach(e::addSuppressed)
+            throw e
+        }
+
+        if (list.isNotEmpty()) {
+            val e = ImporterException("Errors encountered around ${reader.path}")
+            list.forEach(e::addSuppressed)
+            throw e
+        }
+
+
+        return rawType
+            .getConstructor(*rawType.recordComponents.mapArray(RecordComponent::getType))
+            .newInstance(*rawType.recordComponents.mapArray { map[it.name] })
+    }
+
 }
