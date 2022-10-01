@@ -64,8 +64,9 @@ constructor(private val name: String, databaseFactory: () -> Database) {
     }
 
     companion object {
+        private const val path = "dev/proxyfox/database/systems"
         private val test = Files.createTempDirectory("ProxyFox-")
-        private val resources = ClassPath.from(ImporterTest::class.java.classLoader).resources.filter { it.resourceName.startsWith("dev/proxyfox/database/systems") }
+        private val resources = ClassPath.from(ImporterTest::class.java.classLoader).resources.filter { it.resourceName.startsWith(path) }
 
         @DataProvider
         @JvmStatic
@@ -76,11 +77,11 @@ constructor(private val name: String, databaseFactory: () -> Database) {
 
         @DataProvider
         @JvmStatic
-        fun failImporters() = resources.filter { it.resourceName.startsWith("dev/proxyfox/database/systems/fail/") }.map { it.url() }.iterator()
+        fun failImporters() = resources.filter { it.resourceName.startsWith("$path/fail/") }.map { it.url() }.iterator()
 
         @DataProvider
         @JvmStatic
-        fun passImporters() = resources.filter { it.resourceName.startsWith("dev/proxyfox/database/systems/pass/") }.map { it.url() }.iterator()
+        fun passImporters() = resources.filter { it.resourceName.startsWith("$path/pass/") }.map { it.url() }.iterator()
 
         @AfterSuite
         @JvmStatic
