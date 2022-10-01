@@ -48,6 +48,7 @@ allprojects {
 
     tasks {
         withType<org.jetbrains.kotlin.gradle.tasks.KotlinCompile>().configureEach {
+            kotlinOptions.jvmTarget = java.targetCompatibility.majorVersion
             kotlinOptions.freeCompilerArgs = listOf("-Xcontext-receivers")
         }
         findByName("shadowJar")?.let {
