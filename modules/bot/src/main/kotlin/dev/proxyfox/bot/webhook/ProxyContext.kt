@@ -14,11 +14,13 @@ import dev.kord.core.entity.Message
 import dev.kord.core.entity.User
 import dev.kord.rest.NamedFile
 import dev.kord.rest.builder.message.create.embed
+import dev.kord.rest.request.KtorRequestException
 import dev.proxyfox.bot.http
 import dev.proxyfox.bot.kord
 import dev.proxyfox.bot.md.BaseMarkdown
 import dev.proxyfox.bot.md.MarkdownString
 import dev.proxyfox.bot.md.parseMarkdown
+import dev.proxyfox.common.ellipsis
 import dev.proxyfox.database.database
 import dev.proxyfox.database.records.member.MemberProxyTagRecord
 import dev.proxyfox.database.records.member.MemberRecord
@@ -53,10 +55,10 @@ data class ProxyContext(
             member.systemId,
             member.id
         ) ?: MemberServerSettingsRecord()
-        val newMessage = kord.rest.webhook.executeWebhook(Snowflake(webhook.id), webhook.token!!, true, threadId) {
+        val newMessage = webhook.execute(threadId) {
             if (messageContent.isNotBlank()) content = messageContent
             username = (serverMember.nickname ?: member.displayName ?: member.name) + " " + (system.tag ?: "")
-            avatarUrl = (serverMember.avatarUrl ?: member.avatarUrl ?: system.avatarUrl ?: "")
+            avatarUrl = serverMember.avatarUrl ?: member.avatarUrl ?: system.avatarUrl
             for (attachment in message.attachments) {
                 val response: HttpResponse = http.get(urlString = attachment.url) {
                     headers { append(HttpHeaders.UserAgent, "ProxyFox/2.0.0 (+https://github.com/ProxyFox-Developers/ProxyFox/; +https://proxyfox.dev/)") }
@@ -81,25 +83,27 @@ data class ProxyContext(
                 val ref = message.referencedMessage!!
                 // Kord's official methods don't return a user if it's a webhook
                 val user = User(ref.data.author, kord)
+                val link = "https://discord.com/channels/${ref.getGuild().id}/${ref.channelId}/${ref.id}"
                 embed {
                     color = Color(member.color)
                     author {
-                        name = user.username + " ↩️"
+                        name = (ref.getAuthorAsMember()?.displayName ?: user.username) + " ↩️"
                         icon = user.avatar?.url ?: user.defaultAvatar.url
+                        url = link
                     }
                     var msgRef = parseMarkdown(ref.content)
                     if (msgRef.length > 100) {
                         // We know it's gonna be a BaseMarkdown so
                         msgRef = msgRef.substring(100) as BaseMarkdown
-                        msgRef.values.add(MarkdownString("..."))
+                        msgRef.values.add(MarkdownString(ellipsis))
                     }
-                    description = "[**Reply to:**](https://discord.com/channels/${ref.getGuild().id}/${ref.channelId}/${ref.id}) $msgRef"
+                    description = "[**Reply to:**]($link) $msgRef"
                 }
             }
-        }!!
-        if (newMessage.content != messageContent)
-            kord.rest.webhook.editWebhookMessage(Snowflake(webhook.id), webhook.token, newMessage.id, threadId) {
-                if (messageContent.isNotBlank()) content = messageContent
+        }
+        if (newMessage.content != messageContent && messageContent.isNotBlank())
+            webhook.edit(newMessage.id, threadId) {
+                content = messageContent
             }
         member.messageCount++
         database.updateMember(member)
@@ -107,6 +111,19 @@ data class ProxyContext(
             Snowflake(database.fetchMessage(message.id)!!.userId)
         else message.author!!.id
         database.createMessage(userId, message.id, newMessage.id, message.channel, member.id, member.systemId, serverMember.nickname ?: member.displayName ?: member.name)
-        message.delete()
+        try {
+            message.delete()
+        } catch (e: KtorRequestException) {
+            if (e.httpResponse.status == HttpStatusCode.NotFound) {
+                try {
+                    webhook.delete(newMessage.id, threadId)
+                } catch (e2: KtorRequestException) {
+                    if (e2.httpResponse.status != HttpStatusCode.NotFound) {
+                        e2.addSuppressed(e)
+                        throw e2
+                    }
+                }
+            } else throw e
+        }
     }
 }

@@ -10,9 +10,11 @@ package dev.proxyfox.importer
 
 import com.google.gson.JsonObject
 import dev.proxyfox.database.Database
+import dev.proxyfox.database.gson
 import dev.proxyfox.database.records.member.MemberProxyTagRecord
 import dev.proxyfox.database.records.member.MemberRecord
 import dev.proxyfox.database.records.system.SystemRecord
+import dev.proxyfox.types.TbSystem
 
 /**
  * [Importer] to import a JSON with a TupperBox format
@@ -20,24 +22,47 @@ import dev.proxyfox.database.records.system.SystemRecord
  * @author Oliver
  * */
 class TupperBoxImporter : Importer {
+    private lateinit var system: SystemRecord
+    private var members: List<MemberRecord> = ArrayList()
+    private var proxies = HashMap<MemberRecord, MemberProxyTagRecord>()
+    private var createdMembers = 0
+    private var updatedMembers = 0
+
     override suspend fun import(database: Database, json: JsonObject, userId: ULong) {
-        TODO("Not yet implemented")
+        val tbSystem = gson.fromJson(json, TbSystem::class.java)
+        system = database.getOrCreateSystem(userId)
+
+        tbSystem.tuppers?.let { tbMembers ->
+            for (tbMember in tbMembers) {
+                val member = database.fetchMemberFromSystemAndName(system.id, tbMember.name)?.apply { updatedMembers++ }
+                    ?: database.getOrCreateMember(system.id, tbMember.name)?.apply { createdMembers++ }
+                    ?: continue
+                tbMember.applyTo(member)
+                tbMember.brackets?.let {
+                    if (it.size >= 2) {
+                        proxies[member] = database.createProxyTag(member.systemId, member.id, it[0], it[1])!!
+                    }
+                }
+                database.updateMember(member)
+            }
+        }
+        // No need to update the system, as TupperBox doesn't have any globals.
     }
 
     // Getters:
     override suspend fun getSystem(): SystemRecord {
-        TODO("Not yet implemented")
+        return system
     }
 
     override suspend fun getMembers(): List<MemberRecord> {
-        TODO("Not yet implemented")
+        return members
     }
 
     override suspend fun getMemberProxyTags(member: MemberRecord): List<MemberProxyTagRecord> {
-        TODO("Not yet implemented")
+        return listOfNotNull(proxies[member])
     }
 
-    override suspend fun getNewMembers(): Int = 0
+    override suspend fun getNewMembers(): Int = createdMembers
 
-    override suspend fun getUpdatedMembers(): Int = 0
+    override suspend fun getUpdatedMembers(): Int = updatedMembers
 }

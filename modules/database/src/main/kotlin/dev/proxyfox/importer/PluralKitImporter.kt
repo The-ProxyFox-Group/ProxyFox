@@ -12,6 +12,7 @@ import com.google.gson.JsonObject
 import dev.proxyfox.common.fromColor
 import dev.proxyfox.common.toColor
 import dev.proxyfox.database.Database
+import dev.proxyfox.database.gson
 import dev.proxyfox.database.records.member.MemberProxyTagRecord
 import dev.proxyfox.database.records.member.MemberRecord
 import dev.proxyfox.database.records.system.SystemRecord
