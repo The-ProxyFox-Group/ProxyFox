@@ -24,7 +24,6 @@ import dev.kord.core.on
 import dev.kord.gateway.Intent
 import dev.kord.gateway.PrivilegedIntent
 import dev.kord.gateway.builder.Shards
-import dev.kord.gateway.editPresence
 import dev.kord.rest.builder.message.EmbedBuilder
 import dev.kord.rest.builder.message.create.embed
 import dev.proxyfox.common.*
@@ -38,9 +37,9 @@ import kotlinx.coroutines.flow.count
 import kotlinx.datetime.Clock
 import kotlinx.datetime.Instant
 import java.time.OffsetDateTime
+import kotlin.math.max
 import kotlin.time.Duration
 import kotlin.time.Duration.Companion.minutes
-import kotlin.time.DurationUnit
 
 const val UPLOAD_LIMIT = 1024 * 1024 * 8
 
@@ -63,10 +62,13 @@ suspend fun login() {
     printStep("Logging in", 1)
     val builder = KordBuilder(System.getenv("PROXYFOX_KEY"))
 
-    builder.sharding {
-        shardCount = it+2
-        printStep("Setting up sharding with $shardCount shards", 2)
-        Shards(shardCount)
+    val shards = System.getenv("PROXYFOX_TOTAL_SHARDS")?.toIntOrNull()
+    if (shards != null) {
+        builder.sharding {
+            shardCount = max(it, shards)
+            printStep("Setting up sharding with $shardCount shards", 2)
+            Shards(shardCount)
+        }
     }
 
     kord = builder.build()

@@ -147,7 +147,7 @@ object MemberCommands {
             footer {
                 text = "Member ID \u2009• \u2009${member.id}\u2007|\u2007System ID \u2009• \u2009${system.id}\u2007|\u2007Created "
             }
-            timestamp = system.timestamp.toKtInstant()
+            timestamp = member.timestamp.toKtInstant()
         }
         return ""
     }

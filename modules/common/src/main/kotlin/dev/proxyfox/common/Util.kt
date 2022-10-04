@@ -25,6 +25,7 @@ import kotlin.contracts.contract
 val logger = LoggerFactory.getLogger("ProxyFox")
 
 const val spacedDot = " \u2009• \u2009"
+const val ellipsis = "…"
 
 fun printFancy(input: String) {
     val edges = "*".repeat(input.length + 4)
@@ -42,7 +43,9 @@ fun String?.toColor(): Int {
     return if (this == null) -1 else (toUIntOrNull(16)?.toInt() ?: Integer.decode(this)) and 0xFFFFFF
 }
 
-fun Int.fromColor() = if (this < 0) null else toString(16).run { "#${padStart(7 - length, '0')}" }
+fun Int.fromColor() = fromColorForExport()?.let { "#$it" }
+
+fun Int.fromColorForExport() = if (this < 0) null else toString(16).run { padStart(6, '0') }
 
 val OffsetDateTime.epochMilli
     get() = (toEpochSecond() * 1000L) + (nano / 1000000)
