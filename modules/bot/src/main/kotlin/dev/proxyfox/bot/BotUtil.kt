@@ -11,9 +11,12 @@ package dev.proxyfox.bot
 import dev.kord.common.Color
 import dev.kord.common.entity.Snowflake
 import dev.kord.core.Kord
+import dev.kord.core.behavior.channel.createMessage
 import dev.kord.core.builder.kord.KordBuilder
 import dev.kord.core.entity.Message
 import dev.kord.core.entity.ReactionEmoji
+import dev.kord.core.entity.channel.Channel
+import dev.kord.core.entity.channel.TextChannel
 import dev.kord.core.event.gateway.ReadyEvent
 import dev.kord.core.event.message.MessageCreateEvent
 import dev.kord.core.event.message.ReactionAddEvent
@@ -23,10 +26,8 @@ import dev.kord.gateway.PrivilegedIntent
 import dev.kord.gateway.builder.Shards
 import dev.kord.gateway.editPresence
 import dev.kord.rest.builder.message.EmbedBuilder
-import dev.proxyfox.common.logger
-import dev.proxyfox.common.printFancy
-import dev.proxyfox.common.printStep
-import dev.proxyfox.common.spacedDot
+import dev.kord.rest.builder.message.create.embed
+import dev.proxyfox.common.*
 import dev.proxyfox.database.database
 import dev.proxyfox.database.records.member.MemberRecord
 import dev.proxyfox.database.records.system.SystemRecord
@@ -48,6 +49,8 @@ lateinit var kord: Kord
 lateinit var http: HttpClient
 lateinit var startTime: Instant
 var shardCount: Int = 0
+val errorChannelId = try { Snowflake(System.getenv("PROXYFOX_LOG")) } catch (_: Throwable) { null }
+var errorChannel: TextChannel? = null
 
 @OptIn(PrivilegedIntent::class)
 suspend fun login() {
@@ -82,13 +85,29 @@ suspend fun login() {
             val reason = err.message
             var cause = ""
             err.stackTrace.forEach {
-                if (it.toString().startsWith("dev.proxyfox")) {
+                if (it.toString().startsWith("dev.proxyfox"))
                     cause += "  at $it\n"
-                }
             }
             message.channel.createMessage(
-                "An unexpected error occurred.\nTimestamp: `$timestamp`\n```\n${err.javaClass.name}: $reason\n$cause\n```"
+                "An unexpected error occurred.\nTimestamp: `$timestamp`\n```\n${err.javaClass.name}: $reason\n$cause```"
             )
+            if (err is DebugException) return@on
+            if (errorChannel == null && errorChannelId != null)
+                errorChannel = kord.getChannel(errorChannelId) as TextChannel
+            if (errorChannel != null) {
+                cause = ""
+                err.stackTrace.forEach {
+                    if (cause.length > 2000) return@forEach
+                    cause += "at $it\n\n"
+                }
+                errorChannel!!.createMessage {
+                    content = "`$timestamp`"
+                    embed {
+                        title = "${err.javaClass.name}: $reason"
+                        description = "```\n$cause```"
+                    }
+                }
+            }
         }
     }
 
