@@ -103,48 +103,56 @@ object MiscCommands {
             }
         })
 
-        registerCommand(literal("debug") {
-            val shardid = message.getGuildOrNull()?.id?.value?.toShard() ?: -1
-            respond {
-                title = "ProxyFox Debug"
-                var gatewayPing = Duration.ZERO
-                if (shardid != -1) {
-                    gatewayPing = message.kord.gateway.gateways[shardid]!!.ping.value!!
+        registerCommand(literal("debug", ::debug))
+    }
 
-                    field {
-                        inline = true
-                        name = "Shard ID"
-                        value = "$shardid"
-                    }
-                    field {
-                        inline = true
-                        name = "Gateway Ping"
-                        value = "$gatewayPing"
-                    }
-                }
-                val databasePing = database.ping()
-                field {
-                    inline = true
-                    name = "Database Ping"
-                    value = "$databasePing"
-                }
-
-                val totalPing = gatewayPing + databasePing
-                field {
-                    inline = true
-                    name = "Total Ping"
-                    value = "$totalPing"
-                }
+    private suspend fun debug(ctx: MessageHolder): String {
+        val shardid = ctx.message.getGuildOrNull()?.id?.value?.toShard() ?: -1
+        ctx.respond {
+            title = "ProxyFox Debug"
+            var gatewayPing = Duration.ZERO
+            if (shardid != -1) {
+                gatewayPing = ctx.message.kord.gateway.gateways[shardid]!!.ping.value!!
 
                 field {
                     inline = true
-                    name = "Uptime"
-                    value = "${(Clock.System.now() - startTime).inWholeHours} hours"
+                    name = "Shard ID"
+                    value = "$shardid"
+                }
+                field {
+                    inline = true
+                    name = "Gateway Ping"
+                    value = "$gatewayPing"
                 }
             }
+            val databasePing = database.ping()
+            field {
+                inline = true
+                name = "Database Ping"
+                value = "$databasePing"
+            }
 
-            throw DebugException()
-        })
+            val totalPing = gatewayPing + databasePing
+            field {
+                inline = true
+                name = "Total Ping"
+                value = "$totalPing"
+            }
+
+            field {
+                inline = true
+                name = "Uptime"
+                value = "${(Clock.System.now() - startTime).inWholeHours} hours"
+            }
+
+            field {
+                inline = true
+                name = "Database Implementation"
+                value = database.getDatabaseName()
+            }
+        }
+
+        throw DebugException()
     }
 
     private suspend fun importEmpty(ctx: MessageHolder): String {

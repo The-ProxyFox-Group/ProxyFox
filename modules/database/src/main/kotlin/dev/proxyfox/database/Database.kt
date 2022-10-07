@@ -39,6 +39,8 @@ abstract class Database : AutoCloseable {
     abstract suspend fun setup(): Database
     abstract suspend fun ping(): Duration
 
+    abstract suspend fun getDatabaseName(): String
+
     abstract suspend fun fetchUser(userId: ULong): UserRecord?
     suspend inline fun fetchUser(user: UserBehavior?) = user?.run { fetchUser(id.value) }
 

@@ -107,6 +107,8 @@ class MongoDatabase(private val dbName: String = "ProxyFox") : Database() {
         }
     }
 
+    override suspend fun getDatabaseName() = "MongoDB"
+
     override suspend fun fetchUser(userId: ULong): UserRecord? {
         return users.findOne("{id:$userId}")
     }
