@@ -24,6 +24,7 @@ import dev.proxyfox.bot.toShard
 import dev.proxyfox.bot.webhook.WebhookUtil
 import dev.proxyfox.common.DebugException
 import dev.proxyfox.common.ellipsis
+import dev.proxyfox.common.hash
 import dev.proxyfox.common.printStep
 import dev.proxyfox.database.database
 import dev.proxyfox.database.records.misc.AutoProxyMode
@@ -149,6 +150,12 @@ object MiscCommands {
                 inline = true
                 name = "Database Implementation"
                 value = database.getDatabaseName()
+            }
+
+            field {
+                inline = true
+                name = "Commit Hash"
+                value = hash
             }
         }
 
