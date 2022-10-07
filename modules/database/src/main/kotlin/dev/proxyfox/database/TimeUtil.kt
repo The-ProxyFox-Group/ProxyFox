@@ -27,7 +27,8 @@ import java.util.*
  * @since ${version}
  **/
 
-private val spacer = DateTimeFormatter.ofPattern("[',']['-'][' ']['/']")
+private val plus = DateTimeFormatter.ofPattern("'+'")
+private val spacer = DateTimeFormatter.ofPattern("[',']['-'][' ']['/']['+']")
 private val dayTerminatorStrict = DateTimeFormatter.ofPattern("['st']['nd']['rd']['th']")
 private val dayTerminator = DateTimeFormatter.ofPattern("['s']['t']['h']['n']['r']['d']")
 private val year = DateTimeFormatterBuilder().appendValue(ChronoField.YEAR).toFormatter()
@@ -121,7 +122,8 @@ val DDMMuuuu = DateTimeFormatterBuilder()
     .toFormatter()
 
 val uuuuMMDD = DateTimeFormatterBuilder()
-    .appendValue(ChronoField.YEAR, 4, 10, SignStyle.EXCEEDS_PAD)
+    .appendOptional(plus)
+    .appendValue(ChronoField.YEAR, 4, 10, SignStyle.NORMAL)
     .appendOptional(spacer)
     .appendValue(ChronoField.MONTH_OF_YEAR)
     .appendOptional(spacer)
@@ -226,8 +228,8 @@ fun tryParseLocalDate(str: String?, preferMonthDay: Boolean = true): Pair<LocalD
         ?: MMMDDuuuu.parseUnresolved(str, ParsePosition(0))?.also { parser = MMMDDuuuu }
         ?: DDMMMMuuuu.parseUnresolved(str, ParsePosition(0))?.also { parser = DDMMMMuuuu }
         ?: DDMMMuuuu.parseUnresolved(str, ParsePosition(0))?.also { parser = DDMMMuuuu }
-        ?: uuuuMMDD.parseUnresolved(str, ParsePosition(0))?.also { parser = uuuuMMDD }
-        ?: (if (preferMonthDay) MMDDuuuu else DDMMuuuu).run { parseUnresolved(str, ParsePosition(0))?.also { parser = this } }
+        ?: uuuuMMDD.parseUnresolved(str, ParsePosition(0)).validate()?.also { parser = uuuuMMDD }
+        ?: (if (preferMonthDay) MMDDuuuu else DDMMuuuu).run { parseUnresolved(str, ParsePosition(0))?.validate()?.also { parser = this } }
         ?: return null // Failed to parse
     // Fetch fields to manually construct LocalDate
     val year = if (parsed.isSupported(ChronoField.YEAR)) parsed[ChronoField.YEAR] else 1
@@ -244,4 +246,11 @@ fun TemporalAccessor.displayDate() = if (get(ChronoField.YEAR) == 1) {
     displayMonthDay.format(this)
 } else {
     displayFull.format(this)
+}
+
+private fun TemporalAccessor?.validate(): TemporalAccessor? {
+    if (this == null) return null
+    if (getLong(ChronoField.DAY_OF_MONTH) > 31) return null
+    if (getLong(ChronoField.MONTH_OF_YEAR) > 31) return null
+    return this
 }
