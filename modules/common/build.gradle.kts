@@ -26,10 +26,6 @@ tasks.withType<ProcessResources> {
     }
 }
 
-tasks.build {
-    dependsOn(ProcessResources::class)
-}
-
 fun getCommitHash(): String? {
     val stdout = ByteArrayOutputStream()
     exec {
