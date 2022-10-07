@@ -15,6 +15,7 @@ import com.google.gson.stream.JsonReader
 import com.google.gson.stream.JsonToken
 import com.google.gson.stream.JsonWriter
 import com.mongodb.reactivestreams.client.MongoCollection
+import dev.proxyfox.gson.LocalDateAdaptor
 import dev.proxyfox.importer.ImporterException
 import kotlinx.coroutines.reactive.awaitFirst
 import kotlinx.coroutines.reactive.awaitFirstOrNull
@@ -25,6 +26,7 @@ import org.litote.kmongo.reactivestreams.getCollection
 import org.litote.kmongo.util.KMongoUtil
 import java.lang.reflect.RecordComponent
 import java.lang.reflect.Type
+import java.time.LocalDate
 import java.time.OffsetDateTime
 import java.time.format.DateTimeFormatter
 import kotlin.contracts.ExperimentalContracts
@@ -34,6 +36,7 @@ import kotlin.contracts.contract
 
 val gson = GsonBuilder()
     .registerTypeAdapter(OffsetDateTime::class.java, OffsetDateTimeAdaptor)
+    .registerTypeAdapter(LocalDate::class.java, LocalDateAdaptor)
     .registerTypeAdapter(ObjectId::class.java, ObjectIdNullifier)
     .registerTypeAdapter(ULong::class.java, ULongAdaptor)
     .registerTypeAdapterFactory(RecordAdapterFactory)
@@ -134,8 +137,14 @@ object OffsetDateTimeAdaptor : JsonSerializer<OffsetDateTime>, JsonDeserializer<
             JsonPrimitive(DateTimeFormatter.ISO_OFFSET_DATE_TIME.format(src))
     }
 
-    override fun deserialize(json: JsonElement, typeOfT: Type, context: JsonDeserializationContext): OffsetDateTime {
-        return DateTimeFormatter.ISO_OFFSET_DATE_TIME.parse(json.asString, OffsetDateTime::from)
+    override fun deserialize(json: JsonElement, typeOfT: Type, context: JsonDeserializationContext): OffsetDateTime? {
+        return json.asString.sanitise().run {
+            if (isNullOrBlank()) {
+                null
+            } else {
+                DateTimeFormatter.ISO_OFFSET_DATE_TIME.parse(this, OffsetDateTime::from)
+            }
+        }
     }
 }
 

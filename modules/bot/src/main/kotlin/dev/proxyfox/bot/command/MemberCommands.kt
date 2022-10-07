@@ -22,6 +22,8 @@ import dev.proxyfox.common.fromColor
 import dev.proxyfox.common.printStep
 import dev.proxyfox.common.toColor
 import dev.proxyfox.database.database
+import dev.proxyfox.database.displayDate
+import dev.proxyfox.database.tryParseLocalDate
 
 /**
  * Commands for accessing and changing system  settings
@@ -140,7 +142,7 @@ object MemberCommands {
             member.birthday?.let {
                 field {
                     name = "Birthday"
-                    value = it
+                    value = it.displayDate()
                     inline = true
                 }
             }
@@ -483,7 +485,7 @@ object MemberCommands {
             ?: return "System does not exist. Create one using `pf>system new`"
         val member = database.findMember(system.id, ctx.params["member"]!![0])
             ?: return "Member does not exist. Create one using `pf>member new`"
-        member.birthday = ctx.params["birthday"]!![0]
+        member.birthday = tryParseLocalDate(ctx.params["birthday"]!![0])?.first
         database.updateMember(member)
         return "Member's birthday updated!"
     }
