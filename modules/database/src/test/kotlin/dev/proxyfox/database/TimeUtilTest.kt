@@ -26,8 +26,20 @@ class TimeUtilTest {
         assertEquals(tryParseLocalDate(str)?.first, dec25)
     }
 
+    @Test(dataProvider = "January 1st, +65535")
+    fun `tryParseLocalDate - expect 655350101`(str: String) {
+        assertEquals(tryParseLocalDate(str)?.first, jan01)
+    }
+
+    @Test(dataProvider = "January 1st, -65536")
+    fun `tryParseLocalDate - expect -655360101`(str: String) {
+        assertEquals(tryParseLocalDate(str)?.first, jan01neg)
+    }
+
     companion object {
         val dec25 = LocalDate.of(1, 12, 25)!!
+        val jan01 = LocalDate.of(65535, 1, 1)!!
+        val jan01neg = LocalDate.of(-65536, 1, 1)!!
 
         @JvmStatic
         @DataProvider
@@ -70,6 +82,91 @@ class TimeUtilTest {
             "0001-12-25",
             "0001/12/25",
             "0001 12 25",
+        )
+
+        @JvmStatic
+        @DataProvider
+        fun `January 1st, +65535`() = arrayOf(
+            // MMMM-DD-uuuu
+            "January 1st, 65535",
+            "January 1, 65535",
+            // MMM-DD-uuuu
+            "Jan 1st, 65535",
+            "Jan 1, 65535",
+            // DD-MMMM-uuuu
+            "1st January 65535",
+            "1 January 65535",
+            // DD-MMM-uuuu
+            "1st Jan 65535",
+            "1 Jan 65535",
+            // MM-DD-uuuu
+            "1/1/65535",
+            "1-1-65535",
+            "1 1 65535",
+            // DD-MM-uuuu
+            "1/1/65535",
+            "1-1-65535",
+            "1 1 65535",
+            // uuuu-MM-DD
+            "65535-1-1",
+            "65535/1/1",
+            "65535 1 1",
+
+            // == This time, with the plus prefix
+
+            // MMMM-DD-uuuu
+            "January 1st, +65535",
+            "January 1, +65535",
+            // MMM-DD-uuuu
+            "Jan 1st, +65535",
+            "Jan 1, +65535",
+            // DD-MMMM-uuuu
+            "1st January +65535",
+            "1 January +65535",
+            // DD-MMM-uuuu
+            "1st Jan +65535",
+            "1 Jan +65535",
+            // MM-DD-uuuu
+            "1/1/+65535",
+            "1-1-+65535",
+            "1 1 +65535",
+            // DD-MM-uuuu
+            "1/1/+65535",
+            "1-1-+65535",
+            "1 1 +65535",
+            // uuuu-MM-DD
+            "+65535-1-1",
+            "+65535/1/1",
+            "+65535 1 1",
+        )
+
+        @JvmStatic
+        @DataProvider
+        fun `January 1st, -65536`() = arrayOf(
+            // MMMM-DD-uuuu
+            "January 1st, -65536",
+            "January 1, -65536",
+            // MMM-DD-uuuu
+            "Jan 1st, -65536",
+            "Jan 1, -65536",
+            // DD-MMMM-uuuu
+            "1st January -65536",
+            "1 January -65536",
+            // DD-MMM-uuuu
+            "1st Jan -65536",
+            "1 Jan -65536",
+            // MM-DD-uuuu
+            "1/1/-65536",
+            "1-1--65536",
+            "1 1 -65536",
+            // DD-MM-uuuu
+            "1/1/-65536",
+            "1-1--65536",
+            "1 1 -65536",
+            // uuuu-MM-DD
+            "-65536-1-1",
+            "-65536/1/1",
+            "-65536 1 1",
         )
     }
 }
