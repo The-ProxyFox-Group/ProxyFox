@@ -18,6 +18,7 @@ import dev.proxyfox.bot.string.parser.parseString
 import dev.proxyfox.bot.webhook.WebhookUtil
 import dev.proxyfox.common.ellipsis
 import dev.proxyfox.database.database
+import dev.proxyfox.database.displayDate
 import dev.proxyfox.database.records.misc.AutoProxyMode
 import org.slf4j.LoggerFactory
 
@@ -180,7 +181,7 @@ suspend fun ReactionAddEvent.onReactionAdd() {
                     member.birthday?.let {
                         field {
                             name = "Birthday"
-                            value = it
+                            value = it.displayDate()
                             inline = true
                         }
                     }

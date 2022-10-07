@@ -10,6 +10,7 @@ package dev.proxyfox.types
 
 import dev.proxyfox.database.records.member.MemberRecord
 import dev.proxyfox.database.sanitise
+import dev.proxyfox.database.tryParseLocalDate
 
 // Created 2022-29-09T22:20:20
 
@@ -40,7 +41,7 @@ class TbMember {
 
         avatar_url?.let { record.avatarUrl = it.sanitise() }
         nick?.let { record.displayName = it.sanitise() }
-        birthday?.let { record.birthday = it.sanitise() }
+        tryParseLocalDate(birthday.sanitise())?.first?.let { record.birthday = it }
         description?.let { record.description = it.sanitise() }
     }
 }

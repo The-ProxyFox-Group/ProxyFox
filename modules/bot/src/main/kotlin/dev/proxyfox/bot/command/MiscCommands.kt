@@ -26,6 +26,7 @@ import dev.proxyfox.common.DebugException
 import dev.proxyfox.common.ellipsis
 import dev.proxyfox.common.printStep
 import dev.proxyfox.database.database
+import dev.proxyfox.database.displayDate
 import dev.proxyfox.database.records.misc.AutoProxyMode
 import dev.proxyfox.database.records.misc.ProxiedMessageRecord
 import dev.proxyfox.database.records.system.SystemRecord
@@ -440,7 +441,7 @@ To get support, head on over to https://discord.gg/q3yF8ay9V7"""
             member.birthday?.let {
                 field {
                     name = "Birthday"
-                    value = it
+                    value = it.displayDate()
                     inline = true
                 }
             }

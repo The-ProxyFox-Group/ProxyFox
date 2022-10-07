@@ -28,6 +28,7 @@ import dev.proxyfox.database.records.system.SystemServerSettingsRecord
 import dev.proxyfox.database.records.system.SystemSwitchRecord
 import org.jetbrains.annotations.TestOnly
 import java.io.File
+import java.time.LocalDate
 import java.time.OffsetDateTime
 import java.time.ZoneOffset
 import java.util.concurrent.ConcurrentHashMap
@@ -765,7 +766,7 @@ class JsonDatabase(val file: File = File("systems.json")) : Database() {
         var name: String,
         var displayName: String? = null,
         var description: String? = null,
-        var birthday: String? = null,
+        var birthday: LocalDate? = null,
         var age: String? = null,
         var role: String? = null,
         var pronouns: String? = null,

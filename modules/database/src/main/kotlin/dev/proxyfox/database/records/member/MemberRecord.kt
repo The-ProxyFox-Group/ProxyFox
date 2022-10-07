@@ -10,6 +10,7 @@ package dev.proxyfox.database.records.member
 
 import dev.proxyfox.database.database
 import org.bson.types.ObjectId
+import java.time.LocalDate
 import java.time.OffsetDateTime
 import java.time.ZoneOffset
 
@@ -23,7 +24,6 @@ import java.time.ZoneOffset
 class MemberRecord {
     var _id: ObjectId = ObjectId()
 
-    @JvmField
     var id: String = ""
     var systemId: String = ""
     var name: String = ""
@@ -37,7 +37,7 @@ class MemberRecord {
     var keepProxy: Boolean = false
     var messageCount: ULong = 0UL
     var timestamp: OffsetDateTime = OffsetDateTime.now(ZoneOffset.UTC)
-    var birthday: String? = null
+    var birthday: LocalDate? = null
     var age: String? = null
     var role: String? = null
 

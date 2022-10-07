@@ -15,6 +15,7 @@ import java.time.format.DateTimeFormatterBuilder
 import java.time.format.SignStyle
 import java.time.format.TextStyle
 import java.time.temporal.ChronoField
+import java.time.temporal.TemporalAccessor
 import java.util.*
 
 // Created 2022-02-10T19:21:08
@@ -128,6 +129,9 @@ val uuuuMMDD = DateTimeFormatterBuilder()
     .parseLenient()
     .toFormatter()
 
+val displayMonthDay = DateTimeFormatter.ofPattern("MMM dd")
+val displayFull = DateTimeFormatter.ofPattern("MMM dd, uuuu")
+
 /**
  * Attempts to parse the local date time for the following formats:
  *
@@ -234,4 +238,10 @@ fun tryParseLocalDate(str: String?, preferMonthDay: Boolean = true): Pair<LocalD
         LocalDate.of(year, day, month) to if (preferMonthDay) DDMMuuuu else MMDDuuuu
     else
         LocalDate.of(year, month, day) to parser
+}
+
+fun TemporalAccessor.displayDate() = if (get(ChronoField.YEAR) == 1) {
+    displayMonthDay.format(this)
+} else {
+    displayFull.format(this)
 }
