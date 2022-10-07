@@ -36,6 +36,7 @@ import kotlinx.coroutines.*
 import kotlinx.coroutines.flow.count
 import kotlinx.datetime.Clock
 import kotlinx.datetime.Instant
+import java.lang.Integer.min
 import java.time.OffsetDateTime
 import kotlin.math.max
 import kotlin.time.Duration
@@ -62,13 +63,12 @@ suspend fun login() {
     printStep("Logging in", 1)
     val builder = KordBuilder(System.getenv("PROXYFOX_KEY"))
 
-    val shards = System.getenv("PROXYFOX_TOTAL_SHARDS")?.toIntOrNull()
-    if (shards != null) {
-        builder.sharding {
-            shardCount = max(it, shards)
-            printStep("Setting up sharding with $shardCount shards", 2)
-            Shards(shardCount)
-        }
+    builder.sharding {
+        val shards = System.getenv("PROXYFOX_MAX_SHARDS")?.toIntOrNull() ?: (it+2)
+        shardCount = min(it+2, shards)
+
+        printStep("Setting up sharding with $shardCount shards", 2)
+        Shards(shardCount)
     }
 
     kord = builder.build()
@@ -252,4 +252,4 @@ suspend fun Message.timedYesNoPrompt(
     job.invokeOnCompletion { micro.cancel() }
 }
 
-fun ULong.toShard() = ((this shr 22) % shardCount.toULong()).toInt()
+fun ULong.toShard() = if (shardCount == 0) 0 else ((this shr 22) % shardCount.toULong()).toInt()

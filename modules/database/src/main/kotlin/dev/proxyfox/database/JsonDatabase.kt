@@ -208,6 +208,8 @@ class JsonDatabase(val file: File = File("systems.json")) : Database() {
         return Duration.ZERO
     }
 
+    override suspend fun getDatabaseName() = "JSON"
+
     @Deprecated(level = DeprecationLevel.ERROR, message = "Non-native method")
     override suspend fun fetchUser(userId: ULong): UserRecord? {
         return users[userId]?.let { UserRecord().apply { id = userId; systemId = it.id } }
