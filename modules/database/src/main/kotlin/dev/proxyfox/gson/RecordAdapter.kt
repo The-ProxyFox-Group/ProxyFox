@@ -38,8 +38,9 @@ class RecordAdapter<T : Record>(private val gson: Gson, private val type: Type, 
         out.beginObject()
         for (component in value.javaClass.recordComponents!!) {
             out.name(component.name)
-            val v = component.accessor.invoke(value)
-            gson.getAdapter(v.javaClass).write(out, v)
+            component.accessor.invoke(value)?.also {
+                gson.getAdapter(it.javaClass).write(out, it)
+            } ?: out.nullValue()
         }
         out.endObject()
     }
