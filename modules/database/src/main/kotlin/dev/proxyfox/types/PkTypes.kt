@@ -45,6 +45,10 @@ data class PkSystem(
     // Required for PK to accept the export.
     // ProxyFox however will accept any export that vaguely matches PK's.
     val switches: List<Any>? = emptyList(),
+
+    // The following are ignored. We don't use these.
+    val uuid: Void? = null,
+    val version: Void? = null,
 ) {
     constructor(
         record: SystemRecord,
@@ -105,6 +109,9 @@ data class PkMember(
     // ProxyFox-specific extensions.
     // PluralKit and TupperBox should ignore these.
     val proxyfox: PfMemberExtension? = null,
+
+    // The following are ignored. We don't use these.
+    val uuid: Void? = null,
 ) {
     constructor(record: MemberRecord, proxyTags: List<PkProxy>?) : this(
         id = record.id,
@@ -141,6 +148,9 @@ data class PkGroup(
     val members: List<String>? = null,
 
     val privacy: PkGroupPrivacy? = null,
+
+    // The following are ignored. We don't use these.
+    val uuid: Void? = null,
 )
 
 @JvmRecord
