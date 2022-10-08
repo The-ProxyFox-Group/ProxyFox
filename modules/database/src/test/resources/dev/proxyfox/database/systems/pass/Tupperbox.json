@@ -1,6 +1,26 @@
 {
   "tuppers": [
     {
+      "id": 123456,
+      "user_id": "196188877885538304",
+      "name": "Azalea",
+      "position": 2,
+      "avatar_url": null,
+      "brackets": [
+        "",
+        "-az"
+      ],
+      "posts": 0,
+      "show_brackets": false,
+      "birthday": null,
+      "description": null,
+      "tag": null,
+      "group_id": null,
+      "group_pos": null,
+      "created_at": "2022-10-18T00:00:00.000Z",
+      "nick": null
+    },
+    {
       "id": 77356256,
       "user_id": "196188877885538304",
       "name": "Test",
