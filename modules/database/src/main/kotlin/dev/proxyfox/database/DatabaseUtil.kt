@@ -31,6 +31,7 @@ val gson = GsonBuilder()
     .registerTypeAdapter(LocalDate::class.java, LocalDateAdaptor)
     .registerTypeAdapter(ObjectId::class.java, ObjectIdNullifier)
     .registerTypeAdapter(ULong::class.java, ULongAdaptor)
+    .registerTypeAdapter(Void::class.java, VoidAdaptor)
     .registerTypeAdapterFactory(RecordAdapterFactory)
     .create()!!
 
