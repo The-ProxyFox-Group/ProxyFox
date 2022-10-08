@@ -349,11 +349,15 @@ class JsonDatabase(val file: File = File("systems.json")) : Database() {
             val sysId = if (id == null || systems.containsKey(id)) systems.keys.firstFree() else id
             val struct = JsonSystemStruct(sysId)
             struct.accounts.add(userId)
-            users[userId] = struct
-            systems[sysId] = struct
-            struct.init()
-            struct.view()
+            initSystem(struct).view()
         }
+    }
+
+    private fun initSystem(struct: JsonSystemStruct): JsonSystemStruct {
+        for (user in struct.accounts) users[user] = struct
+        systems[struct.id] = struct
+        struct.init()
+        return struct
     }
 
     override suspend fun containsSystem(systemId: String): Boolean {
@@ -378,7 +382,7 @@ class JsonDatabase(val file: File = File("systems.json")) : Database() {
         return fetchMemberFromSystemAndName(systemId, name) ?: run {
             val system = systems[systemId] ?: return null
             val memId = if (id == null || system.members.containsKey(id)) system.members.keys.firstFree() else id
-            system.putMember(JsonMemberStruct(id = memId, systemId = systemId, name = name))
+            system.putMember(JsonMemberStruct(id = memId, systemId = systemId, name = name)).view()
         }
     }
 
@@ -391,7 +395,9 @@ class JsonDatabase(val file: File = File("systems.json")) : Database() {
     }
 
     override suspend fun updateMember(member: MemberRecord) {
-        systems[member.systemId]!!.members[member.id]!!.from(member)
+        systems[member.systemId]!!.run {
+            members[member.id]?.from(member, this) ?: run { putMember(JsonMemberStruct(member)) }
+        }
     }
 
     override suspend fun updateMemberServerSettings(serverSettings: MemberServerSettingsRecord) {
@@ -401,7 +407,7 @@ class JsonDatabase(val file: File = File("systems.json")) : Database() {
     }
 
     override suspend fun updateSystem(system: SystemRecord) {
-        systems[system.id]!!.from(system)
+        systems[system.id]?.from(system) ?: initSystem(JsonSystemStruct(system))
     }
 
     override suspend fun updateSystemServerSettings(serverSettings: SystemServerSettingsRecord) {
@@ -688,6 +694,10 @@ class JsonDatabase(val file: File = File("systems.json")) : Database() {
         val switches: MutableMap<String, SystemSwitchRecord> = HashMap(),
         val trust: HashMap<ULong, TrustLevel> = HashMap()
     ) {
+        constructor(record: SystemRecord) : this(record.id) {
+            from(record)
+        }
+
         /**
          * Cached lookup of name to member.
          * */
@@ -696,7 +706,7 @@ class JsonDatabase(val file: File = File("systems.json")) : Database() {
 
         fun init() {
             val membersByName = HashMap<String, JsonMemberStruct>()
-            for((_, member) in members) {
+            for ((_, member) in members) {
                 val old = membersByName.put(member.name, member)
                 member.systemId = id
                 if (old != null) logger.warn("Member {} collided with {} from {}", member, old, id)
@@ -743,11 +753,11 @@ class JsonDatabase(val file: File = File("systems.json")) : Database() {
             autoType = record.autoType
         }
 
-        fun putMember(member: JsonMemberStruct): MemberRecord {
+        fun putMember(member: JsonMemberStruct): JsonMemberStruct {
             assert(member.systemId == id) { "systemId != id" }
             members[member.id] = member
             membersByName[member.name] = member
-            return member.view()
+            return member
         }
 
         fun removeMember(member: String): Boolean {
@@ -778,6 +788,11 @@ class JsonDatabase(val file: File = File("systems.json")) : Database() {
 
         val serverSettings: MutableMap<ULong, MemberServerSettingsRecord> = HashMap()
     ) {
+
+        constructor(record: MemberRecord) : this(record.id, record.systemId, record.name) {
+            from(record)
+        }
+
         fun view(): MemberRecord {
             val record = MemberRecord()
             record.id = id
@@ -798,11 +813,17 @@ class JsonDatabase(val file: File = File("systems.json")) : Database() {
             record.avatarUrl = avatarUrl
             record.keepProxy = keepProxy
             record.messageCount = messageCount
-            timestamp?.let {record.timestamp = it}
+            timestamp?.let { record.timestamp = it }
         }
 
-        fun from(record: MemberRecord) {
-            name = record.name
+        fun JsonSystemStruct.from(record: MemberRecord) = from(record, this)
+
+        fun from(record: MemberRecord, system: JsonSystemStruct? = null) {
+            if (name != record.name && system != null) {
+                system.membersByName.remove(name)
+                system.membersByName[record.name] = this
+                name = record.name
+            }
             displayName = record.displayName
             description = record.description
             birthday = record.birthday
