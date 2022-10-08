@@ -9,13 +9,8 @@
 package dev.proxyfox.database
 
 import com.google.gson.*
-import com.google.gson.internal.`$Gson$Types`
-import com.google.gson.reflect.TypeToken
-import com.google.gson.stream.JsonReader
-import com.google.gson.stream.JsonToken
-import com.google.gson.stream.JsonWriter
 import com.mongodb.reactivestreams.client.MongoCollection
-import dev.proxyfox.gson.LocalDateAdaptor
+import dev.proxyfox.gson.*
 import dev.proxyfox.importer.ImporterException
 import kotlinx.coroutines.reactive.awaitFirst
 import kotlinx.coroutines.reactive.awaitFirstOrNull
@@ -24,11 +19,8 @@ import org.litote.kmongo.coroutine.toList
 import org.litote.kmongo.reactivestreams.filter
 import org.litote.kmongo.reactivestreams.getCollection
 import org.litote.kmongo.util.KMongoUtil
-import java.lang.reflect.RecordComponent
-import java.lang.reflect.Type
 import java.time.LocalDate
 import java.time.OffsetDateTime
-import java.time.format.DateTimeFormatter
 import kotlin.contracts.ExperimentalContracts
 import kotlin.contracts.contract
 
@@ -127,115 +119,4 @@ suspend inline fun <reified T : Any> Mongo.getOrCreateCollection(): MongoCollect
         } catch (ignored: Throwable) {
         }
     return getCollection()
-}
-
-object OffsetDateTimeAdaptor : JsonSerializer<OffsetDateTime>, JsonDeserializer<OffsetDateTime> {
-    override fun serialize(src: OffsetDateTime?, typeOfSrc: Type, context: JsonSerializationContext): JsonElement {
-        return if (src == null)
-            JsonNull.INSTANCE
-        else
-            JsonPrimitive(DateTimeFormatter.ISO_OFFSET_DATE_TIME.format(src))
-    }
-
-    override fun deserialize(json: JsonElement, typeOfT: Type, context: JsonDeserializationContext): OffsetDateTime? {
-        return json.asString.sanitise().run {
-            if (isNullOrBlank()) {
-                null
-            } else {
-                DateTimeFormatter.ISO_OFFSET_DATE_TIME.parse(this, OffsetDateTime::from)
-            }
-        }
-    }
-}
-
-object ObjectIdNullifier : JsonSerializer<ObjectId>, JsonDeserializer<ObjectId> {
-    override fun serialize(src: ObjectId?, typeOfSrc: Type?, context: JsonSerializationContext?): JsonElement {
-        return JsonNull.INSTANCE
-    }
-
-    override fun deserialize(json: JsonElement?, typeOfT: Type?, context: JsonDeserializationContext?): ObjectId {
-        return ObjectId()
-    }
-}
-
-object ULongAdaptor : JsonSerializer<ULong>, JsonDeserializer<ULong> {
-    override fun serialize(src: ULong?, typeOfSrc: Type?, context: JsonSerializationContext?): JsonElement {
-        return if (src == null) JsonNull.INSTANCE else JsonPrimitive(src.toLong())
-    }
-
-    override fun deserialize(json: JsonElement, typeOfT: Type?, context: JsonDeserializationContext?): ULong {
-        return json.asLong.toULong()
-    }
-}
-
-object RecordAdapterFactory : TypeAdapterFactory {
-    @Suppress("UNCHECKED_CAST")
-    override fun <T : Any?> create(gson: Gson, type: TypeToken<T>): TypeAdapter<T>? {
-        if (Record::class.java.isAssignableFrom(type.rawType)) {
-            return RecordAdapter(gson, type.type, type.rawType as Class<Record>) as TypeAdapter<T>
-        }
-        return null
-    }
-}
-
-class RecordAdapter<T : Record>(private val gson: Gson, private val type: Type, private val rawType: Class<T>) : TypeAdapter<T>() {
-
-    private val componentMap = HashMap<String, RecordComponent>()
-
-    init {
-        assert(Record::class.java.isAssignableFrom(rawType)) { "Invalid class $rawType ($type)" }
-        for (component in rawType.recordComponents) {
-            componentMap[component.name] = component
-        }
-    }
-
-    override fun write(out: JsonWriter, value: T) {
-        out.beginObject()
-        for (component in value.javaClass.recordComponents!!) {
-            out.name(component.name)
-            val v = component.accessor.invoke(value)
-            gson.getAdapter(v.javaClass).write(out, v)
-        }
-        out.endObject()
-    }
-
-    override fun read(reader: JsonReader): T {
-        val list = ArrayList<Throwable>()
-        val map = HashMap<String, Any?>()
-        val generic = gson.getAdapter(JsonElement::class.java)
-
-        try {
-            reader.beginObject()
-
-            while (reader.peek() == JsonToken.NAME) {
-                val name = reader.nextName()
-                val component = componentMap[name]
-
-                if (component == null) {
-                    val path = reader.path
-                    val location = reader.toString()
-                    list.add(ImporterException("Bad entry at $path: $name -> ${generic.read(reader)} @ $location"))
-                } else {
-                    map[name] = gson.getAdapter(TypeToken.get(`$Gson$Types`.resolve(type, rawType, componentMap[name]!!.genericType))).read(reader)
-                }
-            }
-
-            reader.endObject()
-        } catch (e: Throwable) {
-            list.forEach(e::addSuppressed)
-            throw e
-        }
-
-        if (list.isNotEmpty()) {
-            val e = ImporterException("Errors encountered around ${reader.path}")
-            list.forEach(e::addSuppressed)
-            throw e
-        }
-
-
-        return rawType
-            .getConstructor(*rawType.recordComponents.mapArray(RecordComponent::getType))
-            .newInstance(*rawType.recordComponents.mapArray { map[it.name] })
-    }
-
 }
