@@ -1,0 +1,28 @@
+{
+  "members": [
+    {
+      "name": "Azalea",
+      "birthday": "25-12"
+    },
+    {
+      "name": "Berry",
+      "birthday": "01-02"
+    },
+    {
+      "name": "Cherry",
+      "birthday": "4-10"
+    },
+    {
+      "name": "Hibiscus",
+      "birthday": "07-04-1990"
+    },
+    {
+      "name": "Zinnia",
+      "birthday": "2000-02-04"
+    },
+    {
+      "name": "Ivy",
+      "birthday": "Aug 24th, 1995"
+    }
+  ]
+}
