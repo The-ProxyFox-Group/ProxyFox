@@ -106,6 +106,8 @@ fun databaseFromString(db: String?) =
         else -> throw IllegalArgumentException("Unknown database $db")
     }
 
+inline fun unsupported(message: String = "Not implemented"): Nothing = throw UnsupportedOperationException(message)
+
 inline fun <T, reified R> Array<out T>.mapArray(action: (T) -> R): Array<R> {
     return Array(size) { action(this[it]) }
 }
