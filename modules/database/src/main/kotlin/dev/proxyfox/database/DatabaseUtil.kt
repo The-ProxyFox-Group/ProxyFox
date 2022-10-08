@@ -26,6 +26,8 @@ import kotlin.contracts.contract
 
 // Created 2022-11-04T14:58:16
 
+const val pkIdBound = 11881376
+
 val gson = GsonBuilder()
     .registerTypeAdapter(OffsetDateTime::class.java, OffsetDateTimeAdaptor)
     .registerTypeAdapter(LocalDate::class.java, LocalDateAdaptor)
