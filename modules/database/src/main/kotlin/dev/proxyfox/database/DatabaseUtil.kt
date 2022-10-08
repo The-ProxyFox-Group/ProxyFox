@@ -72,6 +72,8 @@ fun String.fromPkString(): Int {
     return tmp
 }
 
+fun Int.paddedString(zeros: Int) = toString().padStart(zeros, '0')
+
 @OptIn(ExperimentalContracts::class)
 fun String?.isValidPkString(): Boolean {
     contract {
