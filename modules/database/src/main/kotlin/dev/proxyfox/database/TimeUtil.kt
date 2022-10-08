@@ -10,10 +10,8 @@ package dev.proxyfox.database
 
 import java.text.ParsePosition
 import java.time.LocalDate
-import java.time.format.DateTimeFormatter
-import java.time.format.DateTimeFormatterBuilder
-import java.time.format.SignStyle
-import java.time.format.TextStyle
+import java.time.OffsetDateTime
+import java.time.format.*
 import java.time.temporal.ChronoField
 import java.time.temporal.TemporalAccessor
 import java.util.*
@@ -32,6 +30,39 @@ private val spacer = DateTimeFormatter.ofPattern("[',']['-'][' ']['/']['+']")
 private val dayTerminatorStrict = DateTimeFormatter.ofPattern("['st']['nd']['rd']['th']")
 private val dayTerminator = DateTimeFormatter.ofPattern("['s']['t']['h']['n']['r']['d']")
 private val year = DateTimeFormatterBuilder().appendValue(ChronoField.YEAR).toFormatter()
+
+private val mmddTimezones = setOf(
+    "Pacific/Honolulu",
+    "America/Phoenix",
+    "America/Adak",
+    "America/Anchorage",
+    "America/Atka",
+    "America/Boise",
+    "America/Chicago",
+    "America/Denver",
+    "America/Detroit",
+    "America/Fort_Wayne",
+    "America/Indianapolis",
+    "America/Juneau",
+    "America/Knox_IN",
+    "America/Los_Angeles",
+    "America/Louisville",
+    "America/Menominee",
+    "America/Metlakatla",
+    "America/New_York",
+    "America/Nome",
+    "America/Shiprock",
+    "America/Sitka",
+    "America/Yakutat",
+    "Navajo",
+)
+
+private val mmddTimezonesStartOf = setOf(
+    "America/Indiana/",
+    "America/Kentucky/",
+    "America/North_Dakota/",
+    "US/",
+)
 
 private val moy3 = mapOf(
     1L to "jan",
@@ -241,6 +272,15 @@ fun tryParseLocalDate(str: String?, preferMonthDay: Boolean = true): Pair<LocalD
     else
         LocalDate.of(year, month, day) to parser
 }
+
+fun String?.tryParseOffsetTimestamp(): OffsetDateTime? = if (this == null) null else try {
+    OffsetDateTime.parse(this)
+} catch (ignored: DateTimeParseException) {
+    null
+}
+
+fun shouldPreferMonthDay(timezone: String?) =
+    timezone != null && (mmddTimezones.contains(timezone) || mmddTimezonesStartOf.any(timezone::startsWith))
 
 fun TemporalAccessor.displayDate() = if (get(ChronoField.YEAR) == 1) {
     displayMonthDay.format(this)
