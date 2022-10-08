@@ -199,20 +199,20 @@ data class PkMemberPrivacy(
 @UnexpectedValueProcessor<Any?>(NullValueProcessor::class)
 @JvmRecord
 data class PkGroupPrivacy(
+    val name_privacy: PkPrivacyEnum?,
     val description_privacy: PkPrivacyEnum?,
-    val pronoun_privacy: PkPrivacyEnum?,
-    val member_list_privacy: PkPrivacyEnum?,
-    val group_list_privacy: PkPrivacyEnum?,
-    val front_privacy: PkPrivacyEnum?,
-    val front_history_privacy: PkPrivacyEnum?,
+    val icon_privacy: PkPrivacyEnum?,
+    val list_privacy: PkPrivacyEnum?,
+    val metadata_privacy: PkPrivacyEnum?,
+    val visibility: PkPrivacyEnum?,
 ) {
     constructor(privacy: PkPrivacyEnum) : this(
+        name_privacy = privacy,
         description_privacy = privacy,
-        pronoun_privacy = privacy,
-        member_list_privacy = privacy,
-        group_list_privacy = privacy,
-        front_privacy = privacy,
-        front_history_privacy = privacy,
+        icon_privacy = privacy,
+        list_privacy = privacy,
+        metadata_privacy = privacy,
+        visibility = privacy,
     )
 }
 
