@@ -12,6 +12,7 @@ import com.google.common.reflect.ClassPath
 import dev.kord.core.behavior.UserBehavior
 import dev.proxyfox.database.Database
 import dev.proxyfox.database.DatabaseTestUtil.entity
+import dev.proxyfox.database.DatabaseTestUtil.seeded
 import dev.proxyfox.database.JsonDatabase
 import dev.proxyfox.database.MongoDatabase
 import kotlinx.coroutines.ExperimentalCoroutinesApi
@@ -49,7 +50,10 @@ constructor(private val name: String, databaseFactory: () -> Database) {
 
     @Test(dataProvider = "passImporters")
     fun `Importer - expect pass`(url: URL) = runTest {
-        import(database, url.readText(), entity(0UL))
+        val user = entity<UserBehavior>(seeded().nextLong().toULong())
+        import(database, url.readText(), user)
+
+        assertNotNull(database.fetchMemberFromUserAndName(user, "Azalea"), "No such Azalea for $user")
     }
 
     @Test
