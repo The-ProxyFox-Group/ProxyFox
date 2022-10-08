@@ -8,7 +8,6 @@
 
 package dev.proxyfox.exporter
 
-import dev.proxyfox.common.fromColorForExport
 import dev.proxyfox.database.Database
 import dev.proxyfox.database.database
 import dev.proxyfox.database.gson
@@ -22,41 +21,11 @@ object Exporter {
     suspend fun export(database: Database, userId: ULong): String {
         val system = database.fetchSystemFromUser(userId) ?: return ""
 
-        val pkSystem = PkSystem()
-        pkSystem.id = system.id
-        pkSystem.name = system.name
-        pkSystem.description = system.description
-        pkSystem.tag = system.tag
-        pkSystem.avatar_url = system.avatarUrl
-
-        val members = database.fetchMembersFromSystem(system.id) ?: ArrayList()
-        pkSystem.members = Array(members.size) {
-            val member = members[it]
-            val pkMember = PkMember()
-            pkMember.id = member.id
-            pkMember.name = member.name
-            pkMember.display_name = member.displayName
-            pkMember.description = member.description
-            pkMember.pronouns = member.pronouns
-            pkMember.color = member.color.fromColorForExport()
-            pkMember.keep_proxy = member.keepProxy
-            pkMember.message_count = member.messageCount
-            pkMember.avatar_url = member.avatarUrl
-
-            val proxies = database.fetchProxiesFromSystemAndMember(system.id, member.id)
-            val pkProxies = ArrayList<PkProxy>()
-            if (proxies != null) {
-                for (proxy in proxies) {
-                    val pkProxy = PkProxy()
-                    pkProxy.prefix = proxy.prefix
-                    pkProxy.suffix = proxy.suffix
-                    pkProxies.add(pkProxy)
-                }
+        val pkSystem = PkSystem(system,
+            members = database.fetchMembersFromSystem(system.id)?.map {
+                PkMember(it, database.fetchProxiesFromSystemAndMember(system.id, it.id)?.map(::PkProxy))
             }
-            pkMember.proxy_tags = pkProxies.toTypedArray()
-
-            pkMember
-        }
+        )
         return gson.toJson(pkSystem)
     }
 }
