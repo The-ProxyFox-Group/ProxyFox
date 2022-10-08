@@ -36,12 +36,22 @@ open class PluralKitImporter protected constructor(
     private var proxies: HashMap<MemberRecord, List<MemberProxyTagRecord>> = HashMap()
     private var createdMembers = 0
     private var updatedMembers = 0
+    private var id = 0
 
     constructor() : this(false, false)
 
     override suspend fun import(database: Database, json: JsonObject, userId: ULong) {
         val pkSystem = gson.fromJson(json, PkSystem::class.java)
-        system = database.getOrCreateSystem(userId, id = if (directAllocation) pkSystem.id else null)
+        val fresh: Boolean
+        database.fetchSystemFromUser(userId).let {
+            if (it == null) {
+                fresh = true
+                system = database.getOrCreateSystem(userId, id = if (directAllocation) pkSystem.id else null)
+            } else {
+                fresh = false
+                system = it
+            }
+        }
         system.name = pkSystem.name.sanitise() ?: system.name
         system.description = pkSystem.description.sanitise() ?: system.description
         system.tag = pkSystem.tag.sanitise() ?: system.tag
@@ -65,13 +75,24 @@ open class PluralKitImporter protected constructor(
             pkSystem.created.tryParseOffsetTimestamp()?.let { system.timestamp = it }
         }
 
+        database.updateSystem(system)
+
         if (pkSystem.members != null) {
+            val idMap = HashMap<String?, String>()
             val birthdays = findBirthdays(pkSystem.members)
 
             for (pkMember in pkSystem.members) {
-                val member = database.fetchMemberFromSystemAndName(system.id, pkMember.name.validate("members/name"))?.apply { updatedMembers++ }
+                val member = if (fresh) {
+                    createdMembers++
+                    MemberRecord(
+                        if (directAllocation) pkMember.id.validateId(idMap) else nextId(),
+                        system.id,
+                        pkMember.name.validate("members/name"),
+                    )
+                } else database.fetchMemberFromSystemAndName(system.id, pkMember.name.validate("members/name"))?.apply { updatedMembers++ }
                     ?: database.getOrCreateMember(system.id, pkMember.name.validate("members/name"), id = if (directAllocation) pkMember.id else null)?.apply { createdMembers++ }
                     ?: throw ImporterException("Database didn't create member")
+
                 member.displayName = pkMember.display_name.sanitise() ?: member.displayName
                 member.avatarUrl = pkMember.avatar_url.sanitise() ?: member.avatarUrl
                 member.description = pkMember.description.sanitise() ?: member.description
@@ -99,7 +120,6 @@ open class PluralKitImporter protected constructor(
                 database.updateMember(member)
             }
         }
-        database.updateSystem(system)
     }
 
     private fun findBirthdays(members: Collection<PkMember>): Map<PkMember, LocalDate> {
@@ -140,6 +160,22 @@ open class PluralKitImporter protected constructor(
 
         return birthdays.mapValues { it.value.first }
     }
+
+    private fun String?.validateId(set: HashMap<String?, String>): String {
+        if (!isValidPkString() || this in set) {
+            var itr = 0
+            var newId: String
+            do {
+                newId = nextId()
+                if (itr++ > 100) throw ImporterException("Could not find free member ID")
+            } while (newId in set)
+            set[this] = newId
+            return newId
+        }
+        return this
+    }
+
+    private fun nextId() = id++.toPkString()
 
     // Getters:
     override suspend fun getSystem(): SystemRecord = system

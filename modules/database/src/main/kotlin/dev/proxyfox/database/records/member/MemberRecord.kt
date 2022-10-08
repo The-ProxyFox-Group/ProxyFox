@@ -21,7 +21,13 @@ import java.time.ZoneOffset
  *
  * @author Ampflower
  **/
-class MemberRecord {
+class MemberRecord() {
+    constructor(id: String, systemId: String, name: String) : this() {
+        this.id = id
+        this.systemId = systemId
+        this.name = name
+    }
+
     var _id: ObjectId = ObjectId()
 
     var id: String = ""
