@@ -9,14 +9,18 @@
 package dev.proxyfox.types
 
 import dev.proxyfox.common.fromColorForExport
+import dev.proxyfox.database.paddedString
 import dev.proxyfox.database.records.member.MemberProxyTagRecord
 import dev.proxyfox.database.records.member.MemberRecord
 import dev.proxyfox.database.records.misc.AutoProxyMode
 import dev.proxyfox.database.records.misc.TrustLevel
 import dev.proxyfox.database.records.system.SystemRecord
+import dev.proxyfox.database.tryParseLocalDate
 import dev.proxyfox.gson.NullValueProcessor
 import dev.proxyfox.gson.UnexpectedValueProcessor
+import java.time.LocalDate
 import java.time.OffsetDateTime
+import java.time.format.DateTimeFormatter
 
 @JvmRecord
 data class PkSystem(
@@ -122,17 +126,23 @@ data class PkMember(
         color = record.color.fromColorForExport(),
         keep_proxy = record.keepProxy,
         message_count = record.messageCount.toLong(),
-        birthday = record.birthday?.toString(),
+        birthday = record.birthday?.let { if (it.year in 1..9999) it.toString() else "0001-${it.monthValue.paddedString(2)}-${it.dayOfMonth.paddedString(2)}" },
         created = record.timestamp.toString(),
         proxy_tags = proxyTags,
         avatar_url = record.avatarUrl,
         proxyfox = if (record.birthday != null || record.age != null || record.role != null) {
             PfMemberExtension(
+                birthday = record.birthday?.toString(),
                 age = record.age,
                 role = record.role,
             )
         } else null
     )
+
+    fun tryParseBirthday(preferMonthDay: Boolean): Pair<LocalDate, DateTimeFormatter>? {
+        val let = { it: String -> tryParseLocalDate(it, preferMonthDay) }
+        return proxyfox?.birthday?.let(let) ?: birthday?.let(let)
+    }
 }
 
 @JvmRecord
@@ -248,6 +258,7 @@ data class PfSystemExtension(
 
 @JvmRecord
 data class PfMemberExtension(
+    val birthday: String?,
     val age: String?,
     val role: String?,
 )

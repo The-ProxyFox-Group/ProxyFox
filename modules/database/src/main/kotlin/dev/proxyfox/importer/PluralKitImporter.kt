@@ -111,7 +111,7 @@ open class PluralKitImporter protected constructor(
 
         // Parse out birthdays ahead of time
         for (pkMember in members) {
-            tryParseLocalDate(pkMember.birthday, preferMonthDay)?.let {
+            pkMember.tryParseBirthday(preferMonthDay)?.let {
                 birthdays[pkMember] = it
                 if (it.second == ambiguousFormat && it.first.dayOfMonth <= 12) {
                     ambiguousBirthdays.add(pkMember)
@@ -133,7 +133,7 @@ open class PluralKitImporter protected constructor(
             if (otherCount > expectedCount) {
                 for (pkMember in ambiguousBirthdays) {
                     // Not null assertion as it was already parsed successfully once.
-                    birthdays[pkMember] = tryParseLocalDate(pkMember.birthday, !preferMonthDay)!!
+                    birthdays.computeIfPresent(pkMember) { _, (date, _) -> LocalDate.of(date.year, date.dayOfMonth, date.monthValue) to otherFormat }
                 }
             }
         }
