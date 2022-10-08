@@ -29,8 +29,6 @@ object DatabaseTestUtil {
     private const val sysId4 = "exmpl"
     private const val sysId5 = "zzzzz"
 
-    const val pkIdBound = 11881376
-
     private val walker = StackWalker.getInstance(StackWalker.Option.RETAIN_CLASS_REFERENCE)
     private val seed = System.getenv("TEST_SEED")?.toLongOrNull()
     private val rng = Random()
