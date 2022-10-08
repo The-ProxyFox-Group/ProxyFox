@@ -9,16 +9,20 @@
 package dev.proxyfox.importer
 
 import com.google.common.reflect.ClassPath
+import dev.kord.core.behavior.UserBehavior
 import dev.proxyfox.database.Database
 import dev.proxyfox.database.DatabaseTestUtil.entity
 import dev.proxyfox.database.JsonDatabase
 import dev.proxyfox.database.MongoDatabase
 import kotlinx.coroutines.ExperimentalCoroutinesApi
 import kotlinx.coroutines.test.runTest
+import org.testng.Assert.assertEquals
 import org.testng.Assert.assertNotNull
 import org.testng.annotations.*
+import java.io.Reader
 import java.net.URL
 import java.nio.file.Files
+import java.time.LocalDate
 
 // Created 2022-29-09T22:17:51
 
@@ -46,6 +50,36 @@ constructor(private val name: String, databaseFactory: () -> Database) {
     @Test(dataProvider = "passImporters")
     fun `Importer - expect pass`(url: URL) = runTest {
         import(database, url.readText(), entity(0UL))
+    }
+
+    @Test
+    fun `Importer - time tolerance A`() = runTest {
+        val user = entity<UserBehavior>(32767UL)
+        extraResource("ProxyFox-v1-Time-Tolerance-A.json") {
+            import(database, it, user)
+        }
+
+        assertEquals(database.fetchMemberFromUserAndName(user, "Azalea")!!.birthday, LocalDate.of(1, 12, 25))
+        assertEquals(database.fetchMemberFromUserAndName(user, "Berry")!!.birthday, LocalDate.of(1, 1, 2))
+        assertEquals(database.fetchMemberFromUserAndName(user, "Cherry")!!.birthday, LocalDate.of(1, 4, 10))
+        assertEquals(database.fetchMemberFromUserAndName(user, "Hibiscus")!!.birthday, LocalDate.of(1990, 7, 4))
+        assertEquals(database.fetchMemberFromUserAndName(user, "Zinnia")!!.birthday, LocalDate.of(2000, 2, 4))
+        assertEquals(database.fetchMemberFromUserAndName(user, "Ivy")!!.birthday, LocalDate.of(1995, 8, 24))
+    }
+
+    @Test
+    fun `Importer - time tolerance B`() = runTest {
+        val user = entity<UserBehavior>(65535UL)
+        extraResource("ProxyFox-v1-Time-Tolerance-B.json") {
+            import(database, it, user)
+        }
+
+        assertEquals(database.fetchMemberFromUserAndName(user, "Azalea")!!.birthday, LocalDate.of(1, 12, 25))
+        assertEquals(database.fetchMemberFromUserAndName(user, "Berry")!!.birthday, LocalDate.of(1, 2, 1))
+        assertEquals(database.fetchMemberFromUserAndName(user, "Cherry")!!.birthday, LocalDate.of(1, 10, 4))
+        assertEquals(database.fetchMemberFromUserAndName(user, "Hibiscus")!!.birthday, LocalDate.of(1990, 4, 7))
+        assertEquals(database.fetchMemberFromUserAndName(user, "Zinnia")!!.birthday, LocalDate.of(2000, 2, 4))
+        assertEquals(database.fetchMemberFromUserAndName(user, "Ivy")!!.birthday, LocalDate.of(1995, 8, 24))
     }
 
     @Suppress("DEPRECATION_ERROR")
@@ -86,5 +120,9 @@ constructor(private val name: String, databaseFactory: () -> Database) {
         @AfterSuite
         @JvmStatic
         fun cleanupSuite() = Files.deleteIfExists(test)
+
+        private inline fun extraResource(resource: String, action: (Reader) -> Unit) {
+            ImporterTest::class.java.getResourceAsStream("/$path/extra/$resource")!!.reader().use(action)
+        }
     }
 }
