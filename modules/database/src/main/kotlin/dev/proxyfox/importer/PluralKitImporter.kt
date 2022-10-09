@@ -79,19 +79,42 @@ open class PluralKitImporter protected constructor(
 
         if (pkSystem.members != null) {
             val idMap = HashMap<String?, String>()
+            if (!fresh) {
+                val ids = database.fetchMembersFromSystem(system.id)!!.map(MemberRecord::id)
+                for (id in ids) {
+                    // Set IDs to invalid for optimised free ID lookup
+                    idMap[id] = ""
+                }
+                // Set first free ID to here.
+                id = ids.firstFreeRaw()
+            }
             val birthdays = findBirthdays(pkSystem.members)
 
             for (pkMember in pkSystem.members) {
-                val member = if (fresh) {
+                val freshMember: Boolean
+                val memberName = pkMember.name.validate("members/name")
+                val member = run {
+                    if (!fresh) {
+                        val record = database.fetchMemberFromSystemAndName(system.id, memberName)
+                        if (record != null) {
+                            freshMember = false
+                            updatedMembers++
+                            return@run record
+                        }
+                    }
+                    freshMember = true
                     createdMembers++
-                    MemberRecord(
+                    return@run MemberRecord(
                         if (directAllocation) pkMember.id.validateId(idMap) else nextId(),
                         system.id,
-                        pkMember.name.validate("members/name"),
+                        memberName,
                     )
-                } else database.fetchMemberFromSystemAndName(system.id, pkMember.name.validate("members/name"))?.apply { updatedMembers++ }
-                    ?: database.getOrCreateMember(system.id, pkMember.name.validate("members/name"), id = if (directAllocation) pkMember.id else null)?.apply { createdMembers++ }
-                    ?: throw ImporterException("Database didn't create member")
+                    /*
+                    database.getOrCreateMember(system.id, memberName, id = if (directAllocation) pkMember.id else null)?.apply { createdMembers++ }
+                    */
+                }
+
+                idMap[pkMember.id] = member.id
 
                 member.displayName = pkMember.display_name.sanitise() ?: member.displayName
                 member.avatarUrl = pkMember.avatar_url.sanitise() ?: member.avatarUrl
@@ -117,7 +140,11 @@ open class PluralKitImporter protected constructor(
                 if (directAllocation) {
                     pkMember.created.tryParseOffsetTimestamp()?.let { member.timestamp = it }
                 }
-                database.updateMember(member)
+                if (freshMember) {
+                    database.createMember(member)
+                } else {
+                    database.updateMember(member)
+                }
             }
         }
     }

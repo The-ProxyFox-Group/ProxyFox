@@ -89,9 +89,9 @@ fun String?.isValidPkString(): Boolean {
  * hard to come up with anything good here.
  *
  * @receiver The collection of PK-compatible IDs to find the first free of.
- * @return The first free ID.
+ * @return The first free ID as integer.
  * */
-fun Collection<String>.firstFree(): String {
+fun Collection<String>.firstFreeRaw(): Int {
     var newId = size
     for ((index, id) in map { it.fromPkString() }.sorted().withIndex()) {
         if (index != id) {
@@ -99,7 +99,18 @@ fun Collection<String>.firstFree(): String {
             break
         }
     }
-    return newId.toPkString()
+    return newId
+}
+
+/**
+ * A rather cursed way to find first free, but it's kinda
+ * hard to come up with anything good here.
+ *
+ * @receiver The collection of PK-compatible IDs to find the first free of.
+ * @return The first free ID as string.
+ * */
+fun Collection<String>.firstFree(): String {
+    return firstFreeRaw().toPkString()
 }
 
 fun databaseFromString(db: String?) =
