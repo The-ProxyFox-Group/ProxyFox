@@ -39,7 +39,6 @@ import kotlinx.coroutines.flow.firstOrNull
 import kotlinx.coroutines.withContext
 import kotlinx.datetime.Clock
 import java.net.URL
-import kotlin.time.Duration
 
 /**
  * Miscellaneous commands
@@ -109,24 +108,21 @@ object MiscCommands {
     }
 
     private suspend fun debug(ctx: MessageHolder): String {
-        val shardid = ctx.message.getGuildOrNull()?.id?.value?.toShard() ?: -1
+        val shardid = ctx.message.getGuildOrNull()?.id?.value?.toShard() ?: 0
         ctx.respond {
             title = "ProxyFox Debug"
-            var gatewayPing = Duration.ZERO
-            if (shardid != -1) {
-                gatewayPing = ctx.message.kord.gateway.gateways[shardid]!!.ping.value!!
-
-                field {
-                    inline = true
-                    name = "Shard ID"
-                    value = "$shardid"
-                }
-                field {
-                    inline = true
-                    name = "Gateway Ping"
-                    value = "$gatewayPing"
-                }
+            val gatewayPing = ctx.message.kord.gateway.gateways[shardid]!!.ping.value!!
+            field {
+                inline = true
+                name = "Shard ID"
+                value = "$shardid"
             }
+            field {
+                inline = true
+                name = "Gateway Ping"
+                value = "$gatewayPing"
+            }
+
             val databasePing = database.ping()
             field {
                 inline = true
