@@ -499,6 +499,10 @@ class MongoDatabase(private val dbName: String = "ProxyFox") : Database() {
             return record
         }
 
+        override suspend fun createSwitch(switch: SystemSwitchRecord) {
+            systemSwitchQueue += switch.create()
+        }
+
         override suspend fun updateTrustLevel(systemId: String, trustee: ULong, level: TrustLevel): Boolean {
             logger.warn(
                 "Performance degradation: #updateTrustLevel called on bulkInserter for {}: {} -> {}",
