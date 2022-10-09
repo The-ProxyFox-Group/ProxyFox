@@ -32,6 +32,13 @@ class MemberProxyTagRecord {
         action()
     }
 
+    constructor(systemId: String, memberId: String, prefix: String?, suffix: String?) {
+        this.systemId = systemId
+        this.memberId = memberId
+        this.prefix = prefix
+        this.suffix = suffix
+    }
+
     fun test(message: String): Boolean {
         var pre = true
         if (prefix != null) pre = message.startsWith(prefix!!)

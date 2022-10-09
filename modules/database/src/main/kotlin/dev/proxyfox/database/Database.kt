@@ -220,12 +220,16 @@ abstract class Database : AutoCloseable {
 
     abstract suspend fun updateServerSettings(serverSettings: ServerSettingsRecord)
 
+    open suspend fun createServerSettings(serverSettings: ServerSettingsRecord) = updateServerSettings(serverSettings)
+
     suspend inline fun getOrCreateChannelSettingsFromSystem(channel: ChannelBehavior, systemId: String) = getOrCreateChannelSettingsFromSystem(channel.id.value, systemId)
 
     abstract suspend fun getOrCreateChannelSettingsFromSystem(channelId: ULong, systemId: String): SystemChannelSettingsRecord
 
     abstract suspend fun getOrCreateChannel(serverId: ULong, channelId: ULong): ChannelSettingsRecord
     abstract suspend fun updateChannel(channel: ChannelSettingsRecord)
+
+    open suspend fun createChannel(channel: ChannelSettingsRecord) = updateChannel(channel)
 
     // === Management ===
     /**
@@ -260,11 +264,23 @@ abstract class Database : AutoCloseable {
     // TODO: This ideally needs a much better system for updating since this really isn't ideal as is.
     //  This applies to the following 4 methods below.
     abstract suspend fun updateMember(member: MemberRecord)
+
+    open suspend fun createMember(member: MemberRecord) = updateMember(member)
     abstract suspend fun updateMemberServerSettings(serverSettings: MemberServerSettingsRecord)
+
+    open suspend fun createMemberServerSettings(serverSettings: MemberServerSettingsRecord) = updateMemberServerSettings(serverSettings)
     abstract suspend fun updateSystem(system: SystemRecord)
+
+    open suspend fun createSystem(system: SystemRecord) = updateSystem(system)
     abstract suspend fun updateSystemServerSettings(serverSettings: SystemServerSettingsRecord)
+
+    open suspend fun createSystemServerSettings(serverSettings: SystemServerSettingsRecord) = updateSystemServerSettings(serverSettings)
     abstract suspend fun updateSystemChannelSettings(channelSettings: SystemChannelSettingsRecord)
+
+    open suspend fun createSystemChannelSettings(channelSettings: SystemChannelSettingsRecord) = updateSystemChannelSettings(channelSettings)
     abstract suspend fun updateUser(user: UserRecord)
+
+    open suspend fun createUser(user: UserRecord) = updateUser(user)
 
     abstract suspend fun createMessage(
         userId: Snowflake,
@@ -275,7 +291,10 @@ abstract class Database : AutoCloseable {
         systemId: String,
         memberName: String
     )
+
     abstract suspend fun updateMessage(message: ProxiedMessageRecord)
+
+    open suspend fun createMessage(message: ProxiedMessageRecord) = updateMessage(message)
     abstract suspend fun fetchMessage(messageId: Snowflake): ProxiedMessageRecord?
     abstract suspend fun fetchLatestMessage(systemId: String, channelId: Snowflake): ProxiedMessageRecord?
 
@@ -328,6 +347,8 @@ abstract class Database : AutoCloseable {
      *
      * */
     abstract suspend fun updateSwitch(switch: SystemSwitchRecord)
+
+    open suspend fun createSwitch(switch: SystemSwitchRecord) = updateSwitch(switch)
 
     /**
      *
@@ -434,6 +455,18 @@ abstract class Database : AutoCloseable {
 
     // === Unsafe direct-write import & export functions ===
     abstract suspend fun export(other: Database)
+
+    /**
+     * Bulk inserter for importers.
+     *
+     * @return The database instance capable of bulk insertions, this otherwise.
+     * */
+    open fun bulkInserter(): Database = this
+
+    /**
+     * Commits
+     * */
+    open suspend fun commit() {}
 
     @TestOnly
     @Deprecated(level = DeprecationLevel.ERROR, message = "Not for regular use.")
