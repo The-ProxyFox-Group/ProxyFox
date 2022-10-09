@@ -50,7 +50,19 @@ data class PkSystem(
     // ProxyFox however will accept any export that vaguely matches PK's.
     val switches: List<Any>? = emptyList(),
 
-    // The following are ignored. We don't use these.
+    // The following are ignored for as we don't support these yet,
+    // at least at this location.
+    val tz: Void? = null,
+    val timezone: Void? = null,
+
+    val description_privacy: Void? = null,
+    val pronoun_privacy: Void? = null,
+    val member_list_privacy: Void? = null,
+    val group_list_privacy: Void? = null,
+    val front_privacy: Void? = null,
+    val front_history_privacy: Void? = null,
+
+    // The following are ignored entirely. We don't use these.
     val uuid: Void? = null,
     val version: Void? = null,
 ) {
@@ -113,6 +125,16 @@ data class PkMember(
     // ProxyFox-specific extensions.
     // PluralKit and TupperBox should ignore these.
     val proxyfox: PfMemberExtension? = null,
+
+    // The following are ignored for as we don't support these yet,
+    // at least at this location.
+    val visibility: Void? = null,
+    val name_privacy: Void? = null,
+    val description_privacy: Void? = null,
+    val birthday_privacy: Void? = null,
+    val pronoun_privacy: Void? = null,
+    val avatar_privacy: Void? = null,
+    val metadata_privacy: Void? = null,
 
     // The following are ignored. We don't use these.
     val uuid: Void? = null,
