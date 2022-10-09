@@ -27,6 +27,8 @@ class NopDatabase : Database() {
         return Duration.ZERO
     }
 
+    override suspend fun getDatabaseName() = "No Operation (NOP)"
+
     override suspend fun fetchUser(userId: ULong): UserRecord? = null
 
     override suspend fun getOrCreateUser(userId: ULong): UserRecord = fail("Cannot store user for $userId")
