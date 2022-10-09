@@ -13,6 +13,7 @@ import dev.proxyfox.database.database
 import dev.proxyfox.database.gson
 import dev.proxyfox.types.PkMember
 import dev.proxyfox.types.PkProxy
+import dev.proxyfox.types.PkSwitch
 import dev.proxyfox.types.PkSystem
 
 object Exporter {
@@ -21,10 +22,12 @@ object Exporter {
     suspend fun export(database: Database, userId: ULong): String {
         val system = database.fetchSystemFromUser(userId) ?: return ""
 
-        val pkSystem = PkSystem(system,
+        val pkSystem = PkSystem(
+            system,
             members = database.fetchMembersFromSystem(system.id)?.map {
                 PkMember(it, database.fetchProxiesFromSystemAndMember(system.id, it.id)?.map(::PkProxy))
-            }
+            },
+            switches = database.fetchSwitchesFromSystem(system.id)?.map(::PkSwitch),
         )
         return gson.toJson(pkSystem)
     }
