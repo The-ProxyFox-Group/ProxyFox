@@ -288,6 +288,8 @@ fun TemporalAccessor.displayDate() = if (get(ChronoField.YEAR) == 1) {
     displayFull.format(this)
 }
 
+fun TemporalAccessor.pkCompatibleIso8601() = DateTimeFormatter.ISO_OFFSET_DATE_TIME.format(this)
+
 private fun TemporalAccessor?.validate(): TemporalAccessor? {
     if (this == null) return null
     if (getLong(ChronoField.DAY_OF_MONTH) > 31) return null
