@@ -25,4 +25,13 @@ class SystemSwitchRecord {
     var id: String = ""
     var memberIds: List<String> = ArrayList()
     var timestamp: OffsetDateTime = OffsetDateTime.now(ZoneOffset.UTC)
+
+    constructor()
+
+    constructor(systemId: String, id: String, memberIds: List<String>, timestamp: OffsetDateTime?) {
+        this.systemId = systemId
+        this.id = id
+        this.memberIds = memberIds
+        this.timestamp = timestamp ?: OffsetDateTime.now(ZoneOffset.UTC)
+    }
 }

@@ -8,8 +8,7 @@
 
 package dev.proxyfox.database
 
-import com.mongodb.client.model.IndexOptions
-import com.mongodb.client.model.Indexes
+import com.mongodb.client.model.*
 import com.mongodb.reactivestreams.client.MongoClient
 import com.mongodb.reactivestreams.client.MongoCollection
 import dev.kord.common.entity.Snowflake
@@ -28,7 +27,9 @@ import kotlinx.coroutines.reactive.awaitFirstOrNull
 import org.litote.kmongo.coroutine.toList
 import org.litote.kmongo.reactivestreams.*
 import org.litote.kmongo.util.KMongoUtil
+import org.slf4j.LoggerFactory
 import java.time.OffsetDateTime
+import java.util.concurrent.ConcurrentLinkedQueue
 import java.util.concurrent.TimeUnit
 import kotlin.time.Duration
 import kotlin.time.ExperimentalTime
@@ -381,6 +382,10 @@ class MongoDatabase(private val dbName: String = "ProxyFox") : Database() {
         TODO("Not yet implemented")
     }
 
+    override fun bulkInserter(): Database {
+        return BulkInserter(this)
+    }
+
     @Deprecated("Not for regular use.", level = DeprecationLevel.ERROR)
     override suspend fun drop() {
         db.drop().awaitFirstOrNull()
@@ -389,5 +394,144 @@ class MongoDatabase(private val dbName: String = "ProxyFox") : Database() {
 
     override fun close() {
         kmongo.close()
+    }
+
+    private class BulkInserter(mongo: MongoDatabase) : ProxyDatabase<MongoDatabase>(mongo) {
+        private val logger = LoggerFactory.getLogger(BulkInserter::class.java)
+
+        private val serverSettingsQueue = ConcurrentLinkedQueue<WriteModel<ServerSettingsRecord>>()
+        private val channelSettingsQueue = ConcurrentLinkedQueue<WriteModel<ChannelSettingsRecord>>()
+        private val memberQueue = ConcurrentLinkedQueue<WriteModel<MemberRecord>>()
+        private val memberServerSettingsQueue = ConcurrentLinkedQueue<WriteModel<MemberServerSettingsRecord>>()
+        private val systemQueue = ConcurrentLinkedQueue<WriteModel<SystemRecord>>()
+        private val systemServerSettingsQueue = ConcurrentLinkedQueue<WriteModel<SystemServerSettingsRecord>>()
+        private val systemChannelSettingsQueue = ConcurrentLinkedQueue<WriteModel<SystemChannelSettingsRecord>>()
+        private val userQueue = ConcurrentLinkedQueue<WriteModel<UserRecord>>()
+        private val proxiedMessageQueue = ConcurrentLinkedQueue<WriteModel<ProxiedMessageRecord>>()
+        private val systemSwitchQueue = ConcurrentLinkedQueue<WriteModel<SystemSwitchRecord>>()
+        private val memberProxiesQueue = ConcurrentLinkedQueue<WriteModel<MemberProxyTagRecord>>()
+
+        override suspend fun updateServerSettings(serverSettings: ServerSettingsRecord) {
+            serverSettingsQueue += serverSettings.replace()
+        }
+
+        override suspend fun updateChannel(channel: ChannelSettingsRecord) {
+            channelSettingsQueue += channel.replace()
+        }
+
+        override suspend fun updateMember(member: MemberRecord) {
+            memberQueue += member.replace()
+        }
+
+        override suspend fun updateMemberServerSettings(serverSettings: MemberServerSettingsRecord) {
+            memberServerSettingsQueue += serverSettings.replace()
+        }
+
+        override suspend fun updateSystem(system: SystemRecord) {
+            systemQueue += system.replace()
+        }
+
+        override suspend fun updateSystemServerSettings(serverSettings: SystemServerSettingsRecord) {
+            systemServerSettingsQueue += serverSettings.replace()
+        }
+
+        override suspend fun updateSystemChannelSettings(channelSettings: SystemChannelSettingsRecord) {
+            systemChannelSettingsQueue += channelSettings.replace()
+        }
+
+        override suspend fun updateUser(user: UserRecord) {
+            userQueue += user.replace()
+        }
+
+        override suspend fun updateMessage(message: ProxiedMessageRecord) {
+            proxiedMessageQueue += message.replace()
+        }
+
+        override suspend fun createServerSettings(serverSettings: ServerSettingsRecord) {
+            serverSettingsQueue += serverSettings.create()
+        }
+
+        override suspend fun createChannel(channel: ChannelSettingsRecord) {
+            channelSettingsQueue += channel.create()
+        }
+
+        override suspend fun createMember(member: MemberRecord) {
+            memberQueue += member.create()
+        }
+
+        override suspend fun createMemberServerSettings(serverSettings: MemberServerSettingsRecord) {
+            memberServerSettingsQueue += serverSettings.create()
+        }
+
+        override suspend fun createSystem(system: SystemRecord) {
+            systemQueue += system.create()
+        }
+
+        override suspend fun createSystemServerSettings(serverSettings: SystemServerSettingsRecord) {
+            systemServerSettingsQueue += serverSettings.create()
+        }
+
+        override suspend fun createSystemChannelSettings(channelSettings: SystemChannelSettingsRecord) {
+            systemChannelSettingsQueue += channelSettings.create()
+        }
+
+        override suspend fun createUser(user: UserRecord) {
+            userQueue += user.create()
+        }
+
+        override suspend fun createMessage(message: ProxiedMessageRecord) {
+            proxiedMessageQueue += message.create()
+        }
+
+        override suspend fun updateSwitch(switch: SystemSwitchRecord) {
+            systemSwitchQueue += switch.replace()
+        }
+
+        override suspend fun createProxyTag(systemId: String, memberId: String, prefix: String?, suffix: String?): MemberProxyTagRecord {
+            val record = MemberProxyTagRecord(systemId, memberId, prefix, suffix)
+            memberProxiesQueue += record.create()
+            return record
+        }
+
+        override suspend fun createSwitch(systemId: String, memberId: List<String>, timestamp: OffsetDateTime?): SystemSwitchRecord {
+            val record = SystemSwitchRecord(systemId, "", memberId, timestamp)
+            systemSwitchQueue += record.create()
+            return record
+        }
+
+        override suspend fun updateTrustLevel(systemId: String, trustee: ULong, level: TrustLevel): Boolean {
+            logger.warn(
+                "Performance degradation: #updateTrustLevel called on bulkInserter for {}: {} -> {}",
+                systemId, trustee, level, Throwable("Debug trace.")
+            )
+
+            commit()
+            return super.updateTrustLevel(systemId, trustee, level)
+        }
+
+        override suspend fun commit() {
+            proxy.servers.bulkWrite(serverSettingsQueue)
+            proxy.channels.bulkWrite(channelSettingsQueue)
+            proxy.members.bulkWrite(memberQueue)
+            proxy.memberServers.bulkWrite(memberServerSettingsQueue)
+            proxy.systems.bulkWrite(systemQueue)
+            proxy.systemServers.bulkWrite(systemServerSettingsQueue)
+            proxy.systemChannels.bulkWrite(systemChannelSettingsQueue)
+            proxy.users.bulkWrite(userQueue)
+            proxy.messages.bulkWrite(proxiedMessageQueue)
+            proxy.systemSwitches.bulkWrite(systemSwitchQueue)
+            proxy.memberProxies.bulkWrite(memberProxiesQueue)
+        }
+
+        private suspend fun <T> KCollection<T>.bulkWrite(collection: MutableCollection<WriteModel<T>>) {
+            if (collection.isNotEmpty()) {
+                bulkWrite(collection.toList()).awaitFirstOrNull()
+                collection.clear()
+            }
+        }
+
+        private fun <T : Any> T.upsert() = ReplaceOneModel(KMongoUtil.filterIdToBson(this), this, ReplaceOptions().upsert(true))
+        private fun <T : Any> T.replace() = ReplaceOneModel(KMongoUtil.filterIdToBson(this), this)
+        private fun <T : Any> T.create() = InsertOneModel(this)
     }
 }
