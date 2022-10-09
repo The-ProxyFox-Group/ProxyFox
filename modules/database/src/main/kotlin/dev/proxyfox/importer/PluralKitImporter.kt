@@ -14,10 +14,12 @@ import dev.proxyfox.database.*
 import dev.proxyfox.database.records.member.MemberProxyTagRecord
 import dev.proxyfox.database.records.member.MemberRecord
 import dev.proxyfox.database.records.system.SystemRecord
+import dev.proxyfox.database.records.system.SystemSwitchRecord
 import dev.proxyfox.types.PkMember
 import dev.proxyfox.types.PkSystem
 import java.time.LocalDate
 import java.time.format.DateTimeFormatter
+import java.util.*
 
 /**
  * [Importer] to import a JSON with a PluralKit format
@@ -31,6 +33,7 @@ open class PluralKitImporter protected constructor(
     private val directAllocation: Boolean,
     private val ignoreUnfinished: Boolean,
 ) : Importer {
+    private val rng = Random()
     private lateinit var system: SystemRecord
     private var members: List<MemberRecord> = ArrayList()
     private var proxies: HashMap<MemberRecord, List<MemberProxyTagRecord>> = HashMap()
@@ -77,9 +80,10 @@ open class PluralKitImporter protected constructor(
 
         database.updateSystem(system)
 
+        val idMap = HashMap<String?, String>()
+
         if (pkSystem.members != null) {
             val allocatedIds = HashSet<String>()
-            val idMap = HashMap<String?, String>()
             if (!fresh) {
                 val ids = database.fetchMembersFromSystem(system.id)!!.mapTo(allocatedIds, MemberRecord::id)
                 // Set first free ID to here.
@@ -142,6 +146,20 @@ open class PluralKitImporter protected constructor(
                 } else {
                     database.updateMember(member)
                 }
+            }
+        }
+
+        pkSystem.switches?.let { switches ->
+            for (switch in switches) {
+                val timestamp = switch.timestamp.tryParseOffsetTimestamp() ?: continue
+                database.createSwitch(
+                    SystemSwitchRecord(
+                        systemId = system.id,
+                        id = rng.nextInt(pkIdBound).toPkString(),
+                        memberIds = switch.members?.mapNotNull(idMap::get) ?: emptyList(),
+                        timestamp = timestamp,
+                    )
+                )
             }
         }
     }

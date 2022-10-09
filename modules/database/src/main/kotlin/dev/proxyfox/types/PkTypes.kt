@@ -15,6 +15,7 @@ import dev.proxyfox.database.records.member.MemberRecord
 import dev.proxyfox.database.records.misc.AutoProxyMode
 import dev.proxyfox.database.records.misc.TrustLevel
 import dev.proxyfox.database.records.system.SystemRecord
+import dev.proxyfox.database.records.system.SystemSwitchRecord
 import dev.proxyfox.database.tryParseLocalDate
 import dev.proxyfox.gson.NullValueProcessor
 import dev.proxyfox.gson.UnexpectedValueProcessor
@@ -48,7 +49,7 @@ data class PkSystem(
 
     // Required for PK to accept the export.
     // ProxyFox however will accept any export that vaguely matches PK's.
-    val switches: List<Any>? = emptyList(),
+    val switches: List<PkSwitch>? = emptyList(),
 
     // The following are ignored for as we don't support these yet,
     // at least at this location.
@@ -69,7 +70,8 @@ data class PkSystem(
     constructor(
         record: SystemRecord,
         members: List<PkMember>? = null,
-        groups: List<PkGroup>? = null
+        groups: List<PkGroup>? = null,
+        switches: List<PkSwitch>? = null,
     ) : this(
         id = record.id,
         accounts = record.users,
@@ -85,6 +87,8 @@ data class PkSystem(
         ),
         members = members,
         groups = groups,
+        // A list is required for a PK-compatible export.
+        switches = switches ?: emptyList(),
         proxyfox = PfSystemExtension(
             trust = record.trust,
             autoType = record.autoType,
@@ -184,6 +188,17 @@ data class PkGroup(
     // The following are ignored. We don't use these.
     val uuid: Void? = null,
 )
+
+@JvmRecord
+data class PkSwitch(
+    val timestamp: String?,
+    val members: List<String?>?
+) {
+    constructor(record: SystemSwitchRecord) : this(
+        timestamp = record.timestamp.toString(),
+        members = record.memberIds,
+    )
+}
 
 @JvmRecord
 data class PkProxy(
