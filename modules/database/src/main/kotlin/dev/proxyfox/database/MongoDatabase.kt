@@ -413,6 +413,10 @@ class MongoDatabase(private val dbName: String = "ProxyFox") : Database() {
         private val systemSwitchQueue = ConcurrentLinkedQueue<WriteModel<SystemSwitchRecord>>()
         private val memberProxiesQueue = ConcurrentLinkedQueue<WriteModel<MemberProxyTagRecord>>()
 
+        override suspend fun getDatabaseName(): String {
+            return proxy.getDatabaseName() + " (Bulk Inserter)"
+        }
+
         override suspend fun updateServerSettings(serverSettings: ServerSettingsRecord) {
             serverSettingsQueue += serverSettings.replace()
         }

@@ -37,6 +37,10 @@ open class ProxyDatabase<T : Database>(protected val proxy: T) : Database() {
         return proxy.ping()
     }
 
+    override suspend fun getDatabaseName(): String {
+        return proxy.getDatabaseName() + " (Proxied)"
+    }
+
     override suspend fun fetchUser(userId: ULong): UserRecord? {
         return proxy.fetchUser(userId)
     }
