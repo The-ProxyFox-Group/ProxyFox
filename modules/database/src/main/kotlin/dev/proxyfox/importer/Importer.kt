@@ -86,7 +86,9 @@ suspend fun import(database: Database, element: JsonElement, user: Entity?): Imp
     val map = element.asJsonObject
     if (map.size() == 0) throw ImporterException("No data to import.")
     val importer = if (map.has("tuppers")) TupperBoxImporter() else PluralKitImporter()
-    importer.import(database, map, user!!.id.value)
+    val bulk = database.bulkInserter()
+    importer.import(bulk, map, user!!.id.value)
+    bulk.commit()
     return importer
 }
 
