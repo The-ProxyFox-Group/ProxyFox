@@ -78,13 +78,10 @@ open class PluralKitImporter protected constructor(
         database.updateSystem(system)
 
         if (pkSystem.members != null) {
+            val allocatedIds = HashSet<String>()
             val idMap = HashMap<String?, String>()
             if (!fresh) {
-                val ids = database.fetchMembersFromSystem(system.id)!!.map(MemberRecord::id)
-                for (id in ids) {
-                    // Set IDs to invalid for optimised free ID lookup
-                    idMap[id] = ""
-                }
+                val ids = database.fetchMembersFromSystem(system.id)!!.mapTo(allocatedIds, MemberRecord::id)
                 // Set first free ID to here.
                 id = ids.firstFreeRaw()
             }
@@ -105,7 +102,7 @@ open class PluralKitImporter protected constructor(
                     freshMember = true
                     createdMembers++
                     return@run MemberRecord(
-                        if (directAllocation) pkMember.id.validateId(idMap) else nextId(),
+                        if (directAllocation) pkMember.id.validateId(idMap, allocatedIds) else findNextId(allocatedIds),
                         system.id,
                         memberName,
                     )
@@ -188,21 +185,27 @@ open class PluralKitImporter protected constructor(
         return birthdays.mapValues { it.value.first }
     }
 
-    private fun String?.validateId(set: HashMap<String?, String>): String {
+    private fun String?.validateId(map: HashMap<String?, String>, set: HashSet<String>): String {
         if (!isValidPkString() || this in set) {
-            var itr = 0
-            var newId: String
-            do {
-                newId = nextId()
-                if (itr++ > 100) throw ImporterException("Could not find free member ID")
-            } while (newId in set)
-            set[this] = newId
+            val newId = findNextId(set)
+            map[this] = newId
             return newId
         }
         return this
     }
 
-    private fun nextId() = id++.toPkString()
+    private fun findNextId(set: HashSet<String>): String {
+        var itr = 0
+        var newId: String
+
+        do {
+            newId = id++.toPkString()
+            if (itr++ > 100) throw ImporterException("Could not find free member ID")
+        } while (newId in set)
+
+        set += newId
+        return newId
+    }
 
     // Getters:
     override suspend fun getSystem(): SystemRecord = system
