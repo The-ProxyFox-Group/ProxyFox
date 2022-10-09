@@ -13,6 +13,8 @@ import dev.kord.core.entity.Entity
 import io.mockk.every
 import io.mockk.mockk
 import org.testng.annotations.DataProvider
+import java.time.OffsetDateTime
+import java.time.ZoneOffset
 import java.util.*
 import java.util.stream.IntStream
 
@@ -32,6 +34,9 @@ object DatabaseTestUtil {
     private val walker = StackWalker.getInstance(StackWalker.Option.RETAIN_CLASS_REFERENCE)
     private val seed = System.getenv("TEST_SEED")?.toLongOrNull()
     private val rng = Random()
+
+    val offsetDateTimeEpochString = "1970-01-01T00:00:00Z"
+    val offsetDateTimeEpoch = OffsetDateTime.of(1970, 1, 1, 0, 0, 0, 0, ZoneOffset.UTC)
 
     inline fun <reified T : Entity> entity(ret: ULong): T {
         return mockk {

@@ -10,6 +10,7 @@ package dev.proxyfox.types
 
 import dev.proxyfox.common.fromColorForExport
 import dev.proxyfox.database.paddedString
+import dev.proxyfox.database.pkCompatibleIso8601
 import dev.proxyfox.database.records.member.MemberProxyTagRecord
 import dev.proxyfox.database.records.member.MemberRecord
 import dev.proxyfox.database.records.misc.AutoProxyMode
@@ -81,7 +82,7 @@ data class PkSystem(
         pronouns = record.pronouns,
         color = record.color.fromColorForExport(),
         avatar_url = record.avatarUrl,
-        created = record.timestamp.toString(),
+        created = record.timestamp.pkCompatibleIso8601(),
         config = PkConfig(
             timezone = record.timezone,
         ),
@@ -153,7 +154,7 @@ data class PkMember(
         keep_proxy = record.keepProxy,
         message_count = record.messageCount.toLong(),
         birthday = record.birthday?.let { if (it.year in 1..9999) it.toString() else "0001-${it.monthValue.paddedString(2)}-${it.dayOfMonth.paddedString(2)}" },
-        created = record.timestamp.toString(),
+        created = record.timestamp.pkCompatibleIso8601(),
         proxy_tags = proxyTags,
         avatar_url = record.avatarUrl,
         proxyfox = if (record.birthday != null || record.age != null || record.role != null) {
@@ -195,7 +196,7 @@ data class PkSwitch(
     val members: List<String?>?
 ) {
     constructor(record: SystemSwitchRecord) : this(
-        timestamp = record.timestamp.toString(),
+        timestamp = record.timestamp.pkCompatibleIso8601(),
         members = record.memberIds,
     )
 }
