@@ -12,6 +12,7 @@ import com.google.common.reflect.ClassPath
 import dev.kord.core.behavior.UserBehavior
 import dev.proxyfox.database.Database
 import dev.proxyfox.database.DatabaseTestUtil.entity
+import dev.proxyfox.database.DatabaseTestUtil.offsetDateTimeEpoch
 import dev.proxyfox.database.DatabaseTestUtil.seeded
 import dev.proxyfox.database.JsonDatabase
 import dev.proxyfox.database.MongoDatabase
@@ -24,6 +25,8 @@ import java.io.Reader
 import java.net.URL
 import java.nio.file.Files
 import java.time.LocalDate
+import java.time.OffsetDateTime
+import java.time.ZoneOffset
 
 // Created 2022-29-09T22:17:51
 
@@ -86,6 +89,20 @@ constructor(private val name: String, databaseFactory: () -> Database) {
         assertEquals(database.fetchMemberFromUserAndName(user, "Ivy")!!.birthday, LocalDate.of(1995, 8, 24))
     }
 
+    @Test
+    fun `Importer - time resolution`() = runTest {
+        val user = entity<UserBehavior>(2048UL)
+        passResource("ProxyFox-v1-Time-Resolution.json") {
+            import(database, it, user)
+        }
+
+        val switches = database.fetchSwitchesFromUser(user)
+        assertNotNull(switches, "switches")
+        val sorted = switches!!.sortedBy { it.timestamp }
+        assertEquals(sorted[0].timestamp, offsetDateTimeEpoch)
+        assertEquals(sorted[1].timestamp, OffsetDateTime.of(1970, 1, 1, 23, 59, 59, 999_999_999, ZoneOffset.UTC))
+    }
+
     @Suppress("DEPRECATION_ERROR")
     @AfterClass
     fun cleanup() = runTest {
@@ -127,6 +144,10 @@ constructor(private val name: String, databaseFactory: () -> Database) {
 
         private inline fun extraResource(resource: String, action: (Reader) -> Unit) {
             ImporterTest::class.java.getResourceAsStream("/$path/extra/$resource")!!.reader().use(action)
+        }
+
+        private inline fun passResource(resource: String, action: (Reader) -> Unit) {
+            ImporterTest::class.java.getResourceAsStream("/$path/pass/$resource")!!.reader().use(action)
         }
     }
 }
