@@ -1,0 +1,30 @@
+{
+  "id": "dfgju",
+  "members": [
+    {
+      "id": "zoego",
+      "name": "Azalea"
+    }
+  ],
+  "groups": [
+    {
+      "id": "aflwr",
+      "name": "Flowers",
+      "members": [
+        "zoego"
+      ]
+    }
+  ],
+  "switches": [
+    {
+      "timestamp": "1970-01-01T00:00Z",
+      "members": [
+        "zoego"
+      ]
+    },
+    {
+      "timestamp": "1970-01-01T23:59:59.999999999Z",
+      "members": []
+    }
+  ]
+}
