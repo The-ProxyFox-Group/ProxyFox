@@ -257,12 +257,12 @@ class JsonDatabase(val file: File = File("systems.json")) : Database() {
 
     @Deprecated(level = DeprecationLevel.ERROR, message = "Non-native method")
     override suspend fun fetchProxiesFromSystem(systemId: String): List<MemberProxyTagRecord>? {
-        return systems[systemId]?.proxyTags?.map { it.view(systemId) }
+        return systems[systemId]?.proxyTags?.toList()
     }
 
     @Deprecated(level = DeprecationLevel.ERROR, message = "Non-native method")
     override suspend fun fetchProxiesFromSystemAndMember(systemId: String, memberId: String): List<MemberProxyTagRecord>? {
-        return systems[systemId]?.proxyTags?.filter { it.member == memberId }?.map { it.view(systemId) }
+        return systems[systemId]?.proxyTags?.filter { it.memberId == memberId }
     }
 
     override suspend fun fetchMemberFromMessage(userId: ULong, message: String): MemberRecord? {
@@ -271,16 +271,7 @@ class JsonDatabase(val file: File = File("systems.json")) : Database() {
     }
 
     override suspend fun fetchProxyTagFromMessage(userId: ULong, message: String): MemberProxyTagRecord? {
-        val system = users[userId] ?: return null
-        return system.proxyTags.find {
-            if (it.prefix != null && it.suffix != null)
-                return@find message.startsWith(it.prefix!!) && message.endsWith(it.suffix!!)
-            if (it.prefix != null)
-                return@find message.startsWith(it.prefix!!)
-            if (it.suffix != null)
-                return@find message.endsWith(it.suffix!!)
-            return@find false
-        }?.view(system.id)
+        return users[userId]?.proxyTags?.find { it.test(message) }
     }
 
     override suspend fun fetchMemberServerSettingsFromSystemAndMember(
@@ -482,15 +473,16 @@ class JsonDatabase(val file: File = File("systems.json")) : Database() {
     ): MemberProxyTagRecord? {
         if (prefix.isNullOrEmpty() && suffix.isNullOrEmpty()) return null
         val proxies = systems[systemId]!!.proxyTags
-        proxies.firstOrNull { it.prefix == prefix && it.suffix == suffix }?.let {
-            return if (it.member == memberId) it.view(systemId) else null
+        proxies.firstOrNull { it.isEqual(prefix, suffix) }?.let {
+            return if (it.memberId == memberId) it else null
         }
-        val proxy = MemberProxyTagRecord()
-        proxy.systemId = systemId
-        proxy.memberId = memberId
-        proxy.prefix = prefix ?: ""
-        proxy.suffix = suffix ?: ""
-        proxies.add(JsonProxyStruct.from(proxy))
+        val proxy = MemberProxyTagRecord(
+            systemId = systemId,
+            memberId = memberId,
+            prefix = prefix,
+            suffix = suffix,
+        )
+        proxies.add(proxy)
         return proxy
     }
 
@@ -519,7 +511,7 @@ class JsonDatabase(val file: File = File("systems.json")) : Database() {
     }
 
     override suspend fun dropProxyTag(proxyTag: MemberProxyTagRecord) {
-        systems[proxyTag.systemId]!!.proxyTags.remove(JsonProxyStruct.from(proxyTag))
+        systems[proxyTag.systemId]!!.proxyTags.remove(proxyTag)
     }
 
     override suspend fun updateTrustLevel(systemId: String, trustee: ULong, level: TrustLevel): Boolean {
@@ -582,9 +574,9 @@ class JsonDatabase(val file: File = File("systems.json")) : Database() {
             }
 
             for (proxyTag in system.proxyTags) {
-                val member = memberLookup[proxyTag.member]
+                val member = memberLookup[proxyTag.memberId]
                 if (member == null) {
-                    logger.warn("Couldn't write proxy tag {}text{} for {}/{} ({}/???)", proxyTag.prefix, proxyTag.suffix, sid, proxyTag.member, nsid)
+                    logger.warn("Couldn't write proxy tag {}text{} for {}/{} ({}/???)", proxyTag.prefix, proxyTag.suffix, sid, proxyTag.memberId, nsid)
                 } else {
                     other.createProxyTag(nsid, member, proxyTag.prefix, proxyTag.suffix)
                     logger.info("Written proxy tag {}text{} for {}", proxyTag.prefix, proxyTag.suffix, member)
@@ -636,32 +628,6 @@ class JsonDatabase(val file: File = File("systems.json")) : Database() {
         file.writer().use { gson.toJson(obj, it) }
     }
 
-    data class JsonProxyStruct(
-        var member: String,
-        var prefix: String? = null,
-        var suffix: String? = null
-    ) {
-        fun view(systemId: String): MemberProxyTagRecord {
-            val proxy = MemberProxyTagRecord()
-            proxy.memberId = member
-            proxy.systemId = systemId
-            proxy.prefix = prefix
-            proxy.suffix = suffix
-            return proxy
-        }
-
-        companion object {
-            fun from(proxy: MemberProxyTagRecord): JsonProxyStruct {
-                return JsonProxyStruct(proxy.memberId, proxy.prefix, proxy.suffix)
-            }
-        }
-
-        override fun equals(other: Any?): Boolean {
-            if (other !is JsonProxyStruct) return false
-            return member == other.member && suffix == other.suffix && prefix == other.prefix
-        }
-    }
-
     data class JsonSystemStruct(
         val id: String,
         /** The user must have their snowflake bound to `system` to be included here. */
@@ -680,7 +646,7 @@ class JsonDatabase(val file: File = File("systems.json")) : Database() {
         val members: MutableMap<String, JsonMemberStruct> = HashMap(),
         val serverSettings: MutableMap<ULong, SystemServerSettingsRecord> = HashMap(),
         val channelSettings: MutableMap<ULong, SystemChannelSettingsRecord> = HashMap(),
-        val proxyTags: MutableList<JsonProxyStruct> = ArrayList(),
+        val proxyTags: MutableSet<MemberProxyTagRecord> = HashSet(),
         val switches: MutableMap<String, SystemSwitchRecord> = HashMap(),
         val trust: HashMap<ULong, TrustLevel> = HashMap()
     ) {
@@ -702,6 +668,9 @@ class JsonDatabase(val file: File = File("systems.json")) : Database() {
                 if (old != null) logger.warn("Member {} collided with {} from {}", member, old, id)
             }
             this.membersByName = membersByName
+            for (proxyTag in proxyTags) {
+                proxyTag.systemId = id
+            }
         }
 
         fun view(): SystemRecord {
@@ -754,7 +723,7 @@ class JsonDatabase(val file: File = File("systems.json")) : Database() {
             val struct = members.remove(member) ?: return false
             membersByName.remove(struct.name)
 
-            proxyTags.removeIf { it.member == member }
+            proxyTags.removeIf { it.memberId == member }
 
             return true
         }
