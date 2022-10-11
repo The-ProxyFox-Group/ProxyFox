@@ -16,23 +16,10 @@ import com.fasterxml.jackson.databind.JsonDeserializer
 import com.fasterxml.jackson.databind.JsonSerializer
 import com.fasterxml.jackson.databind.SerializerProvider
 import de.undercouch.bson4jackson.BsonGenerator
-import dev.proxyfox.jackson.InstantAdaptor.intHandle
-import dev.proxyfox.jackson.InstantAdaptor.longHandle
-import java.lang.invoke.MethodHandles
-import java.nio.ByteOrder
 import java.time.Instant
 import java.util.*
 
 // Created 2022-09-10T19:50:39
-
-private object InstantAdaptor {
-    // BIG_ENDIAN is selected as it is orderable via that.
-    @JvmField
-    val longHandle = MethodHandles.byteArrayViewVarHandle(LongArray::class.java, ByteOrder.BIG_ENDIAN)!!
-
-    @JvmField
-    val intHandle = MethodHandles.byteArrayViewVarHandle(IntArray::class.java, ByteOrder.BIG_ENDIAN)!!
-}
 
 /**
  * @author Ampflower
@@ -41,12 +28,12 @@ private object InstantAdaptor {
 object InstantDeserializer : JsonDeserializer<Instant>() {
     override fun deserialize(p: JsonParser, ctxt: DeserializationContext): Instant? {
         return when (val obj = p.embeddedObject) {
-            is ByteArray -> Instant.ofEpochSecond(longHandle.get(obj, 0) as Long, (intHandle.get(obj, 8) as Int).toLong())
+            is Long -> Instant.ofEpochSecond(obj / 1000000, obj.mod(1000000L) * 1000L)
             is Date -> obj.toInstant()
             is String -> Instant.parse(obj)
             else -> when (p.currentToken) {
                 JsonToken.VALUE_STRING -> Instant.parse(p.valueAsString)
-                JsonToken.VALUE_NUMBER_INT -> Instant.ofEpochMilli(p.valueAsLong)
+                JsonToken.VALUE_NUMBER_INT -> p.valueAsLong.let { Instant.ofEpochSecond(it / 100000, (it / 1000L).mod(1000000L)) }
                 else -> {
                     p.skipChildren()
                     null
@@ -63,10 +50,7 @@ object InstantSerializer : JsonSerializer<Instant>() {
             return
         }
         if (gen is BsonGenerator) {
-            val arr = ByteArray(12)
-            longHandle.set(arr, 0, value.epochSecond)
-            intHandle.set(arr, 8, value.nano)
-            gen.writeBinary(arr)
+            gen.writeNumber((value.epochSecond * 1000000) + (value.nano / 1000))
             return
         }
         gen.writeString(value.toString())

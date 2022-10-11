@@ -39,10 +39,10 @@ object DatabaseTestUtil {
 
     const val offsetDateTimeEpochString = "1970-01-01T00:00:00Z"
     val offsetDateTimeEpoch = OffsetDateTime.of(1970, 1, 1, 0, 0, 0, 0, ZoneOffset.UTC)!!
-    val offsetDateTimeLastNanoOfEpochDay = OffsetDateTime.of(1970, 1, 1, 23, 59, 59, 999_999_999, ZoneOffset.UTC)!!
+    val offsetDateTimeLastMicroOfEpochDay = OffsetDateTime.of(1970, 1, 1, 23, 59, 59, 999_999_000, ZoneOffset.UTC)!!
 
     val instantEpoch = Instant.EPOCH!!
-    val instantLastNanoOfEpochDay = Instant.ofEpochSecond(TimeUnit.DAYS.toSeconds(1) - 1L, 999_999_999L)!!
+    val instantLastMicroOfEpochDay = Instant.ofEpochSecond(TimeUnit.DAYS.toSeconds(1) - 1L, 999_999_000L)!!
 
     inline fun <reified T : Entity> entity(ret: ULong): T {
         return mockk {
