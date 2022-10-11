@@ -138,7 +138,7 @@ abstract class Database : AutoCloseable {
 
     suspend inline fun fetchProxiesFromUserAndMember(user: UserBehavior, memberId: String) = fetchProxiesFromUserAndMember(user.id.value, memberId)
 
-    open suspend fun fetchProxiesFromUserAndMember(userId: ULong, memberId: String) = fetchUser(userId)?.systemId?.let { fetchProxiesFromSystemAndMember(it, memberId) }
+    open suspend fun fetchProxiesFromUserAndMember(userId: ULong, memberId: String) = fetchUser(userId)?.systemId?.let { this.fetchProxiesFromSystemAndMember(it, memberId) }
 
     abstract suspend fun fetchProxiesFromSystemAndMember(systemId: String, memberId: String): List<MemberProxyTagRecord>?
 
@@ -314,17 +314,6 @@ abstract class Database : AutoCloseable {
         prefix: String?,
         suffix: String?
     ): MemberProxyTagRecord?
-
-    /**
-     * Lists all proxy tags registered for the member.
-     * @param systemId The system ID to assign it to
-     * @param memberId The member to assign it to
-     * @return All proxy tags registered for the member, else null if the member or system doesn't exist.
-     * */
-    abstract suspend fun fetchProxyTags(
-        systemId: String,
-        memberId: String
-    ): List<MemberProxyTagRecord>?
 
     /**
      * Allocates a switch

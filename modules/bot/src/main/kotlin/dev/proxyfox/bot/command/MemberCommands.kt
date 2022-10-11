@@ -381,7 +381,7 @@ object MemberCommands {
         ctx.respond {
             member(member, ctx.message.getGuildOrNull()?.id?.value ?: 0UL)
             title = "${member.name}'s proxy tags"
-            description = database.fetchProxyTags(system.id, member.id).run {
+            description = database.fetchProxiesFromSystemAndMember(system.id, member.id).run {
                 if (isNullOrEmpty())
                     "${member.name} has no tags set."
                 else

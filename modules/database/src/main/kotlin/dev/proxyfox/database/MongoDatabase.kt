@@ -324,9 +324,6 @@ class MongoDatabase(private val dbName: String = "ProxyFox") : Database() {
         return proxy
     }
 
-    override suspend fun fetchProxyTags(systemId: String, memberId: String) =
-        memberProxies.findAll("{systemId:'$systemId',memberId:'$memberId'}")
-
     override suspend fun createSwitch(systemId: String, memberId: List<String>, timestamp: Instant?): SystemSwitchRecord? {
         fetchSystemFromId(systemId) ?: return null
         val switches = fetchSwitchesFromSystem(systemId)

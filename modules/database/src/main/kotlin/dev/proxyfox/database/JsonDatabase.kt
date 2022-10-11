@@ -504,9 +504,6 @@ class JsonDatabase(val file: File = File("systems.json")) : Database() {
         return proxy
     }
 
-    override suspend fun fetchProxyTags(systemId: String, memberId: String) =
-        systems[systemId]?.proxyTags?.map { it.view(systemId) }
-
     override suspend fun createSwitch(systemId: String, memberId: List<String>, timestamp: Instant?): SystemSwitchRecord? {
         val system = systems[systemId] ?: return null
         val switch = SystemSwitchRecord()
