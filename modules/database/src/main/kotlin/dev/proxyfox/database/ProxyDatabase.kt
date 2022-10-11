@@ -153,10 +153,6 @@ open class ProxyDatabase<T : Database>(protected val proxy: T) : Database() {
         return proxy.createProxyTag(systemId, memberId, prefix, suffix)
     }
 
-    override suspend fun fetchProxyTags(systemId: String, memberId: String): List<MemberProxyTagRecord>? {
-        return proxy.fetchProxyTags(systemId, memberId)
-    }
-
     override suspend fun createSwitch(systemId: String, memberId: List<String>, timestamp: Instant?): SystemSwitchRecord? {
         return proxy.createSwitch(systemId, memberId, timestamp)
     }
