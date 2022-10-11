@@ -257,22 +257,12 @@ class JsonDatabase(val file: File = File("systems.json")) : Database() {
 
     @Deprecated(level = DeprecationLevel.ERROR, message = "Non-native method")
     override suspend fun fetchProxiesFromSystem(systemId: String): List<MemberProxyTagRecord>? {
-        val out = systems[systemId]?.proxyTags ?: return null
-        val proxyOut = ArrayList<MemberProxyTagRecord>()
-        out.forEach {
-            proxyOut.add(it.view(systemId))
-        }
-        return proxyOut
+        return systems[systemId]?.proxyTags?.map { it.view(systemId) }
     }
 
     @Deprecated(level = DeprecationLevel.ERROR, message = "Non-native method")
     override suspend fun fetchProxiesFromSystemAndMember(systemId: String, memberId: String): List<MemberProxyTagRecord>? {
-        val out = systems[systemId]?.proxyTags?.filter { it.member == memberId } ?: return null
-        val proxyOut = ArrayList<MemberProxyTagRecord>()
-        out.forEach {
-            proxyOut.add(it.view(systemId))
-        }
-        return proxyOut
+        return systems[systemId]?.proxyTags?.filter { it.member == memberId }?.map { it.view(systemId) }
     }
 
     override suspend fun fetchMemberFromMessage(userId: ULong, message: String): MemberRecord? {
