@@ -53,5 +53,5 @@ class MemberProxyTagRecord {
         return message.substring(pLength, message.length - slength)
     }
 
-    override fun toString() = "${prefix}text$suffix"
+    override fun toString() = "${prefix ?: ""}text${suffix ?: ""}"
 }
