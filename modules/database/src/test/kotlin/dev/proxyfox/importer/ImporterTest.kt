@@ -13,7 +13,7 @@ import dev.kord.core.behavior.UserBehavior
 import dev.proxyfox.database.Database
 import dev.proxyfox.database.DatabaseTestUtil.entity
 import dev.proxyfox.database.DatabaseTestUtil.instantEpoch
-import dev.proxyfox.database.DatabaseTestUtil.instantLastNanoOfEpochDay
+import dev.proxyfox.database.DatabaseTestUtil.instantLastMicroOfEpochDay
 import dev.proxyfox.database.DatabaseTestUtil.seeded
 import dev.proxyfox.database.JsonDatabase
 import dev.proxyfox.database.MongoDatabase
@@ -99,7 +99,7 @@ constructor(private val name: String, databaseFactory: () -> Database) {
         assertNotNull(switches, "switches")
         val sorted = switches!!.sortedBy { it.timestamp }
         assertEquals(sorted[0].timestamp, instantEpoch)
-        assertEquals(sorted[1].timestamp, instantLastNanoOfEpochDay)
+        assertEquals(sorted[1].timestamp, instantLastMicroOfEpochDay)
     }
 
     @Suppress("DEPRECATION_ERROR")

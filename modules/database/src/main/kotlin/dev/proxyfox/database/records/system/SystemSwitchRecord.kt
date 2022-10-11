@@ -24,17 +24,19 @@ import java.time.Instant
  **/
 class SystemSwitchRecord {
     var _id: ObjectId = ObjectId()
-    var systemId: String = ""
-    var id: String = ""
-    var memberIds: List<String> = ArrayList()
+    var systemId: String
+    var id: String
+    var memberIds: List<String>
 
     @JsonDeserialize(using = InstantDeserializer::class)
     @JsonSerialize(using = InstantSerializer::class)
-    var timestamp: Instant = Instant.now()
+    var timestamp: Instant
+        set(inst) {
+            field = inst.minusNanos(inst.nano.mod(1000).toLong())
+        }
 
-    constructor()
-
-    constructor(systemId: String, id: String, memberIds: List<String>, timestamp: Instant?) {
+    @Suppress("ConvertSecondaryConstructorToPrimary")
+    constructor(systemId: String = "", id: String = "", memberIds: List<String> = ArrayList(), timestamp: Instant? = null) {
         this.systemId = systemId
         this.id = id
         this.memberIds = memberIds
