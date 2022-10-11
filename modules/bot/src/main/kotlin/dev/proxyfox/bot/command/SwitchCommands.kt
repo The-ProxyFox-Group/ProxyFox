@@ -19,7 +19,7 @@ import dev.proxyfox.common.printStep
 import dev.proxyfox.database.database
 import dev.proxyfox.database.records.system.SystemRecord
 import dev.proxyfox.database.records.system.SystemSwitchRecord
-import java.time.OffsetDateTime
+import java.time.Instant
 import kotlin.math.floor
 import kotlin.math.min
 
@@ -42,7 +42,7 @@ object SwitchCommands {
     private suspend fun out(ctx: MessageHolder): String {
         val system = database.fetchSystemFromUser(ctx.message.author)
             ?: return "System does not exist. Create one using `pf>system new`"
-        database.createSwitch(system.id, listOf(), OffsetDateTime.now())
+        database.createSwitch(system.id, listOf())
         return "Switch registered."
     }
 
@@ -124,7 +124,7 @@ object SwitchCommands {
         }
 
         val totalSeconds = ((((years * 365 + days) * 24 + hours) * 60 + minutes) * 60) + seconds
-        val nowMinus = OffsetDateTime.now().minusSeconds(totalSeconds)
+        val nowMinus = Instant.now().minusSeconds(totalSeconds)
         if (oldSwitch != null && oldSwitch.timestamp > nowMinus) {
             return "It looks like you're trying to break the space-time continuum..\n" +
                     "The provided time is set before the previous switch"
@@ -169,7 +169,7 @@ object SwitchCommands {
                 switch.memberIds.map {
                     database.fetchMemberFromSystem(system.id, it)?.run { displayName ?: name } ?: "*Unknown*"
                 }.joinTo(this, ", ", "**", "**")
-                append(" (<t:${switch.timestamp.toEpochSecond()}:R>)\n")
+                append(" (<t:${switch.timestamp.epochSecond}:R>)\n")
             }
         }
     }
@@ -205,7 +205,7 @@ object SwitchCommands {
             }`, "
         }
         memberString = memberString.substring(0, memberString.length - 2)
-        database.createSwitch(system.id, members, OffsetDateTime.now())
+        database.createSwitch(system.id, members)
 
 
         return "Switch registered, current fronters: $memberString"

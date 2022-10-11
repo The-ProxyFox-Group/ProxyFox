@@ -13,9 +13,11 @@ import dev.kord.core.entity.Entity
 import io.mockk.every
 import io.mockk.mockk
 import org.testng.annotations.DataProvider
+import java.time.Instant
 import java.time.OffsetDateTime
 import java.time.ZoneOffset
 import java.util.*
+import java.util.concurrent.TimeUnit
 import java.util.stream.IntStream
 
 // Created 2022-22-09T01:36:24
@@ -35,8 +37,12 @@ object DatabaseTestUtil {
     private val seed = System.getenv("TEST_SEED")?.toLongOrNull()
     private val rng = Random()
 
-    val offsetDateTimeEpochString = "1970-01-01T00:00:00Z"
-    val offsetDateTimeEpoch = OffsetDateTime.of(1970, 1, 1, 0, 0, 0, 0, ZoneOffset.UTC)
+    const val offsetDateTimeEpochString = "1970-01-01T00:00:00Z"
+    val offsetDateTimeEpoch = OffsetDateTime.of(1970, 1, 1, 0, 0, 0, 0, ZoneOffset.UTC)!!
+    val offsetDateTimeLastNanoOfEpochDay = OffsetDateTime.of(1970, 1, 1, 23, 59, 59, 999_999_999, ZoneOffset.UTC)!!
+
+    val instantEpoch = Instant.EPOCH!!
+    val instantLastNanoOfEpochDay = Instant.ofEpochSecond(TimeUnit.DAYS.toSeconds(1) - 1L, 999_999_999L)!!
 
     inline fun <reified T : Entity> entity(ret: ULong): T {
         return mockk {

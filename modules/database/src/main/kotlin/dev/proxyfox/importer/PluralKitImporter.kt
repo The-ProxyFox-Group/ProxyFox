@@ -151,7 +151,7 @@ open class PluralKitImporter protected constructor(
 
         pkSystem.switches?.let { switches ->
             for (switch in switches) {
-                val timestamp = switch.timestamp.tryParseOffsetTimestamp() ?: continue
+                val timestamp = switch.timestamp.tryParseInstant() ?: continue
                 database.createSwitch(
                     SystemSwitchRecord(
                         systemId = system.id,
