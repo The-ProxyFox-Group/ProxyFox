@@ -28,7 +28,7 @@ import org.litote.kmongo.coroutine.toList
 import org.litote.kmongo.reactivestreams.*
 import org.litote.kmongo.util.KMongoUtil
 import org.slf4j.LoggerFactory
-import java.time.OffsetDateTime
+import java.time.Instant
 import java.util.concurrent.ConcurrentLinkedQueue
 import java.util.concurrent.TimeUnit
 import kotlin.time.Duration
@@ -327,7 +327,7 @@ class MongoDatabase(private val dbName: String = "ProxyFox") : Database() {
     override suspend fun fetchProxyTags(systemId: String, memberId: String) =
         memberProxies.findAll("{systemId:'$systemId',memberId:'$memberId'}")
 
-    override suspend fun createSwitch(systemId: String, memberId: List<String>, timestamp: OffsetDateTime?): SystemSwitchRecord? {
+    override suspend fun createSwitch(systemId: String, memberId: List<String>, timestamp: Instant?): SystemSwitchRecord? {
         fetchSystemFromId(systemId) ?: return null
         val switches = fetchSwitchesFromSystem(systemId)
         val switch = SystemSwitchRecord()
@@ -499,7 +499,7 @@ class MongoDatabase(private val dbName: String = "ProxyFox") : Database() {
             return record
         }
 
-        override suspend fun createSwitch(systemId: String, memberId: List<String>, timestamp: OffsetDateTime?): SystemSwitchRecord {
+        override suspend fun createSwitch(systemId: String, memberId: List<String>, timestamp: Instant?): SystemSwitchRecord {
             val record = SystemSwitchRecord(systemId, "", memberId, timestamp)
             systemSwitchQueue += record.create()
             return record

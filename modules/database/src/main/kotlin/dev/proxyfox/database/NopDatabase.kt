@@ -18,7 +18,7 @@ import dev.proxyfox.database.records.system.SystemChannelSettingsRecord
 import dev.proxyfox.database.records.system.SystemRecord
 import dev.proxyfox.database.records.system.SystemServerSettingsRecord
 import dev.proxyfox.database.records.system.SystemSwitchRecord
-import java.time.OffsetDateTime
+import java.time.Instant
 import kotlin.time.Duration
 
 class NopDatabase : Database() {
@@ -119,7 +119,7 @@ class NopDatabase : Database() {
 
     override suspend fun fetchProxyTags(systemId: String, memberId: String): List<MemberProxyTagRecord>? = null
 
-    override suspend fun createSwitch(systemId: String, memberId: List<String>, timestamp: OffsetDateTime?): SystemSwitchRecord? = null
+    override suspend fun createSwitch(systemId: String, memberId: List<String>, timestamp: Instant?): SystemSwitchRecord? = null
     override suspend fun dropSwitch(switch: SystemSwitchRecord) {}
     override suspend fun updateSwitch(switch: SystemSwitchRecord) {}
 

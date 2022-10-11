@@ -28,6 +28,7 @@ import dev.proxyfox.database.records.system.SystemServerSettingsRecord
 import dev.proxyfox.database.records.system.SystemSwitchRecord
 import org.jetbrains.annotations.TestOnly
 import java.io.File
+import java.time.Instant
 import java.time.LocalDate
 import java.time.OffsetDateTime
 import java.time.ZoneOffset
@@ -506,7 +507,7 @@ class JsonDatabase(val file: File = File("systems.json")) : Database() {
     override suspend fun fetchProxyTags(systemId: String, memberId: String) =
         systems[systemId]?.proxyTags?.map { it.view(systemId) }
 
-    override suspend fun createSwitch(systemId: String, memberId: List<String>, timestamp: OffsetDateTime?): SystemSwitchRecord? {
+    override suspend fun createSwitch(systemId: String, memberId: List<String>, timestamp: Instant?): SystemSwitchRecord? {
         val system = systems[systemId] ?: return null
         val switch = SystemSwitchRecord()
         val id = ((system.switches.keys.maxOfOrNull { it.fromPkString() } ?: 0) + 1).toPkString()

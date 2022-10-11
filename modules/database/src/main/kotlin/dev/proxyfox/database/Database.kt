@@ -22,7 +22,7 @@ import dev.proxyfox.database.records.system.SystemRecord
 import dev.proxyfox.database.records.system.SystemServerSettingsRecord
 import dev.proxyfox.database.records.system.SystemSwitchRecord
 import org.jetbrains.annotations.TestOnly
-import java.time.OffsetDateTime
+import java.time.Instant
 import kotlin.contracts.ExperimentalContracts
 import kotlin.contracts.contract
 import kotlin.time.Duration
@@ -337,7 +337,7 @@ abstract class Database : AutoCloseable {
     abstract suspend fun createSwitch(
         systemId: String,
         memberId: List<String>,
-        timestamp: OffsetDateTime? = null
+        timestamp: Instant? = null
     ): SystemSwitchRecord?
 
     /**

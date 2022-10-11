@@ -8,9 +8,12 @@
 
 package dev.proxyfox.database.records.system
 
+import com.fasterxml.jackson.databind.annotation.JsonDeserialize
+import com.fasterxml.jackson.databind.annotation.JsonSerialize
+import dev.proxyfox.jackson.InstantDeserializer
+import dev.proxyfox.jackson.InstantSerializer
 import org.bson.types.ObjectId
-import java.time.OffsetDateTime
-import java.time.ZoneOffset
+import java.time.Instant
 
 // Created 2022-09-04T15:18:49
 
@@ -24,14 +27,17 @@ class SystemSwitchRecord {
     var systemId: String = ""
     var id: String = ""
     var memberIds: List<String> = ArrayList()
-    var timestamp: OffsetDateTime = OffsetDateTime.now(ZoneOffset.UTC)
+
+    @JsonDeserialize(using = InstantDeserializer::class)
+    @JsonSerialize(using = InstantSerializer::class)
+    var timestamp: Instant = Instant.now()
 
     constructor()
 
-    constructor(systemId: String, id: String, memberIds: List<String>, timestamp: OffsetDateTime?) {
+    constructor(systemId: String, id: String, memberIds: List<String>, timestamp: Instant?) {
         this.systemId = systemId
         this.id = id
         this.memberIds = memberIds
-        this.timestamp = timestamp ?: OffsetDateTime.now(ZoneOffset.UTC)
+        this.timestamp = timestamp ?: Instant.now()
     }
 }

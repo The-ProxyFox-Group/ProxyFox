@@ -18,7 +18,7 @@ import dev.proxyfox.database.records.system.SystemChannelSettingsRecord
 import dev.proxyfox.database.records.system.SystemRecord
 import dev.proxyfox.database.records.system.SystemServerSettingsRecord
 import dev.proxyfox.database.records.system.SystemSwitchRecord
-import java.time.OffsetDateTime
+import java.time.Instant
 import kotlin.time.Duration
 
 // Created 2022-07-10T23:56:55
@@ -157,7 +157,7 @@ open class ProxyDatabase<T : Database>(protected val proxy: T) : Database() {
         return proxy.fetchProxyTags(systemId, memberId)
     }
 
-    override suspend fun createSwitch(systemId: String, memberId: List<String>, timestamp: OffsetDateTime?): SystemSwitchRecord? {
+    override suspend fun createSwitch(systemId: String, memberId: List<String>, timestamp: Instant?): SystemSwitchRecord? {
         return proxy.createSwitch(systemId, memberId, timestamp)
     }
 

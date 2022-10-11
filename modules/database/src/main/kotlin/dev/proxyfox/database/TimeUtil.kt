@@ -9,6 +9,7 @@
 package dev.proxyfox.database
 
 import java.text.ParsePosition
+import java.time.Instant
 import java.time.LocalDate
 import java.time.OffsetDateTime
 import java.time.format.*
@@ -279,6 +280,11 @@ fun String?.tryParseOffsetTimestamp(): OffsetDateTime? = if (this == null) null 
     null
 }
 
+// This redirects to tryParseOffsetTimestamp as for some reason,
+// it's perfectly valid for OffsetDateTime to omit seconds, but it's
+// not fine for Instant to parse an ISO8601 timestamp with missing seconds
+fun String?.tryParseInstant(): Instant? = if (this == null) null else tryParseOffsetTimestamp()?.toInstant()
+
 fun shouldPreferMonthDay(timezone: String?) =
     timezone != null && (mmddTimezones.contains(timezone) || mmddTimezonesStartOf.any(timezone::startsWith))
 
@@ -288,7 +294,7 @@ fun TemporalAccessor.displayDate() = if (get(ChronoField.YEAR) == 1) {
     displayFull.format(this)
 }
 
-fun TemporalAccessor.pkCompatibleIso8601() = DateTimeFormatter.ISO_OFFSET_DATE_TIME.format(this)
+fun TemporalAccessor.pkCompatibleIso8601() = if (this is Instant) toString() else DateTimeFormatter.ISO_OFFSET_DATE_TIME.format(this)
 
 private fun TemporalAccessor?.validate(): TemporalAccessor? {
     if (this == null) return null

@@ -12,7 +12,8 @@ import com.google.common.reflect.ClassPath
 import dev.kord.core.behavior.UserBehavior
 import dev.proxyfox.database.Database
 import dev.proxyfox.database.DatabaseTestUtil.entity
-import dev.proxyfox.database.DatabaseTestUtil.offsetDateTimeEpoch
+import dev.proxyfox.database.DatabaseTestUtil.instantEpoch
+import dev.proxyfox.database.DatabaseTestUtil.instantLastNanoOfEpochDay
 import dev.proxyfox.database.DatabaseTestUtil.seeded
 import dev.proxyfox.database.JsonDatabase
 import dev.proxyfox.database.MongoDatabase
@@ -25,8 +26,6 @@ import java.io.Reader
 import java.net.URL
 import java.nio.file.Files
 import java.time.LocalDate
-import java.time.OffsetDateTime
-import java.time.ZoneOffset
 
 // Created 2022-29-09T22:17:51
 
@@ -99,8 +98,8 @@ constructor(private val name: String, databaseFactory: () -> Database) {
         val switches = database.fetchSwitchesFromUser(user)
         assertNotNull(switches, "switches")
         val sorted = switches!!.sortedBy { it.timestamp }
-        assertEquals(sorted[0].timestamp, offsetDateTimeEpoch)
-        assertEquals(sorted[1].timestamp, OffsetDateTime.of(1970, 1, 1, 23, 59, 59, 999_999_999, ZoneOffset.UTC))
+        assertEquals(sorted[0].timestamp, instantEpoch)
+        assertEquals(sorted[1].timestamp, instantLastNanoOfEpochDay)
     }
 
     @Suppress("DEPRECATION_ERROR")

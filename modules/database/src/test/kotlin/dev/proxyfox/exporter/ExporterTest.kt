@@ -8,6 +8,7 @@
 
 package dev.proxyfox.exporter
 
+import dev.proxyfox.database.DatabaseTestUtil.instantEpoch
 import dev.proxyfox.database.DatabaseTestUtil.offsetDateTimeEpoch
 import dev.proxyfox.database.DatabaseTestUtil.offsetDateTimeEpochString
 import dev.proxyfox.database.records.member.MemberRecord
@@ -45,7 +46,7 @@ class ExporterTest {
     @Test
     fun `Exporter(Switch) - retain seconds`() {
         val switch = PkSwitch(SystemSwitchRecord().apply {
-            timestamp = offsetDateTimeEpoch
+            timestamp = instantEpoch
         })
         Assert.assertEquals(switch.timestamp, offsetDateTimeEpochString)
     }
