@@ -166,9 +166,13 @@ object SwitchCommands {
         description = buildString {
             for (i in idx * 20 until min(idx * 20 + 20, list.size)) {
                 val switch = list[i]
-                switch.memberIds.map {
-                    database.fetchMemberFromSystem(system.id, it)?.run { displayName ?: name } ?: "*Unknown*"
-                }.joinTo(this, ", ", "**", "**")
+                if (switch.memberIds.isEmpty()) {
+                    append("*None*")
+                } else {
+                    switch.memberIds.map {
+                        database.fetchMemberFromSystem(system.id, it)?.showDisplayName() ?: "*Unknown*"
+                    }.joinTo(this, ", ", "**", "**")
+                }
                 append(" (<t:${switch.timestamp.epochSecond}:R>)\n")
             }
         }
