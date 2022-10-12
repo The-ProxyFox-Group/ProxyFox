@@ -19,6 +19,7 @@ import org.litote.kmongo.coroutine.toList
 import org.litote.kmongo.reactivestreams.filter
 import org.litote.kmongo.reactivestreams.getCollection
 import org.litote.kmongo.util.KMongoUtil
+import java.time.Instant
 import java.time.LocalDate
 import java.time.OffsetDateTime
 import kotlin.contracts.ExperimentalContracts
@@ -32,6 +33,7 @@ val gson = GsonBuilder()
     .registerTypeAdapter(OffsetDateTime::class.java, OffsetDateTimeAdaptor)
     .registerTypeAdapter(LocalDate::class.java, LocalDateAdaptor)
     .registerTypeAdapter(ObjectId::class.java, ObjectIdNullifier)
+    .registerTypeAdapter(Instant::class.java, InstantAdaptor)
     .registerTypeAdapter(ULong::class.java, ULongAdaptor)
     .registerTypeAdapter(Void::class.java, VoidAdaptor)
     .registerTypeAdapterFactory(RecordAdapterFactory)
