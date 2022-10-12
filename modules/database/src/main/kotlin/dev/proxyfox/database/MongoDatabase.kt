@@ -409,7 +409,6 @@ class MongoDatabase(private val dbName: String = "ProxyFox") : Database() {
         private val proxiedMessageQueue = ConcurrentLinkedQueue<WriteModel<ProxiedMessageRecord>>()
         private val systemSwitchQueue = ConcurrentLinkedQueue<WriteModel<SystemSwitchRecord>>()
         private val memberProxiesQueue = ConcurrentLinkedQueue<WriteModel<MemberProxyTagRecord>>()
-
         override suspend fun getDatabaseName(): String {
             return proxy.getDatabaseName() + " (Bulk Inserter)"
         }
@@ -516,6 +515,37 @@ class MongoDatabase(private val dbName: String = "ProxyFox") : Database() {
             return super.updateTrustLevel(systemId, trustee, level)
         }
 
+        override suspend fun dropMember(systemId: String, memberId: String): Boolean {
+            val member = fetchMemberFromSystem(systemId, memberId) ?: return false
+            val filter = KMongoUtil.toBson("{systemId:'$systemId',memberId:'$memberId'}")
+            memberProxiesQueue += DeleteManyModel(filter)
+            memberServerSettingsQueue += DeleteManyModel(filter)
+            memberQueue += member.delete()
+            return true
+        }
+
+        override suspend fun dropSwitch(switch: SystemSwitchRecord) {
+            systemSwitchQueue += switch.delete()
+        }
+
+        override suspend fun dropSystem(userId: ULong): Boolean {
+            val system = fetchSystemFromUser(userId) ?: return false
+            val filter = KMongoUtil.toBson("{systemId:'${system.id}'}")
+            systemServerSettingsQueue += DeleteManyModel(filter)
+            systemChannelSettingsQueue += DeleteManyModel(filter)
+            systemSwitchQueue += DeleteManyModel(filter)
+            memberProxiesQueue += DeleteManyModel(filter)
+            memberServerSettingsQueue += DeleteManyModel(filter)
+            memberQueue += DeleteManyModel(filter)
+            systemQueue += system.delete()
+            userQueue += DeleteManyModel(filter)
+            return true
+        }
+
+        override suspend fun dropProxyTag(proxyTag: MemberProxyTagRecord) {
+            memberProxiesQueue += proxyTag.delete()
+        }
+
         override suspend fun commit() {
             proxy.servers.bulkWrite(serverSettingsQueue)
             proxy.channels.bulkWrite(channelSettingsQueue)
@@ -537,6 +567,7 @@ class MongoDatabase(private val dbName: String = "ProxyFox") : Database() {
             }
         }
 
+        private fun <T : Any> T.delete() = DeleteOneModel<T>(KMongoUtil.filterIdToBson(this))
         private fun <T : Any> T.upsert() = ReplaceOneModel(KMongoUtil.filterIdToBson(this), this, ReplaceOptions().upsert(true))
         private fun <T : Any> T.replace() = ReplaceOneModel(KMongoUtil.filterIdToBson(this), this)
         private fun <T : Any> T.create() = InsertOneModel(this)
