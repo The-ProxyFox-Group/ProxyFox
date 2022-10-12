@@ -11,6 +11,7 @@ package dev.proxyfox.gson
 import com.google.gson.Gson
 import com.google.gson.JsonElement
 import com.google.gson.TypeAdapter
+import com.google.gson.annotations.SerializedName
 import com.google.gson.internal.`$Gson$Types`
 import com.google.gson.reflect.TypeToken
 import com.google.gson.stream.JsonReader
@@ -26,18 +27,25 @@ import kotlin.reflect.full.primaryConstructor
 class RecordAdapter<T : Record>(private val gson: Gson, private val type: Type, private val rawType: Class<T>) : TypeAdapter<T>() {
 
     private val componentMap = HashMap<String, RecordComponent>()
+    private val serialisedName = HashMap<RecordComponent, String>()
 
     init {
         assert(Record::class.java.isAssignableFrom(rawType)) { "Invalid class $rawType ($type)" }
         for (component in rawType.recordComponents) {
             componentMap[component.name] = component
+
+            rawType.getDeclaredField(component.name).getAnnotation(SerializedName::class.java)?.let {
+                componentMap[it.value] = component
+                serialisedName[component] = it.value
+                for (alt in it.alternate) componentMap[alt] = component
+            }
         }
     }
 
     override fun write(out: JsonWriter, value: T) {
         out.beginObject()
         for (component in value.javaClass.recordComponents!!) {
-            out.name(component.name)
+            out.name(serialisedName[component] ?: component.name)
             component.accessor.invoke(value)?.also {
                 gson.getAdapter(it.javaClass).write(out, it)
             } ?: out.nullValue()
@@ -74,8 +82,11 @@ class RecordAdapter<T : Record>(private val gson: Gson, private val type: Type, 
                     val path = reader.path
 
                     if (component == null) {
-                        val location = reader.toString()
-                        list.add(ImporterException("Bad entry at $path: $name -> ${generic.read(reader)} @ $location"))
+                        val output = generic.read(reader)
+                        if (output != null && !output.isJsonNull && !(output.isJsonArray && output.asJsonArray.isEmpty) && !(output.isJsonObject && output.asJsonObject.size() == 0)) {
+                            val location = reader.toString()
+                            list.add(ImporterException("Bad entry at $path: $name -> $output @ $location"))
+                        }
                     } else try {
                         map[name] = gson.getAdapter(TypeToken.get(`$Gson$Types`.resolve(type, rawType, componentMap[name]!!.genericType))).read(reader)
                     } catch (e: Exception) {
