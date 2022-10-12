@@ -42,4 +42,22 @@ class SystemSwitchRecord {
         this.memberIds = memberIds
         this.timestamp = timestamp ?: Instant.now()
     }
+
+    override fun equals(other: Any?): Boolean {
+        return this === other || other is SystemSwitchRecord
+                && other.systemId == systemId
+                && other.memberIds == memberIds
+                && other.timestamp == timestamp
+    }
+
+    override fun hashCode(): Int {
+        var result = systemId.hashCode()
+        result = 31 * result + memberIds.hashCode()
+        result = 31 * result + timestamp.hashCode()
+        return result
+    }
+
+    override fun toString(): String {
+        return "Switch{systemId=$systemId, memberIds=$memberIds, timestamp=$timestamp}"
+    }
 }
