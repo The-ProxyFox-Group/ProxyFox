@@ -395,88 +395,90 @@ class MongoDatabase(private val dbName: String = "ProxyFox") : Database() {
         private val proxiedMessageQueue = ConcurrentLinkedQueue<WriteModel<ProxiedMessageRecord>>()
         private val systemSwitchQueue = ConcurrentLinkedQueue<WriteModel<SystemSwitchRecord>>()
         private val memberProxiesQueue = ConcurrentLinkedQueue<WriteModel<MemberProxyTagRecord>>()
+        private val witness = HashSet<Any?>()
+
         override suspend fun getDatabaseName(): String {
             return proxy.getDatabaseName() + " (Bulk Inserter)"
         }
 
         override suspend fun updateServerSettings(serverSettings: ServerSettingsRecord) {
-            serverSettingsQueue += serverSettings.replace()
+            if (witness.add(serverSettings)) serverSettingsQueue += serverSettings.replace()
         }
 
         override suspend fun updateChannel(channel: ChannelSettingsRecord) {
-            channelSettingsQueue += channel.replace()
+            if (witness.add(channel)) channelSettingsQueue += channel.replace()
         }
 
         override suspend fun updateMember(member: MemberRecord) {
-            memberQueue += member.replace()
+            if (witness.add(member)) memberQueue += member.replace()
         }
 
         override suspend fun updateMemberServerSettings(serverSettings: MemberServerSettingsRecord) {
-            memberServerSettingsQueue += serverSettings.replace()
+            if (witness.add(serverSettings)) memberServerSettingsQueue += serverSettings.replace()
         }
 
         override suspend fun updateSystem(system: SystemRecord) {
-            systemQueue += system.replace()
+            if (witness.add(system)) systemQueue += system.replace()
         }
 
         override suspend fun updateSystemServerSettings(serverSettings: SystemServerSettingsRecord) {
-            systemServerSettingsQueue += serverSettings.replace()
+            if (witness.add(serverSettings)) systemServerSettingsQueue += serverSettings.replace()
         }
 
         override suspend fun updateSystemChannelSettings(channelSettings: SystemChannelSettingsRecord) {
-            systemChannelSettingsQueue += channelSettings.replace()
+            if (witness.add(channelSettings)) systemChannelSettingsQueue += channelSettings.replace()
         }
 
         override suspend fun updateUser(user: UserRecord) {
-            userQueue += user.replace()
+            if (witness.add(user)) userQueue += user.replace()
         }
 
         override suspend fun updateMessage(message: ProxiedMessageRecord) {
-            proxiedMessageQueue += message.replace()
+            if (witness.add(message)) proxiedMessageQueue += message.replace()
         }
 
         override suspend fun createServerSettings(serverSettings: ServerSettingsRecord) {
-            serverSettingsQueue += serverSettings.create()
+            if (witness.add(serverSettings)) serverSettingsQueue += serverSettings.create()
         }
 
         override suspend fun createChannel(channel: ChannelSettingsRecord) {
-            channelSettingsQueue += channel.create()
+            if (witness.add(channel)) channelSettingsQueue += channel.create()
         }
 
         override suspend fun createMember(member: MemberRecord) {
-            memberQueue += member.create()
+            if (witness.add(member)) memberQueue += member.create()
         }
 
         override suspend fun createMemberServerSettings(serverSettings: MemberServerSettingsRecord) {
-            memberServerSettingsQueue += serverSettings.create()
+            if (witness.add(serverSettings)) memberServerSettingsQueue += serverSettings.create()
         }
 
         override suspend fun createSystem(system: SystemRecord) {
-            systemQueue += system.create()
+            if (witness.add(system)) systemQueue += system.create()
         }
 
         override suspend fun createSystemServerSettings(serverSettings: SystemServerSettingsRecord) {
-            systemServerSettingsQueue += serverSettings.create()
+            if (witness.add(serverSettings)) systemServerSettingsQueue += serverSettings.create()
         }
 
         override suspend fun createSystemChannelSettings(channelSettings: SystemChannelSettingsRecord) {
-            systemChannelSettingsQueue += channelSettings.create()
+            if (witness.add(channelSettings)) systemChannelSettingsQueue += channelSettings.create()
         }
 
         override suspend fun createUser(user: UserRecord) {
-            userQueue += user.create()
+            if (witness.add(user)) userQueue += user.create()
         }
 
         override suspend fun createMessage(message: ProxiedMessageRecord) {
-            proxiedMessageQueue += message.create()
+            if (witness.add(message)) proxiedMessageQueue += message.create()
         }
 
         override suspend fun updateSwitch(switch: SystemSwitchRecord) {
-            systemSwitchQueue += switch.replace()
+            if (witness.add(switch)) systemSwitchQueue += switch.replace()
         }
 
         override suspend fun createProxyTag(record: MemberProxyTagRecord): Boolean {
-            memberProxiesQueue += record.create()
+            if (witness.add(record)) memberProxiesQueue += record.create()
             return true
         }
 
@@ -487,7 +489,7 @@ class MongoDatabase(private val dbName: String = "ProxyFox") : Database() {
         }
 
         override suspend fun createSwitch(switch: SystemSwitchRecord) {
-            systemSwitchQueue += switch.create()
+            if (witness.add(switch)) systemSwitchQueue += switch.create()
         }
 
         override suspend fun updateTrustLevel(systemId: String, trustee: ULong, level: TrustLevel): Boolean {
@@ -543,6 +545,7 @@ class MongoDatabase(private val dbName: String = "ProxyFox") : Database() {
             proxy.messages.bulkWrite(proxiedMessageQueue)
             proxy.systemSwitches.bulkWrite(systemSwitchQueue)
             proxy.memberProxies.bulkWrite(memberProxiesQueue)
+            witness.clear()
         }
 
         private suspend fun <T> KCollection<T>.bulkWrite(collection: MutableCollection<WriteModel<T>>) {
