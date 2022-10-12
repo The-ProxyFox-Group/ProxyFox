@@ -63,6 +63,10 @@
       "pronoun_privacy": "public",
       "avatar_privacy": "public",
       "metadata_privacy": "public"
+    },
+    {
+      "id": "zoego",
+      "name": "Azalea"
     }
   ],
   "groups": [
