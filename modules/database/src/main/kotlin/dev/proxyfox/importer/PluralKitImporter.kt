@@ -160,20 +160,20 @@ open class PluralKitImporter protected constructor(
         }
 
         pkSystem.switches?.let { switches ->
-            val existingSwitches = database.fetchSwitchesFromSystem(system.id) ?: emptyList()
+            val existingSwitches = database.fetchSwitchesFromSystem(system.id)?.sortedBy { it.timestamp } ?: emptyList()
             val existingInstants = existingSwitches.mapTo(HashSet()) { it.timestamp }
             val existingIds = existingSwitches.mapTo(HashSet()) { it.id }
             id = existingIds.firstFreeRaw()
             val switchMap = TreeMap<Instant, LinkedHashSet<String>>(Instant::compareTo)
             for (switch in switches) {
                 val timestamp = switch.timestamp.tryParseInstant() ?: continue
-                if (timestamp in existingInstants) continue
                 switchMap.computeIfAbsent(timestamp) { LinkedHashSet() }.addAll(switch.members?.filterNotNull() ?: emptyList())
             }
             var lastMember: LinkedHashSet<String>? = null
             for ((timestamp, members) in switchMap) {
                 if (lastMember eq members) continue
                 lastMember = members
+                if (timestamp in existingInstants) continue
                 database.createSwitch(
                     SystemSwitchRecord(
                         systemId = system.id,
