@@ -13,7 +13,10 @@ import dev.proxyfox.common.toColor
 import dev.proxyfox.database.*
 import dev.proxyfox.database.records.member.MemberProxyTagRecord
 import dev.proxyfox.database.records.member.MemberRecord
+import dev.proxyfox.database.records.member.MemberServerSettingsRecord
+import dev.proxyfox.database.records.misc.AutoProxyMode
 import dev.proxyfox.database.records.system.SystemRecord
+import dev.proxyfox.database.records.system.SystemServerSettingsRecord
 import dev.proxyfox.database.records.system.SystemSwitchRecord
 import dev.proxyfox.types.PkMember
 import dev.proxyfox.types.PkSystem
@@ -45,7 +48,10 @@ open class PluralKitImporter protected constructor(
     constructor() : this(false, false)
 
     override suspend fun import(database: Database, json: JsonObject, userId: ULong) {
-        val pkSystem = gson.fromJson(json, PkSystem::class.java)
+        import(database, gson.fromJson(json, PkSystem::class.java), userId)
+    }
+
+    suspend fun import(database: Database, pkSystem: PkSystem, userId: ULong) {
         val fresh: Boolean
         database.fetchSystemFromUser(userId).let {
             if (it == null) {
@@ -60,6 +66,29 @@ open class PluralKitImporter protected constructor(
         system.description = pkSystem.description.sanitise() ?: system.description
         system.tag = pkSystem.tag.sanitise() ?: system.tag
         system.avatarUrl = pkSystem.avatar_url.sanitise() ?: system.avatarUrl
+
+        @Suppress("DEPRECATION")
+        run {
+            pkSystem.autoBool?.let { system.autoType = if (it) AutoProxyMode.FRONT else AutoProxyMode.OFF }
+            pkSystem.serverProxyEnabled?.let {
+                // Take the fast path
+                if (fresh) {
+                    for ((sid, enabled) in it) {
+                        database.createSystemServerSettings(SystemServerSettingsRecord().apply {
+                            serverId = sid
+                            systemId = system.id
+                            proxyEnabled = enabled
+                        })
+                    }
+                } else {
+                    for ((sid, enabled) in it) {
+                        val record = database.getOrCreateServerSettingsFromSystem(sid, system.id)
+                        record.proxyEnabled = enabled
+                        database.updateSystemServerSettings(record)
+                    }
+                }
+            }
+        }
 
         pkSystem.pronouns.sanitise()?.let { system.pronouns = it }
         try {
@@ -95,7 +124,7 @@ open class PluralKitImporter protected constructor(
 
             for (pkMember in pkSystem.members) {
                 val freshMember: Boolean
-                val memberName = pkMember.name.validate("members/name")
+                val memberName = pkMember.name.sanitise().ifEmptyThen(pkMember.id) ?: findNextId(allocatedIds)
                 val member = run {
                     if (!fresh) {
                         val record = database.fetchMemberFromSystemAndName(system.id, memberName)
@@ -124,7 +153,7 @@ open class PluralKitImporter protected constructor(
                 member.description = pkMember.description.sanitise() ?: member.description
                 member.pronouns = pkMember.pronouns.sanitise() ?: member.pronouns
                 try {
-                    member.color = pkMember.color?.validate("members[${pkMember.id} (${pkMember.name})]/color")?.toColor() ?: member.color
+                    member.color = pkMember.color?.sanitise()?.toColor() ?: member.color
                 } catch (nfe: NumberFormatException) {
                     throw ImporterException("Invalid colour given for member ${pkMember.id} (${pkMember.name}): ${pkSystem.color}", nfe)
                 }
@@ -151,11 +180,57 @@ open class PluralKitImporter protected constructor(
                 if (directAllocation) {
                     pkMember.created.tryParseOffsetTimestamp()?.let { member.timestamp = it }
                 }
+
+                val memberServerSettings = HashMap<ULong, PfMemberServerSettings>()
+                @Suppress("DEPRECATION")
+                pkMember.serverAvatars?.forEach { (sid, avatar) ->
+                    if (!avatar.sanitise().isNullOrBlank()) {
+                        memberServerSettings.computeIfAbsent(sid) { PfMemberServerSettings() }.avatar = avatar
+                    }
+                }
+                @Suppress("DEPRECATION")
+                pkMember.serverNicknames?.forEach { (sid, nickname) ->
+                    if (!nickname.sanitise().isNullOrBlank()) {
+                        memberServerSettings.computeIfAbsent(sid) { PfMemberServerSettings() }.nickname = nickname
+                    }
+                }
+
                 if (freshMember) {
                     database.createMember(member)
+                    for ((sid, settings) in memberServerSettings) {
+                        database.createMemberServerSettings(MemberServerSettingsRecord().apply {
+                            serverId = sid
+                            systemId = system.id
+                            memberId = member.id
+                            avatarUrl = settings.avatar
+                            nickname = settings.nickname
+                        })
+                    }
                 } else {
                     database.updateMember(member)
+                    for ((sid, settings) in memberServerSettings) {
+                        val dbSettings = database.fetchMemberServerSettingsFromSystemAndMember(sid, system.id, member.id)
+                        if (dbSettings == null) {
+                            database.createMemberServerSettings(MemberServerSettingsRecord().apply {
+                                serverId = sid
+                                systemId = system.id
+                                memberId = member.id
+                                avatarUrl = settings.avatar
+                                nickname = settings.nickname
+                            })
+                        } else {
+                            dbSettings.avatarUrl = settings.avatar
+                            dbSettings.nickname = settings.nickname
+                            database.updateMemberServerSettings(dbSettings)
+                        }
+                    }
                 }
+            }
+
+            @Suppress("DEPRECATION")
+            pkSystem.auto?.let {
+                system.autoProxy = idMap[it]
+                database.updateSystem(system)
             }
         }
 
@@ -269,5 +344,10 @@ open class PluralKitImporter protected constructor(
     override suspend fun getNewMembers(): Int = createdMembers
 
     override suspend fun getUpdatedMembers(): Int = updatedMembers
+
+    private data class PfMemberServerSettings(
+        var nickname: String? = null,
+        var avatar: String? = null,
+    )
 }
 

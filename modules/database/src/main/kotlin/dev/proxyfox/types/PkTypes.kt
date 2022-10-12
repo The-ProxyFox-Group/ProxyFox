@@ -8,6 +8,7 @@
 
 package dev.proxyfox.types
 
+import com.google.gson.annotations.SerializedName
 import dev.proxyfox.common.fromColorForExport
 import dev.proxyfox.database.paddedString
 import dev.proxyfox.database.pkCompatibleIso8601
@@ -47,6 +48,22 @@ data class PkSystem(
     // ProxyFox-specific extensions.
     // PluralKit and TupperBox should ignore these.
     val proxyfox: PfSystemExtension? = null,
+
+    // Required for PFv1 database imports
+    @Deprecated("PFv1 database imports only")
+    @SerializedName("auto_bool")
+    val autoBool: Boolean? = null,
+
+    @Deprecated("PFv1 database imports only")
+    val auto: String? = null,
+
+    @Deprecated("PFv1 database imports only")
+    @SerializedName("server_proxy")
+    val serverProxyEnabled: Map<ULong, Boolean>? = null,
+
+    // Ignored
+    @Deprecated("PFv1 database imports only")
+    val subsystems: Void? = null,
 
     // Required for PK to accept the export.
     // ProxyFox however will accept any export that vaguely matches PK's.
@@ -131,6 +148,15 @@ data class PkMember(
     // PluralKit and TupperBox should ignore these.
     val proxyfox: PfMemberExtension? = null,
 
+    // Required for PFv1 database imports
+    @Deprecated("PFv1 database imports only")
+    @SerializedName("server_nick")
+    val serverNicknames: Map<ULong, String?>? = null,
+
+    @Deprecated("PFv1 database imports only")
+    @SerializedName("server_avatar")
+    val serverAvatars: Map<ULong, String?>? = null,
+
     // The following are ignored for as we don't support these yet,
     // at least at this location.
     val visibility: Void? = null,
@@ -193,7 +219,11 @@ data class PkGroup(
 @JvmRecord
 data class PkSwitch(
     val timestamp: String?,
-    val members: List<String?>?
+    val members: List<String?>?,
+
+    // Ignored for PFv1 database imports
+    @Deprecated("PFv1 database imports only")
+    val id: Void? = null,
 ) {
     constructor(record: SystemSwitchRecord) : this(
         timestamp = record.timestamp.pkCompatibleIso8601(),
