@@ -64,7 +64,9 @@ suspend fun main(args: Array<String>) {
                             pki.import(this, obj, id)
                             logger.info("Successfully imported {} -> {} with {} members", id, pki.getSystem().id, pki.getNewMembers())
                         }
-                        if (output.fetchMembersFromUser(id)?.size != obj.members?.size) throw AssertionError("Size mismatch")
+                        val importSize = obj.members?.size
+                        val newSize = output.fetchMembersFromUser(id)?.size
+                        if (importSize != newSize) logger.warn("Size mismatch for {}: {} -> {}", id, importSize, newSize)
                     } catch (e: Exception) {
                         throw Exception("Failed with $id -> $obj", e)
                     }
