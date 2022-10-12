@@ -25,7 +25,7 @@ object Exporter {
         val pkSystem = PkSystem(
             system,
             members = database.fetchMembersFromSystem(system.id)?.map {
-                PkMember(it, database.fetchProxiesFromSystemAndMember(system.id, it.id)?.map(::PkProxy))
+                PkMember(it, database.fetchProxiesFromSystemAndMember(system.id, it.id)?.mapTo(HashSet(), ::PkProxy))
             },
             switches = database.fetchSwitchesFromSystem(system.id)?.map(::PkSwitch),
         )
