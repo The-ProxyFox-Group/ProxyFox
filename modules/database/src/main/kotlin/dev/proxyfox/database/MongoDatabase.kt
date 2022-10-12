@@ -305,23 +305,9 @@ class MongoDatabase(private val dbName: String = "ProxyFox") : Database() {
     ): ProxiedMessageRecord? =
         messages.find().filter("{'systemId':'$systemId','channelId':$channelId}").sort("{'creationDate':-1}").limit(1).awaitFirstOrNull()
 
-    override suspend fun createProxyTag(
-        systemId: String,
-        memberId: String,
-        prefix: String?,
-        suffix: String?
-    ): MemberProxyTagRecord? {
-        if (prefix.isNullOrEmpty() && suffix.isNullOrEmpty()) return null
-        fetchProxiesFromSystem(systemId).firstOrNull { prefix == it.prefix && suffix == it.suffix }?.let {
-            return if (it.memberId == memberId) it else null
-        }
-        val proxy = MemberProxyTagRecord()
-        proxy.prefix = prefix ?: ""
-        proxy.suffix = suffix ?: ""
-        proxy.memberId = memberId
-        proxy.systemId = systemId
-        memberProxies.insertOne(proxy).awaitFirst()
-        return proxy
+    override suspend fun createProxyTag(record: MemberProxyTagRecord): Boolean {
+        memberProxies.insertOne(record).awaitFirst()
+        return true
     }
 
     override suspend fun createSwitch(systemId: String, memberId: List<String>, timestamp: Instant?): SystemSwitchRecord? {
@@ -489,10 +475,9 @@ class MongoDatabase(private val dbName: String = "ProxyFox") : Database() {
             systemSwitchQueue += switch.replace()
         }
 
-        override suspend fun createProxyTag(systemId: String, memberId: String, prefix: String?, suffix: String?): MemberProxyTagRecord {
-            val record = MemberProxyTagRecord(systemId, memberId, prefix, suffix)
+        override suspend fun createProxyTag(record: MemberProxyTagRecord): Boolean {
             memberProxiesQueue += record.create()
-            return record
+            return true
         }
 
         override suspend fun createSwitch(systemId: String, memberId: List<String>, timestamp: Instant?): SystemSwitchRecord {

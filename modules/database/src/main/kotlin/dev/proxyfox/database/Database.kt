@@ -308,12 +308,30 @@ abstract class Database : AutoCloseable {
      * @param suffix the suffix of the proxy
      * @return The newly created proxy tag, if one with the same prefix and suffix exists already, return null
      * */
-    abstract suspend fun createProxyTag(
+    open suspend fun createProxyTag(
         systemId: String,
         memberId: String,
         prefix: String?,
         suffix: String?
-    ): MemberProxyTagRecord?
+    ): MemberProxyTagRecord? {
+        if (prefix.isNullOrEmpty() && suffix.isNullOrEmpty()) return null
+        fetchProxiesFromSystem(systemId)?.firstOrNull { it.isEqual(prefix, suffix) }?.let {
+            return if (it.memberId == memberId) it else null
+        }
+        return MemberProxyTagRecord(
+            memberId = memberId,
+            systemId = systemId,
+            prefix = prefix,
+            suffix = suffix,
+        ).also { createProxyTag(it) }
+    }
+
+    /**
+     * Allocates a proxy tag
+     * @param record The proxy tag to add.
+     * @return The newly created proxy tag, if one with the same prefix and suffix exists already, return null
+     * */
+    abstract suspend fun createProxyTag(record: MemberProxyTagRecord): Boolean
 
     /**
      * Allocates a switch
