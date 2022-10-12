@@ -465,25 +465,8 @@ class JsonDatabase(val file: File = File("systems.json")) : Database() {
         return messages.firstOrNull { it.channelId == channelId.value && it.systemId == systemId }
     }
 
-    override suspend fun createProxyTag(
-        systemId: String,
-        memberId: String,
-        prefix: String?,
-        suffix: String?
-    ): MemberProxyTagRecord? {
-        if (prefix.isNullOrEmpty() && suffix.isNullOrEmpty()) return null
-        val proxies = systems[systemId]!!.proxyTags
-        proxies.firstOrNull { it.isEqual(prefix, suffix) }?.let {
-            return if (it.memberId == memberId) it else null
-        }
-        val proxy = MemberProxyTagRecord(
-            systemId = systemId,
-            memberId = memberId,
-            prefix = prefix,
-            suffix = suffix,
-        )
-        proxies.add(proxy)
-        return proxy
+    override suspend fun createProxyTag(record: MemberProxyTagRecord): Boolean {
+        return systems[record.systemId]!!.proxyTags.add(record)
     }
 
     override suspend fun createSwitch(systemId: String, memberId: List<String>, timestamp: Instant?): SystemSwitchRecord? {

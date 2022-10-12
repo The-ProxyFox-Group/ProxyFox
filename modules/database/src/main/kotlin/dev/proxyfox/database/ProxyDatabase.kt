@@ -149,8 +149,8 @@ open class ProxyDatabase<T : Database>(protected val proxy: T) : Database() {
         return proxy.fetchLatestMessage(systemId, channelId)
     }
 
-    override suspend fun createProxyTag(systemId: String, memberId: String, prefix: String?, suffix: String?): MemberProxyTagRecord? {
-        return proxy.createProxyTag(systemId, memberId, prefix, suffix)
+    override suspend fun createProxyTag(record: MemberProxyTagRecord): Boolean {
+        return proxy.createProxyTag(record)
     }
 
     override suspend fun createSwitch(systemId: String, memberId: List<String>, timestamp: Instant?): SystemSwitchRecord? {

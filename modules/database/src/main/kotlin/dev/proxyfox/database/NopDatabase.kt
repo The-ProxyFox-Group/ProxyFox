@@ -110,12 +110,7 @@ class NopDatabase : Database() {
         channelId: Snowflake
     ): ProxiedMessageRecord? = null
 
-    override suspend fun createProxyTag(
-        systemId: String,
-        memberId: String,
-        prefix: String?,
-        suffix: String?
-    ): MemberProxyTagRecord? = null
+    override suspend fun createProxyTag(record: MemberProxyTagRecord): Boolean = false
 
     override suspend fun createSwitch(systemId: String, memberId: List<String>, timestamp: Instant?): SystemSwitchRecord? = null
     override suspend fun dropSwitch(switch: SystemSwitchRecord) {}
