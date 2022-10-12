@@ -19,6 +19,7 @@ import dev.proxyfox.database.JsonDatabase
 import dev.proxyfox.database.MongoDatabase
 import kotlinx.coroutines.ExperimentalCoroutinesApi
 import kotlinx.coroutines.test.runTest
+import org.slf4j.LoggerFactory
 import org.testng.Assert.assertEquals
 import org.testng.Assert.assertNotNull
 import org.testng.annotations.*
@@ -102,6 +103,35 @@ constructor(private val name: String, databaseFactory: () -> Database) {
         assertEquals(sorted[1].timestamp, instantLastMicroOfEpochDay)
     }
 
+    @Test
+    fun `Importer - switch dedup`() = runTest {
+        val user = entity<UserBehavior>(16876UL)
+        extraResource("PluralKit-v1-Switches-Dedup.json") {
+            import(database, it, user)
+        }
+
+        val switches = database.fetchSwitchesFromUser(user)!!.sortedBy { it.timestamp }
+        assertEquals(switches.size, 4, "Extra data than expected.")
+
+        val member0 = database.fetchMemberFromUserAndName(user, "Azalea")!!.id
+        val member1 = database.fetchMemberFromUserAndName(user, "Flora")!!.id
+
+        assertEquals(switches[0].memberIds, listOf(member0))
+        assertEquals(switches[1].memberIds, listOf(member0, member1))
+        assertEquals(switches[2].memberIds, listOf(member1, member0))
+        assertEquals(switches[3].memberIds, emptyList<String>())
+
+        extraResource("PluralKit-v1-Switches-Dedup.json") {
+            import(database, it, user)
+        }
+
+        val import2Switches = database.fetchSwitchesFromUser(user)?.sortedBy { it.timestamp }
+        logger.info("{}", switches.joinToString("\n"))
+        logger.info("{}", import2Switches?.joinToString("\n"))
+        logger.info("{}", HashSet(import2Switches).also { it.removeAll(switches) }.joinToString("\n"))
+        assertEquals(import2Switches, switches, "Switch data has been duplicated on reimport")
+    }
+
     @Suppress("DEPRECATION_ERROR")
     @AfterClass
     fun cleanup() = runTest {
@@ -118,6 +148,7 @@ constructor(private val name: String, databaseFactory: () -> Database) {
     }
 
     companion object {
+        private val logger = LoggerFactory.getLogger(ImporterTest::class.java)
         private const val path = "dev/proxyfox/database/systems"
         private val test = Files.createTempDirectory("ProxyFox-")
         private val resources = ClassPath.from(ImporterTest::class.java.classLoader).resources.filter { it.resourceName.startsWith(path) }
