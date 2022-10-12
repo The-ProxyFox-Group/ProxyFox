@@ -41,7 +41,7 @@ fun printStep(input: String, step: Int) {
 }
 
 fun String?.toColor(): Int {
-    return if (this == null) -1 else (toUIntOrNull(16)?.toInt() ?: Integer.decode(this)) and 0xFFFFFF
+    return if (this == null || this == "") -1 else (toUIntOrNull(16)?.toInt() ?: Integer.decode(this)) and 0xFFFFFF
 }
 
 fun Int.fromColor() = fromColorForExport()?.let { "#$it" }

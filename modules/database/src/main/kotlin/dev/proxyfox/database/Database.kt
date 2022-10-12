@@ -477,6 +477,17 @@ abstract class Database : AutoCloseable {
      * */
     open suspend fun commit() {}
 
+    /**
+     * Effectively a transaction block for mass-editing data in any form
+     *
+     * @param action The transaction, either generator or otherwise.
+     * */
+    suspend inline fun bulk(action: Database.() -> Unit) {
+        val bulk = bulkInserter()
+        action(bulk)
+        bulk.commit()
+    }
+
     @TestOnly
     @Deprecated(level = DeprecationLevel.ERROR, message = "Not for regular use.")
     abstract suspend fun drop()

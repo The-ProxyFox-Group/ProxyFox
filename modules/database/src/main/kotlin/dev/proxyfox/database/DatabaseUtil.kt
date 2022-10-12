@@ -48,6 +48,14 @@ fun String?.sanitise(): String? {
     return this?.sanitise()
 }
 
+infix fun String?.ifEmptyThen(str: String?) = sanitise().let {
+    if (it.isNullOrBlank()) {
+        str.sanitise().let { str2 -> if (str2.isNullOrBlank()) null else str2 }
+    } else {
+        it
+    }
+}
+
 fun String?.validate(name: String? = "Unknown field"): String {
     return sanitise().apply { if (isNullOrBlank()) throw ImporterException("Invalid string given for $name: \"$this\"") }!!
 }
