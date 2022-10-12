@@ -83,6 +83,7 @@ open class PluralKitImporter protected constructor(
         val idMap = HashMap<String?, String>()
 
         if (pkSystem.members != null) {
+            val proxyTags = database.fetchProxiesFromSystem(system.id)?.toHashSet()
             val allocatedIds = HashSet<String>()
             if (!fresh) {
                 val ids = database.fetchMembersFromSystem(system.id)!!.mapTo(allocatedIds, MemberRecord::id)
@@ -135,8 +136,16 @@ open class PluralKitImporter protected constructor(
                     proxyfox.role?.let { member.role = it }
                 }
 
-                pkMember.proxy_tags?.forEach { pkProxy ->
-                    database.createProxyTag(system.id, member.id, pkProxy.prefix, pkProxy.suffix)
+                pkMember.proxy_tags?.apply {
+                    val memberTags = proxyTags?.filterTo(HashSet()) { it.memberId == member.id } ?: HashSet()
+                    forEach { pkProxy ->
+                        val proxy = MemberProxyTagRecord(system.id, member.id, pkProxy.prefix, pkProxy.suffix)
+                        if (!memberTags.remove(proxy)) {
+                            proxyTags?.filter { it.isEqual(proxy) }?.forEach { database.dropProxyTag(it) }
+                            database.createProxyTag(proxy)
+                        }
+                    }
+                    memberTags.forEach { database.dropProxyTag(it) }
                 }
                 if (directAllocation) {
                     pkMember.created.tryParseOffsetTimestamp()?.let { member.timestamp = it }

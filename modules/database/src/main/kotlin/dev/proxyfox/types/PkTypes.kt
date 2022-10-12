@@ -122,7 +122,7 @@ data class PkMember(
     val avatar_url: String? = null,
     val banner: String? = null,
 
-    val proxy_tags: List<PkProxy>? = emptyList(),
+    val proxy_tags: Set<PkProxy>? = emptySet(),
 
     // Some data structures from here will need to be flattened in.
     val privacy: PkMemberPrivacy? = null,
@@ -144,7 +144,7 @@ data class PkMember(
     // The following are ignored. We don't use these.
     val uuid: Void? = null,
 ) {
-    constructor(record: MemberRecord, proxyTags: List<PkProxy>?) : this(
+    constructor(record: MemberRecord, proxyTags: Set<PkProxy>?) : this(
         id = record.id,
         name = record.name,
         display_name = record.displayName,
