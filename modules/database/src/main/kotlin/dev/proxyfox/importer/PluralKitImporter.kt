@@ -17,6 +17,7 @@ import dev.proxyfox.database.records.system.SystemRecord
 import dev.proxyfox.database.records.system.SystemSwitchRecord
 import dev.proxyfox.types.PkMember
 import dev.proxyfox.types.PkSystem
+import java.time.Instant
 import java.time.LocalDate
 import java.time.format.DateTimeFormatter
 import java.util.*
@@ -159,18 +160,42 @@ open class PluralKitImporter protected constructor(
         }
 
         pkSystem.switches?.let { switches ->
+            val existingSwitches = database.fetchSwitchesFromSystem(system.id) ?: emptyList()
+            val existingInstants = existingSwitches.mapTo(HashSet()) { it.timestamp }
+            val existingIds = existingSwitches.mapTo(HashSet()) { it.id }
+            id = existingIds.firstFreeRaw()
+            val switchMap = TreeMap<Instant, LinkedHashSet<String>>(Instant::compareTo)
             for (switch in switches) {
                 val timestamp = switch.timestamp.tryParseInstant() ?: continue
+                if (timestamp in existingInstants) continue
+                switchMap.computeIfAbsent(timestamp) { LinkedHashSet() }.addAll(switch.members?.filterNotNull() ?: emptyList())
+            }
+            var lastMember: LinkedHashSet<String>? = null
+            for ((timestamp, members) in switchMap) {
+                if (lastMember eq members) continue
+                lastMember = members
                 database.createSwitch(
                     SystemSwitchRecord(
                         systemId = system.id,
-                        id = rng.nextInt(pkIdBound).toPkString(),
-                        memberIds = switch.members?.mapNotNull(idMap::get) ?: emptyList(),
+                        id = findNextId(existingIds),
+                        memberIds = members.mapNotNull(idMap::get),
                         timestamp = timestamp,
                     )
                 )
             }
         }
+    }
+
+    private infix fun <T> LinkedHashSet<T>?.eq(other: LinkedHashSet<T>?): Boolean {
+        if (this === other) return true
+        if (this == null || other == null || this.size != other.size) return false
+        val ita = this.iterator()
+        val itb = other.iterator()
+        while (ita.hasNext() && itb.hasNext()) {
+            if (ita.next() != itb.next()) return false
+        }
+        // Guards against concurrent modifications... if they somehow occur
+        return !ita.hasNext() && !itb.hasNext()
     }
 
     private fun findBirthdays(members: Collection<PkMember>): Map<PkMember, LocalDate> {
