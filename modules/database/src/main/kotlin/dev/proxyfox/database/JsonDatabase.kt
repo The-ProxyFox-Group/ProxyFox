@@ -330,7 +330,7 @@ class JsonDatabase(val file: File = File("systems.json")) : Database() {
     @Deprecated(level = DeprecationLevel.ERROR, message = "Non-native method")
     override suspend fun getOrCreateSystem(userId: ULong, id: String?): SystemRecord {
         return fetchSystemFromUser(userId) ?: run {
-            val sysId = if (id == null || systems.containsKey(id)) systems.keys.firstFree() else id
+            val sysId = if (!id.isValidPkString() || systems.containsKey(id)) systems.keys.firstFree() else id
             val struct = JsonSystemStruct(sysId)
             struct.accounts.add(userId)
             initSystem(struct).view()
@@ -365,7 +365,7 @@ class JsonDatabase(val file: File = File("systems.json")) : Database() {
     override suspend fun getOrCreateMember(systemId: String, name: String, id: String?): MemberRecord? {
         return fetchMemberFromSystemAndName(systemId, name) ?: run {
             val system = systems[systemId] ?: return null
-            val memId = if (id == null || system.members.containsKey(id)) system.members.keys.firstFree() else id
+            val memId = if (!id.isValidPkString() || system.members.containsKey(id)) system.members.keys.firstFree() else id
             system.putMember(JsonMemberStruct(id = memId, systemId = systemId, name = name)).view()
         }
     }
