@@ -49,6 +49,8 @@ class MemberRecord() {
 
     fun asString() = displayName?.let { "$it ($name)" } ?: name
 
+    fun showDisplayName() = displayName ?: name
+
     suspend fun serverName(serverId: ULong) =
         if (serverId == 0UL) null else database.fetchMemberServerSettingsFromSystemAndMember(serverId, systemId, id)?.nickname
 }
