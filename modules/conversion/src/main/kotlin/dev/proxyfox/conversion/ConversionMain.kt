@@ -80,7 +80,7 @@ suspend fun main(args: Array<String>) {
                             output.bulk {
                                 val pki = object : PluralKitImporter(directAllocation = true, ignoreUnfinished = true) {}
                                 pki.import(this, obj, id)
-                                logger.info("Successfully imported {} -> {} with {} members", id, pki.getSystem().id, pki.getNewMembers())
+                                logger.info("Successfully imported {} -> {} with {} members", id, pki.system.id, pki.createdMembers)
                             }
                             val importSize = obj.members?.size
                             val newSize = output.fetchMembersFromUser(id)?.size

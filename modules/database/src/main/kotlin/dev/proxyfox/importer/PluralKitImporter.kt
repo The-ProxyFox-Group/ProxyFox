@@ -37,12 +37,8 @@ open class PluralKitImporter protected constructor(
     private val directAllocation: Boolean,
     private val ignoreUnfinished: Boolean,
 ) : Importer {
-    private val rng = Random()
-    private lateinit var system: SystemRecord
-    private var members: List<MemberRecord> = ArrayList()
     private var proxies: HashMap<MemberRecord, List<MemberProxyTagRecord>> = HashMap()
-    private var createdMembers = 0
-    private var updatedMembers = 0
+
     private var id = 0
 
     constructor() : this(false, false)
@@ -127,8 +123,9 @@ open class PluralKitImporter protected constructor(
                 val memberName = pkMember.name.sanitise().ifEmptyThen(pkMember.id) ?: findNextId(allocatedIds)
                 val member = run {
                     if (!fresh) {
-                        val record = database.fetchMemberFromSystemAndName(system.id, memberName)
+                        val record = database.fetchMemberFromSystemAndName(system.id, memberName, caseSensitive = false)
                         if (record != null) {
+                            assert(record.name == memberName) { "$record did not match $pkMember" }
                             freshMember = false
                             updatedMembers++
                             return@run record
@@ -335,15 +332,18 @@ open class PluralKitImporter protected constructor(
     }
 
     // Getters:
-    override suspend fun getSystem(): SystemRecord = system
+    final override lateinit var system: SystemRecord
+        private set
 
-    override suspend fun getMembers(): List<MemberRecord> = members
+    final override val members: List<MemberRecord> = ArrayList()
 
-    override suspend fun getMemberProxyTags(member: MemberRecord): List<MemberProxyTagRecord> = proxies[member]!!
+    override fun getMemberProxyTags(member: MemberRecord): List<MemberProxyTagRecord> = proxies[member]!!
 
-    override suspend fun getNewMembers(): Int = createdMembers
+    final override var createdMembers = 0
+        private set
 
-    override suspend fun getUpdatedMembers(): Int = updatedMembers
+    final override var updatedMembers = 0
+        private set
 
     private data class PfMemberServerSettings(
         var nickname: String? = null,

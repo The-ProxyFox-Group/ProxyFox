@@ -165,7 +165,7 @@ object MiscCommands {
         val importer = withContext(Dispatchers.IO) {
             attach.openStream().reader().use { import(it, ctx.message.author) }
         }
-        return "File imported. created ${importer.getNewMembers()} member(s), updated ${importer.getUpdatedMembers()} member(s)"
+        return "File imported. created ${importer.createdMembers} member(s), updated ${importer.updatedMembers} member(s)"
     }
 
     private suspend fun import(ctx: MessageHolder): String {
@@ -173,7 +173,7 @@ object MiscCommands {
         val importer = withContext(Dispatchers.IO) {
             attach.openStream().reader().use { import(it, ctx.message.author) }
         }
-        return "File imported. created ${importer.getNewMembers()} member(s), updated ${importer.getUpdatedMembers()} member(s)"
+        return "File imported. created ${importer.createdMembers} member(s), updated ${importer.updatedMembers} member(s)"
     }
 
     private suspend fun export(ctx: MessageHolder): String {

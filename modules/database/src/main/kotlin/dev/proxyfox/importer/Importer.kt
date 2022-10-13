@@ -102,9 +102,10 @@ interface Importer {
     suspend fun import(database: Database, json: JsonObject, userId: ULong)
 
     // Getters:
-    suspend fun getSystem(): SystemRecord
-    suspend fun getMembers(): List<MemberRecord>
-    suspend fun getMemberProxyTags(member: MemberRecord): List<MemberProxyTagRecord>
-    suspend fun getNewMembers(): Int
-    suspend fun getUpdatedMembers(): Int
+    fun getMemberProxyTags(member: MemberRecord): List<MemberProxyTagRecord>
+
+    val system: SystemRecord
+    val members: List<MemberRecord>
+    val createdMembers: Int
+    val updatedMembers: Int
 }
