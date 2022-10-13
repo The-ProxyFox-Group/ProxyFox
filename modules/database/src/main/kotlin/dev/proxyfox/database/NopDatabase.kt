@@ -128,7 +128,7 @@ class NopDatabase : Database() {
 
     override suspend fun fetchTotalMembersFromSystem(systemId: String): Int? = null
 
-    override suspend fun fetchMemberFromSystemAndName(systemId: String, memberName: String): MemberRecord? = null
+    override suspend fun fetchMemberFromSystemAndName(systemId: String, memberName: String, caseSensitive: Boolean): MemberRecord? = null
 
     override suspend fun export(other: Database) {}
 

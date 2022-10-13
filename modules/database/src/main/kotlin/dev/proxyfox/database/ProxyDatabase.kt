@@ -189,7 +189,7 @@ open class ProxyDatabase<T : Database>(protected val proxy: T) : Database() {
         return proxy.fetchTotalMembersFromSystem(systemId)
     }
 
-    override suspend fun fetchMemberFromSystemAndName(systemId: String, memberName: String): MemberRecord? {
+    override suspend fun fetchMemberFromSystemAndName(systemId: String, memberName: String, caseSensitive: Boolean): MemberRecord? {
         return proxy.fetchMemberFromSystemAndName(systemId, memberName)
     }
 

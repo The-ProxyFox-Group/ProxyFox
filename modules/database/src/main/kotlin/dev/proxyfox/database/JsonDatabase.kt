@@ -513,7 +513,7 @@ class JsonDatabase(val file: File = File("systems.json")) : Database() {
         return systems[systemId]?.members?.size
     }
 
-    override suspend fun fetchMemberFromSystemAndName(systemId: String, memberName: String): MemberRecord? {
+    override suspend fun fetchMemberFromSystemAndName(systemId: String, memberName: String, caseSensitive: Boolean): MemberRecord? {
         return systems[systemId]?.membersByName?.get(memberName)?.view()
     }
 
