@@ -38,6 +38,7 @@ open class PluralKitImporter protected constructor(
     private val ignoreUnfinished: Boolean,
 ) : Importer {
     private var proxies: HashMap<MemberRecord, List<MemberProxyTagRecord>> = HashMap()
+    private var seenMemberIds = HashSet<String>()
 
     private var id = 0
 
@@ -123,8 +124,9 @@ open class PluralKitImporter protected constructor(
                 val memberName = pkMember.name.sanitise().ifEmptyThen(pkMember.id) ?: findNextId(allocatedIds)
                 val member = run {
                     if (!fresh) {
-                        val record = database.fetchMemberFromSystemAndName(system.id, memberName, caseSensitive = false)
-                        if (record != null) {
+                        val record = pkMember.id?.let { database.fetchMemberFromSystem(system.id, it) }
+                            ?: database.fetchMemberFromSystemAndName(system.id, memberName, caseSensitive = false)
+                        if (record != null && seenMemberIds.add(record.id)) {
                             assert(record.name == memberName) { "$record did not match $pkMember" }
                             freshMember = false
                             updatedMembers++
@@ -142,7 +144,7 @@ open class PluralKitImporter protected constructor(
                     database.getOrCreateMember(system.id, memberName, id = if (directAllocation) pkMember.id else null)?.apply { createdMembers++ }
                     */
                 }
-
+                seenMemberIds.add(member.id)
                 idMap[pkMember.id] = member.id
 
                 member.displayName = pkMember.display_name.sanitise() ?: member.displayName
