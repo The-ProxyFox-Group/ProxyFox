@@ -224,6 +224,7 @@ open class PluralKitImporter protected constructor(
                         }
                     }
                 }
+                members += member
             }
 
             @Suppress("DEPRECATION")
@@ -337,7 +338,7 @@ open class PluralKitImporter protected constructor(
     final override lateinit var system: SystemRecord
         private set
 
-    final override val members: List<MemberRecord> = ArrayList()
+    final override val members: ArrayList<MemberRecord> = ArrayList()
 
     override fun getMemberProxyTags(member: MemberRecord): List<MemberProxyTagRecord> = proxies[member]!!
 
