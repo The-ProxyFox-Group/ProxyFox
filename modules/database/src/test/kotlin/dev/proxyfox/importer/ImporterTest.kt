@@ -60,7 +60,7 @@ constructor(private val name: String, databaseFactory: () -> Database) {
 
         extraResource("PluralKit-v1-Case-Sensitivity-Test.json") {
             val pkImporter = import(database, it, user)
-            assertEquals(pkImporter.getNewMembers(), 1, "`azalea` was not counted.")
+            assertEquals(pkImporter.createdMembers, 1, "`azalea` was not counted.")
         }
 
         assertEquals(database.fetchMemberFromUserAndName(user, "azalea")?.name, "azalea")

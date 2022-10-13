@@ -23,11 +23,7 @@ import dev.proxyfox.types.TbSystem
  * @author Oliver
  * */
 class TupperBoxImporter : Importer {
-    private lateinit var system: SystemRecord
-    private var members: List<MemberRecord> = ArrayList()
     private var proxies = HashMap<MemberRecord, MemberProxyTagRecord>()
-    private var createdMembers = 0
-    private var updatedMembers = 0
 
     override suspend fun import(database: Database, json: JsonObject, userId: ULong) {
         val tbSystem = gson.fromJson(json, TbSystem::class.java)
@@ -51,19 +47,16 @@ class TupperBoxImporter : Importer {
     }
 
     // Getters:
-    override suspend fun getSystem(): SystemRecord {
-        return system
-    }
+    override lateinit var system: SystemRecord
+        private set
 
-    override suspend fun getMembers(): List<MemberRecord> {
-        return members
-    }
+    override val members: List<MemberRecord> = ArrayList()
 
-    override suspend fun getMemberProxyTags(member: MemberRecord): List<MemberProxyTagRecord> {
-        return listOfNotNull(proxies[member])
-    }
+    override fun getMemberProxyTags(member: MemberRecord) = listOf(proxies[member]!!)
 
-    override suspend fun getNewMembers(): Int = createdMembers
+    override var createdMembers = 0
+        private set
 
-    override suspend fun getUpdatedMembers(): Int = updatedMembers
+    override var updatedMembers = 0
+        private set
 }
