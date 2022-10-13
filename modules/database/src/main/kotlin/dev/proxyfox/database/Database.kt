@@ -450,17 +450,20 @@ abstract class Database : AutoCloseable {
     /**
      * Gets a member by system ID and member name
      * */
-    abstract suspend fun fetchMemberFromSystemAndName(systemId: String, memberName: String): MemberRecord?
+    abstract suspend fun fetchMemberFromSystemAndName(systemId: String, memberName: String, caseSensitive: Boolean = true): MemberRecord?
 
     /**
      * Gets a member by system ID and either member ID or name.
      * */
-    suspend fun findMember(systemId: String, member: String): MemberRecord? = fetchMemberFromSystemAndName(systemId, member) ?: fetchMemberFromSystem(systemId, member)
+    suspend fun findMember(systemId: String, member: String): MemberRecord? =
+        fetchMemberFromSystemAndName(systemId, member, true)
+            ?: fetchMemberFromSystemAndName(systemId, member, false)
+            ?: fetchMemberFromSystem(systemId, member)
 
     /**
      * Gets a member by user snowflake and member name
      * */
-    suspend inline fun fetchMemberFromUserAndName(user: UserBehavior, memberName: String) = fetchUser(user)?.systemId?.let { fetchMemberFromSystemAndName(it, memberName) }
+    suspend inline fun fetchMemberFromUserAndName(user: UserBehavior, memberName: String, caseSensitive: Boolean = true) = fetchUser(user)?.systemId?.let { fetchMemberFromSystemAndName(it, memberName, caseSensitive) }
 
     // === Unsafe direct-write import & export functions ===
     abstract suspend fun export(other: Database)

@@ -359,8 +359,13 @@ class MongoDatabase(private val dbName: String = "ProxyFox") : Database() {
         return members.countDocuments("{systemId:'$systemId'}").awaitFirst().toInt()
     }
 
-    override suspend fun fetchMemberFromSystemAndName(systemId: String, memberName: String): MemberRecord? {
-        return members.findOne("{systemId:'$systemId',name:{\$regex: /${memberName.replace("/", "\\/")}/i}}")
+    override suspend fun fetchMemberFromSystemAndName(systemId: String, memberName: String, caseSensitive: Boolean): MemberRecord? {
+        return members.findOne(
+            if (caseSensitive)
+                "{systemId:'$systemId',name:'${memberName.replace("'", "\\'")}'}"
+            else
+                "{systemId:'$systemId',name:{\$regex: /${memberName.replace("/", "\\/")}/i}}"
+        )
     }
 
     override suspend fun export(other: Database) {
