@@ -20,8 +20,7 @@ import dev.proxyfox.database.MongoDatabase
 import kotlinx.coroutines.ExperimentalCoroutinesApi
 import kotlinx.coroutines.test.runTest
 import org.slf4j.LoggerFactory
-import org.testng.Assert.assertEquals
-import org.testng.Assert.assertNotNull
+import org.testng.Assert.*
 import org.testng.annotations.*
 import java.io.Reader
 import java.net.URL
@@ -39,6 +38,7 @@ class ImporterTest @Factory(dataProvider = "constructorParameters")
 constructor(private val name: String, databaseFactory: () -> Database) {
     private val backing = lazy(databaseFactory)
     private val database: Database by backing
+    private val prng = seeded()
 
     @BeforeClass
     fun construct() = runTest {
@@ -53,8 +53,11 @@ constructor(private val name: String, databaseFactory: () -> Database) {
 
     @Test(dataProvider = "passImporters")
     fun `Importer - expect pass`(url: URL) = runTest {
-        val user = entity<UserBehavior>(seeded().nextLong().toULong())
-        import(database, url.readText(), user)
+        val user = entity<UserBehavior>(prng.nextLong().toULong())
+        assertNull(database.fetchSystemFromUser(user), "$user already has system bound?")
+
+        val importer1 = import(database, url.readText(), user)
+        assertEquals(importer1.updatedMembers, 0, "Somehow updated existing member")
 
         assertNotNull(database.fetchMemberFromUserAndName(user, "Azalea"), "No such Azalea for $user")
 
@@ -64,6 +67,9 @@ constructor(private val name: String, databaseFactory: () -> Database) {
         }
 
         assertEquals(database.fetchMemberFromUserAndName(user, "azalea")?.name, "azalea")
+
+        // Somehow the ID manages to get reused in some implementations
+        database.dropSystem(user)
     }
 
     @Test
