@@ -376,9 +376,7 @@ To get support, head on over to https://discord.gg/q3yF8ay9V7"""
             ctx.respond("You weren't the original creator of the targeted message.", true)
             return ""
         }
-        val memberId = ctx.params["member"]?.get(0)!!
-        val member = database.fetchMemberFromSystemAndName(system.id, memberId)
-            ?: database.fetchMemberFromSystem(system.id, memberId)
+        val member = database.findMember(system.id, ctx.params["member"]?.get(0)!!)
         if (member == null) {
             ctx.respond("Couldn't find member to proxy as", true)
             return ""
