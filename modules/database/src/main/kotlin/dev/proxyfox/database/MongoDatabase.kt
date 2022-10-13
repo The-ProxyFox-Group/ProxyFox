@@ -360,7 +360,7 @@ class MongoDatabase(private val dbName: String = "ProxyFox") : Database() {
     }
 
     override suspend fun fetchMemberFromSystemAndName(systemId: String, memberName: String): MemberRecord? {
-        return members.findOne("{systemId:'$systemId',name:'${memberName.replace("'", "\\'")}'}")
+        return members.findOne("{systemId:'$systemId',name:{\$regex: /${memberName.replace("/", "\\/")}/i}}")
     }
 
     override suspend fun export(other: Database) {
