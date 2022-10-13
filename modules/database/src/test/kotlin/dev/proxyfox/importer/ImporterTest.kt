@@ -68,6 +68,21 @@ constructor(private val name: String, databaseFactory: () -> Database) {
 
         assertEquals(database.fetchMemberFromUserAndName(user, "azalea")?.name, "azalea")
 
+        database.dropSystem(user)
+        database.getOrCreateSystem(user)
+
+        val importer2 = import(database, url.readText(), user)
+        assertEquals(importer2.updatedMembers, 0, "Somehow updated existing member")
+        assertEquals(importer2.createdMembers, importer1.createdMembers, "Unexpected behaviour change")
+
+        database.dropSystem(user)
+        val id = database.getOrCreateSystem(user).id
+        database.getOrCreateMember(id, "Azalea")
+
+        val importer3 = import(database, url.readText(), user)
+        assertEquals(importer3.updatedMembers, 1, "Updated more than Azalea")
+        assertEquals(importer3.createdMembers, importer1.createdMembers - 1, "Unexpected behaviour change")
+
         // Somehow the ID manages to get reused in some implementations
         database.dropSystem(user)
     }

@@ -1,0 +1,16 @@
+{
+  "members": [
+    {
+      "name": "Azalea",
+      "display_name": "Small flower"
+    },
+    {
+      "name": "Azalea",
+      "display_name": "Big flower"
+    },
+    {
+      "name": "Azalea",
+      "display_name": "Big bush"
+    }
+  ]
+}
