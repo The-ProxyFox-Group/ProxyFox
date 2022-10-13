@@ -57,6 +57,13 @@ constructor(private val name: String, databaseFactory: () -> Database) {
         import(database, url.readText(), user)
 
         assertNotNull(database.fetchMemberFromUserAndName(user, "Azalea"), "No such Azalea for $user")
+
+        extraResource("PluralKit-v1-Case-Sensitivity-Test.json") {
+            val pkImporter = import(database, it, user)
+            assertEquals(pkImporter.getNewMembers(), 1, "`azalea` was not counted.")
+        }
+
+        assertEquals(database.fetchMemberFromUserAndName(user, "azalea")?.name, "azalea")
     }
 
     @Test
