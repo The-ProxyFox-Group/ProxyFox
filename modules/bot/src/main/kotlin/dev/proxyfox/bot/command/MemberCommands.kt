@@ -18,9 +18,7 @@ import dev.proxyfox.bot.string.parser.MessageHolder
 import dev.proxyfox.bot.string.parser.registerCommand
 import dev.proxyfox.bot.timedYesNoPrompt
 import dev.proxyfox.bot.toKtInstant
-import dev.proxyfox.common.fromColor
-import dev.proxyfox.common.printStep
-import dev.proxyfox.common.toColor
+import dev.proxyfox.common.*
 import dev.proxyfox.database.database
 import dev.proxyfox.database.displayDate
 import dev.proxyfox.database.tryParseLocalDate
@@ -116,7 +114,7 @@ object MemberCommands {
             val systemName = system.name ?: system.id
             author {
                 name = member.displayName?.let { "$it (${member.name})\u2007•\u2007$systemName" } ?: "${member.name}\u2007•\u2007$systemName"
-                icon = member.avatarUrl
+                icon = member.avatarUrl.ifBlankThenNull()
             }
             member.avatarUrl?.let {
                 thumbnail {
@@ -125,14 +123,14 @@ object MemberCommands {
             }
             color = member.color.kordColor()
             description = member.description
-            settings?.nickname?.let {
+            settings?.nickname.notBlank {
                 field {
                     name = "Server Name"
                     value = "> $it\n*For ${guild?.name}*"
                     inline = true
                 }
             }
-            member.pronouns?.let {
+            member.pronouns.notBlank {
                 field {
                     name = "Pronouns"
                     value = it
