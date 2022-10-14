@@ -13,10 +13,8 @@ import com.mongodb.reactivestreams.client.MongoCollection
 import dev.proxyfox.gson.*
 import dev.proxyfox.importer.ImporterException
 import kotlinx.coroutines.reactive.awaitFirst
-import kotlinx.coroutines.reactive.awaitFirstOrNull
 import org.bson.types.ObjectId
 import org.litote.kmongo.coroutine.toList
-import org.litote.kmongo.reactivestreams.filter
 import org.litote.kmongo.reactivestreams.getCollection
 import org.litote.kmongo.util.KMongoUtil
 import java.time.Instant
@@ -138,8 +136,6 @@ inline fun <T, reified R> Array<out T>.mapArray(action: (T) -> R): Array<R> {
     return Array(size) { action(this[it]) }
 }
 
-suspend inline fun <T> KCollection<T>.findOne(filter: String): T? = find().filter(filter).awaitFirstOrNull()
-suspend inline fun <T> KCollection<T>.findAll(filter: String): List<T> = find().filter(filter).toList()
 suspend inline fun <reified T : Any> Mongo.getOrCreateCollection(): MongoCollection<T> {
     if (listCollectionNames().toList().indexOf(KMongoUtil.defaultCollectionName(T::class)) == -1)
         try {

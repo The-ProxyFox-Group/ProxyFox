@@ -21,6 +21,12 @@ class ServerSettingsRecord {
     var serverId: ULong = 0UL
     var proxyRole: ULong = 0UL
 
+    constructor()
+
+    constructor(serverId: ULong) {
+        this.serverId = serverId
+    }
+
     fun writeTo(other: ServerSettingsRecord) {
         other.proxyRole = proxyRole
     }

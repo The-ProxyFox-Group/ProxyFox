@@ -17,6 +17,16 @@ class SystemChannelSettingsRecord {
     var systemId: String = ""
     var proxyEnabled: Boolean = true
 
+    constructor()
+
+    constructor(
+        channelId: ULong,
+        systemId: String,
+    ) {
+        this.channelId = channelId
+        this.systemId = systemId
+    }
+
     fun writeTo(other: SystemChannelSettingsRecord) {
         other.proxyEnabled = proxyEnabled
     }

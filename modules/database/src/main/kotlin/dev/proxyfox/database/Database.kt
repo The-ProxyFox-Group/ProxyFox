@@ -257,7 +257,9 @@ abstract class Database : AutoCloseable {
      * @param name The name of the new member.
      * @return A newly created member. null if system doesn't exist.
      * */
-    abstract suspend fun getOrCreateMember(systemId: String, name: String, id: String? = null): MemberRecord?
+    open suspend fun getOrCreateMember(systemId: String, name: String, id: String? = null): MemberRecord? {
+        return fetchMemberFromSystemAndName(systemId, name) ?: createMember(systemId, name, id)
+    }
 
     open suspend fun containsMember(systemId: String, memberId: String) = fetchMemberFromSystem(systemId, memberId) != null
 
@@ -266,6 +268,17 @@ abstract class Database : AutoCloseable {
     // TODO: This ideally needs a much better system for updating since this really isn't ideal as is.
     //  This applies to the following 4 methods below.
     abstract suspend fun updateMember(member: MemberRecord)
+
+    open suspend fun createMember(systemId: String, name: String, id: String? = null): MemberRecord? {
+        fetchSystemFromId(systemId) ?: return null
+        val member = MemberRecord(
+            id = firstFreeMemberId(systemId, id),
+            systemId = systemId,
+            name = name,
+        )
+        createMember(member)
+        return member
+    }
 
     open suspend fun createMember(member: MemberRecord) = updateMember(member)
     abstract suspend fun updateMemberServerSettings(serverSettings: MemberServerSettingsRecord)
@@ -514,6 +527,8 @@ abstract class Database : AutoCloseable {
         return !systemId.isValidPkString() || containsSystem(systemId)
     }
 
+    abstract suspend fun firstFreeSystemId(id: String? = null): String
+
     /**
      * Checks to see if the member ID is reserved by the database in any form.
      *
@@ -527,5 +542,9 @@ abstract class Database : AutoCloseable {
             returns(false) implies (memberId != null)
         }
         return !systemId.isValidPkString() || !memberId.isValidPkString() || containsMember(systemId, memberId)
+    }
+
+    open suspend fun firstFreeMemberId(systemId: String, id: String? = null): String {
+        return if (isMemberIdReserved(systemId, id)) fetchMembersFromSystem(systemId)?.map(MemberRecord::id)?.firstFree() ?: "aaaaa" else id
     }
 }

@@ -28,4 +28,16 @@ class MemberServerSettingsRecord {
     /** Whether the member should be auto-proxied in the server. */
     var autoProxy: Boolean = false
     var proxyEnabled: Boolean = true
+
+    constructor()
+
+    constructor(
+        serverId: ULong,
+        systemId: String,
+        memberId: String,
+    ) {
+        this.serverId = serverId
+        this.systemId = systemId
+        this.memberId = memberId
+    }
 }
