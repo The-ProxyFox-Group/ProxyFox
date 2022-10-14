@@ -50,10 +50,8 @@ class MemberProxyTagRecord {
     }
 
     fun test(message: String): Boolean {
-        var pre = true
-        if (prefix != null) pre = message.startsWith(prefix!!)
-        var suf = true
-        if (suffix != null) suf = message.startsWith(suffix!!)
+        val pre = prefix == null || message.startsWith(prefix!!)
+        val suf = suffix == null || message.endsWith(suffix!!)
         return pre && suf
     }
 
