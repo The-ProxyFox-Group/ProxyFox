@@ -600,6 +600,14 @@ class JsonDatabase(val file: File = File("systems.json")) : Database() {
         }
     }
 
+    override suspend fun firstFreeSystemId(id: String?): String {
+        return if (!id.isValidPkString() || systems.containsKey(id)) systems.keys.firstFree() else id
+    }
+
+    override suspend fun firstFreeMemberId(systemId: String, id: String?): String {
+        return systems[systemId]?.let { system -> if (!id.isValidPkString() || system.members.containsKey(id)) system.members.keys.firstFree() else id } ?: fail("No such system")
+    }
+
     override fun close() {
         if (dropped) return
         val obj = JsonObject()

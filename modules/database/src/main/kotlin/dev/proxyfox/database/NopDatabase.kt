@@ -76,8 +76,6 @@ class NopDatabase : Database() {
 
     override suspend fun dropSystem(userId: ULong): Boolean = false
 
-    override suspend fun getOrCreateMember(systemId: String, name: String, id: String?): MemberRecord? = null
-
     override suspend fun dropMember(systemId: String, memberId: String): Boolean = false
 
     override suspend fun updateMember(member: MemberRecord) {}
@@ -134,6 +132,11 @@ class NopDatabase : Database() {
 
     @Deprecated("Not for regular use.", level = DeprecationLevel.ERROR)
     override suspend fun drop() {
+    }
+
+    override suspend fun firstFreeSystemId(id: String?): String {
+        // Always free, for as we can't store systems in this database.
+        return "aaaaa"
     }
 
     override fun close() {}

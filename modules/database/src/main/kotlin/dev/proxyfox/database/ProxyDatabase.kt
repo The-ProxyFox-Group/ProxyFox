@@ -203,6 +203,14 @@ open class ProxyDatabase<T : Database>(protected val proxy: T) : Database() {
         proxy.drop()
     }
 
+    override suspend fun firstFreeSystemId(id: String?): String {
+        return proxy.firstFreeSystemId(id)
+    }
+
+    override suspend fun firstFreeMemberId(systemId: String, id: String?): String {
+        return proxy.firstFreeMemberId(systemId, id)
+    }
+
     override fun close() {
         proxy.close()
     }

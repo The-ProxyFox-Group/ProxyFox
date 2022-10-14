@@ -29,6 +29,13 @@ class SystemServerSettingsRecord {
     var autoProxy: String? = null
     var autoProxyMode: AutoProxyMode = AutoProxyMode.FALLBACK
 
+    constructor()
+
+    constructor(serverId: ULong, systemId: String) {
+        this.serverId = serverId
+        this.systemId = systemId
+    }
+
     fun writeTo(other: SystemServerSettingsRecord, autoProxy: String?) {
         other.proxyEnabled = proxyEnabled
         other.autoProxy = autoProxy

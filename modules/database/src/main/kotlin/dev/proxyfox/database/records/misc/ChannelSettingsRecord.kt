@@ -16,6 +16,16 @@ class ChannelSettingsRecord {
     var channelId: ULong = 0UL
     var proxyEnabled: Boolean = true
 
+    constructor()
+
+    constructor(
+        serverId: ULong,
+        channelId: ULong,
+    ) {
+        this.serverId = serverId
+        this.channelId = channelId
+    }
+
     fun writeTo(other: ChannelSettingsRecord) {
         other.proxyEnabled = proxyEnabled
     }
