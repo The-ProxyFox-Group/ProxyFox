@@ -535,10 +535,10 @@ object MemberCommands {
         val system = database.fetchSystemFromUser(author)
             ?: return "System does not exist. Create one using `pf>system new`"
         val name = ctx.params["name"]!![0]
-        val member = database.fetchMemberFromSystemAndName(system.id, name)
+        val member = database.fetchMemberFromSystemAndName(system.id, name, false)
         if (member != null) {
             val prompt = ctx.respond(
-                "You already have a member named \"$name\" (`${member.id}`)." +
+                "You already have a member named \"${member.name}\" (`${member.id}`)." +
                         "\nDo you want to create another member with the same name?"
             )
             prompt.timedYesNoPrompt(runner = author.id, yes = {
