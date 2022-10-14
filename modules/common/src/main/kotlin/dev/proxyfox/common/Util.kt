@@ -48,6 +48,12 @@ fun Int.fromColor() = fromColorForExport()?.let { "#$it" }
 
 fun Int.fromColorForExport() = if (this < 0) null else toString(16).run { padStart(6, '0') }
 
+inline fun String?.notBlank(action: (String) -> Unit) {
+    if (!isNullOrBlank()) action(this)
+}
+
+fun String?.ifBlankThenNull(): String? = if (isNullOrBlank()) null else this
+
 val OffsetDateTime.epochMilli
     get() = (toEpochSecond() * 1000L) + (nano / 1000000)
 
