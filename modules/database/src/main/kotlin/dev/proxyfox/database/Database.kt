@@ -456,9 +456,13 @@ abstract class Database : AutoCloseable {
      * Gets a member by system ID and either member ID or name.
      * */
     suspend fun findMember(systemId: String, member: String): MemberRecord? =
-        fetchMemberFromSystemAndName(systemId, member, true)
-            ?: fetchMemberFromSystemAndName(systemId, member, false)
-            ?: fetchMemberFromSystem(systemId, member)
+        if (member.startsWith("id:"))
+            fetchMemberFromSystem(systemId, member.substring(3))
+                ?: fetchMemberFromSystemAndName(systemId, member, false)
+        else
+            fetchMemberFromSystemAndName(systemId, member, true)
+                ?: fetchMemberFromSystemAndName(systemId, member, false)
+                ?: fetchMemberFromSystem(systemId, member)
 
     /**
      * Gets a member by user snowflake and member name
