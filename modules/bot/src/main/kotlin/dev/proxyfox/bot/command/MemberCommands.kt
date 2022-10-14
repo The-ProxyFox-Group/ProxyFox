@@ -530,9 +530,25 @@ object MemberCommands {
     }
 
     private suspend fun create(ctx: MessageHolder): String {
-        val system = database.fetchSystemFromUser(ctx.message.author)
+        val message = ctx.message
+        val author = message.author!!
+        val system = database.fetchSystemFromUser(author)
             ?: return "System does not exist. Create one using `pf>system new`"
-        database.getOrCreateMember(system.id, ctx.params["name"]!![0])
-        return "Member created!"
+        val name = ctx.params["name"]!![0]
+        val member = database.fetchMemberFromSystemAndName(system.id, name)
+        if (member != null) {
+            val prompt = ctx.respond(
+                "You already have a member named \"$name\" (`${member.id}`)." +
+                        "\nDo you want to create another member with the same name?"
+            )
+            prompt.timedYesNoPrompt(runner = author.id, yes = {
+                val newMember = database.createMember(system.id, name)!!
+                ctx.respond("Member created with ID `${newMember.id}`.")
+            })
+        } else {
+            val newMember = database.createMember(system.id, name)!!
+            ctx.respond("Member created with ID `${newMember.id}`.")
+        }
+        return ""
     }
 }
