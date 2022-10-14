@@ -36,7 +36,6 @@ import org.slf4j.LoggerFactory
 import java.time.Instant
 import java.util.concurrent.ConcurrentLinkedQueue
 import java.util.concurrent.TimeUnit
-import java.util.regex.Pattern
 import kotlin.reflect.KProperty0
 import kotlin.time.Duration
 import kotlin.time.ExperimentalTime
@@ -327,10 +326,16 @@ class MongoDatabase(private val dbName: String = "ProxyFox") : Database() {
     }
 
     override suspend fun fetchMemberFromSystemAndName(systemId: String, memberName: String, caseSensitive: Boolean): MemberRecord? {
-        return members.findFirstOrNull(
+        var search = members.find(
             "systemId" eq systemId,
-            if (caseSensitive) "name" eq memberName else Filters.regex("name", "^${Pattern.quote(memberName)}$", "i")
+            "name" eq memberName,
         )
+        if (!caseSensitive) search = search.collation(Collation.builder().apply {
+            collationStrength(CollationStrength.SECONDARY)
+            caseLevel(false)
+            locale("en_US")
+        }.build())
+        return search.awaitFirstOrNull()
     }
 
     override suspend fun export(other: Database) {
