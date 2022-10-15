@@ -19,7 +19,10 @@ import dev.proxyfox.bot.webhook.WebhookUtil
 import dev.proxyfox.common.ellipsis
 import dev.proxyfox.database.database
 import dev.proxyfox.database.displayDate
+import dev.proxyfox.database.records.member.MemberRecord
 import dev.proxyfox.database.records.misc.AutoProxyMode
+import dev.proxyfox.database.records.system.SystemRecord
+import dev.proxyfox.database.records.system.SystemServerSettingsRecord
 import org.slf4j.LoggerFactory
 
 val prefixRegex = Regex("^(?:(<@!?${kord.selfId}>)|pf[>;!:])\\s*", RegexOption.IGNORE_CASE)
@@ -111,13 +114,24 @@ suspend fun MessageCreateEvent.onMessageCreate() {
                 }
             }
         } else {
-            // Allows AutoProxy to be disabled at a server level.
-            if (systemServerSettings.autoProxyMode == AutoProxyMode.OFF) return
-            val memberId = if (systemServerSettings.autoProxyMode == AutoProxyMode.FALLBACK) system.autoProxy else systemServerSettings.autoProxy
-            val member = database.fetchMemberFromSystem(system.id, memberId ?: return) ?: return
+            val member = getAutoProxyMember(system, systemServerSettings) ?: return
 
-            WebhookUtil.prepareMessage(message, system,  member, null).send()
+            WebhookUtil.prepareMessage(message, system, member, null).send()
         }
+    }
+}
+
+private suspend fun getAutoProxyMember(system: SystemRecord, server: SystemServerSettingsRecord): MemberRecord? {
+    return when (server.autoProxyMode) {
+        AutoProxyMode.FALLBACK -> when (system.autoType) {
+            AutoProxyMode.FRONT -> database.fetchFrontingMembersFromSystem(system.id)?.firstOrNull()
+            AutoProxyMode.LATCH, AutoProxyMode.MEMBER -> database.fetchMemberFromSystem(system.id, system.autoProxy ?: return null)
+            AutoProxyMode.FALLBACK, AutoProxyMode.OFF -> null
+        }
+
+        AutoProxyMode.FRONT -> database.fetchFrontingMembersFromSystem(system.id)?.firstOrNull()
+        AutoProxyMode.LATCH, AutoProxyMode.MEMBER -> database.fetchMemberFromSystem(system.id, server.autoProxy ?: return null)
+        AutoProxyMode.OFF -> null
     }
 }
 
