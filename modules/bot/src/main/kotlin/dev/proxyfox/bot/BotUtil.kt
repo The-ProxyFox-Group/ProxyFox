@@ -11,6 +11,7 @@ package dev.proxyfox.bot
 import dev.kord.common.Color
 import dev.kord.common.entity.Snowflake
 import dev.kord.core.Kord
+import dev.kord.core.behavior.MessageBehavior
 import dev.kord.core.behavior.channel.createMessage
 import dev.kord.core.builder.kord.KordBuilder
 import dev.kord.core.entity.Message
@@ -18,6 +19,7 @@ import dev.kord.core.entity.ReactionEmoji
 import dev.kord.core.entity.channel.TextChannel
 import dev.kord.core.event.gateway.ReadyEvent
 import dev.kord.core.event.message.MessageCreateEvent
+import dev.kord.core.event.message.MessageUpdateEvent
 import dev.kord.core.event.message.ReactionAddEvent
 import dev.kord.core.on
 import dev.kord.gateway.Intent
@@ -79,36 +81,15 @@ suspend fun login() {
         try {
             onMessageCreate()
         } catch (err: Throwable) {
-            // Catch any errors and log them
-            val timestamp = System.currentTimeMillis()
-            logger.warn(timestamp.toString())
-            logger.warn(err.stackTraceToString())
-            val reason = err.message
-            var cause = ""
-            err.stackTrace.forEach {
-                if (it.toString().startsWith("dev.proxyfox"))
-                    cause += "  at $it\n"
-            }
-            message.channel.createMessage(
-                "An unexpected error occurred.\nTimestamp: `$timestamp`\n```\n${err.javaClass.name}: $reason\n$cause```"
-            )
-            if (err is DebugException) return@on
-            if (errorChannel == null && errorChannelId != null)
-                errorChannel = kord.getChannel(errorChannelId) as TextChannel
-            if (errorChannel != null) {
-                cause = ""
-                err.stackTrace.forEach {
-                    if (cause.length > 2000) return@forEach
-                    cause += "at $it\n\n"
-                }
-                errorChannel!!.createMessage {
-                    content = "`$timestamp`"
-                    embed {
-                        title = "${err.javaClass.name}: $reason"
-                        description = "```\n$cause```"
-                    }
-                }
-            }
+            handleError(err, message)
+        }
+    }
+
+    kord.on<MessageUpdateEvent> {
+        try {
+            onMessageUpdate()
+        } catch (err: Throwable) {
+            handleError(err, message)
         }
     }
 
@@ -165,12 +146,46 @@ suspend fun updatePresence() {
             2 -> {
                 "uptime: ${(Clock.System.now() - startTime).inWholeHours} hours!"
             }
+
             else -> throw IllegalStateException("Count is not 0, 1, or 2!")
         }
         kord.editPresence {
             watching("for pf>help! $append")
         }
         delay(120000)
+    }
+}
+
+suspend fun handleError(err: Throwable, message: MessageBehavior) {
+    // Catch any errors and log them
+    val timestamp = System.currentTimeMillis()
+    logger.warn(timestamp.toString())
+    logger.warn(err.stackTraceToString())
+    val reason = err.message
+    var cause = ""
+    err.stackTrace.forEach {
+        if (it.toString().startsWith("dev.proxyfox"))
+            cause += "  at $it\n"
+    }
+    message.channel.createMessage(
+        "An unexpected error occurred.\nTimestamp: `$timestamp`\n```\n${err.javaClass.name}: $reason\n$cause```"
+    )
+    if (err is DebugException) return
+    if (errorChannel == null && errorChannelId != null)
+        errorChannel = kord.getChannel(errorChannelId) as TextChannel
+    if (errorChannel != null) {
+        cause = ""
+        err.stackTrace.forEach {
+            if (cause.length > 2000) return@forEach
+            cause += "at $it\n\n"
+        }
+        errorChannel!!.createMessage {
+            content = "`$timestamp`"
+            embed {
+                title = "${err.javaClass.name}: $reason"
+                description = "```\n$cause```"
+            }
+        }
     }
 }
 

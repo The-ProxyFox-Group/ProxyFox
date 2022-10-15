@@ -9,12 +9,20 @@
 package dev.proxyfox.bot
 
 import dev.kord.common.entity.Snowflake
+import dev.kord.core.behavior.channel.GuildMessageChannelBehavior
+import dev.kord.core.behavior.channel.asChannelOf
 import dev.kord.core.behavior.channel.createMessage
+import dev.kord.core.cache.data.AttachmentData
+import dev.kord.core.cache.data.EmbedData
+import dev.kord.core.entity.Attachment
+import dev.kord.core.entity.Embed
 import dev.kord.core.entity.channel.GuildMessageChannel
 import dev.kord.core.event.message.MessageCreateEvent
+import dev.kord.core.event.message.MessageUpdateEvent
 import dev.kord.core.event.message.ReactionAddEvent
 import dev.kord.rest.builder.message.create.embed
 import dev.proxyfox.bot.string.parser.parseString
+import dev.proxyfox.bot.webhook.GuildMessage
 import dev.proxyfox.bot.webhook.WebhookUtil
 import dev.proxyfox.common.ellipsis
 import dev.proxyfox.database.database
@@ -52,76 +60,126 @@ suspend fun MessageCreateEvent.onMessageCreate() {
             if (output.isNotBlank())
                 channel.createMessage(output)
         }
-    } else if (channel is GuildMessageChannel) {
+    } else if (channel is GuildMessageChannelBehavior) {
         val guild = channel.getGuild()
         val hasStickers = message.stickers.isNotEmpty()
         val hasOversizedFiles = message.attachments.any { it.size >= UPLOAD_LIMIT }
-        val isOversizedMessage = message.content.length > 2000
+        val isOversizedMessage = content.length > 2000
         if (hasStickers || hasOversizedFiles || isOversizedMessage) {
             logger.trace("Denying proxying {} ({}) in {} ({}) due to Discord bot constraints", user.tag, user.id, guild.name, guild.id)
             return
         }
 
-        val userId = user.id.value
+        handleProxying(GuildMessage(message, guild, channel), isEdit = false)
+    }
+}
 
-        val server = database.getOrCreateServerSettings(guild)
-        server.proxyRole.let {
-            if (it != 0UL && !user.asMember(guild.id).roleIds.contains(Snowflake(it))) {
-                logger.trace("Denying proxying {} ({}) in {} ({}) due to missing role {}", user.tag, user.id, guild.name, guild.id, it)
-                return
-            }
+suspend fun MessageUpdateEvent.onMessageUpdate() {
+    val guild = kord.getGuild(new.guildId.value ?: return) ?: return
+    val channel = channel.asChannelOf<GuildMessageChannel>()
+    val content = new.content.value ?: return
+    val authorRaw = new.author.value ?: return
+    if (authorRaw.bot.discordBoolean) return
+
+    val hasStickers = !new.stickers.value.isNullOrEmpty()
+    val hasOversizedFiles = new.attachments.value?.any { it.size >= UPLOAD_LIMIT } ?: false
+    val isOversizedMessage = content.length > 2000
+
+    if (hasStickers || hasOversizedFiles || isOversizedMessage) {
+        logger.trace(
+            "Denying proxying {}#{} ({}) in {} ({}) due to Discord bot constraints",
+            authorRaw.username, authorRaw.discriminator, authorRaw.id, guild.name, guild.id
+        )
+        return
+    }
+
+    val author = kord.getUser(authorRaw.id) ?: return
+
+    val guildMessage = GuildMessage(
+        messageId,
+        content,
+        author,
+        channel,
+        guild,
+        new.attachments.value?.map { Attachment(AttachmentData.from(it), kord) } ?: emptySet(),
+        new.embeds.value?.map { Embed(EmbedData.from(it), kord) } ?: emptyList(),
+        new.messageReference.value?.id?.value?.let { channel.getMessage(it) },
+        message,
+    )
+
+    handleProxying(
+        guildMessage,
+        isEdit = true,
+    )
+}
+
+private suspend fun handleProxying(
+    message: GuildMessage,
+    isEdit: Boolean,
+) {
+    val user = message.author
+    val channel = message.channel
+    val guild = message.guild
+    val content = message.content
+    val userId: ULong = user.id.value
+
+    val server = database.getOrCreateServerSettings(guild)
+    server.proxyRole.let {
+        if (it != 0UL && !user.asMember(guild.id).roleIds.contains(Snowflake(it))) {
+            logger.trace("Denying proxying {} ({}) in {} ({}) due to missing role {}", user.tag, user.id, guild.name, guild.id, it)
+            return
+        }
+    }
+
+    val system = database.fetchSystemFromUser(userId) ?: return
+
+    val systemChannelSettings = database.getOrCreateChannelSettingsFromSystem(channel, system.id)
+    if (!systemChannelSettings.proxyEnabled) return
+
+    val systemServerSettings = database.getOrCreateServerSettingsFromSystem(guild, system.id)
+    if (!systemServerSettings.proxyEnabled) return
+
+    val channelSettings = database.getOrCreateChannel(guild.id.value, channel.id.value)
+    if (!channelSettings.proxyEnabled) return
+
+    // Proxy the message
+    val proxy = database.fetchProxyTagFromMessage(userId, content)
+    if (proxy != null) {
+        val member = database.fetchMemberFromSystem(proxy.systemId, proxy.memberId)!!
+
+        // Respect member settings.
+        val memberServer = database.fetchMemberServerSettingsFromSystemAndMember(guild, system.id, member.id)
+        if (memberServer?.proxyEnabled == false) return
+
+        if (systemServerSettings.autoProxyMode == AutoProxyMode.LATCH) {
+            systemServerSettings.autoProxy = proxy.memberId
+            database.updateSystemServerSettings(systemServerSettings)
+        } else if (systemServerSettings.autoProxyMode == AutoProxyMode.FALLBACK && system.autoType == AutoProxyMode.LATCH) {
+            system.autoProxy = proxy.memberId
+            database.updateSystem(system)
         }
 
-        val system = database.fetchSystemFromUser(userId) ?: return
-
-        val systemChannelSettings = database.getOrCreateChannelSettingsFromSystem(channel, system.id)
-        if (!systemChannelSettings.proxyEnabled) return
-
-        val systemServerSettings = database.getOrCreateServerSettingsFromSystem(guild, system.id)
-        if (!systemServerSettings.proxyEnabled) return
-
-        val channelSettings = database.getOrCreateChannel(guild.id.value, channel.id.value)
-        if (!channelSettings.proxyEnabled) return
-
-        // Proxy the message
-        val proxy = database.fetchProxyTagFromMessage(message.author, content)
-        if (proxy != null) {
-            val member = database.fetchMemberFromSystem(proxy.systemId, proxy.memberId)!!
-
-            // Respect member settings.
-            val memberServer = database.fetchMemberServerSettingsFromSystemAndMember(guild, system.id, member.id)
-            if (memberServer?.proxyEnabled == false) return
-
+        WebhookUtil.prepareMessage(message, content, system, member, proxy, memberServer, server.moderationDelay.toLong())?.send()
+    } else if (content.startsWith('\\')) {
+        // Doesn't proxy just for this message.
+        if (content.startsWith("\\\\")) {
+            // Break latch
             if (systemServerSettings.autoProxyMode == AutoProxyMode.LATCH) {
-                systemServerSettings.autoProxy = proxy.memberId
+                systemServerSettings.autoProxy = null
                 database.updateSystemServerSettings(systemServerSettings)
             } else if (systemServerSettings.autoProxyMode == AutoProxyMode.FALLBACK && system.autoType == AutoProxyMode.LATCH) {
-                system.autoProxy = proxy.memberId
+                system.autoProxy = null
                 database.updateSystem(system)
             }
-
-            WebhookUtil.prepareMessage(message, system, member, proxy, memberServer, server.moderationDelay.toLong())?.send()
-        } else if (content.startsWith('\\')) {
-            // Doesn't proxy just for this message.
-            if (content.startsWith("\\\\")) {
-                // Break latch
-                if (systemServerSettings.autoProxyMode == AutoProxyMode.LATCH) {
-                    systemServerSettings.autoProxy = null
-                    database.updateSystemServerSettings(systemServerSettings)
-                } else if (systemServerSettings.autoProxyMode == AutoProxyMode.FALLBACK && system.autoType == AutoProxyMode.LATCH) {
-                    system.autoProxy = null
-                    database.updateSystem(system)
-                }
-            }
-        } else {
-            val member = getAutoProxyMember(system, systemServerSettings) ?: return
-
-            // Respect member settings.
-            val memberServer = database.fetchMemberServerSettingsFromSystemAndMember(guild, system.id, member.id)
-            if (memberServer?.proxyEnabled == false) return
-
-            WebhookUtil.prepareMessage(message, system, member, null, memberServer, server.moderationDelay.toLong())?.send()
         }
+    } else if (!isEdit) {
+        val member = getAutoProxyMember(system, systemServerSettings) ?: return
+
+        // Respect member settings.
+        val memberServer = database.fetchMemberServerSettingsFromSystemAndMember(guild, system.id, member.id)
+        if (memberServer?.proxyEnabled == false) return
+
+        WebhookUtil.prepareMessage(message, content, system, member, null, memberServer, server.moderationDelay.toLong())?.send()
     }
 }
 

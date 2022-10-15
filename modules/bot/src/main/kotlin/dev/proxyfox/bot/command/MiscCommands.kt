@@ -10,6 +10,7 @@ package dev.proxyfox.bot.command
 
 import dev.kord.common.entity.Permission
 import dev.kord.common.entity.Snowflake
+import dev.kord.core.behavior.channel.asChannelOf
 import dev.kord.core.entity.Message
 import dev.kord.rest.NamedFile
 import dev.proxyfox.bot.*
@@ -18,6 +19,7 @@ import dev.proxyfox.bot.string.dsl.literal
 import dev.proxyfox.bot.string.dsl.string
 import dev.proxyfox.bot.string.parser.MessageHolder
 import dev.proxyfox.bot.string.parser.registerCommand
+import dev.proxyfox.bot.webhook.GuildMessage
 import dev.proxyfox.bot.webhook.WebhookUtil
 import dev.proxyfox.common.DebugException
 import dev.proxyfox.common.ellipsis
@@ -379,6 +381,7 @@ To get support, head on over to https://discord.gg/q3yF8ay9V7"""
     }
 
     private suspend fun reproxyMessage(ctx: MessageHolder): String {
+        val guild = ctx.message.getGuildOrNull() ?: return "Run this in a server."
         val system = database.fetchSystemFromUser(ctx.message.author)
         if (system == null) {
             ctx.respond("System does not exist. Create one using `pf>system new`", true)
@@ -405,9 +408,11 @@ To get support, head on over to https://discord.gg/q3yF8ay9V7"""
             return ""
         }
 
-        val serverMember = database.fetchMemberServerSettingsFromSystemAndMember(ctx.message.getGuild(), system.id, member.id)
+        val serverMember = database.fetchMemberServerSettingsFromSystemAndMember(guild, system.id, member.id)
 
-        WebhookUtil.prepareMessage(message, system, member, null, serverMember)?.send(true)
+        val guildMessage = GuildMessage(message, guild, message.channel.asChannelOf(), ctx.message.author!!)
+
+        WebhookUtil.prepareMessage(guildMessage, message.content, system, member, null, serverMember)?.send(true)
             ?: throw AssertionError("Message could not be reproxied. Is the contents empty?")
 
         databaseMessage.deleted = true
