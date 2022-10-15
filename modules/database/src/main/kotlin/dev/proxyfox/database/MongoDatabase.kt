@@ -560,6 +560,8 @@ class MongoDatabase(private val dbName: String = "ProxyFox") : Database() {
 
     private infix fun String.eq(t: ULong) = Filters.eq(this, t.toLong())
 
+    private infix fun String.eq(t: Snowflake) = Filters.eq(this, t.value.toLong())
+
     private fun <T> KProperty0<T>.eq() = Filters.eq(path(), get())
 
     private fun and(vararg properties: KProperty0<*>) = Filters.and(properties.map { it.eq() })
