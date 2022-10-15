@@ -15,7 +15,6 @@ import dev.kord.core.behavior.channel.createMessage
 import dev.kord.core.builder.kord.KordBuilder
 import dev.kord.core.entity.Message
 import dev.kord.core.entity.ReactionEmoji
-import dev.kord.core.entity.channel.Channel
 import dev.kord.core.entity.channel.TextChannel
 import dev.kord.core.event.gateway.ReadyEvent
 import dev.kord.core.event.message.MessageCreateEvent
@@ -38,8 +37,8 @@ import kotlinx.datetime.Clock
 import kotlinx.datetime.Instant
 import java.lang.Integer.min
 import java.time.OffsetDateTime
-import kotlin.math.max
 import kotlin.time.Duration
+import kotlin.time.Duration.Companion.milliseconds
 import kotlin.time.Duration.Companion.minutes
 
 const val UPLOAD_LIMIT = 1024 * 1024 * 8
@@ -253,3 +252,76 @@ suspend fun Message.timedYesNoPrompt(
 }
 
 fun ULong.toShard() = if (shardCount == 0) 0 else ((this shr 22) % shardCount.toULong()).toInt()
+
+fun String.parseDuration(): Either<Duration, String> {
+    var years = 0L
+    var weeks = 0L
+    var days = 0L
+    var hours = 0L
+    var minutes = 0L
+    var seconds = 0L
+    var current = 0L
+
+    for (i in this) {
+        if (i.isDigit()) current = current * 10 + (i - '0')
+        else when (i) {
+            '-' -> {
+                current = -current
+            }
+
+            'y' -> {
+                if (years != 0L) return Either.ofB("Provided time string contains multiple year declarations.")
+                years = current
+                current = 0
+            }
+
+            'w' -> {
+                if (weeks != 0L) return Either.ofB("Provided time string contains multiple week declarations.")
+                weeks = current
+                current = 0
+            }
+
+            'd' -> {
+                if (days != 0L) return Either.ofB("Provided time string contains multiple day declarations.")
+                days = current
+                current = 0
+            }
+
+            'h' -> {
+                if (hours != 0L) return Either.ofB("Provided time string contains multiple hour declarations.")
+                hours = current
+                current = 0
+            }
+
+            'm' -> {
+                if (minutes != 0L) return Either.ofB("Provided time string contains multiple minute declarations.")
+                minutes = current
+                current = 0
+            }
+
+            's' -> {
+                if (seconds != 0L) return Either.ofB("Provided time string contains multiple second declarations.")
+                seconds = current
+                current = 0
+            }
+        }
+    }
+
+    if (weeks != 0L) days += weeks * 7
+
+    val totalSeconds = (((((years * 365 + days) * 24 + hours) * 60 + minutes) * 60) + seconds) * 1000 + current
+
+    return Either.ofA(totalSeconds.milliseconds)
+}
+
+@JvmRecord
+data class Either<A, B>(
+    val left: A?,
+    val right: B?,
+) {
+    companion object {
+        fun <A, B> ofA(a: A) = Either<A, B>(a, null)
+
+        fun <A, B> ofB(b: B) = Either<A, B>(null, b)
+    }
+}

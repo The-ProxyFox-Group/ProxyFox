@@ -9,6 +9,7 @@
 package dev.proxyfox.bot.command
 
 import dev.kord.rest.builder.message.EmbedBuilder
+import dev.proxyfox.bot.parseDuration
 import dev.proxyfox.bot.string.dsl.greedy
 import dev.proxyfox.bot.string.dsl.literal
 import dev.proxyfox.bot.string.dsl.stringList
@@ -20,7 +21,6 @@ import dev.proxyfox.database.database
 import dev.proxyfox.database.records.system.SystemRecord
 import dev.proxyfox.database.records.system.SystemSwitchRecord
 import java.time.Instant
-import kotlin.math.floor
 import kotlin.math.min
 
 object SwitchCommands {
@@ -53,78 +53,13 @@ object SwitchCommands {
         val switch = database.fetchLatestSwitch(system.id)
             ?: return "It looks like you haven't registered any switches yet"
         val oldSwitch = database.fetchSecondLatestSwitch(system.id)
-        val time = ctx.params["time"]!![0].split(Regex("\\s")).joinToString("")
 
-        var years = -1L
-        var weeks = -1L
-        var days = -1L
-        var hours = -1L
-        var minutes = -1L
-        var seconds = -1L
-
-        var currNum = ""
-
-        for (i in time) {
-            if (i.isDigit()) currNum += i
-            else when (i) {
-                'y' -> {
-                    if (years == -1L) years = currNum.toLong()
-                    else return "Provided time string contains multiple year declarations."
-                }
-                'w' -> {
-                    if (weeks == -1L) weeks = currNum.toLong()
-                    else return "Provided time string contains multiple week declarations."
-                }
-                'd' -> {
-                    if (days == -1L) days = currNum.toLong()
-                    else return "Provided time string contains multiple day declarations."
-                }
-                'h' -> {
-                    if (hours == -1L) hours = currNum.toLong()
-                    else return "Provided time string contains multiple hour declarations."
-                }
-                'm' -> {
-                    if (minutes == -1L) minutes = currNum.toLong()
-                    else return "Provided time string contains multiple minute declarations."
-                }
-                's' -> {
-                    if (seconds == -1L) seconds = currNum.toLong()
-                    else return "Provided time string contains multiple second declarations."
-                }
-            }
+        val either = ctx.params["time"]!![0].parseDuration()
+        either.right?.let {
+            return it
         }
 
-        if (seconds == -1L) seconds = 0
-        if (minutes == -1L) minutes = 0
-        if (hours == -1L) hours = 0
-        if (days == -1L) days = 0
-        if (weeks == -1L) weeks = 0
-        if (years == -1L) years = 0
-
-        if (seconds >= 60) {
-            minutes += floor(seconds/60f).toInt()
-            seconds %= 60
-        }
-
-        if (minutes >= 60) {
-            hours += floor(minutes/60f).toInt()
-            minutes %= 60
-        }
-
-        if (hours >= 24) {
-            days += floor(hours/24f).toInt()
-            hours %= 24
-        }
-
-        days += weeks*7
-
-        if (days >= 365) {
-            years += floor(days/365f).toInt()
-            days %= 7
-        }
-
-        val totalSeconds = ((((years * 365 + days) * 24 + hours) * 60 + minutes) * 60) + seconds
-        val nowMinus = Instant.now().minusSeconds(totalSeconds)
+        val nowMinus = Instant.now().minusMillis(either.left!!.inWholeMilliseconds)
         if (oldSwitch != null && oldSwitch.timestamp > nowMinus) {
             return "It looks like you're trying to break the space-time continuum..\n" +
                     "The provided time is set before the previous switch"
