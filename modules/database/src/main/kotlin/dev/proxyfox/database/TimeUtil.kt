@@ -16,6 +16,8 @@ import java.time.format.*
 import java.time.temporal.ChronoField
 import java.time.temporal.TemporalAccessor
 import java.util.*
+import kotlin.contracts.ExperimentalContracts
+import kotlin.contracts.contract
 
 // Created 2022-02-10T19:21:08
 
@@ -288,10 +290,26 @@ fun String?.tryParseInstant(): Instant? = if (this == null) null else tryParseOf
 fun shouldPreferMonthDay(timezone: String?) =
     timezone != null && (mmddTimezones.contains(timezone) || mmddTimezonesStartOf.any(timezone::startsWith))
 
-fun TemporalAccessor.displayDate() = if (get(ChronoField.YEAR) == 1) {
+fun TemporalAccessor.displayDate(): String = if (get(ChronoField.YEAR) == 1 || get(ChronoField.YEAR) == 4) {
     displayMonthDay.format(this)
 } else {
     displayFull.format(this)
+}
+
+@OptIn(ExperimentalContracts::class)
+fun TemporalAccessor?.pkValid(): Boolean {
+    contract {
+        returns(true) implies (this@pkValid != null)
+    }
+    return this != null && get(ChronoField.YEAR) in 1..9999
+}
+
+@OptIn(ExperimentalContracts::class)
+fun TemporalAccessor?.pkInvalid(): Boolean {
+    contract {
+        returns(true) implies (this@pkInvalid != null)
+    }
+    return this != null && get(ChronoField.YEAR) !in 1..9999
 }
 
 fun TemporalAccessor.pkCompatibleIso8601() = if (this is Instant) toString() else DateTimeFormatter.ISO_OFFSET_DATE_TIME.format(this)
