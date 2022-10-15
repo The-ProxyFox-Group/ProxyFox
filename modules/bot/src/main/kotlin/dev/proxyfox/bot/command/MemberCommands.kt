@@ -61,6 +61,11 @@ object MemberCommands {
                     greedy("avatar", ::serverAvatarLinked)
                 }
 
+                literal(arrayOf("autproxy", "ap"), ::apEmpty) {
+                    literal(arrayOf("disable", "off", "false", "0"), ::apDisable)
+                    literal(arrayOf("enable", "on", "true", "1"), ::apEnable)
+                }
+
                 literal(arrayOf("proxy", "p"), ::proxyEmpty) {
                     literal("remove", ::removeProxyEmpty) {
                         greedy("proxy", ::removeProxy)
@@ -369,6 +374,32 @@ object MemberCommands {
         if (proxyTag.memberId != member.id) return "Proxy tag doens't exist in this member"
         database.dropProxyTag(proxyTag)
         return "Proxy removed."
+    }
+
+    private suspend fun apEmpty(ctx: MessageHolder): String {
+        val system = database.fetchSystemFromUser(ctx.message.author)
+            ?: return "System does not exist. Create one using `pf>system new`"
+        val member = database.findMember(system.id, ctx.params["member"]!![0])
+            ?: return "Member does not exist. Create one using `pf>member new`"
+        return "AutoProxy for ${member.showDisplayName()} is set to ${if (member.autoProxy) "on" else "off"}"
+    }
+
+    private suspend fun apEnable(ctx: MessageHolder): String {
+        val system = database.fetchSystemFromUser(ctx.message.author)
+            ?: return "System does not exist. Create one using `pf>system new`"
+        val member = database.findMember(system.id, ctx.params["member"]!![0])
+            ?: return "Member does not exist. Create one using `pf>member new`"
+        database.updateMember(member.apply { autoProxy = true })
+        return "Enabled front & latch autproxy for ${member.showDisplayName()}."
+    }
+
+    private suspend fun apDisable(ctx: MessageHolder): String {
+        val system = database.fetchSystemFromUser(ctx.message.author)
+            ?: return "System does not exist. Create one using `pf>system new`"
+        val member = database.findMember(system.id, ctx.params["member"]!![0])
+            ?: return "Member does not exist. Create one using `pf>member new`"
+        database.updateMember(member.apply { autoProxy = false })
+        return "Disabled front & latch autproxy for ${member.showDisplayName()}."
     }
 
     private suspend fun proxyEmpty(ctx: MessageHolder): String {

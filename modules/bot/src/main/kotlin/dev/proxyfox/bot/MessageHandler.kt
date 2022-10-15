@@ -124,16 +124,20 @@ suspend fun MessageCreateEvent.onMessageCreate() {
 private suspend fun getAutoProxyMember(system: SystemRecord, server: SystemServerSettingsRecord): MemberRecord? {
     return when (server.autoProxyMode) {
         AutoProxyMode.FALLBACK -> when (system.autoType) {
-            AutoProxyMode.FRONT -> database.fetchFrontingMembersFromSystem(system.id)?.firstOrNull()
-            AutoProxyMode.LATCH, AutoProxyMode.MEMBER -> database.fetchMemberFromSystem(system.id, system.autoProxy ?: return null)
+            AutoProxyMode.FRONT -> database.fetchFrontingMembersFromSystem(system.id)?.firstOrNull().nullIfApDisabled()
+            AutoProxyMode.LATCH -> database.fetchMemberFromSystem(system.id, system.autoProxy ?: return null).nullIfApDisabled()
+            AutoProxyMode.MEMBER -> database.fetchMemberFromSystem(system.id, system.autoProxy ?: return null)
             AutoProxyMode.FALLBACK, AutoProxyMode.OFF -> null
         }
 
-        AutoProxyMode.FRONT -> database.fetchFrontingMembersFromSystem(system.id)?.firstOrNull()
-        AutoProxyMode.LATCH, AutoProxyMode.MEMBER -> database.fetchMemberFromSystem(system.id, server.autoProxy ?: return null)
+        AutoProxyMode.FRONT -> database.fetchFrontingMembersFromSystem(system.id)?.firstOrNull().nullIfApDisabled()
+        AutoProxyMode.LATCH -> database.fetchMemberFromSystem(system.id, server.autoProxy ?: return null).nullIfApDisabled()
+        AutoProxyMode.MEMBER -> database.fetchMemberFromSystem(system.id, server.autoProxy ?: return null)
         AutoProxyMode.OFF -> null
     }
 }
+
+private fun MemberRecord?.nullIfApDisabled(): MemberRecord? = if (this != null && autoProxy) this else null
 
 suspend fun ReactionAddEvent.onReactionAdd() {
     // TODO: "Fetch the reaction and perform operations"

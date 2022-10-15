@@ -41,6 +41,7 @@ class MemberRecord() {
 
     /** Whether the proxy tag remains in the message */
     var keepProxy: Boolean = false
+    var autoProxy: Boolean = true
     var messageCount: ULong = 0UL
     var timestamp: OffsetDateTime = OffsetDateTime.now(ZoneOffset.UTC)
     var birthday: LocalDate? = null
