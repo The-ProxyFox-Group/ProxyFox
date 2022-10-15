@@ -12,15 +12,12 @@ import dev.kord.common.entity.Permission
 import dev.kord.common.entity.Snowflake
 import dev.kord.core.entity.Message
 import dev.kord.rest.NamedFile
-import dev.proxyfox.bot.kordColor
-import dev.proxyfox.bot.startTime
+import dev.proxyfox.bot.*
 import dev.proxyfox.bot.string.dsl.greedy
 import dev.proxyfox.bot.string.dsl.literal
 import dev.proxyfox.bot.string.dsl.string
 import dev.proxyfox.bot.string.parser.MessageHolder
 import dev.proxyfox.bot.string.parser.registerCommand
-import dev.proxyfox.bot.toKtInstant
-import dev.proxyfox.bot.toShard
 import dev.proxyfox.bot.webhook.WebhookUtil
 import dev.proxyfox.common.DebugException
 import dev.proxyfox.common.ellipsis
@@ -73,6 +70,10 @@ object MiscCommands {
         registerCommand(literal("role", ::roleEmpty) {
             literal("clear", ::roleClear)
             greedy("role", ::role)
+        })
+
+        registerCommand(literal("moddelay", ::delayEmpty) {
+            greedy("delay", ::delay)
         })
 
         registerCommand(literal(arrayOf("delete", "del"), ::deleteMessage) {
@@ -296,6 +297,28 @@ To get support, head on over to https://discord.gg/q3yF8ay9V7"""
         return "Role removed!"
     }
 
+    private suspend fun delayEmpty(ctx: MessageHolder): String {
+        val server = database.getOrCreateServerSettings(ctx.message.getGuild())
+        return if (server.moderationDelay <= 0) {
+            "There is no moderation delay present."
+        } else {
+            "Current moderation delay is ${server.moderationDelay}ms"
+        }
+    }
+
+    private suspend fun delay(ctx: MessageHolder): String {
+        val server = database.getOrCreateServerSettings(ctx.message.getGuild())
+        val delay = ctx.params["delay"]!![0].parseDuration()
+        delay.right?.let { return it }
+        var millis = delay.left!!.inWholeMilliseconds
+        if (millis > 30000L) {
+            millis = 30000L
+        }
+        server.moderationDelay = millis.toShort()
+        database.updateServerSettings(server)
+        return "Moderation delay set to ${millis}ms"
+    }
+
     private suspend fun getMessageFromContext(system: SystemRecord, ctx: MessageHolder): Pair<Message?, ProxiedMessageRecord?> {
         val messageIdString = ctx.params["message"]?.get(0)
         val messageSnowflake: Snowflake? = messageIdString?.let { Snowflake(it) }
@@ -382,7 +405,10 @@ To get support, head on over to https://discord.gg/q3yF8ay9V7"""
             return ""
         }
 
-        WebhookUtil.prepareMessage(message, system, member, null).send(true)
+        val serverMember = database.fetchMemberServerSettingsFromSystemAndMember(ctx.message.getGuild(), system.id, member.id)
+
+        WebhookUtil.prepareMessage(message, system, member, null, serverMember)?.send(true)
+            ?: throw AssertionError("Message could not be reproxied. Is the contents empty?")
 
         databaseMessage.deleted = true
         database.updateMessage(databaseMessage)

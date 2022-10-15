@@ -100,7 +100,7 @@ suspend fun MessageCreateEvent.onMessageCreate() {
                 database.updateSystem(system)
             }
 
-            WebhookUtil.prepareMessage(message, system, member, proxy).send()
+            WebhookUtil.prepareMessage(message, system, member, proxy, memberServer, server.moderationDelay.toLong())?.send()
         } else if (content.startsWith('\\')) {
             // Doesn't proxy just for this message.
             if (content.startsWith("\\\\")) {
@@ -116,7 +116,11 @@ suspend fun MessageCreateEvent.onMessageCreate() {
         } else {
             val member = getAutoProxyMember(system, systemServerSettings) ?: return
 
-            WebhookUtil.prepareMessage(message, system, member, null).send()
+            // Respect member settings.
+            val memberServer = database.fetchMemberServerSettingsFromSystemAndMember(guild, system.id, member.id)
+            if (memberServer?.proxyEnabled == false) return
+
+            WebhookUtil.prepareMessage(message, system, member, null, memberServer, server.moderationDelay.toLong())?.send()
         }
     }
 }

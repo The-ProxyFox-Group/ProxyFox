@@ -17,8 +17,10 @@ import dev.kord.core.entity.channel.thread.ThreadChannel
 import dev.proxyfox.bot.kord
 import dev.proxyfox.database.records.member.MemberProxyTagRecord
 import dev.proxyfox.database.records.member.MemberRecord
+import dev.proxyfox.database.records.member.MemberServerSettingsRecord
 import dev.proxyfox.database.records.system.SystemRecord
 import kotlinx.coroutines.flow.firstOrNull
+import kotlin.math.max
 
 /**
  * Utilities for using webhooks
@@ -26,19 +28,32 @@ import kotlinx.coroutines.flow.firstOrNull
  * */
 object WebhookUtil {
     suspend fun prepareMessage(
-            message: Message,
-            system: SystemRecord,
-            member: MemberRecord,
-            proxy: MemberProxyTagRecord?
-    ) = ProxyContext(
-        message.content,
-        createOrFetchWebhookFromCache(message.channel.asChannel()),
-        message,
-        system,
-        member,
-        proxy,
-        if (message.channel is ThreadChannelBehavior) message.channelId else null
-    )
+        message: Message,
+        system: SystemRecord,
+        member: MemberRecord,
+        proxy: MemberProxyTagRecord?,
+        serverMember: MemberServerSettingsRecord?,
+        moderationDelay: Long = 500L,
+    ): ProxyContext? {
+        var messageContent = message.content
+        if (!member.keepProxy && proxy != null)
+            messageContent = proxy.trim(messageContent).trim()
+        if (messageContent.isBlank() && message.attachments.isEmpty()) return null
+
+        return ProxyContext(
+            messageContent,
+            createOrFetchWebhookFromCache(message.channel.asChannel()),
+            message,
+            system,
+            member,
+            proxy,
+            if (message.channel is ThreadChannelBehavior) message.channelId else null,
+
+            resolvedUsername = serverMember?.nickname ?: member.displayName ?: member.name,
+            resolvedAvatar = serverMember?.avatarUrl ?: member.avatarUrl ?: system.avatarUrl,
+            moderationDelay = max(moderationDelay, 0L),
+        )
+    }
 
     suspend fun createOrFetchWebhookFromCache(channel: Channel): WebhookHolder {
         // Try to fetch webhook from cache
