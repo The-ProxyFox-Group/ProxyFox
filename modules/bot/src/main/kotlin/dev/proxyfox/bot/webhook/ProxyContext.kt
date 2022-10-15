@@ -49,7 +49,7 @@ data class ProxyContext(
     suspend fun send(reproxy: Boolean = false) {
         if (!member.keepProxy && proxy != null)
             messageContent = proxy.trim(messageContent).trim()
-        if (messageContent.isBlank()) return
+        if (messageContent.isBlank() && message.attachments.isEmpty()) return
         val serverMember = database.fetchMemberServerSettingsFromSystemAndMember(
             message.getGuildOrNull(),
             member.systemId,
