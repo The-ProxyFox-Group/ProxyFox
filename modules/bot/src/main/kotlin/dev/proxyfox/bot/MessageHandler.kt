@@ -164,7 +164,10 @@ suspend fun ReactionAddEvent.onReactionAdd() {
             val guild = getGuild()
             val settings = database.fetchMemberServerSettingsFromSystemAndMember(guild, system.id, member.id)
 
+            val user = kord.getUser(Snowflake(databaseMessage.userId))
+
             getUser().getDmChannel().createMessage {
+                content = "Message by ${member.showDisplayName()} was sent by <@${databaseMessage.userId}> (${user?.tag ?: "Unknown user"})"
                 embed {
                     val systemName = system.name ?: system.id
                     author {
