@@ -10,7 +10,6 @@ package dev.proxyfox.bot.webhook
 
 import dev.kord.core.behavior.channel.createWebhook
 import dev.kord.core.behavior.channel.threads.ThreadChannelBehavior
-import dev.kord.core.entity.Message
 import dev.kord.core.entity.channel.Channel
 import dev.kord.core.entity.channel.TextChannel
 import dev.kord.core.entity.channel.thread.ThreadChannel
@@ -28,14 +27,15 @@ import kotlin.math.max
  * */
 object WebhookUtil {
     suspend fun prepareMessage(
-        message: Message,
+        message: GuildMessage,
+        content: String,
         system: SystemRecord,
         member: MemberRecord,
         proxy: MemberProxyTagRecord?,
         serverMember: MemberServerSettingsRecord?,
         moderationDelay: Long = 500L,
     ): ProxyContext? {
-        var messageContent = message.content
+        var messageContent = content
         if (!member.keepProxy && proxy != null)
             messageContent = proxy.trim(messageContent).trim()
         if (messageContent.isBlank() && message.attachments.isEmpty()) return null
@@ -47,7 +47,7 @@ object WebhookUtil {
             system,
             member,
             proxy,
-            if (message.channel is ThreadChannelBehavior) message.channelId else null,
+            if (message.channel is ThreadChannelBehavior) message.channel.id else null,
 
             resolvedUsername = serverMember?.nickname ?: member.displayName ?: member.name,
             resolvedAvatar = serverMember?.avatarUrl ?: member.avatarUrl ?: system.avatarUrl,

@@ -10,7 +10,6 @@ package dev.proxyfox.bot.webhook
 
 import dev.kord.common.Color
 import dev.kord.common.entity.Snowflake
-import dev.kord.core.entity.Message
 import dev.kord.core.entity.User
 import dev.kord.rest.NamedFile
 import dev.kord.rest.builder.message.create.embed
@@ -40,7 +39,7 @@ import kotlinx.coroutines.delay
 data class ProxyContext(
     val messageContent: String,
     val webhook: WebhookHolder,
-    val message: Message,
+    val message: GuildMessage,
     val system: SystemRecord,
     val member: MemberRecord,
     val proxy: MemberProxyTagRecord?,
@@ -103,11 +102,11 @@ data class ProxyContext(
         database.updateMember(member)
         val userId = if (reproxy)
             Snowflake(database.fetchMessage(message.id)!!.userId)
-        else message.author!!.id
+        else message.author.id
         database.createMessage(userId, message.id, newMessage.id, message.channel, member.id, member.systemId, resolvedUsername)
         delay(moderationDelay)
         try {
-            message.delete()
+            message.rawBehaviour.delete()
         } catch (e: KtorRequestException) {
             if (e.httpResponse.status == HttpStatusCode.NotFound) {
                 try {
