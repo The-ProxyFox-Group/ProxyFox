@@ -152,7 +152,7 @@ suspend fun ReactionAddEvent.onReactionAdd() {
         "❗", "🔔" -> {
             // TODO: Add a jump to message embed
             message.channel.createMessage("Psst.. ${databaseMessage.memberName} (<@${databaseMessage.userId}>)$ellipsis You were pinged by <@${userId.value}>")
-            getMessage().deleteReaction(userId, emoji)
+            message.deleteReaction(userId, emoji)
         }
         "❓", "❔" -> {
             val system = database.fetchSystemFromId(databaseMessage.systemId)
@@ -208,7 +208,7 @@ suspend fun ReactionAddEvent.onReactionAdd() {
                     timestamp = system.timestamp.toKtInstant()
                 }
             }
-            getMessage().deleteReaction(userId, emoji)
+            message.deleteReaction(userId, emoji)
         }
     }
 }
