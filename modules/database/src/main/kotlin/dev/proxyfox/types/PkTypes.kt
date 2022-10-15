@@ -183,11 +183,12 @@ data class PkMember(
         created = record.timestamp.pkCompatibleIso8601(),
         proxy_tags = proxyTags,
         avatar_url = record.avatarUrl,
-        proxyfox = if (record.birthday != null || record.age != null || record.role != null) {
+        proxyfox = if (record.birthday != null || record.age != null || record.role != null || !record.autoProxy) {
             PfMemberExtension(
                 birthday = record.birthday?.toString(),
                 age = record.age,
                 role = record.role,
+                autoProxy = record.autoProxy,
             )
         } else null
     )
@@ -329,6 +330,7 @@ data class PfMemberExtension(
     val birthday: String?,
     val age: String?,
     val role: String?,
+    val autoProxy: Boolean?,
 )
 
 @Suppress("EnumEntryName")

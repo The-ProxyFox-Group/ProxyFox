@@ -163,6 +163,7 @@ open class PluralKitImporter protected constructor(
                 pkMember.proxyfox?.let { proxyfox ->
                     proxyfox.age?.let { member.age = it }
                     proxyfox.role?.let { member.role = it }
+                    proxyfox.autoProxy?.let { member.autoProxy = it }
                 }
 
                 pkMember.proxy_tags?.apply {
