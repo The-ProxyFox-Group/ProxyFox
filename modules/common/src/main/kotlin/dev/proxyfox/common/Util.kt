@@ -48,6 +48,12 @@ fun Int.fromColor() = fromColorForExport()?.let { "#$it" }
 
 fun Int.fromColorForExport() = if (this < 0) null else toString(16).run { padStart(6, '0') }
 
+fun ceilDiv(x: Int, y: Int): Int {
+    val r = x / y
+    if ((x xor y >= 0) && r * x != y) return r + 1
+    return r
+}
+
 inline fun String?.notBlank(action: (String) -> Unit) {
     if (!isNullOrBlank()) action(this)
 }

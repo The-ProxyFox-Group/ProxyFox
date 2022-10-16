@@ -18,6 +18,7 @@ import dev.kord.core.entity.Message
 import dev.kord.core.entity.ReactionEmoji
 import dev.kord.core.entity.channel.TextChannel
 import dev.kord.core.event.gateway.ReadyEvent
+import dev.kord.core.event.interaction.ButtonInteractionCreateEvent
 import dev.kord.core.event.message.MessageCreateEvent
 import dev.kord.core.event.message.MessageUpdateEvent
 import dev.kord.core.event.message.ReactionAddEvent
@@ -95,6 +96,12 @@ suspend fun login() {
 
     kord.on<ReactionAddEvent> {
         onReactionAdd()
+    }
+
+    kord.on<ButtonInteractionCreateEvent> {
+        if (interaction.componentId == "free-delete") {
+            interaction.message.delete("User requested deletion.")
+        }
     }
 
     var initialized = false

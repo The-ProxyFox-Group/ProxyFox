@@ -38,4 +38,6 @@ class SystemRecord {
     var autoProxy: String? = null
     var autoType: AutoProxyMode = AutoProxyMode.OFF
     var trust: HashMap<ULong, TrustLevel> = HashMap()
+
+    val showName get() = name?.let { "$it [`$id`]" } ?: "`$id`"
 }

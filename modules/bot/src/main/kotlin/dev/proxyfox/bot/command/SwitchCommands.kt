@@ -8,7 +8,7 @@
 
 package dev.proxyfox.bot.command
 
-import dev.kord.rest.builder.message.EmbedBuilder
+import dev.proxyfox.bot.kord
 import dev.proxyfox.bot.parseDuration
 import dev.proxyfox.bot.string.dsl.greedy
 import dev.proxyfox.bot.string.dsl.literal
@@ -16,12 +16,10 @@ import dev.proxyfox.bot.string.dsl.stringList
 import dev.proxyfox.bot.string.parser.MessageHolder
 import dev.proxyfox.bot.string.parser.registerCommand
 import dev.proxyfox.bot.timedYesNoPrompt
+import dev.proxyfox.common.Pager
 import dev.proxyfox.common.printStep
 import dev.proxyfox.database.database
-import dev.proxyfox.database.records.system.SystemRecord
-import dev.proxyfox.database.records.system.SystemSwitchRecord
 import java.time.Instant
-import kotlin.math.min
 
 object SwitchCommands {
     suspend fun register() {
@@ -92,40 +90,23 @@ object SwitchCommands {
         return ""
     }
 
-    private suspend fun EmbedBuilder.switchList(system: SystemRecord, list: List<SystemSwitchRecord>, idx: Int) {
-        val append = if (system.name == null)
-            "`${system.id}`"
-        else "${system.name} [`${system.id}`]"
-        title = "Front history of $append"
-
-        description = buildString {
-            for (i in idx * 20 until min(idx * 20 + 20, list.size)) {
-                val switch = list[i]
-                if (switch.memberIds.isEmpty()) {
-                    append("*None*")
-                } else {
-                    switch.memberIds.map {
-                        database.fetchMemberFromSystem(system.id, it)?.showDisplayName() ?: "*Unknown*"
-                    }.joinTo(this, ", ", "**", "**")
-                }
-                append(" (<t:${switch.timestamp.epochSecond}:R>)\n")
-            }
-        }
-    }
-
     private suspend fun list(ctx: MessageHolder): String {
         val system = database.fetchSystemFromUser(ctx.message.author)
             ?: return "System does not exist. Create one using `pf>system new`"
         // We know the system exists here, will be non-null
         val switches = database.fetchSortedSwitchesFromSystem(system.id)!!
 
-        val idx = 0
-
-        val message = ctx.respond {
-            switchList(system, switches, idx)
-        }
-
-        // TODO: Allow cycling though switches
+        Pager.build(ctx.message.author!!.id, ctx.message.channel, switches, 20, kord, {
+            title = "[$it] Front history of ${system.showName}"
+        }, { switch ->
+            if (switch.memberIds.isEmpty()) {
+                "*None*"
+            } else {
+                switch.memberIds.map {
+                    database.fetchMemberFromSystem(system.id, it)?.showDisplayName() ?: "*Unknown*"
+                }.joinToString(", ", "**", "**")
+            } + " (<t:${switch.timestamp.epochSecond}:R>)\n"
+        })
 
         return ""
     }

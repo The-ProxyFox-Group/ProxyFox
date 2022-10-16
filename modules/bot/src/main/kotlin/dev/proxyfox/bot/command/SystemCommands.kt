@@ -9,15 +9,13 @@
 package dev.proxyfox.bot.command
 
 import dev.kord.rest.NamedFile
-import dev.proxyfox.bot.kordColor
+import dev.proxyfox.bot.*
 import dev.proxyfox.bot.string.dsl.greedy
 import dev.proxyfox.bot.string.dsl.literal
 import dev.proxyfox.bot.string.dsl.unixLiteral
 import dev.proxyfox.bot.string.parser.MessageHolder
 import dev.proxyfox.bot.string.parser.registerCommand
-import dev.proxyfox.bot.system
-import dev.proxyfox.bot.timedYesNoPrompt
-import dev.proxyfox.bot.toKtInstant
+import dev.proxyfox.common.Pager
 import dev.proxyfox.common.fromColor
 import dev.proxyfox.common.printStep
 import dev.proxyfox.common.toColor
@@ -155,22 +153,18 @@ object SystemCommands {
     private suspend fun list(ctx: MessageHolder): String {
         val system = database.fetchSystemFromUser(ctx.message.author)
             ?: return "System does not exist. Create one using `pf>system new`"
-        ctx.respond {
-            system(system, nameTransformer = { "Members of $it" })
-            val proxies = database.fetchProxiesFromSystem(system.id)!!
-            description = buildString {
-                for (m in database.fetchMembersFromSystem(system.id)!!) {
-                    append("`${m.id}`\u2007•\u2007**${m.name}**")
-                    proxies.filter { it.memberId == m.id }.let {
-                        if (it.isNotEmpty()) {
-                            it.joinTo(this, "\uFEFF``, ``\uFEFF", " (``\uFEFF", "\uFEFF``)\n")
-                        } else {
-                            appendLine()
-                        }
-                    }
-                }
-            }
-        }
+        val proxies = database.fetchProxiesFromSystem(system.id)!!
+        Pager.build(
+            ctx.message.author!!.id,
+            ctx.message.channel,
+            database.fetchMembersFromSystem(system.id)!!.map { m -> m to proxies.filter { it.memberId == m.id } },
+            20, kord,
+            { page -> system(system, nameTransformer = { "[$page] Members of $it" }) },
+            {
+                val str = if (it.second.isNotEmpty()) it.second.joinToString("\uFEFF``, ``\uFEFF", " (``\uFEFF", "\uFEFF``)") else ""
+                "`${it.first.id}`\u2007•\u2007**${it.first.name}**${str}\n"
+            },
+        )
         return ""
     }
 
