@@ -8,6 +8,7 @@
 
 package dev.proxyfox.bot.command
 
+import dev.kord.common.entity.ButtonStyle
 import dev.kord.rest.NamedFile
 import dev.proxyfox.bot.*
 import dev.proxyfox.bot.string.dsl.greedy
@@ -306,16 +307,19 @@ object SystemCommands {
         val author = ctx.message.author!!
         database.fetchSystemFromUser(author)
             ?: return "System does not exist. Create one using `pf>system new`"
-        val message = ctx.respond(
-            "Are you sure you want to delete your system?\n" +
-                    "The data will be lost forever (A long time!)"
+
+        TimedPrompt.build(
+            runner = author.id,
+            channel = ctx.message.channel,
+            message = "Are you sure you want to delete your system?\n" +
+                    "The data will be lost forever (A long time!)",
+            yes = TimedPrompt.Button("Delete system", TimedPrompt.wastebasket, ButtonStyle.Danger) {
+                val export = Exporter.export(author.id.value)
+                ctx.sendFiles(NamedFile("system.json", export.byteInputStream()))
+                database.dropSystem(author)
+                content = "System deleted."
+            },
         )
-        message.timedYesNoPrompt(runner = author.id, yes = {
-            val export = Exporter.export(ctx.message.author!!.id.value)
-            ctx.sendFiles(NamedFile("system.json", export.byteInputStream()))
-            database.dropSystem(author)
-            ctx.respond("System deleted")
-        })
         return ""
     }
 }

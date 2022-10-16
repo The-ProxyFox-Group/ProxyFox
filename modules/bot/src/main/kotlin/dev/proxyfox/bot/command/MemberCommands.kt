@@ -8,6 +8,8 @@
 
 package dev.proxyfox.bot.command
 
+import dev.kord.common.entity.ButtonStyle
+import dev.proxyfox.bot.TimedPrompt
 import dev.proxyfox.bot.kordColor
 import dev.proxyfox.bot.member
 import dev.proxyfox.bot.string.dsl.greedy
@@ -16,7 +18,6 @@ import dev.proxyfox.bot.string.dsl.string
 import dev.proxyfox.bot.string.dsl.unixLiteral
 import dev.proxyfox.bot.string.parser.MessageHolder
 import dev.proxyfox.bot.string.parser.registerCommand
-import dev.proxyfox.bot.timedYesNoPrompt
 import dev.proxyfox.bot.toKtInstant
 import dev.proxyfox.common.*
 import dev.proxyfox.database.database
@@ -536,14 +537,16 @@ object MemberCommands {
         val member = database.findMember(system.id, ctx.params["member"]!![0])
             ?: return "Member does not exist. Create one using `pf>member new`"
 
-        val message = ctx.respond(
-            "Are you sure you want to delete member `${member.asString()}`?\n" +
-                "Their data will be lost forever (A long time!)"
+        TimedPrompt.build(
+            runner = author.id,
+            channel = ctx.message.channel,
+            message = "Are you sure you want to delete member `${member.asString()}`?\n" +
+                    "Their data will be lost forever (A long time!)",
+            yes = TimedPrompt.Button("Delete Member", TimedPrompt.wastebasket, ButtonStyle.Danger) {
+                database.dropMember(system.id, member.id)
+                content = "Member deleted"
+            },
         )
-        message.timedYesNoPrompt(runner = author.id, yes = {
-            database.dropMember(system.id, member.id)
-            ctx.respond("Member deleted")
-        })
 
         return ""
     }
@@ -568,14 +571,16 @@ object MemberCommands {
         val name = ctx.params["name"]!![0]
         val member = database.fetchMemberFromSystemAndName(system.id, name, false)
         if (member != null) {
-            val prompt = ctx.respond(
-                "You already have a member named \"${member.name}\" (`${member.id}`)." +
-                        "\nDo you want to create another member with the same name?"
+            TimedPrompt.build(
+                runner = author.id,
+                channel = ctx.message.channel,
+                message = "You already have a member named \"${member.name}\" (`${member.id}`)." +
+                        "\nDo you want to create another member with the same name?",
+                yes = "Create $name" to {
+                    val newMember = database.createMember(system.id, name)!!
+                    content = "Member created with ID `${newMember.id}`."
+                }
             )
-            prompt.timedYesNoPrompt(runner = author.id, yes = {
-                val newMember = database.createMember(system.id, name)!!
-                ctx.respond("Member created with ID `${newMember.id}`.")
-            })
         } else {
             val newMember = database.createMember(system.id, name)!!
             ctx.respond("Member created with ID `${newMember.id}`.")
