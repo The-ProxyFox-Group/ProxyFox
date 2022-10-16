@@ -14,8 +14,6 @@ import dev.kord.core.Kord
 import dev.kord.core.behavior.MessageBehavior
 import dev.kord.core.behavior.channel.createMessage
 import dev.kord.core.builder.kord.KordBuilder
-import dev.kord.core.entity.Message
-import dev.kord.core.entity.ReactionEmoji
 import dev.kord.core.entity.channel.TextChannel
 import dev.kord.core.event.gateway.ReadyEvent
 import dev.kord.core.event.interaction.ButtonInteractionCreateEvent
@@ -42,7 +40,6 @@ import java.lang.Integer.min
 import java.time.OffsetDateTime
 import kotlin.time.Duration
 import kotlin.time.Duration.Companion.milliseconds
-import kotlin.time.Duration.Companion.minutes
 
 const val UPLOAD_LIMIT = 1024 * 1024 * 8
 
@@ -230,47 +227,6 @@ suspend fun EmbedBuilder.system(
     footer {
         text = footerTransformer(record.id)
     }
-}
-
-/**
- * Reaction-based yes/no prompt helper method for message commands.
- *
- * @receiver The message for the reaction prompt.
- * @param timeout The duration until the prompt is no longer valid.
- * @param runner The runner of the command. May also be anyone else depending on the context.
- * @param yes The action to run on a check reaction.
- * @param no The action to run on an X reaction.
- * */
-suspend fun Message.timedYesNoPrompt(
-    timeout: Duration = 1.minutes,
-    runner: Snowflake,
-    yes: suspend Message.() -> Unit,
-    no: suspend Message.() -> Unit = { channel.createMessage("Action cancelled.") }
-) {
-    addReaction(ReactionEmoji.Unicode("❌"))
-    addReaction(ReactionEmoji.Unicode("✅"))
-    var job: Job? = null
-    val micro = scope.launch {
-        delay(timeout)
-        channel.createMessage("Timed out.")
-        job?.cancel()
-    }
-    job = kord.on<ReactionAddEvent> {
-        if (messageId == id && userId == runner) {
-            when (emoji.name) {
-                "✅" -> {
-                    yes()
-                    job!!.cancel()
-                }
-
-                "❌" -> {
-                    no()
-                    job!!.cancel()
-                }
-            }
-        }
-    }
-    job.invokeOnCompletion { micro.cancel() }
 }
 
 fun ULong.toShard() = if (shardCount == 0) 0 else ((this shr 22) % shardCount.toULong()).toInt()
