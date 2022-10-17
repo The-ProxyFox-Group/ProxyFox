@@ -577,13 +577,23 @@ object MemberCommands {
                 message = "You already have a member named \"${member.name}\" (`${member.id}`)." +
                         "\nDo you want to create another member with the same name?",
                 yes = "Create $name" to {
-                    val newMember = database.createMember(system.id, name)!!
-                    content = "Member created with ID `${newMember.id}`."
+                    val newMember = database.createMember(system.id, name)
+                    content = if (newMember != null) {
+                        "Member created with ID `${newMember.id}`."
+                    } else {
+                        "Something went wrong while creating your member. Try again?"
+                    }
                 }
             )
         } else {
-            val newMember = database.createMember(system.id, name)!!
-            ctx.respond("Member created with ID `${newMember.id}`.")
+            val newMember = database.createMember(system.id, name)
+            ctx.respond(
+                if (newMember != null) {
+                    "Member created with ID `${newMember.id}`."
+                } else {
+                    "Something went wrong while creating your member. Try again?"
+                }
+            )
         }
         return ""
     }
