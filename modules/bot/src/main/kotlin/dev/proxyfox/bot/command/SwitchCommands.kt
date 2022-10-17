@@ -9,15 +9,14 @@
 package dev.proxyfox.bot.command
 
 import dev.kord.common.entity.ButtonStyle
-import dev.proxyfox.bot.TimedPrompt
-import dev.proxyfox.bot.kord
 import dev.proxyfox.bot.parseDuration
+import dev.proxyfox.bot.prompts.Pager
+import dev.proxyfox.bot.prompts.TimedPrompt
 import dev.proxyfox.bot.string.dsl.greedy
 import dev.proxyfox.bot.string.dsl.literal
 import dev.proxyfox.bot.string.dsl.stringList
 import dev.proxyfox.bot.string.parser.MessageHolder
 import dev.proxyfox.bot.string.parser.registerCommand
-import dev.proxyfox.common.Pager
 import dev.proxyfox.common.printStep
 import dev.proxyfox.database.database
 import dev.proxyfox.database.records.system.SystemSwitchRecord
@@ -119,7 +118,7 @@ object SwitchCommands {
         // We know the system exists here, will be non-null
         val switches = database.fetchSortedSwitchesFromSystem(system.id)!!
 
-        Pager.build(ctx.message.author!!.id, ctx.message.channel, switches, 20, kord, {
+        Pager.build(ctx.message.author!!.id, ctx.message.channel, switches, 20, {
             title = "[$it] Front history of ${system.showName}"
         }, { it.membersAsString("**", "**") + " (<t:${it.timestamp.epochSecond}:R>)\n" })
 

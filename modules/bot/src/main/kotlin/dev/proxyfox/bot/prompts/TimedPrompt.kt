@@ -6,7 +6,7 @@
  * file, You can obtain one at https://mozilla.org/MPL/2.0/.
  */
 
-package dev.proxyfox.bot
+package dev.proxyfox.bot.prompts
 
 import dev.kord.common.entity.ButtonStyle
 import dev.kord.common.entity.DiscordPartialEmoji
@@ -24,6 +24,8 @@ import dev.kord.core.event.message.ReactionAddEvent
 import dev.kord.core.on
 import dev.kord.rest.builder.component.ActionRowBuilder
 import dev.kord.rest.builder.message.modify.MessageModifyBuilder
+import dev.proxyfox.bot.kord
+import dev.proxyfox.bot.scope
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.launch
 import kotlin.time.Duration

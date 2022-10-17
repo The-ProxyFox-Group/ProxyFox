@@ -10,13 +10,16 @@ package dev.proxyfox.bot.command
 
 import dev.kord.common.entity.ButtonStyle
 import dev.kord.rest.NamedFile
-import dev.proxyfox.bot.*
+import dev.proxyfox.bot.kordColor
+import dev.proxyfox.bot.prompts.Pager
+import dev.proxyfox.bot.prompts.TimedPrompt
 import dev.proxyfox.bot.string.dsl.greedy
 import dev.proxyfox.bot.string.dsl.literal
 import dev.proxyfox.bot.string.dsl.unixLiteral
 import dev.proxyfox.bot.string.parser.MessageHolder
 import dev.proxyfox.bot.string.parser.registerCommand
-import dev.proxyfox.common.Pager
+import dev.proxyfox.bot.system
+import dev.proxyfox.bot.toKtInstant
 import dev.proxyfox.common.fromColor
 import dev.proxyfox.common.printStep
 import dev.proxyfox.common.toColor
@@ -159,7 +162,7 @@ object SystemCommands {
             ctx.message.author!!.id,
             ctx.message.channel,
             database.fetchMembersFromSystem(system.id)!!.map { m -> m to proxies.filter { it.memberId == m.id } },
-            20, kord,
+            20,
             { page -> system(system, nameTransformer = { "[$page] Members of $it" }) },
             {
                 val str = if (it.second.isNotEmpty()) it.second.joinToString("\uFEFF``, ``\uFEFF", " (``\uFEFF", "\uFEFF``)") else ""

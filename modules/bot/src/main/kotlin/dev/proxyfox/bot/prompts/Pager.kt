@@ -6,11 +6,10 @@
  * file, You can obtain one at https://mozilla.org/MPL/2.0/.
  */
 
-package dev.proxyfox.common
+package dev.proxyfox.bot.prompts
 
 import dev.kord.common.entity.ButtonStyle
 import dev.kord.common.entity.Snowflake
-import dev.kord.core.Kord
 import dev.kord.core.behavior.MessageBehavior
 import dev.kord.core.behavior.channel.MessageChannelBehavior
 import dev.kord.core.behavior.channel.createMessage
@@ -34,6 +33,8 @@ import dev.kord.rest.builder.component.SelectOptionBuilder
 import dev.kord.rest.builder.message.EmbedBuilder
 import dev.kord.rest.builder.message.create.embed
 import dev.kord.rest.builder.message.modify.embed
+import dev.proxyfox.bot.kord
+import dev.proxyfox.common.ceilDiv
 import java.util.*
 import kotlin.math.max
 import kotlin.math.min
@@ -50,7 +51,6 @@ class Pager<T>(
     private val list: List<T>,
     private val pageSize: Int,
     private val pages: Int = ceilDiv(list.size, pageSize),
-    kord: Kord,
     private val embed: suspend EmbedBuilder.(String) -> Unit,
     private val transform: suspend (T) -> String,
 ) {
@@ -261,7 +261,6 @@ class Pager<T>(
             channel: MessageChannelBehavior,
             list: List<T>,
             pageSize: Int,
-            kord: Kord,
             embed: suspend EmbedBuilder.(String) -> Unit,
             transform: suspend (T) -> String,
         ): Pager<T> {
@@ -290,7 +289,7 @@ class Pager<T>(
                     }
                 }
             }
-            return Pager(runner, message, list, pageSize, pages, kord, embed, transform)
+            return Pager(runner, message, list, pageSize, pages, embed, transform)
         }
 
         private suspend fun <T> buildString(
