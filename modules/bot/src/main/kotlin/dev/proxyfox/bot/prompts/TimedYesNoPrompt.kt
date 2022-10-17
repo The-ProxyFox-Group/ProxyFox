@@ -35,7 +35,7 @@ import kotlin.time.Duration.Companion.minutes
  * @author Ampflower
  * @since ${version}
  **/
-class TimedPrompt(
+class TimedYesNoPrompt(
     private val runner: Snowflake,
     private val reference: Message,
     timeout: Duration = 1.minutes,
@@ -124,7 +124,7 @@ class TimedPrompt(
             message: String,
             yes: Pair<String, suspend MessageModifyBuilder.() -> Unit>,
             no: Pair<String, suspend MessageModifyBuilder.() -> Unit> = "Cancel" to { content = "Action cancelled." },
-        ): TimedPrompt {
+        ): TimedYesNoPrompt {
             val msg = channel.createMessage {
                 content = message
                 components += ActionRowBuilder().apply {
@@ -138,7 +138,7 @@ class TimedPrompt(
                     }
                 }
             }
-            return TimedPrompt(
+            return TimedYesNoPrompt(
                 runner,
                 msg,
                 timeout,
@@ -154,7 +154,7 @@ class TimedPrompt(
             message: String,
             yes: Button,
             no: Button = Button("Cancel", multiply) { content = "Action cancelled." },
-        ): TimedPrompt {
+        ): TimedYesNoPrompt {
             val msg = channel.createMessage {
                 content = message
                 components += ActionRowBuilder().apply {
@@ -168,7 +168,7 @@ class TimedPrompt(
                     }
                 }
             }
-            return TimedPrompt(
+            return TimedYesNoPrompt(
                 runner,
                 msg,
                 timeout,

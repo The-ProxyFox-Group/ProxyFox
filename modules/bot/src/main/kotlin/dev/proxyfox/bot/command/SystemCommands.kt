@@ -12,7 +12,7 @@ import dev.kord.common.entity.ButtonStyle
 import dev.kord.rest.NamedFile
 import dev.proxyfox.bot.kordColor
 import dev.proxyfox.bot.prompts.Pager
-import dev.proxyfox.bot.prompts.TimedPrompt
+import dev.proxyfox.bot.prompts.TimedYesNoPrompt
 import dev.proxyfox.bot.string.dsl.greedy
 import dev.proxyfox.bot.string.dsl.literal
 import dev.proxyfox.bot.string.dsl.unixLiteral
@@ -311,12 +311,12 @@ object SystemCommands {
         database.fetchSystemFromUser(author)
             ?: return "System does not exist. Create one using `pf>system new`"
 
-        TimedPrompt.build(
+        TimedYesNoPrompt.build(
             runner = author.id,
             channel = ctx.message.channel,
             message = "Are you sure you want to delete your system?\n" +
                     "The data will be lost forever (A long time!)",
-            yes = TimedPrompt.Button("Delete system", TimedPrompt.wastebasket, ButtonStyle.Danger) {
+            yes = TimedYesNoPrompt.Button("Delete system", TimedYesNoPrompt.wastebasket, ButtonStyle.Danger) {
                 val export = Exporter.export(author.id.value)
                 ctx.sendFiles(NamedFile("system.json", export.byteInputStream()))
                 database.dropSystem(author)

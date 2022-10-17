@@ -11,7 +11,7 @@ package dev.proxyfox.bot.command
 import dev.kord.common.entity.ButtonStyle
 import dev.proxyfox.bot.parseDuration
 import dev.proxyfox.bot.prompts.Pager
-import dev.proxyfox.bot.prompts.TimedPrompt
+import dev.proxyfox.bot.prompts.TimedYesNoPrompt
 import dev.proxyfox.bot.string.dsl.greedy
 import dev.proxyfox.bot.string.dsl.literal
 import dev.proxyfox.bot.string.dsl.stringList
@@ -69,11 +69,11 @@ object SwitchCommands {
             database.fetchMemberFromSystem(system.id, it)?.showDisplayName() ?: "*Unknown*"
         }.joinToString(", ")
 
-        TimedPrompt.build(
+        TimedYesNoPrompt.build(
             runner = author.id,
             channel = ctx.message.channel,
             message = "Are you sure you want to move the switch $members back to <t:${nowMinus.epochSecond}>?",
-            yes = TimedPrompt.Button("Move switch", TimedPrompt.move, ButtonStyle.Primary) {
+            yes = TimedYesNoPrompt.Button("Move switch", TimedYesNoPrompt.move, ButtonStyle.Primary) {
                 switch.timestamp = nowMinus
                 database.updateSwitch(switch)
                 content = "Switch updated."
@@ -95,7 +95,7 @@ object SwitchCommands {
 
         val epoch = switch.timestamp.epochSecond
 
-        TimedPrompt.build(
+        TimedYesNoPrompt.build(
             runner = ctx.message.author!!.id,
             channel = ctx.message.channel,
             message = """
@@ -103,7 +103,7 @@ object SwitchCommands {
                 $switchBefore
                 The data will be lost forever (A long time!)
                 """.trimIndent(),
-            yes = TimedPrompt.Button("Delete switch", TimedPrompt.wastebasket, ButtonStyle.Danger) {
+            yes = TimedYesNoPrompt.Button("Delete switch", TimedYesNoPrompt.wastebasket, ButtonStyle.Danger) {
                 database.dropSwitch(switch)
                 content = "Switch deleted."
             },
