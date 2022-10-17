@@ -9,9 +9,9 @@
 package dev.proxyfox.bot.command
 
 import dev.kord.common.entity.ButtonStyle
-import dev.proxyfox.bot.TimedPrompt
 import dev.proxyfox.bot.kordColor
 import dev.proxyfox.bot.member
+import dev.proxyfox.bot.prompts.TimedPrompt
 import dev.proxyfox.bot.string.dsl.greedy
 import dev.proxyfox.bot.string.dsl.literal
 import dev.proxyfox.bot.string.dsl.string
