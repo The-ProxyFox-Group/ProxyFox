@@ -85,6 +85,9 @@ suspend fun import(database: Database, element: JsonElement, user: Entity?): Imp
     if (!element.isJsonObject) throw ImporterException("Not a JSON object")
     val map = element.asJsonObject
     if (map.size() == 0) throw ImporterException("No data to import.")
+    if (map.has("type") && map.has("uri") && map.size() == 2) {
+        throw ImporterException("Your system file is invalid; try fetching directly from ${map["uri"]}?")
+    }
     val importer = if (map.has("tuppers")) TupperBoxImporter() else PluralKitImporter()
     val bulk = database.bulkInserter()
     importer.import(bulk, map, user!!.id.value)
