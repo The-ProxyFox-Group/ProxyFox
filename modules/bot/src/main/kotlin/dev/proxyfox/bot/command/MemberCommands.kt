@@ -11,7 +11,7 @@ package dev.proxyfox.bot.command
 import dev.kord.common.entity.ButtonStyle
 import dev.proxyfox.bot.kordColor
 import dev.proxyfox.bot.member
-import dev.proxyfox.bot.prompts.TimedPrompt
+import dev.proxyfox.bot.prompts.TimedYesNoPrompt
 import dev.proxyfox.bot.string.dsl.greedy
 import dev.proxyfox.bot.string.dsl.literal
 import dev.proxyfox.bot.string.dsl.string
@@ -537,12 +537,12 @@ object MemberCommands {
         val member = database.findMember(system.id, ctx.params["member"]!![0])
             ?: return "Member does not exist. Create one using `pf>member new`"
 
-        TimedPrompt.build(
+        TimedYesNoPrompt.build(
             runner = author.id,
             channel = ctx.message.channel,
             message = "Are you sure you want to delete member `${member.asString()}`?\n" +
                     "Their data will be lost forever (A long time!)",
-            yes = TimedPrompt.Button("Delete Member", TimedPrompt.wastebasket, ButtonStyle.Danger) {
+            yes = TimedYesNoPrompt.Button("Delete Member", TimedYesNoPrompt.wastebasket, ButtonStyle.Danger) {
                 database.dropMember(system.id, member.id)
                 content = "Member deleted"
             },
@@ -571,7 +571,7 @@ object MemberCommands {
         val name = ctx.params["name"]!![0]
         val member = database.fetchMemberFromSystemAndName(system.id, name, false)
         if (member != null) {
-            TimedPrompt.build(
+            TimedYesNoPrompt.build(
                 runner = author.id,
                 channel = ctx.message.channel,
                 message = "You already have a member named \"${member.name}\" (`${member.id}`)." +
