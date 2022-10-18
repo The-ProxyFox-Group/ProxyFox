@@ -9,25 +9,20 @@
 package dev.proxyfox.bot.prompts
 
 import dev.kord.common.entity.ButtonStyle
-import dev.kord.common.entity.DiscordPartialEmoji
 import dev.kord.common.entity.Snowflake
-import dev.kord.common.entity.optional.optional
 import dev.kord.core.behavior.channel.MessageChannelBehavior
 import dev.kord.core.behavior.channel.createMessage
 import dev.kord.core.behavior.edit
 import dev.kord.core.behavior.interaction.response.edit
-import dev.kord.core.entity.GuildEmoji
 import dev.kord.core.entity.Message
-import dev.kord.core.entity.ReactionEmoji
 import dev.kord.core.event.interaction.ButtonInteractionCreateEvent
 import dev.kord.core.event.message.ReactionAddEvent
 import dev.kord.core.on
 import dev.kord.rest.builder.component.ActionRowBuilder
 import dev.kord.rest.builder.message.modify.MessageModifyBuilder
 import dev.proxyfox.bot.kord
-import dev.proxyfox.bot.scope
-import kotlinx.coroutines.delay
-import kotlinx.coroutines.launch
+import dev.proxyfox.bot.prompts.Button.Companion.check
+import dev.proxyfox.bot.prompts.Button.Companion.multiply
 import kotlin.time.Duration
 import kotlin.time.Duration.Companion.minutes
 
@@ -36,18 +31,22 @@ import kotlin.time.Duration.Companion.minutes
  * @since ${version}
  **/
 class TimedYesNoPrompt(
-    private val runner: Snowflake,
-    private val reference: Message,
+    runner: Snowflake,
+    reference: Message,
     timeout: Duration = 1.minutes,
     private val yes: suspend MessageModifyBuilder.() -> Unit,
     private val no: suspend MessageModifyBuilder.() -> Unit,
+) : TimedPrompt(
+    runner,
+    reference,
+    timeout
 ) {
-    private val timerJob = scope.launch {
-        delay(timeout)
-        close()
+    init {
+        jobs = listOf(
+            kord.on(consumer = this::onInteraction),
+            kord.on(consumer = this::onReaction),
+        )
     }
-    private val interactionJob = kord.on(consumer = this::onInteraction)
-    private val reactionJob = kord.on(consumer = this::onReaction)
 
     private suspend fun onInteraction(event: ButtonInteractionCreateEvent) = event.run {
         if (interaction.message == reference && interaction.user.id == runner) {
@@ -84,39 +83,12 @@ class TimedYesNoPrompt(
         }
     }
 
-    suspend fun close() {
+    override suspend fun close() {
         reference.edit { no(); components = mutableListOf() }
         closeInternal()
     }
 
-    fun closeInternal() {
-        interactionJob.cancel()
-        reactionJob.cancel()
-        timerJob.cancel()
-    }
-
-    @JvmRecord
-    data class Button(
-        val label: String? = "Confirm",
-        val emoji: DiscordPartialEmoji? = null,
-        val style: ButtonStyle = ButtonStyle.Secondary,
-        val action: suspend MessageModifyBuilder.() -> Unit,
-    ) {
-        companion object {
-            val ReactionEmoji.Unicode.partial get() = DiscordPartialEmoji(name = name)
-
-            val ReactionEmoji.Custom.partial get() = DiscordPartialEmoji(id = id, name = name, animated = isAnimated.optional())
-
-            val GuildEmoji.partial get() = DiscordPartialEmoji(id = id, animated = isAnimated.optional())
-        }
-    }
-
     companion object {
-        val check = DiscordPartialEmoji(name = "✅")
-        val multiply = DiscordPartialEmoji(name = "✖")
-        val wastebasket = DiscordPartialEmoji(name = "🗑")
-        val move = DiscordPartialEmoji(name = "\uD83D\uDD00")
-
         suspend fun build(
             runner: Snowflake,
             channel: MessageChannelBehavior,

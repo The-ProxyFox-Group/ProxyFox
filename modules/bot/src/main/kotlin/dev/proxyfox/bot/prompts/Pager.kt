@@ -38,6 +38,7 @@ import dev.proxyfox.common.ceilDiv
 import java.util.*
 import kotlin.math.max
 import kotlin.math.min
+import kotlin.time.Duration.Companion.minutes
 
 // Created 2022-15-10T08:37:40
 
@@ -46,19 +47,27 @@ import kotlin.math.min
  * @since ${version}
  **/
 class Pager<T>(
-    private val runner: Snowflake,
-    private val reference: Message,
+    runner: Snowflake,
+    reference: Message,
     private val list: List<T>,
     private val pageSize: Int,
     private val pages: Int = ceilDiv(list.size, pageSize),
     private val embed: suspend EmbedBuilder.(String) -> Unit,
     private val transform: suspend (T) -> String,
+) : TimedPrompt(
+    runner,
+    reference,
+    5.minutes,
 ) {
     private var page = 0
     private var selector: ActiveSelector? = null
 
-    private val interactionJob = kord.on(consumer = this::onInteraction)
-    private val reactionJob = kord.on(consumer = this::onReaction)
+    init {
+        jobs = listOf(
+            kord.on(consumer = this::onInteraction),
+            kord.on(consumer = this::onReaction),
+        )
+    }
 
     private suspend fun onInteraction(event: ButtonInteractionCreateEvent) = event.run {
         val message = interaction.message
@@ -123,7 +132,7 @@ class Pager<T>(
                     })
                 }
 
-                "❌", "✖️" -> {
+                "❌", "✖", "✖\uFE0F" -> {
                     close()
                 }
             }
@@ -138,6 +147,7 @@ class Pager<T>(
     }
 
     private suspend fun page(inPage: Int) {
+        bump()
         page = min(max(0, inPage), pages - 1)
         reference.edit {
             embed {
@@ -147,11 +157,14 @@ class Pager<T>(
         }
     }
 
-    private suspend fun close() {
-        interactionJob.cancel()
-        reactionJob.cancel()
-        selector?.close()
+    override suspend fun close() {
         reference.edit { components = mutableListOf() }
+        closeInternal()
+    }
+
+    override suspend fun closeInternal() {
+        selector?.close()
+        super.closeInternal()
     }
 
     private interface ActiveSelector {
@@ -189,7 +202,7 @@ class Pager<T>(
                 content = "Pager closed."
                 components = mutableListOf()
             }
-            ephemeralListener.cancel()
+            closeInternal()
         }
 
         fun closeInternal() {
