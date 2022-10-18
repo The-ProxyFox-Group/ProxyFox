@@ -11,6 +11,7 @@ package dev.proxyfox.bot.command
 import dev.kord.common.entity.ButtonStyle
 import dev.proxyfox.bot.kordColor
 import dev.proxyfox.bot.member
+import dev.proxyfox.bot.prompts.Button
 import dev.proxyfox.bot.prompts.TimedYesNoPrompt
 import dev.proxyfox.bot.string.dsl.greedy
 import dev.proxyfox.bot.string.dsl.literal
@@ -542,7 +543,7 @@ object MemberCommands {
             channel = ctx.message.channel,
             message = "Are you sure you want to delete member `${member.asString()}`?\n" +
                     "Their data will be lost forever (A long time!)",
-            yes = TimedYesNoPrompt.Button("Delete Member", TimedYesNoPrompt.wastebasket, ButtonStyle.Danger) {
+            yes = Button("Delete Member", Button.wastebasket, ButtonStyle.Danger) {
                 database.dropMember(system.id, member.id)
                 content = "Member deleted"
             },

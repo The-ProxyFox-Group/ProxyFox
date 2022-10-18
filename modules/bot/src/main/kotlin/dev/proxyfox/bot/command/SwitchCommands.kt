@@ -10,6 +10,7 @@ package dev.proxyfox.bot.command
 
 import dev.kord.common.entity.ButtonStyle
 import dev.proxyfox.bot.parseDuration
+import dev.proxyfox.bot.prompts.Button
 import dev.proxyfox.bot.prompts.Pager
 import dev.proxyfox.bot.prompts.TimedYesNoPrompt
 import dev.proxyfox.bot.string.dsl.greedy
@@ -73,7 +74,7 @@ object SwitchCommands {
             runner = author.id,
             channel = ctx.message.channel,
             message = "Are you sure you want to move the switch $members back to <t:${nowMinus.epochSecond}>?",
-            yes = TimedYesNoPrompt.Button("Move switch", TimedYesNoPrompt.move, ButtonStyle.Primary) {
+            yes = Button("Move switch", Button.move, ButtonStyle.Primary) {
                 switch.timestamp = nowMinus
                 database.updateSwitch(switch)
                 content = "Switch updated."
@@ -103,7 +104,7 @@ object SwitchCommands {
                 $switchBefore
                 The data will be lost forever (A long time!)
                 """.trimIndent(),
-            yes = TimedYesNoPrompt.Button("Delete switch", TimedYesNoPrompt.wastebasket, ButtonStyle.Danger) {
+            yes = Button("Delete switch", Button.wastebasket, ButtonStyle.Danger) {
                 database.dropSwitch(switch)
                 content = "Switch deleted."
             },

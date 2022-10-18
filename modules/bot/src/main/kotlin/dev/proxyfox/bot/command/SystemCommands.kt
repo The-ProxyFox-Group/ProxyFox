@@ -11,6 +11,7 @@ package dev.proxyfox.bot.command
 import dev.kord.common.entity.ButtonStyle
 import dev.kord.rest.NamedFile
 import dev.proxyfox.bot.kordColor
+import dev.proxyfox.bot.prompts.Button
 import dev.proxyfox.bot.prompts.Pager
 import dev.proxyfox.bot.prompts.TimedYesNoPrompt
 import dev.proxyfox.bot.string.dsl.greedy
@@ -316,7 +317,7 @@ object SystemCommands {
             channel = ctx.message.channel,
             message = "Are you sure you want to delete your system?\n" +
                     "The data will be lost forever (A long time!)",
-            yes = TimedYesNoPrompt.Button("Delete system", TimedYesNoPrompt.wastebasket, ButtonStyle.Danger) {
+            yes = Button("Delete system", Button.wastebasket, ButtonStyle.Danger) {
                 val export = Exporter.export(author.id.value)
                 ctx.sendFiles(NamedFile("system.json", export.byteInputStream()))
                 database.dropSystem(author)
