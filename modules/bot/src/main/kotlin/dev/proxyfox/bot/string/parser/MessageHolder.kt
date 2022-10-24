@@ -8,6 +8,7 @@
 
 package dev.proxyfox.bot.string.parser
 
+import dev.kord.common.entity.Permission
 import dev.kord.core.behavior.channel.createMessage
 import dev.kord.core.entity.Message
 import dev.kord.rest.NamedFile
@@ -31,9 +32,15 @@ data class MessageHolder(
             if (embed != null) embeds.add(EmbedBuilder().applyAsync(embed))
         }
     }
+
     suspend fun sendFiles(vararg files: NamedFile) {
         message.author!!.getDmChannel().createMessage {
             this.files.addAll(files)
         }
+    }
+
+    suspend fun hasRequired(permission: Permission): Boolean {
+        val author = message.getAuthorAsMember() ?: return false
+        return author.getPermissions().contains(permission)
     }
 }

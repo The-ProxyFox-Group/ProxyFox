@@ -283,6 +283,8 @@ To get support, head on over to https://discord.gg/q3yF8ay9V7"""
     }
 
     private suspend fun role(ctx: MessageHolder): String {
+        if (!ctx.hasRequired(Permission.ManageGuild))
+            return "You do not have the proper permissions to run this command"
         val server = database.getOrCreateServerSettings(ctx.message.getGuild())
         val roleRaw = ctx.params["role"]!![0]
         val role = roleMatcher.find(roleRaw)?.value?.toULong()
@@ -294,6 +296,8 @@ To get support, head on over to https://discord.gg/q3yF8ay9V7"""
     }
 
     private suspend fun roleClear(ctx: MessageHolder): String {
+        if (!ctx.hasRequired(Permission.ManageGuild))
+            return "You do not have the proper permissions to run this command"
         val server = database.getOrCreateServerSettings(ctx.message.getGuild())
         server.proxyRole = 0UL
         database.updateServerSettings(server)
@@ -310,6 +314,8 @@ To get support, head on over to https://discord.gg/q3yF8ay9V7"""
     }
 
     private suspend fun delay(ctx: MessageHolder): String {
+        if (!ctx.hasRequired(Permission.ManageGuild))
+            return "You do not have the proper permissions to run this command"
         val server = database.getOrCreateServerSettings(ctx.message.getGuild())
         val delay = ctx.params["delay"]!![0].parseDuration()
         delay.right?.let { return it }
@@ -572,11 +578,12 @@ To get support, head on over to https://discord.gg/q3yF8ay9V7"""
     }
 
     private suspend fun channelProxyEnable(ctx: MessageHolder): String {
-        if (ctx.message.getAuthorAsMember()?.getPermissions()?.contains(Permission.ManageChannels) != true) return "You do not have the proper permissions to run this command"
+        if (!ctx.hasRequired(Permission.ManageChannels))
+            return "You do not have the proper permissions to run this command"
         val channel = ctx.params["channel"]?.get(0)
             ?: ctx.message.channelId.value.toString()
         val channelId = channel.toULongOrNull()
-            ?: channel.substring(2, channel.length-1).toULongOrNull()
+            ?: channel.substring(2, channel.length - 1).toULongOrNull()
             ?: return "Provided string is not a valid channel"
         val channelSettings = database.getOrCreateChannel(ctx.message.getGuild().id.value, channelId)
         if (channelSettings.proxyEnabled) return "Proxying is already enabled for <#$channelId>"
@@ -586,11 +593,12 @@ To get support, head on over to https://discord.gg/q3yF8ay9V7"""
     }
 
     private suspend fun channelProxyDisable(ctx: MessageHolder): String {
-        if (ctx.message.getAuthorAsMember()?.getPermissions()?.contains(Permission.ManageChannels) != true) return "You do not have the proper permissions to run this command"
+        if (!ctx.hasRequired(Permission.ManageChannels))
+            return "You do not have the proper permissions to run this command"
         val channel = ctx.params["channel"]?.get(0)
             ?: ctx.message.channelId.value.toString()
         val channelId = channel.toULongOrNull()
-            ?: channel.substring(2, channel.length-1).toULongOrNull()
+            ?: channel.substring(2, channel.length - 1).toULongOrNull()
             ?: return "Provided string is not a valid channel"
         val channelSettings = database.getOrCreateChannel(ctx.message.getGuild().id.value, channelId)
         if (!channelSettings.proxyEnabled) return "Proxying is already disabled for <#$channelId>"
