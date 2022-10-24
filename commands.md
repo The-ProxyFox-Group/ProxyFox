@@ -42,7 +42,7 @@
 
   - Creates a member with the given name (required)
 
-- `delete|del|remove <member>`
+- `delete|del|remove <member>` | `<member> delete|del|remove`
   - Deletes the given member
 
 - `<member>`
@@ -99,20 +99,20 @@
 
   - Changes the member's avatar
 
-- `<member> serveravatar|serverpfp|sp`
+- `<member> serveravatar|serverpfp|sp|sa`
 
   - Displays the member's server avatar
 
     - Optional `--clear` parameter to clear the avatar
 
-- `<member> serveravatar|serverpfp|sp <pfp>`
+- `<member> serveravatar|serverpfp|sp|sa <pfp>`
 
   - Changes the member's server avatar
 
 - `<member> pronouns`
 
   - Displays the member's pronouns
-  
+
     - Optional `--raw` parameter to show the raw pronouns
 
     - Optional `--clear` parameter to clear the pronouns
@@ -125,15 +125,19 @@
 
   - Changes the member's color
 
-- `<member> birthday`
+- `<member> birthday|bd`
 
   - Displays the member's birthday
 
     - Optional `--clear` parameter to clear the birthday
 
-- `<member> birthday <date>`
+- `<member> birthday|bd <date>`
 
   - Changes the member's birthday
+
+- `<member> autoproxy|ap [on|off]`
+
+  - Displays or changes whether autoproxy is enabled for the member.
 
 - `<member> proxy|p`
 
@@ -153,11 +157,11 @@
 
 ### Switch Commands (`pf>switch|sw`)
 
-- `out`
+- `out|o`
 
   - Marks no members as fronting
 
-- `move <time>`
+- `move|mv|m <time>`
 
   - Moves the switch back by the provided time
 
@@ -175,7 +179,7 @@
 
 ### Miscellaneous Commands (`pf>`)
 
-- `import`
+- `import <url|file>`
 
   - Imports a system (TupperBox imports are currently disabled)
 
@@ -260,3 +264,7 @@
 - `channel|c proxy on|enable/off|disable`
 
   - Toggles proxying for this channel (Moderator only)
+
+- `debug`
+
+  - Prints debug information.

@@ -17,6 +17,7 @@ import dev.proxyfox.bot.*
 import dev.proxyfox.bot.string.dsl.greedy
 import dev.proxyfox.bot.string.dsl.literal
 import dev.proxyfox.bot.string.dsl.string
+import dev.proxyfox.bot.string.dsl.unixLiteral
 import dev.proxyfox.bot.string.parser.MessageHolder
 import dev.proxyfox.bot.string.parser.registerCommand
 import dev.proxyfox.bot.webhook.GuildMessage
@@ -70,7 +71,7 @@ object MiscCommands {
         })
 
         registerCommand(literal("role", ::roleEmpty) {
-            literal("clear", ::roleClear)
+            unixLiteral("clear", ::roleClear)
             greedy("role", ::role)
         })
 

@@ -28,7 +28,7 @@ object SwitchCommands {
         printStep("Registering switch commands", 2)
         registerCommand(literal(arrayOf("switch", "sw"), ::empty) {
             literal(arrayOf("out", "o"), ::out)
-            literal(arrayOf("move", "m"), ::moveEmpty) {
+            literal(arrayOf("move", "mv", "m"), ::moveEmpty) {
                 greedy("time", ::move)
             }
             literal(arrayOf("delete", "del", "remove"), ::delete)
