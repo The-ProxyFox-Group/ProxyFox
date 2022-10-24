@@ -58,12 +58,12 @@ object MemberCommands {
                     greedy("avatar", ::avatarLinked)
                 }
 
-                literal(arrayOf("serveravatar", "serverpfp", "sp"), ::serverAvatar) {
+                literal(arrayOf("serveravatar", "serverpfp", "sp", "sa"), ::serverAvatar) {
                     unixLiteral("clear", ::serverAvatarClear)
                     greedy("avatar", ::serverAvatarLinked)
                 }
 
-                literal(arrayOf("autproxy", "ap"), ::apEmpty) {
+                literal(arrayOf("autoproxy", "ap"), ::apEmpty) {
                     literal(arrayOf("disable", "off", "false", "0"), ::apDisable)
                     literal(arrayOf("enable", "on", "true", "1"), ::apEnable)
                 }
@@ -88,7 +88,7 @@ object MemberCommands {
                     greedy("color", ::color)
                 }
 
-                literal("birthday", ::birthEmpty) {
+                literal(arrayOf("birthday", "bd"), ::birthEmpty) {
                     unixLiteral("clear", ::birthClear)
                     greedy("birthday", ::birth)
                 }
