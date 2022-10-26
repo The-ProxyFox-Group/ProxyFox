@@ -81,6 +81,6 @@ suspend inline fun <T> T.applyAsync(block: suspend T.() -> Unit): T {
 }
 
 //We just need a classloader to get a resource
-val hash = object {}.javaClass.getResource("commit_hash.txt")?.readText(Charset.defaultCharset()) ?: "Unknown Hash"
+val hash = object {}.javaClass.getResource("/commit_hash.txt")?.readText(Charset.defaultCharset()) ?: "Unknown Hash"
 
 class DebugException: Exception("Debug Exception - Do Not Report")
