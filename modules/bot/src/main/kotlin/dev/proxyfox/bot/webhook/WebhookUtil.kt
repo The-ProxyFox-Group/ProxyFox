@@ -8,17 +8,15 @@
 
 package dev.proxyfox.bot.webhook
 
-import dev.kord.core.behavior.channel.createWebhook
 import dev.kord.core.behavior.channel.threads.ThreadChannelBehavior
+import dev.kord.core.cache.data.WebhookData
+import dev.kord.core.entity.Webhook
 import dev.kord.core.entity.channel.Channel
-import dev.kord.core.entity.channel.TextChannel
 import dev.kord.core.entity.channel.thread.ThreadChannel
-import dev.proxyfox.bot.kord
 import dev.proxyfox.database.records.member.MemberProxyTagRecord
 import dev.proxyfox.database.records.member.MemberRecord
 import dev.proxyfox.database.records.member.MemberServerSettingsRecord
 import dev.proxyfox.database.records.system.SystemRecord
-import kotlinx.coroutines.flow.firstOrNull
 import kotlin.math.max
 
 /**
@@ -68,23 +66,24 @@ object WebhookUtil {
     }
 
     private suspend fun createOrFetchWebhook(channel: Channel): WebhookHolder {
-        when (channel) {
-            is ThreadChannel -> return createOrFetchWebhook(channel.getParent())
-            is TextChannel -> {
-                // Try to fetch webhook from channel
-                channel.webhooks.firstOrNull { it.creatorId == kord.selfId }?.let {
-                    val holder = it.toHolder()
-                    WebhookCache[channel.id.value] = holder
-                    return holder
-                }
-                // Create webhook
-                channel.createWebhook("ProxyFox Webhook") {}.let {
-                    val holder = it.toHolder()
-                    WebhookCache[channel.id.value] = holder
-                    return holder
-                }
-            }
-            else -> error("Provided channel is not a thread or text channel")
+        val kord = channel.kord
+        val inst = if (channel is ThreadChannel) {
+            channel.kord.getChannelOf(channel.parentId)!!
+        } else {
+            channel
+        }
+
+        kord.rest.webhook.getChannelWebhooks(inst.id).firstOrNull { it.applicationId == kord.selfId }?.let {
+            val holder = Webhook(WebhookData.from(it), kord).toHolder()
+            WebhookCache[channel.id.value] = holder
+            return holder
+        }
+
+        // Create webhook
+        kord.rest.webhook.createWebhook(inst.id, "ProxyFox Webhook") {}.let {
+            val holder = Webhook(WebhookData.from(it), kord).toHolder()
+            WebhookCache[channel.id.value] = holder
+            return holder
         }
     }
 }
