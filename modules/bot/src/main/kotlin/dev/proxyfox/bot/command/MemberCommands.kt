@@ -151,6 +151,24 @@ object MemberCommands {
                     inline = true
                 }
             }
+            if (member.messageCount > 0UL) {
+                field {
+                    name = "Message Count"
+                    value = member.messageCount.toString()
+                    inline = true
+                }
+            }
+            database.fetchProxiesFromSystemAndMember(system.id, member.id)?.let {
+                field {
+                    name = "Proxy Tags"
+                    value = it.joinToString(
+                        separator = "\n",
+                        limit = 20,
+                        truncated = "\n\u2026"
+                    ) { "``${it.toString().replace("`", "\uFE0F`")}\uFE0F``" }
+                    inline = true
+                }
+            }
             footer {
                 text = "Member ID \u2009• \u2009${member.id}\u2007|\u2007System ID \u2009• \u2009${system.id}\u2007|\u2007Created "
             }
