@@ -61,6 +61,10 @@ constructor(private val name: String, databaseFactory: () -> Database) {
 
         assertNotNull(database.fetchMemberFromUserAndName(user, "Azalea"), "No such Azalea for $user")
 
+        if (!url.file.contains("Tupperbox")) {
+            assertEquals("| flwr", database.fetchSystemFromUser(user)?.tag, "Tag didn't get imported correctly.")
+        }
+
         extraResource("PluralKit-v1-Case-Sensitivity-Test.json") {
             val pkImporter = import(database, it, user)
             assertEquals(pkImporter.createdMembers, 1, "`azalea` was not counted.")
