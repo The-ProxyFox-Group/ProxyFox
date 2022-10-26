@@ -14,6 +14,7 @@ import com.mongodb.reactivestreams.client.MongoCollection
 import dev.kord.common.entity.Snowflake
 import dev.kord.core.behavior.channel.ChannelBehavior
 import dev.kord.core.entity.channel.thread.ThreadChannel
+import dev.proxyfox.database.records.MongoRecord
 import dev.proxyfox.database.records.member.MemberProxyTagRecord
 import dev.proxyfox.database.records.member.MemberRecord
 import dev.proxyfox.database.records.member.MemberServerSettingsRecord
@@ -397,7 +398,9 @@ class MongoDatabase(private val dbName: String = "ProxyFox") : Database() {
         }
 
         override suspend fun updateSystem(system: SystemRecord) {
-            if (witness.add(system)) systemQueue += system.replace()
+            if (witness.add(system)) {
+                systemQueue += system.replace()
+            }
         }
 
         override suspend fun updateSystemServerSettings(serverSettings: SystemServerSettingsRecord) {
@@ -534,9 +537,9 @@ class MongoDatabase(private val dbName: String = "ProxyFox") : Database() {
             }
         }
 
-        private fun <T : Any> T.delete() = DeleteOneModel<T>(KMongoUtil.filterIdToBson(this))
-        private fun <T : Any> T.upsert() = ReplaceOneModel(KMongoUtil.filterIdToBson(this), this, ReplaceOptions().upsert(true))
-        private fun <T : Any> T.replace() = ReplaceOneModel(KMongoUtil.filterIdToBson(this), this)
+        private fun <T : MongoRecord> T.delete() = DeleteOneModel<T>(Filters.eq("_id", _id))
+        private fun <T : MongoRecord> T.upsert() = ReplaceOneModel(Filters.eq("_id", _id), this, ReplaceOptions().upsert(true))
+        private fun <T : MongoRecord> T.replace() = ReplaceOneModel(Filters.eq("_id", _id), this)
         private fun <T : Any> T.create() = InsertOneModel(this)
     }
 

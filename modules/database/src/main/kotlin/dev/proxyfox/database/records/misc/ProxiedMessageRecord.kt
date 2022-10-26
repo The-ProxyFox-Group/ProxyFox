@@ -8,12 +8,13 @@
 
 package dev.proxyfox.database.records.misc
 
+import dev.proxyfox.database.records.MongoRecord
 import org.bson.types.ObjectId
 import java.time.OffsetDateTime
 import java.time.ZoneOffset
 
-class ProxiedMessageRecord {
-    var _id: ObjectId = ObjectId()
+class ProxiedMessageRecord : MongoRecord {
+    override var _id: ObjectId = ObjectId()
     var creationDate = OffsetDateTime.now(ZoneOffset.UTC)
     var memberName: String = ""
     var userId: ULong = 0UL

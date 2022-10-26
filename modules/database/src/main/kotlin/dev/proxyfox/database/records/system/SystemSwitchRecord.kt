@@ -10,6 +10,7 @@ package dev.proxyfox.database.records.system
 
 import com.fasterxml.jackson.databind.annotation.JsonDeserialize
 import com.fasterxml.jackson.databind.annotation.JsonSerialize
+import dev.proxyfox.database.records.MongoRecord
 import dev.proxyfox.jackson.InstantDeserializer
 import dev.proxyfox.jackson.InstantSerializer
 import org.bson.types.ObjectId
@@ -22,8 +23,8 @@ import java.time.Instant
  *
  * @author KJP12
  **/
-class SystemSwitchRecord {
-    var _id: ObjectId = ObjectId()
+class SystemSwitchRecord : MongoRecord {
+    override var _id: ObjectId = ObjectId()
     var systemId: String
     var id: String
     var memberIds: List<String>

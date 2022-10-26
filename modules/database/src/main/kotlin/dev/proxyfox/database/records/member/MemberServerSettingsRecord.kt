@@ -8,6 +8,7 @@
 
 package dev.proxyfox.database.records.member
 
+import dev.proxyfox.database.records.MongoRecord
 import org.bson.types.ObjectId
 
 // Created 2022-09-04T14:16:19
@@ -17,8 +18,8 @@ import org.bson.types.ObjectId
  *
  * @author KJP12
  **/
-class MemberServerSettingsRecord {
-    var _id: ObjectId = ObjectId()
+class MemberServerSettingsRecord : MongoRecord {
+    override var _id: ObjectId = ObjectId()
     var serverId: ULong = 0UL
     var systemId: String = ""
     var memberId: String = ""
