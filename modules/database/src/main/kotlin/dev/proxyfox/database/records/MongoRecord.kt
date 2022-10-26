@@ -6,13 +6,16 @@
  * file, You can obtain one at https://mozilla.org/MPL/2.0/.
  */
 
-package dev.proxyfox.database.records.misc
+package dev.proxyfox.database.records
 
-import dev.proxyfox.database.records.MongoRecord
 import org.bson.types.ObjectId
 
-class UserRecord : MongoRecord {
-    override var _id: ObjectId = ObjectId()
-    var id: ULong = 0UL
-    var systemId: String? = null
+// Created 2022-26-10T15:56:22
+
+/**
+ * @author Ampflower
+ * @since ${version}
+ **/
+interface MongoRecord {
+    val _id: ObjectId
 }

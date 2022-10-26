@@ -8,10 +8,11 @@
 
 package dev.proxyfox.database.records.misc
 
+import dev.proxyfox.database.records.MongoRecord
 import org.bson.types.ObjectId
 
-class ChannelSettingsRecord {
-    var _id: ObjectId = ObjectId()
+class ChannelSettingsRecord : MongoRecord {
+    override var _id: ObjectId = ObjectId()
     var serverId: ULong = 0UL
     var channelId: ULong = 0UL
     var proxyEnabled: Boolean = true

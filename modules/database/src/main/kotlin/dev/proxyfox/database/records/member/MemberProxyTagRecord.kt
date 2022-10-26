@@ -10,6 +10,7 @@ package dev.proxyfox.database.records.member
 
 import com.google.gson.annotations.Expose
 import com.google.gson.annotations.SerializedName
+import dev.proxyfox.database.records.MongoRecord
 import org.bson.types.ObjectId
 
 // Created 2022-09-04T15:17:43
@@ -19,8 +20,8 @@ import org.bson.types.ObjectId
  *
  * @author Ampflower
  **/
-class MemberProxyTagRecord {
-    var _id: ObjectId = ObjectId()
+class MemberProxyTagRecord : MongoRecord {
+    override var _id: ObjectId = ObjectId()
 
     // GSON-specific annotation for JSON database
     @Expose(serialize = false, deserialize = false)

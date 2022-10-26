@@ -8,6 +8,7 @@
 
 package dev.proxyfox.database.records.system
 
+import dev.proxyfox.database.records.MongoRecord
 import dev.proxyfox.database.records.misc.AutoProxyMode
 import dev.proxyfox.database.records.misc.TrustLevel
 import org.bson.types.ObjectId
@@ -21,8 +22,8 @@ import java.time.ZoneOffset
  *
  * @author Ampflower
  **/
-class SystemRecord {
-    var _id: ObjectId = ObjectId()
+class SystemRecord : MongoRecord {
+    override var _id: ObjectId = ObjectId()
     var id: String = ""
     var users: ArrayList<ULong> = ArrayList()
     var name: String? = null

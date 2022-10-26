@@ -9,6 +9,7 @@
 package dev.proxyfox.database.records.member
 
 import dev.proxyfox.database.database
+import dev.proxyfox.database.records.MongoRecord
 import org.bson.types.ObjectId
 import java.time.LocalDate
 import java.time.OffsetDateTime
@@ -21,14 +22,14 @@ import java.time.ZoneOffset
  *
  * @author Ampflower
  **/
-class MemberRecord() {
+class MemberRecord() : MongoRecord {
     constructor(id: String, systemId: String, name: String) : this() {
         this.id = id
         this.systemId = systemId
         this.name = name
     }
 
-    var _id: ObjectId = ObjectId()
+    override var _id: ObjectId = ObjectId()
 
     var id: String = ""
     var systemId: String = ""

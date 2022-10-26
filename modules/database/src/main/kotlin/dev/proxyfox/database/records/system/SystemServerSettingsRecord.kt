@@ -8,6 +8,7 @@
 
 package dev.proxyfox.database.records.system
 
+import dev.proxyfox.database.records.MongoRecord
 import dev.proxyfox.database.records.misc.AutoProxyMode
 import org.bson.types.ObjectId
 
@@ -19,8 +20,8 @@ import org.bson.types.ObjectId
  * @author Ampflower
  * @since ${version}
  **/
-class SystemServerSettingsRecord {
-    var _id: ObjectId = ObjectId()
+class SystemServerSettingsRecord : MongoRecord {
+    override var _id: ObjectId = ObjectId()
     var serverId: ULong = 0UL
     var systemId: String = ""
     var proxyEnabled: Boolean = true
