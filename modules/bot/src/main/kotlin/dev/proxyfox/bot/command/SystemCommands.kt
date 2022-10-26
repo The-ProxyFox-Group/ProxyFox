@@ -78,6 +78,11 @@ object SystemCommands {
 
             literal(arrayOf("delete", "del", "remove"), ::delete)
         })
+
+        registerCommand(literal(arrayOf("list", "l"), ::list) {
+            unixLiteral(arrayOf("by-message-count", "bmc"), ::listByMessage)
+            unixLiteral(arrayOf("verbose", "v"), ::listVerbose)
+        })
     }
 
     private suspend fun empty(ctx: MessageHolder): String {
