@@ -2,6 +2,7 @@
   "version": 1,
   "id": "yfafh",
   "name": "Test",
+  "tag": "| flwr",
   "members": [
     {
       "id": "rwctl",
