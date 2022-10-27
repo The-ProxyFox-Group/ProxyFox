@@ -262,7 +262,7 @@ To get support, head on over to https://discord.gg/q3yF8ay9V7"""
         val system = database.fetchSystemFromUser(ctx.message.author)
             ?: return "System does not exist. Create one using `pf>system new`"
         val systemServer = database.getOrCreateServerSettingsFromSystem(ctx.message.getGuild(), system.id)
-        systemServer.autoProxyMode = AutoProxyMode.LATCH
+        systemServer.autoProxyMode = AutoProxyMode.FALLBACK
         database.updateSystemServerSettings(systemServer)
         return "Proxy for this server has been enabled"
     }
