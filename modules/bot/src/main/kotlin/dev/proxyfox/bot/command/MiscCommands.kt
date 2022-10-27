@@ -253,16 +253,17 @@ To get support, head on over to https://discord.gg/q3yF8ay9V7"""
     }
 
     private suspend fun serverProxyEmpty(ctx: MessageHolder): String {
-        database.fetchSystemFromUser(ctx.message.author)
+        val system = database.fetchSystemFromUser(ctx.message.author)
             ?: return "System does not exist. Create one using `pf>system new`"
-        return "Please tell me if you want to enable or disable proxy for this server"
+        val systemServer = database.getOrCreateServerSettingsFromSystem(ctx.message.getGuild(), system.id)
+        return "Proxy for this server is currently ${if (systemServer.proxyEnabled) "enabled" else "disabled"}."
     }
 
     private suspend fun serverProxyOn(ctx: MessageHolder): String {
         val system = database.fetchSystemFromUser(ctx.message.author)
             ?: return "System does not exist. Create one using `pf>system new`"
         val systemServer = database.getOrCreateServerSettingsFromSystem(ctx.message.getGuild(), system.id)
-        systemServer.autoProxyMode = AutoProxyMode.FALLBACK
+        systemServer.proxyEnabled = true
         database.updateSystemServerSettings(systemServer)
         return "Proxy for this server has been enabled"
     }
@@ -271,7 +272,7 @@ To get support, head on over to https://discord.gg/q3yF8ay9V7"""
         val system = database.fetchSystemFromUser(ctx.message.author)
             ?: return "System does not exist. Create one using `pf>system new`"
         val systemServer = database.getOrCreateServerSettingsFromSystem(ctx.message.getGuild(), system.id)
-        systemServer.autoProxyMode = AutoProxyMode.OFF
+        systemServer.proxyEnabled = false
         database.updateSystemServerSettings(systemServer)
         return "Proxy for this server has been disabled"
     }
