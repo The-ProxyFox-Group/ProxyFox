@@ -25,6 +25,8 @@ import kotlin.contracts.contract
 
 // Created 2022-11-04T14:58:16
 
+typealias PkId = String
+
 const val pkIdBound = 11881376
 
 val gson = GsonBuilder()

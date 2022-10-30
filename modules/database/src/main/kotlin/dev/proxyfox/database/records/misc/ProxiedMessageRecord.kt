@@ -8,6 +8,7 @@
 
 package dev.proxyfox.database.records.misc
 
+import dev.proxyfox.database.*
 import dev.proxyfox.database.records.MongoRecord
 import org.bson.types.ObjectId
 import java.time.OffsetDateTime
@@ -23,7 +24,7 @@ class ProxiedMessageRecord : MongoRecord {
     var guildId: ULong = 0UL
     var channelId: ULong = 0UL
     var threadId: ULong? = null
-    var memberId: String = ""
-    var systemId: String = ""
+    var memberId: PkId = ""
+    var systemId: PkId = ""
     var deleted = false
 }
