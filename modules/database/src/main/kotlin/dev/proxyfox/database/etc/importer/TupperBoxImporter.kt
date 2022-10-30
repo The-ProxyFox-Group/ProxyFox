@@ -6,7 +6,7 @@
  * file, You can obtain one at https://mozilla.org/MPL/2.0/.
  */
 
-package dev.proxyfox.importer
+package dev.proxyfox.database.etc.importer
 
 import com.google.gson.JsonObject
 import dev.proxyfox.database.Database
@@ -15,7 +15,7 @@ import dev.proxyfox.database.records.member.MemberProxyTagRecord
 import dev.proxyfox.database.records.member.MemberRecord
 import dev.proxyfox.database.records.system.SystemRecord
 import dev.proxyfox.database.validate
-import dev.proxyfox.types.TbSystem
+import dev.proxyfox.database.etc.types.TbSystem
 
 /**
  * [Importer] to import a JSON with a TupperBox format

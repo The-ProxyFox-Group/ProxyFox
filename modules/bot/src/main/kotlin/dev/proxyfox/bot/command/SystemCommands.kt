@@ -25,7 +25,7 @@ import dev.proxyfox.common.fromColor
 import dev.proxyfox.common.printStep
 import dev.proxyfox.common.toColor
 import dev.proxyfox.database.database
-import dev.proxyfox.exporter.Exporter
+import dev.proxyfox.database.etc.exporter.Exporter
 
 /**
  * Commands for accessing and changing system settings

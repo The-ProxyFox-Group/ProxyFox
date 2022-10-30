@@ -28,8 +28,8 @@ import dev.proxyfox.database.displayDate
 import dev.proxyfox.database.records.misc.AutoProxyMode
 import dev.proxyfox.database.records.misc.ProxiedMessageRecord
 import dev.proxyfox.database.records.system.SystemRecord
-import dev.proxyfox.exporter.Exporter
-import dev.proxyfox.importer.import
+import dev.proxyfox.database.etc.exporter.Exporter
+import dev.proxyfox.database.etc.importer.import
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.flow.filter
 import kotlinx.coroutines.flow.firstOrNull

@@ -6,7 +6,7 @@
  * file, You can obtain one at https://mozilla.org/MPL/2.0/.
  */
 
-package dev.proxyfox.importer
+package dev.proxyfox.database.etc.importer
 
 import com.google.gson.JsonObject
 import dev.proxyfox.common.toColor
@@ -18,8 +18,8 @@ import dev.proxyfox.database.records.misc.AutoProxyMode
 import dev.proxyfox.database.records.system.SystemRecord
 import dev.proxyfox.database.records.system.SystemServerSettingsRecord
 import dev.proxyfox.database.records.system.SystemSwitchRecord
-import dev.proxyfox.types.PkMember
-import dev.proxyfox.types.PkSystem
+import dev.proxyfox.database.etc.types.PkMember
+import dev.proxyfox.database.etc.types.PkSystem
 import java.time.Instant
 import java.time.LocalDate
 import java.time.format.DateTimeFormatter
