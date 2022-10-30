@@ -8,6 +8,7 @@
 
 package dev.proxyfox.database.records.member
 
+import dev.proxyfox.database.*
 import dev.proxyfox.database.records.MongoRecord
 import org.bson.types.ObjectId
 
@@ -21,8 +22,8 @@ import org.bson.types.ObjectId
 class MemberServerSettingsRecord : MongoRecord {
     override var _id: ObjectId = ObjectId()
     var serverId: ULong = 0UL
-    var systemId: String = ""
-    var memberId: String = ""
+    var systemId: PkId = ""
+    var memberId: PkId = ""
     var avatarUrl: String? = null
     var nickname: String? = null
 
@@ -34,8 +35,8 @@ class MemberServerSettingsRecord : MongoRecord {
 
     constructor(
         serverId: ULong,
-        systemId: String,
-        memberId: String,
+        systemId: PkId,
+        memberId: PkId,
     ) {
         this.serverId = serverId
         this.systemId = systemId

@@ -8,11 +8,12 @@
 
 package dev.proxyfox.database.records.misc
 
+import dev.proxyfox.database.*
 import dev.proxyfox.database.records.MongoRecord
 import org.bson.types.ObjectId
 
 class UserRecord : MongoRecord {
     override var _id: ObjectId = ObjectId()
     var id: ULong = 0UL
-    var systemId: String? = null
+    var systemId: PkId? = null
 }

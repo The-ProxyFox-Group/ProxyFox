@@ -8,6 +8,7 @@
 
 package dev.proxyfox.database.records.system
 
+import dev.proxyfox.database.*
 import dev.proxyfox.database.records.MongoRecord
 import dev.proxyfox.database.records.misc.AutoProxyMode
 import org.bson.types.ObjectId
@@ -23,16 +24,16 @@ import org.bson.types.ObjectId
 class SystemServerSettingsRecord : MongoRecord {
     override var _id: ObjectId = ObjectId()
     var serverId: ULong = 0UL
-    var systemId: String = ""
+    var systemId: PkId = ""
     var proxyEnabled: Boolean = true
 
     /** The ID of the member that's currently being auto-proxied. */
-    var autoProxy: String? = null
+    var autoProxy: PkId? = null
     var autoProxyMode: AutoProxyMode = AutoProxyMode.FALLBACK
 
     constructor()
 
-    constructor(serverId: ULong, systemId: String) {
+    constructor(serverId: ULong, systemId: PkId) {
         this.serverId = serverId
         this.systemId = systemId
     }
