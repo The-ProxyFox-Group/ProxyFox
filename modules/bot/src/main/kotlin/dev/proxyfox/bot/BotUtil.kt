@@ -9,14 +9,14 @@
 package dev.proxyfox.bot
 
 import dev.kord.common.Color
-import dev.kord.common.entity.Snowflake
+import dev.kord.common.entity.*
 import dev.kord.core.Kord
 import dev.kord.core.behavior.MessageBehavior
 import dev.kord.core.behavior.channel.createMessage
 import dev.kord.core.builder.kord.KordBuilder
 import dev.kord.core.entity.channel.TextChannel
 import dev.kord.core.event.gateway.ReadyEvent
-import dev.kord.core.event.interaction.ButtonInteractionCreateEvent
+import dev.kord.core.event.interaction.*
 import dev.kord.core.event.message.MessageCreateEvent
 import dev.kord.core.event.message.MessageUpdateEvent
 import dev.kord.core.event.message.ReactionAddEvent
@@ -101,6 +101,11 @@ suspend fun login() {
         }
     }
 
+    kord.registerMessageCommands()
+    kord.on<GlobalMessageCommandInteractionCreateEvent> {
+        onInteract()
+    }
+
     var initialized = false
     kord.on<ReadyEvent> {
         if (!initialized) {
@@ -130,6 +135,13 @@ suspend fun login() {
             watching("for pf>help!")
         }
     }
+}
+
+suspend fun Kord.registerMessageCommands() {
+    createGlobalMessageCommand("Delete Message") {}
+    createGlobalMessageCommand("Fetch Message Info") {}
+    createGlobalMessageCommand("Ping Message Author") {}
+    createGlobalMessageCommand("Edit Message")
 }
 
 suspend fun updatePresence() {

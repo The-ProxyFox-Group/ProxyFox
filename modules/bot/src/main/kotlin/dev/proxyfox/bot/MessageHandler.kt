@@ -17,6 +17,7 @@ import dev.kord.core.cache.data.EmbedData
 import dev.kord.core.entity.Attachment
 import dev.kord.core.entity.Embed
 import dev.kord.core.entity.channel.GuildMessageChannel
+import dev.kord.core.event.interaction.*
 import dev.kord.core.event.message.MessageCreateEvent
 import dev.kord.core.event.message.MessageUpdateEvent
 import dev.kord.core.event.message.ReactionAddEvent
@@ -277,4 +278,8 @@ suspend fun ReactionAddEvent.onReactionAdd() {
             message.deleteReaction(userId, emoji)
         }
     }
+}
+
+fun GlobalMessageCommandInteractionCreateEvent.onInteract() {
+
 }
