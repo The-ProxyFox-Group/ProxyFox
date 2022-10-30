@@ -56,7 +56,7 @@ data class ProxyContext(
             avatarUrl = resolvedAvatar
             for (attachment in message.attachments) {
                 val response: HttpResponse = http.get(urlString = attachment.url) {
-                    headers { append(HttpHeaders.UserAgent, "ProxyFox/2.0.0 (+https://github.com/ProxyFox-Developers/ProxyFox/; +https://proxyfox.dev/)") }
+                    headers { append(HttpHeaders.UserAgent, "ProxyFox/2.0.0 (+https://github.com/The-ProxyFox-Group/ProxyFox/; +https://proxyfox.dev/)") }
                 }
                 files.add(NamedFile(attachment.filename, response.content.toInputStream()))
             }
