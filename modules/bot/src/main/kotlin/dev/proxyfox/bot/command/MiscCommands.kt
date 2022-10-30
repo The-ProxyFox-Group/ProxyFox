@@ -174,7 +174,7 @@ object MiscCommands {
             field {
                 inline = true
                 name = "Memory Usage"
-                value = "${floor(getRamUsagePercentage() * 10)/10}%"
+                value = "${floor(getRamUsagePercentage())}%"
             }
 
             field {
