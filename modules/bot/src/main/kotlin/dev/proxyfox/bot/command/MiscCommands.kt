@@ -29,7 +29,7 @@ import dev.proxyfox.database.records.misc.AutoProxyMode
 import dev.proxyfox.database.records.misc.ProxiedMessageRecord
 import dev.proxyfox.database.records.system.SystemRecord
 import dev.proxyfox.database.etc.exporter.Exporter
-import dev.proxyfox.database.etc.importer.import
+import dev.proxyfox.database.etc.importer.*
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.flow.filter
 import kotlinx.coroutines.flow.firstOrNull
@@ -188,20 +188,28 @@ object MiscCommands {
     }
 
     private suspend fun importEmpty(ctx: MessageHolder): String {
-        if (ctx.message.attachments.isEmpty()) return "Please attach a file or link to import"
-        val attach = URL(ctx.message.attachments.toList()[0].url)
-        val importer = withContext(Dispatchers.IO) {
-            attach.openStream().reader().use { import(it, ctx.message.author) }
+        return try {
+            if (ctx.message.attachments.isEmpty()) return "Please attach a file or link to import"
+            val attach = URL(ctx.message.attachments.toList()[0].url)
+            val importer = withContext(Dispatchers.IO) {
+                attach.openStream().reader().use { import(it, ctx.message.author) }
+            }
+            "File imported. created ${importer.createdMembers} member(s), updated ${importer.updatedMembers} member(s)"
+        } catch (exception: ImporterException) {
+            "Failed to import file: ${exception.message}"
         }
-        return "File imported. created ${importer.createdMembers} member(s), updated ${importer.updatedMembers} member(s)"
     }
 
     private suspend fun import(ctx: MessageHolder): String {
-        val attach = URL(ctx.params["url"]!![0])
-        val importer = withContext(Dispatchers.IO) {
-            attach.openStream().reader().use { import(it, ctx.message.author) }
+        return try {
+            val attach = URL(ctx.params["url"]!![0])
+            val importer = withContext(Dispatchers.IO) {
+                attach.openStream().reader().use { import(it, ctx.message.author) }
+            }
+            "File imported. created ${importer.createdMembers} member(s), updated ${importer.updatedMembers} member(s)"
+        } catch (exception: ImporterException) {
+            "Failed to import file: ${exception.message}"
         }
-        return "File imported. created ${importer.createdMembers} member(s), updated ${importer.updatedMembers} member(s)"
     }
 
     private suspend fun export(ctx: MessageHolder): String {
@@ -218,7 +226,7 @@ object MiscCommands {
     }
 
     private fun help(ctx: MessageHolder): String =
-        """To view commands for ProxyFox, visit <https://github.com/ProxyFox-developers/ProxyFox/blob/master/commands.md>
+        """To view commands for ProxyFox, visit <https://github.com/The-ProxyFox-Group/ProxyFox/blob/master/commands.md>
 For quick setup:
 - pf>system new name
 - pf>member new John Doe
@@ -233,7 +241,7 @@ It uses discord's webhooks to generate "pseudo-users" which different members of
 To get support, head on over to https://discord.gg/q3yF8ay9V7"""
 
     private fun source(ctx: MessageHolder): String =
-        "Source code for ProxyFox is available at https://github.com/ProxyFox-developers/ProxyFox!"
+        "Source code for ProxyFox is available at https://github.com/The-ProxyFox-Group/ProxyFox!"
 
     private suspend fun proxyEmpty(ctx: MessageHolder): String {
         database.fetchSystemFromUser(ctx.message.author)
