@@ -68,6 +68,14 @@ object MiscCommands {
             greedy("member", MiscCommands::proxyMember)
         })
 
+        registerCommand(literal(arrayOf("serverautoproxy", "sap"), ::serverAutoProxyEmpty) {
+            literal(arrayOf("off", "disable"), ::serverAutoProxyOff)
+            literal(arrayOf("latch", "l"), ::serverAutoProxyLatch)
+            literal(arrayOf("front", "f"), ::serverAutoProxyFront)
+            literal(arrayOf("on", "enable", "fallback", "fb"), ::serverAutoProxyFallback)
+            greedy("member", MiscCommands::serverAutoProxyMember)
+        })
+
         registerCommand(literal("role", ::roleEmpty) {
             unixLiteral("clear", ::roleClear)
             greedy("role", ::role)
@@ -268,17 +276,72 @@ To get support, head on over to https://discord.gg/q3yF8ay9V7"""
         return "Autoproxy disabled"
     }
 
-    private suspend fun serverProxyEmpty(ctx: MessageHolder): String {
+    private suspend fun serverAutoProxyEmpty(ctx: MessageHolder): String {
         database.fetchSystemFromUser(ctx.message.author)
             ?: return "System does not exist. Create one using `pf>system new`"
-        return "Please tell me if you want to enable or disable proxy for this server"
+        return "Please provide whether you want autoproxy set to `off`, `latch`, `front`, or a member"
+    }
+
+    private suspend fun serverAutoProxyLatch(ctx: MessageHolder): String {
+        val system = database.fetchSystemFromUser(ctx.message.author)
+            ?: return "System does not exist. Create one using `pf>system new`"
+        val systemServer = database.getOrCreateServerSettingsFromSystem(ctx.message.getGuild(), system.id)
+        systemServer.autoProxyMode = AutoProxyMode.LATCH
+        database.updateSystemServerSettings(systemServer)
+        return "Autoproxy mode for this server is now set to `latch`"
+    }
+
+    private suspend fun serverAutoProxyFront(ctx: MessageHolder): String {
+        val system = database.fetchSystemFromUser(ctx.message.author)
+            ?: return "System does not exist. Create one using `pf>system new`"
+        val systemServer = database.getOrCreateServerSettingsFromSystem(ctx.message.getGuild(), system.id)
+        systemServer.autoProxyMode = AutoProxyMode.FRONT
+        database.updateSystemServerSettings(systemServer)
+        return "Autoproxy mode for this server is now set to `front`"
+    }
+
+    private suspend fun serverAutoProxyFallback(ctx: MessageHolder): String {
+        val system = database.fetchSystemFromUser(ctx.message.author)
+            ?: return "System does not exist. Create one using `pf>system new`"
+        val systemServer = database.getOrCreateServerSettingsFromSystem(ctx.message.getGuild(), system.id)
+        systemServer.autoProxyMode = AutoProxyMode.FALLBACK
+        database.updateSystemServerSettings(systemServer)
+        return "Autoproxy for this server is now using your global settings."
+    }
+
+    private suspend fun serverAutoProxyMember(ctx: MessageHolder): String {
+        val system = database.fetchSystemFromUser(ctx.message.author)
+            ?: return "System does not exist. Create one using `pf>system new`"
+        val member = database.findMember(system.id, ctx.params["member"]!![0])
+            ?: return "Member does not exist. Create one using `pf>member new`"
+        val systemServer = database.getOrCreateServerSettingsFromSystem(ctx.message.getGuild(), system.id)
+        systemServer.autoProxyMode = AutoProxyMode.MEMBER
+        systemServer.autoProxy = member.id
+        database.updateSystemServerSettings(systemServer)
+        return "Autoproxy mode for this server is now set to ${member.name}"
+    }
+
+    private suspend fun serverAutoProxyOff(ctx: MessageHolder): String {
+        val system = database.fetchSystemFromUser(ctx.message.author)
+            ?: return "System does not exist. Create one using `pf>system new`"
+        val systemServer = database.getOrCreateServerSettingsFromSystem(ctx.message.getGuild(), system.id)
+        systemServer.autoProxyMode = AutoProxyMode.OFF
+        database.updateSystemServerSettings(systemServer)
+        return "Autoproxy disabled for this server."
+    }
+
+    private suspend fun serverProxyEmpty(ctx: MessageHolder): String {
+        val system = database.fetchSystemFromUser(ctx.message.author)
+            ?: return "System does not exist. Create one using `pf>system new`"
+        val systemServer = database.getOrCreateServerSettingsFromSystem(ctx.message.getGuild(), system.id)
+        return "Proxy for this server is currently ${if (systemServer.proxyEnabled) "enabled" else "disabled"}."
     }
 
     private suspend fun serverProxyOn(ctx: MessageHolder): String {
         val system = database.fetchSystemFromUser(ctx.message.author)
             ?: return "System does not exist. Create one using `pf>system new`"
         val systemServer = database.getOrCreateServerSettingsFromSystem(ctx.message.getGuild(), system.id)
-        systemServer.autoProxyMode = AutoProxyMode.LATCH
+        systemServer.proxyEnabled = true
         database.updateSystemServerSettings(systemServer)
         return "Proxy for this server has been enabled"
     }
@@ -287,7 +350,7 @@ To get support, head on over to https://discord.gg/q3yF8ay9V7"""
         val system = database.fetchSystemFromUser(ctx.message.author)
             ?: return "System does not exist. Create one using `pf>system new`"
         val systemServer = database.getOrCreateServerSettingsFromSystem(ctx.message.getGuild(), system.id)
-        systemServer.autoProxyMode = AutoProxyMode.OFF
+        systemServer.proxyEnabled = false
         database.updateSystemServerSettings(systemServer)
         return "Proxy for this server has been disabled"
     }

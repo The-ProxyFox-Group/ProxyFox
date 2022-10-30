@@ -158,10 +158,11 @@ object MemberCommands {
                     inline = true
                 }
             }
-            database.fetchProxiesFromSystemAndMember(system.id, member.id)?.let {
+            database.fetchProxiesFromSystemAndMember(system.id, member.id).let { proxyTags ->
+                if (proxyTags.isNullOrEmpty()) return@let
                 field {
                     name = "Proxy Tags"
-                    value = it.joinToString(
+                    value = proxyTags.joinToString(
                         separator = "\n",
                         limit = 20,
                         truncated = "\n\u2026"
