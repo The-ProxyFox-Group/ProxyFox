@@ -8,12 +8,9 @@
 
 package dev.proxyfox.common
 
-import kotlinx.coroutines.DelicateCoroutinesApi
-import kotlinx.coroutines.GlobalScope
-import kotlinx.coroutines.launch
 import org.slf4j.LoggerFactory
+import java.lang.management.*
 import java.nio.charset.Charset
-import java.time.OffsetDateTime
 import kotlin.contracts.ExperimentalContracts
 import kotlin.contracts.InvocationKind
 import kotlin.contracts.contract
@@ -60,17 +57,6 @@ inline fun String?.notBlank(action: (String) -> Unit) {
 
 fun String?.ifBlankThenNull(): String? = if (isNullOrBlank()) null else this
 
-val OffsetDateTime.epochMilli
-    get() = (toEpochSecond() * 1000L) + (nano / 1000000)
-
-@OptIn(DelicateCoroutinesApi::class)
-fun runAsync(action: suspend () -> Unit): Int {
-    GlobalScope.launch {
-        action()
-    }
-    return 0
-}
-
 @OptIn(ExperimentalContracts::class)
 suspend inline fun <T> T.applyAsync(block: suspend T.() -> Unit): T {
     contract {
@@ -84,3 +70,14 @@ suspend inline fun <T> T.applyAsync(block: suspend T.() -> Unit): T {
 val hash = object {}.javaClass.getResource("/commit_hash.txt")?.readText(Charset.defaultCharset()) ?: "Unknown Hash"
 
 class DebugException: Exception("Debug Exception - Do Not Report")
+
+val memoryMXBean = ManagementFactory.getMemoryMXBean()
+val threadMXBean = ManagementFactory.getThreadMXBean()
+
+fun getRamUsage(): Long = memoryMXBean.heapMemoryUsage.max
+
+fun getMaxRam(): Long = memoryMXBean.heapMemoryUsage.used
+
+fun getRamUsagePercentage(): Double = (getRamUsage().toDouble() / getMaxRam().toDouble()) * 100
+
+fun getThreadCount() = threadMXBean.threadCount

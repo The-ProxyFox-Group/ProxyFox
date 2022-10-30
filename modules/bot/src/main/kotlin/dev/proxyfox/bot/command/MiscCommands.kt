@@ -22,10 +22,7 @@ import dev.proxyfox.bot.string.parser.MessageHolder
 import dev.proxyfox.bot.string.parser.registerCommand
 import dev.proxyfox.bot.webhook.GuildMessage
 import dev.proxyfox.bot.webhook.WebhookUtil
-import dev.proxyfox.common.DebugException
-import dev.proxyfox.common.ellipsis
-import dev.proxyfox.common.hash
-import dev.proxyfox.common.printStep
+import dev.proxyfox.common.*
 import dev.proxyfox.database.database
 import dev.proxyfox.database.displayDate
 import dev.proxyfox.database.records.misc.AutoProxyMode
@@ -39,6 +36,7 @@ import kotlinx.coroutines.flow.firstOrNull
 import kotlinx.coroutines.withContext
 import kotlinx.datetime.Clock
 import java.net.URL
+import kotlin.math.*
 
 /**
  * Miscellaneous commands
@@ -157,6 +155,24 @@ object MiscCommands {
                 inline = true
                 name = "Commit Hash"
                 value = hash
+            }
+
+            field {
+                inline = true
+                name = "JVM Version"
+                value = Runtime.version().toString()
+            }
+
+            field {
+                inline = true
+                name = "Memory Usage"
+                value = "${floor(getRamUsagePercentage() * 10)/10}%"
+            }
+
+            field {
+                inline = true
+                name = "Thread Count"
+                value = "${getThreadCount()}"
             }
         }
 
