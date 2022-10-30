@@ -10,8 +10,8 @@ package dev.proxyfox.database
 
 import com.google.gson.*
 import com.mongodb.reactivestreams.client.MongoCollection
-import dev.proxyfox.gson.*
-import dev.proxyfox.importer.ImporterException
+import dev.proxyfox.database.etc.gson.*
+import dev.proxyfox.database.etc.importer.ImporterException
 import kotlinx.coroutines.reactive.awaitFirst
 import org.bson.types.ObjectId
 import org.litote.kmongo.coroutine.toList

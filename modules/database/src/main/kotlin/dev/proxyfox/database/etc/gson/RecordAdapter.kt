@@ -6,7 +6,7 @@
  * file, You can obtain one at https://mozilla.org/MPL/2.0/.
  */
 
-package dev.proxyfox.gson
+package dev.proxyfox.database.etc.gson
 
 import com.google.gson.Gson
 import com.google.gson.JsonElement
@@ -18,7 +18,7 @@ import com.google.gson.stream.JsonReader
 import com.google.gson.stream.JsonToken
 import com.google.gson.stream.JsonWriter
 import dev.proxyfox.database.mapArray
-import dev.proxyfox.importer.ImporterException
+import dev.proxyfox.database.etc.importer.ImporterException
 import org.slf4j.LoggerFactory
 import java.lang.reflect.RecordComponent
 import java.lang.reflect.Type

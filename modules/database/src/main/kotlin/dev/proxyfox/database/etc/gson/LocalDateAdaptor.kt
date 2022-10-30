@@ -6,7 +6,7 @@
  * file, You can obtain one at https://mozilla.org/MPL/2.0/.
  */
 
-package dev.proxyfox.gson
+package dev.proxyfox.database.etc.gson
 
 import com.google.gson.*
 import dev.proxyfox.database.sanitise

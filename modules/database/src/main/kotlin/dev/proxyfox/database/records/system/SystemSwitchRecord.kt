@@ -12,8 +12,8 @@ import com.fasterxml.jackson.databind.annotation.JsonDeserialize
 import com.fasterxml.jackson.databind.annotation.JsonSerialize
 import dev.proxyfox.database.*
 import dev.proxyfox.database.records.MongoRecord
-import dev.proxyfox.jackson.InstantDeserializer
-import dev.proxyfox.jackson.InstantSerializer
+import dev.proxyfox.database.etc.jackson.InstantDeserializer
+import dev.proxyfox.database.etc.jackson.InstantSerializer
 import org.bson.types.ObjectId
 import java.time.Instant
 

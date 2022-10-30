@@ -6,7 +6,7 @@
  * file, You can obtain one at https://mozilla.org/MPL/2.0/.
  */
 
-package dev.proxyfox.importer
+package dev.proxyfox.database.etc.importer
 
 // Created 2022-30-09T01:39:12
 
