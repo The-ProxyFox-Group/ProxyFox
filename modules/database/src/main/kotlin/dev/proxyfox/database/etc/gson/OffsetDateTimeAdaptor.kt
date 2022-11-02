@@ -6,28 +6,28 @@
  * file, You can obtain one at https://mozilla.org/MPL/2.0/.
  */
 
-package dev.proxyfox.gson
+package dev.proxyfox.database.etc.gson
 
 import com.google.gson.*
 import dev.proxyfox.database.sanitise
 import java.lang.reflect.Type
-import java.time.Instant
+import java.time.OffsetDateTime
 import java.time.format.DateTimeFormatter
 
-object InstantAdaptor : JsonSerializer<Instant>, JsonDeserializer<Instant> {
-    override fun serialize(src: Instant?, typeOfSrc: Type, context: JsonSerializationContext): JsonElement {
+object OffsetDateTimeAdaptor : JsonSerializer<OffsetDateTime>, JsonDeserializer<OffsetDateTime> {
+    override fun serialize(src: OffsetDateTime?, typeOfSrc: Type, context: JsonSerializationContext): JsonElement {
         return if (src == null)
             JsonNull.INSTANCE
         else
-            JsonPrimitive(DateTimeFormatter.ISO_INSTANT.format(src))
+            JsonPrimitive(DateTimeFormatter.ISO_OFFSET_DATE_TIME.format(src))
     }
 
-    override fun deserialize(json: JsonElement, typeOfT: Type, context: JsonDeserializationContext): Instant? {
+    override fun deserialize(json: JsonElement, typeOfT: Type, context: JsonDeserializationContext): OffsetDateTime? {
         return json.asString.sanitise().run {
             if (isNullOrBlank()) {
                 null
             } else {
-                DateTimeFormatter.ISO_INSTANT.parse(this, Instant::from)
+                DateTimeFormatter.ISO_OFFSET_DATE_TIME.parse(this, OffsetDateTime::from)
             }
         }
     }

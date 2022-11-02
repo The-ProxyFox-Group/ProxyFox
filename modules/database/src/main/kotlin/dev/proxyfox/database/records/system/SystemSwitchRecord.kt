@@ -10,9 +10,10 @@ package dev.proxyfox.database.records.system
 
 import com.fasterxml.jackson.databind.annotation.JsonDeserialize
 import com.fasterxml.jackson.databind.annotation.JsonSerialize
+import dev.proxyfox.database.*
 import dev.proxyfox.database.records.MongoRecord
-import dev.proxyfox.jackson.InstantDeserializer
-import dev.proxyfox.jackson.InstantSerializer
+import dev.proxyfox.database.etc.jackson.InstantDeserializer
+import dev.proxyfox.database.etc.jackson.InstantSerializer
 import org.bson.types.ObjectId
 import java.time.Instant
 
@@ -25,9 +26,9 @@ import java.time.Instant
  **/
 class SystemSwitchRecord : MongoRecord {
     override var _id: ObjectId = ObjectId()
-    var systemId: String
-    var id: String
-    var memberIds: List<String>
+    var systemId: PkId
+    var id: PkId
+    var memberIds: List<PkId>
 
     @JsonDeserialize(using = InstantDeserializer::class)
     @JsonSerialize(using = InstantSerializer::class)
@@ -37,7 +38,7 @@ class SystemSwitchRecord : MongoRecord {
         }
 
     @Suppress("ConvertSecondaryConstructorToPrimary")
-    constructor(systemId: String = "", id: String = "", memberIds: List<String> = ArrayList(), timestamp: Instant? = null) {
+    constructor(systemId: PkId = "", id: PkId = "", memberIds: List<PkId> = ArrayList(), timestamp: Instant? = null) {
         this.systemId = systemId
         this.id = id
         this.memberIds = memberIds

@@ -14,9 +14,9 @@ import dev.proxyfox.database.DatabaseTestUtil.offsetDateTimeEpochString
 import dev.proxyfox.database.records.member.MemberRecord
 import dev.proxyfox.database.records.system.SystemRecord
 import dev.proxyfox.database.records.system.SystemSwitchRecord
-import dev.proxyfox.types.PkMember
-import dev.proxyfox.types.PkSwitch
-import dev.proxyfox.types.PkSystem
+import dev.proxyfox.database.etc.types.PkMember
+import dev.proxyfox.database.etc.types.PkSwitch
+import dev.proxyfox.database.etc.types.PkSystem
 import org.testng.Assert
 import org.testng.annotations.Test
 

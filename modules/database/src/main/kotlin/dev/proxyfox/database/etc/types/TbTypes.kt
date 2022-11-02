@@ -6,7 +6,7 @@
  * file, You can obtain one at https://mozilla.org/MPL/2.0/.
  */
 
-package dev.proxyfox.types
+package dev.proxyfox.database.etc.types
 
 import dev.proxyfox.database.records.member.MemberRecord
 import dev.proxyfox.database.sanitise

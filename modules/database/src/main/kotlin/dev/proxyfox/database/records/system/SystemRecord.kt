@@ -8,6 +8,7 @@
 
 package dev.proxyfox.database.records.system
 
+import dev.proxyfox.database.*
 import dev.proxyfox.database.records.MongoRecord
 import dev.proxyfox.database.records.misc.AutoProxyMode
 import dev.proxyfox.database.records.misc.TrustLevel
@@ -24,7 +25,7 @@ import java.time.ZoneOffset
  **/
 class SystemRecord : MongoRecord {
     override var _id: ObjectId = ObjectId()
-    var id: String = ""
+    var id: PkId = ""
     var users: ArrayList<ULong> = ArrayList()
     var name: String? = null
     var description: String? = null
@@ -36,7 +37,7 @@ class SystemRecord : MongoRecord {
     var timestamp: OffsetDateTime = OffsetDateTime.now(ZoneOffset.UTC)
 
     /** The ID of the member that's currently being auto-proxied. */
-    var autoProxy: String? = null
+    var autoProxy: PkId? = null
     var autoType: AutoProxyMode = AutoProxyMode.OFF
     var trust: HashMap<ULong, TrustLevel> = HashMap()
 
