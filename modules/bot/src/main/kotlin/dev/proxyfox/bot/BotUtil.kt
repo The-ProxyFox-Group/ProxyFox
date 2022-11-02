@@ -9,12 +9,19 @@
 package dev.proxyfox.bot
 
 import dev.kord.common.Color
+import dev.kord.common.EmptyBitSet
+import dev.kord.common.entity.Permission
+import dev.kord.common.entity.Permissions
 import dev.kord.common.entity.Snowflake
 import dev.kord.core.Kord
 import dev.kord.core.behavior.MessageBehavior
+import dev.kord.core.behavior.channel.MessageChannelBehavior
 import dev.kord.core.behavior.channel.createMessage
 import dev.kord.core.builder.kord.KordBuilder
+import dev.kord.core.entity.Member
+import dev.kord.core.entity.channel.GuildMessageChannel
 import dev.kord.core.entity.channel.TextChannel
+import dev.kord.core.entity.channel.thread.ThreadChannel
 import dev.kord.core.event.gateway.ReadyEvent
 import dev.kord.core.event.interaction.ButtonInteractionCreateEvent
 import dev.kord.core.event.message.MessageCreateEvent
@@ -34,6 +41,7 @@ import io.ktor.client.*
 import io.ktor.client.engine.cio.*
 import kotlinx.coroutines.*
 import kotlinx.coroutines.flow.count
+import kotlinx.coroutines.flow.fold
 import kotlinx.datetime.Clock
 import kotlinx.datetime.Instant
 import java.lang.Integer.min
@@ -302,4 +310,51 @@ data class Either<A, B>(
 
         fun <A, B> ofB(b: B) = Either<A, B>(null, b)
     }
+}
+
+val GuildMessageChannel.sendPermission
+    get() = if (this is ThreadChannel) Permission.SendMessagesInThreads else Permission.SendMessages
+
+suspend fun MessageChannelBehavior.selfCanSend(): Boolean {
+    return if (this is GuildMessageChannel) selfHasPermissions(Permissions(sendPermission, Permission.ViewChannel)) else true
+}
+
+suspend fun GuildMessageChannel.selfHasPermissions(permissions: Permissions): Boolean {
+    return getEffectivePermissions(guild.getMember(kord.selfId)).contains(permissions)
+}
+
+suspend fun GuildMessageChannel.selfHasPermissions(permission: Permission): Boolean {
+    return getEffectivePermissions(guild.getMember(kord.selfId)).contains(permission)
+}
+
+suspend fun GuildMessageChannel.getEffectivePermissions(member: Member): Permissions {
+    val map = data.permissionOverwrites.value.orEmpty().associateBy { it.id }
+
+    val effective = EmptyBitSet()
+    effective.add(member.getPermissions().code)
+
+    val deny = EmptyBitSet()
+    val allow = EmptyBitSet()
+
+    val out = member.roles.fold(deny to allow) { acc, value ->
+        map[value.id]?.let {
+            acc.first.add(it.deny.code)
+            acc.second.add(it.allow.code)
+        }
+        // TODO: Verify this is correct
+        acc
+    }
+
+    assert(out.first === deny)
+    assert(out.second === allow)
+
+    effective.remove(deny)
+    effective.add(allow)
+
+    map[member.id]?.let {
+        effective.remove(it.deny.code)
+        effective.add(it.allow.code)
+    }
+
+    return Permissions(effective)
 }
