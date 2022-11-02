@@ -10,8 +10,8 @@ package dev.proxyfox.database
 
 import com.google.gson.*
 import com.mongodb.reactivestreams.client.MongoCollection
-import dev.proxyfox.gson.*
-import dev.proxyfox.importer.ImporterException
+import dev.proxyfox.database.etc.gson.*
+import dev.proxyfox.database.etc.importer.ImporterException
 import kotlinx.coroutines.reactive.awaitFirst
 import org.bson.types.ObjectId
 import org.litote.kmongo.coroutine.toList
@@ -24,6 +24,8 @@ import kotlin.contracts.ExperimentalContracts
 import kotlin.contracts.contract
 
 // Created 2022-11-04T14:58:16
+
+typealias PkId = String
 
 const val pkIdBound = 11881376
 

@@ -8,6 +8,7 @@
 
 package dev.proxyfox.database.records.system
 
+import dev.proxyfox.database.*
 import dev.proxyfox.database.records.MongoRecord
 import org.bson.types.ObjectId
 
@@ -15,14 +16,14 @@ class SystemChannelSettingsRecord : MongoRecord {
     override var _id: ObjectId = ObjectId()
     var serverId: ULong = 0UL
     var channelId: ULong = 0UL
-    var systemId: String = ""
+    var systemId: PkId = ""
     var proxyEnabled: Boolean = true
 
     constructor()
 
     constructor(
         channelId: ULong,
-        systemId: String,
+        systemId: PkId,
     ) {
         this.channelId = channelId
         this.systemId = systemId

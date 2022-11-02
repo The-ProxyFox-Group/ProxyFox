@@ -10,6 +10,7 @@ package dev.proxyfox.database.records.member
 
 import com.google.gson.annotations.Expose
 import com.google.gson.annotations.SerializedName
+import dev.proxyfox.database.*
 import dev.proxyfox.database.records.MongoRecord
 import org.bson.types.ObjectId
 
@@ -25,18 +26,18 @@ class MemberProxyTagRecord : MongoRecord {
 
     // GSON-specific annotation for JSON database
     @Expose(serialize = false, deserialize = false)
-    var systemId: String = ""
+    var systemId: PkId = ""
 
     // GSON-specific annotation for JSON database
     @SerializedName(value = "memberId", alternate = ["member"])
-    var memberId: String = ""
+    var memberId: PkId = ""
 
     var prefix: String? = null
     var suffix: String? = null
 
     constructor()
 
-    constructor(systemId: String, memberId: String, prefix: String?, suffix: String?) {
+    constructor(systemId: PkId, memberId: PkId, prefix: String?, suffix: String?) {
         this.systemId = systemId
         this.memberId = memberId
         this.prefix = if (prefix == "") null else prefix

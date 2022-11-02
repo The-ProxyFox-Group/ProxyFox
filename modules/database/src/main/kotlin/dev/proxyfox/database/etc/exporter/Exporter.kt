@@ -6,15 +6,15 @@
  * file, You can obtain one at https://mozilla.org/MPL/2.0/.
  */
 
-package dev.proxyfox.exporter
+package dev.proxyfox.database.etc.exporter
 
 import dev.proxyfox.database.Database
 import dev.proxyfox.database.database
 import dev.proxyfox.database.gson
-import dev.proxyfox.types.PkMember
-import dev.proxyfox.types.PkProxy
-import dev.proxyfox.types.PkSwitch
-import dev.proxyfox.types.PkSystem
+import dev.proxyfox.database.etc.types.PkMember
+import dev.proxyfox.database.etc.types.PkProxy
+import dev.proxyfox.database.etc.types.PkSwitch
+import dev.proxyfox.database.etc.types.PkSystem
 
 object Exporter {
     suspend inline fun export(userId: ULong) = export(database, userId)

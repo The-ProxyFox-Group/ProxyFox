@@ -15,8 +15,8 @@ import dev.proxyfox.database.JsonDatabase
 import dev.proxyfox.database.databaseFromString
 import dev.proxyfox.database.gson
 import dev.proxyfox.database.records.misc.ServerSettingsRecord
-import dev.proxyfox.importer.PluralKitImporter
-import dev.proxyfox.types.PkSystem
+import dev.proxyfox.database.etc.importer.PluralKitImporter
+import dev.proxyfox.database.etc.types.PkSystem
 import org.slf4j.LoggerFactory
 import java.io.File
 import kotlin.io.path.Path
