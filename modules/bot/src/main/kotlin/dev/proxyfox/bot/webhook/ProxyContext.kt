@@ -10,6 +10,7 @@ package dev.proxyfox.bot.webhook
 
 import dev.kord.common.Color
 import dev.kord.common.entity.Snowflake
+import dev.kord.core.behavior.channel.threads.ThreadChannelBehavior
 import dev.kord.core.entity.User
 import dev.kord.rest.NamedFile
 import dev.kord.rest.builder.message.create.embed
@@ -50,17 +51,18 @@ data class ProxyContext(
 ) {
     @OptIn(InternalAPI::class)
     suspend fun send(reproxy: Boolean = false) {
-        val newMessage = webhook.execute(threadId) {
-            if (messageContent.isNotBlank()) content = messageContent
-            username = resolvedUsername + " " + (system.tag ?: "")
-            avatarUrl = resolvedAvatar
-            for (attachment in message.attachments) {
-                val response: HttpResponse = http.get(urlString = attachment.url) {
-                    headers { append(HttpHeaders.UserAgent, "ProxyFox/2.0.0 (+https://github.com/The-ProxyFox-Group/ProxyFox/; +https://proxyfox.dev/)") }
+        val newMessage = try {
+            webhook.execute(threadId) {
+                if (messageContent.isNotBlank()) content = messageContent
+                username = resolvedUsername + " " + (system.tag ?: "")
+                avatarUrl = resolvedAvatar
+                for (attachment in message.attachments) {
+                    val response: HttpResponse = http.get(urlString = attachment.url) {
+                        headers { append(HttpHeaders.UserAgent, "ProxyFox/2.0.0 (+https://github.com/The-ProxyFox-Group/ProxyFox/; +https://proxyfox.dev/)") }
+                    }
+                    files.add(NamedFile(attachment.filename, response.content.toInputStream()))
                 }
-                files.add(NamedFile(attachment.filename, response.content.toInputStream()))
-            }
-            if (reproxy) {
+                if (reproxy) {
                 message.embeds.forEach {
                     if (it.author?.name?.endsWith(" ↩️") == true) {
                         embed {
@@ -92,7 +94,15 @@ data class ProxyContext(
                     }
                     description = "[**Reply to:**]($link) $msgRef"
                 }
+                }
             }
+        } catch (e: KtorRequestException) {
+            if (e.httpResponse.status == HttpStatusCode.NotFound) {
+                val channel = message.channel
+                val id = if (channel is ThreadChannelBehavior) channel.parentId.value else channel.id.value
+                WebhookCache -= id
+            }
+            throw RuntimeException("Failed to proxy your message.", e)
         }
         if (newMessage.content != messageContent && messageContent.isNotBlank())
             webhook.edit(newMessage.id, threadId) {

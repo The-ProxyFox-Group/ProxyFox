@@ -8,8 +8,10 @@
 
 package dev.proxyfox.bot
 
+import dev.kord.common.entity.MessageType
+import dev.kord.common.entity.Permission
+import dev.kord.common.entity.Permissions
 import dev.kord.common.entity.Snowflake
-import dev.kord.core.behavior.channel.GuildMessageChannelBehavior
 import dev.kord.core.behavior.channel.asChannelOf
 import dev.kord.core.behavior.channel.createMessage
 import dev.kord.core.cache.data.AttachmentData
@@ -42,7 +44,11 @@ suspend fun MessageCreateEvent.onMessageCreate() {
     val channel = message.getChannel()
 
     // Return if bot
-    if (message.webhookId != null || user.isBot) return
+    if (message.webhookId != null || user.isBot || (message.type != MessageType.Default && message.type != MessageType.Reply)) return
+
+    if (!channel.selfCanSend()) {
+        return
+    }
 
     // Get message content to check with regex
     val content = message.content
@@ -60,10 +66,11 @@ suspend fun MessageCreateEvent.onMessageCreate() {
             if (output.isNotBlank())
                 channel.createMessage(output)
         }
-    } else if (channel is GuildMessageChannelBehavior) {
+    } else if (channel is GuildMessageChannel && channel.selfHasPermissions(Permissions(Permission.ManageWebhooks, Permission.ManageMessages))) {
         val guild = channel.getGuild()
         val hasStickers = message.stickers.isNotEmpty()
-        val hasOversizedFiles = message.attachments.any { it.size >= UPLOAD_LIMIT }
+        // TODO: Boost to upload limit; 8 MiB is default.
+        val hasOversizedFiles = message.attachments.fold(0L) { size, attachment -> size + attachment.size } >= UPLOAD_LIMIT
         val isOversizedMessage = content.length > 2000
         if (hasStickers || hasOversizedFiles || isOversizedMessage) {
             logger.trace("Denying proxying {} ({}) in {} ({}) due to Discord bot constraints", user.tag, user.id, guild.name, guild.id)

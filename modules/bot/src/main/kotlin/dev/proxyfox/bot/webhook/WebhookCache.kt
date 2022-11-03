@@ -23,4 +23,8 @@ object WebhookCache {
     operator fun set(key: ULong, value: WebhookHolder) {
         webhookCache.put(key, value)
     }
+
+    operator fun minusAssign(key: ULong) {
+        webhookCache.invalidate(key)
+    }
 }
