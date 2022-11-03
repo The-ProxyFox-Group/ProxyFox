@@ -115,6 +115,12 @@ object MiscCommands {
         })
 
         registerCommand(literal("debug", ::debug))
+
+        registerCommand(literal("fox", ::getFox))
+    }
+
+    private suspend fun getFox(ctx: MessageHolder): String {
+        return FoxFetch.fetch()
     }
 
     private suspend fun debug(ctx: MessageHolder): String {
