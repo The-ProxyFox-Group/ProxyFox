@@ -13,7 +13,6 @@ import com.mongodb.reactivestreams.client.MongoClient
 import com.mongodb.reactivestreams.client.MongoCollection
 import dev.kord.common.entity.Snowflake
 import dev.kord.core.behavior.channel.ChannelBehavior
-import dev.kord.core.entity.channel.thread.ThreadChannel
 import dev.proxyfox.database.records.MongoRecord
 import dev.proxyfox.database.records.member.MemberProxyTagRecord
 import dev.proxyfox.database.records.member.MemberRecord
@@ -249,13 +248,7 @@ class MongoDatabase(private val dbName: String = "ProxyFox") : Database() {
         message.newMessageId = newMessageId.value
         val channel = channelBehavior.fetchChannel()
         message.guildId = channel.data.guildId.value?.value ?: 0UL
-        when (channel) {
-            is ThreadChannel -> {
-                message.channelId = channel.parentId.value
-                message.threadId = channel.id.value
-            }
-            else -> message.channelId = channel.id.value
-        }
+        message.channelId = channel.id.value
         message.memberId = memberId
         message.systemId = systemId
         messages.insertOne(message).awaitFirst()
