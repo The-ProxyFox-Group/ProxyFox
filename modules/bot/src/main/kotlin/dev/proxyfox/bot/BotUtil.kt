@@ -320,16 +320,18 @@ data class Either<A, B>(
 val GuildMessageChannel.sendPermission
     get() = if (this is ThreadChannel) Permission.SendMessagesInThreads else Permission.SendMessages
 
+suspend fun GuildMessageChannel.permissionHolder() = if (this is ThreadChannel) kord.getChannelOf(parentId)!! else this
+
 suspend fun MessageChannelBehavior.selfCanSend(): Boolean {
-    return if (this is GuildMessageChannel) selfHasPermissions(Permissions(sendPermission, Permission.ViewChannel)) else true
+    return if (this is GuildMessageChannel) permissionHolder().selfHasPermissions(Permissions(sendPermission, Permission.ViewChannel)) else true
 }
 
 suspend fun GuildMessageChannel.selfHasPermissions(permissions: Permissions): Boolean {
-    return getEffectivePermissions(guild.getMember(kord.selfId)).contains(permissions)
+    return permissionHolder().getEffectivePermissions(guild.getMember(kord.selfId)).contains(permissions)
 }
 
 suspend fun GuildMessageChannel.selfHasPermissions(permission: Permission): Boolean {
-    return getEffectivePermissions(guild.getMember(kord.selfId)).contains(permission)
+    return permissionHolder().getEffectivePermissions(guild.getMember(kord.selfId)).contains(permission)
 }
 
 suspend fun GuildMessageChannel.getEffectivePermissions(member: Member): Permissions {
