@@ -9,12 +9,18 @@
 package dev.proxyfox.bot
 
 import dev.kord.common.Color
+import dev.kord.common.EmptyBitSet
 import dev.kord.common.entity.*
 import dev.kord.core.Kord
 import dev.kord.core.behavior.MessageBehavior
+import dev.kord.core.behavior.channel.MessageChannelBehavior
 import dev.kord.core.behavior.channel.createMessage
 import dev.kord.core.builder.kord.KordBuilder
+import dev.kord.core.entity.Member
+import dev.kord.core.entity.channel.Channel
+import dev.kord.core.entity.channel.GuildMessageChannel
 import dev.kord.core.entity.channel.TextChannel
+import dev.kord.core.entity.channel.thread.ThreadChannel
 import dev.kord.core.event.gateway.ReadyEvent
 import dev.kord.core.event.interaction.*
 import dev.kord.core.event.message.MessageCreateEvent
@@ -26,18 +32,24 @@ import dev.kord.gateway.PrivilegedIntent
 import dev.kord.gateway.builder.Shards
 import dev.kord.rest.builder.message.EmbedBuilder
 import dev.kord.rest.builder.message.create.embed
+import dev.kord.rest.request.KtorRequestException
 import dev.proxyfox.common.*
 import dev.proxyfox.database.database
 import dev.proxyfox.database.records.member.MemberRecord
 import dev.proxyfox.database.records.system.SystemRecord
 import io.ktor.client.*
 import io.ktor.client.engine.cio.*
+import io.ktor.http.*
 import kotlinx.coroutines.*
 import kotlinx.coroutines.flow.count
+import kotlinx.coroutines.flow.fold
 import kotlinx.datetime.Clock
 import kotlinx.datetime.Instant
 import java.lang.Integer.min
 import java.time.OffsetDateTime
+import kotlin.contracts.ExperimentalContracts
+import kotlin.contracts.InvocationKind
+import kotlin.contracts.contract
 import kotlin.time.Duration
 import kotlin.time.Duration.Companion.milliseconds
 
@@ -313,5 +325,69 @@ data class Either<A, B>(
         fun <A, B> ofA(a: A) = Either<A, B>(a, null)
 
         fun <A, B> ofB(b: B) = Either<A, B>(null, b)
+    }
+}
+
+val GuildMessageChannel.sendPermission
+    get() = if (this is ThreadChannel) Permission.SendMessagesInThreads else Permission.SendMessages
+
+suspend fun GuildMessageChannel.permissionHolder() = if (this is ThreadChannel) kord.getChannel(parentId)!! else this
+
+suspend fun MessageChannelBehavior.selfCanSend(): Boolean {
+    return if (this is GuildMessageChannel) selfHasPermissions(Permissions(sendPermission, Permission.ViewChannel)) else true
+}
+
+suspend fun GuildMessageChannel.selfHasPermissions(permissions: Permissions): Boolean {
+    return permissionHolder().getEffectivePermissions(guild.getMember(kord.selfId)).contains(permissions)
+}
+
+suspend fun GuildMessageChannel.selfHasPermissions(permission: Permission): Boolean {
+    return permissionHolder().getEffectivePermissions(guild.getMember(kord.selfId)).contains(permission)
+}
+
+suspend fun Channel.getEffectivePermissions(member: Member): Permissions {
+    val map = data.permissionOverwrites.value.orEmpty().associateBy { it.id }
+
+    val effective = EmptyBitSet()
+    effective.add(member.getPermissions().code)
+
+    val deny = EmptyBitSet()
+    val allow = EmptyBitSet()
+
+    val out = member.roles.fold(deny to allow) { acc, value ->
+        map[value.id]?.let {
+            acc.first.add(it.deny.code)
+            acc.second.add(it.allow.code)
+        }
+        // TODO: Verify this is correct
+        acc
+    }
+
+    assert(out.first === deny)
+    assert(out.second === allow)
+
+    effective.remove(deny)
+    effective.add(allow)
+
+    map[member.id]?.let {
+        effective.remove(it.deny.code)
+        effective.add(it.allow.code)
+    }
+
+    return Permissions(effective)
+}
+
+@OptIn(ExperimentalContracts::class)
+inline fun <T> nullOn404(action: () -> T): T? {
+    contract {
+        callsInPlace(action, InvocationKind.EXACTLY_ONCE)
+    }
+    try {
+        return action()
+    } catch (e: KtorRequestException) {
+        if (e.httpResponse.status == HttpStatusCode.NotFound) {
+            return null
+        }
+        throw e
     }
 }

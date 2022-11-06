@@ -71,12 +71,13 @@ val hash = object {}.javaClass.getResource("/commit_hash.txt")?.readText(Charset
 
 class DebugException: Exception("Debug Exception - Do Not Report")
 
-val memoryMXBean = ManagementFactory.getMemoryMXBean()
 val threadMXBean = ManagementFactory.getThreadMXBean()
 
-fun getRamUsage(): Long = memoryMXBean.heapMemoryUsage.max
+fun getMaxRam(): Long = Runtime.getRuntime().totalMemory()
 
-fun getMaxRam(): Long = memoryMXBean.heapMemoryUsage.used
+fun getFreeRam(): Long = Runtime.getRuntime().freeMemory()
+
+fun getRamUsage(): Long = getMaxRam() - getFreeRam()
 
 fun getRamUsagePercentage(): Double = (getRamUsage().toDouble() / getMaxRam().toDouble()) * 100
 

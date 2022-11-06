@@ -11,6 +11,7 @@ package dev.proxyfox.bot.command
 import dev.kord.common.entity.Permission
 import dev.kord.common.entity.Snowflake
 import dev.kord.core.behavior.channel.asChannelOf
+import dev.kord.core.behavior.channel.threads.ThreadChannelBehavior
 import dev.kord.core.entity.Message
 import dev.kord.rest.NamedFile
 import dev.proxyfox.bot.*
@@ -25,18 +26,19 @@ import dev.proxyfox.bot.webhook.WebhookUtil
 import dev.proxyfox.common.*
 import dev.proxyfox.database.database
 import dev.proxyfox.database.displayDate
+import dev.proxyfox.database.etc.exporter.Exporter
+import dev.proxyfox.database.etc.importer.ImporterException
+import dev.proxyfox.database.etc.importer.import
 import dev.proxyfox.database.records.misc.AutoProxyMode
 import dev.proxyfox.database.records.misc.ProxiedMessageRecord
 import dev.proxyfox.database.records.system.SystemRecord
-import dev.proxyfox.database.etc.exporter.Exporter
-import dev.proxyfox.database.etc.importer.*
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.flow.filter
 import kotlinx.coroutines.flow.firstOrNull
 import kotlinx.coroutines.withContext
 import kotlinx.datetime.Clock
 import java.net.URL
-import kotlin.math.*
+import kotlin.math.floor
 
 /**
  * Miscellaneous commands
@@ -115,6 +117,12 @@ object MiscCommands {
         })
 
         registerCommand(literal("debug", ::debug))
+
+        registerCommand(literal("fox", ::getFox))
+    }
+
+    private suspend fun getFox(ctx: MessageHolder): String {
+        return FoxFetch.fetch()
     }
 
     private suspend fun debug(ctx: MessageHolder): String {
@@ -174,7 +182,7 @@ object MiscCommands {
             field {
                 inline = true
                 name = "Memory Usage"
-                value = "${floor(getRamUsagePercentage() * 10)/10}%"
+                value = "${floor(getRamUsagePercentage())}%"
             }
 
             field {
@@ -428,7 +436,7 @@ To get support, head on over to https://discord.gg/q3yF8ay9V7"""
             database.fetchMessage(message.id)
         else {
             val m = database.fetchLatestMessage(system.id, channelId)
-            message = m?.newMessageId?.let { Snowflake(it) }?.let { channel?.getMessage(it) }
+            message = m?.newMessageId?.let { Snowflake(it) }?.let { nullOn404 { channel?.getMessage(it) } }
             m
         }
 
@@ -624,7 +632,7 @@ To get support, head on over to https://discord.gg/q3yF8ay9V7"""
         }
 
         val webhook = WebhookUtil.createOrFetchWebhookFromCache(channel)
-        webhook.edit(message.id, databaseMessage.threadId?.let(::Snowflake)) {
+        webhook.edit(message.id, if (channel is ThreadChannelBehavior) channel.id else null) {
             this.content = content
         }
         ctx.message.delete("User requested message deletion")

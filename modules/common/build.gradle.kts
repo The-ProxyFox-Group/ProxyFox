@@ -15,6 +15,7 @@ plugins {
 
 dependencies {
     api(libs.bundles.base)
+    api(libs.gson)
     api(kotlin("stdlib"))
 }
 
