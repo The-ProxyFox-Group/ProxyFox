@@ -11,6 +11,7 @@ package dev.proxyfox.bot.command
 import dev.kord.common.entity.Permission
 import dev.kord.common.entity.Snowflake
 import dev.kord.core.behavior.channel.asChannelOf
+import dev.kord.core.behavior.channel.threads.ThreadChannelBehavior
 import dev.kord.core.entity.Message
 import dev.kord.rest.NamedFile
 import dev.proxyfox.bot.*
@@ -631,7 +632,7 @@ To get support, head on over to https://discord.gg/q3yF8ay9V7"""
         }
 
         val webhook = WebhookUtil.createOrFetchWebhookFromCache(channel)
-        webhook.edit(message.id, databaseMessage.threadId?.let(::Snowflake)) {
+        webhook.edit(message.id, if (channel is ThreadChannelBehavior) channel.id else null) {
             this.content = content
         }
         ctx.message.delete("User requested message deletion")
