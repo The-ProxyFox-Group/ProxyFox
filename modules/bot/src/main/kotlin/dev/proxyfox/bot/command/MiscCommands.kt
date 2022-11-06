@@ -25,18 +25,19 @@ import dev.proxyfox.bot.webhook.WebhookUtil
 import dev.proxyfox.common.*
 import dev.proxyfox.database.database
 import dev.proxyfox.database.displayDate
+import dev.proxyfox.database.etc.exporter.Exporter
+import dev.proxyfox.database.etc.importer.ImporterException
+import dev.proxyfox.database.etc.importer.import
 import dev.proxyfox.database.records.misc.AutoProxyMode
 import dev.proxyfox.database.records.misc.ProxiedMessageRecord
 import dev.proxyfox.database.records.system.SystemRecord
-import dev.proxyfox.database.etc.exporter.Exporter
-import dev.proxyfox.database.etc.importer.*
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.flow.filter
 import kotlinx.coroutines.flow.firstOrNull
 import kotlinx.coroutines.withContext
 import kotlinx.datetime.Clock
 import java.net.URL
-import kotlin.math.*
+import kotlin.math.floor
 
 /**
  * Miscellaneous commands
@@ -434,7 +435,7 @@ To get support, head on over to https://discord.gg/q3yF8ay9V7"""
             database.fetchMessage(message.id)
         else {
             val m = database.fetchLatestMessage(system.id, channelId)
-            message = m?.newMessageId?.let { Snowflake(it) }?.let { channel?.getMessage(it) }
+            message = m?.newMessageId?.let { Snowflake(it) }?.let { nullOn404 { channel?.getMessage(it) } }
             m
         }
 

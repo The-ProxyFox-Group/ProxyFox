@@ -33,12 +33,14 @@ import dev.kord.gateway.PrivilegedIntent
 import dev.kord.gateway.builder.Shards
 import dev.kord.rest.builder.message.EmbedBuilder
 import dev.kord.rest.builder.message.create.embed
+import dev.kord.rest.request.KtorRequestException
 import dev.proxyfox.common.*
 import dev.proxyfox.database.database
 import dev.proxyfox.database.records.member.MemberRecord
 import dev.proxyfox.database.records.system.SystemRecord
 import io.ktor.client.*
 import io.ktor.client.engine.cio.*
+import io.ktor.http.*
 import kotlinx.coroutines.*
 import kotlinx.coroutines.flow.count
 import kotlinx.coroutines.flow.fold
@@ -46,6 +48,9 @@ import kotlinx.datetime.Clock
 import kotlinx.datetime.Instant
 import java.lang.Integer.min
 import java.time.OffsetDateTime
+import kotlin.contracts.ExperimentalContracts
+import kotlin.contracts.InvocationKind
+import kotlin.contracts.contract
 import kotlin.time.Duration
 import kotlin.time.Duration.Companion.milliseconds
 
@@ -357,4 +362,19 @@ suspend fun GuildMessageChannel.getEffectivePermissions(member: Member): Permiss
     }
 
     return Permissions(effective)
+}
+
+@OptIn(ExperimentalContracts::class)
+inline fun <T> nullOn404(action: () -> T): T? {
+    contract {
+        callsInPlace(action, InvocationKind.EXACTLY_ONCE)
+    }
+    try {
+        return action()
+    } catch (e: KtorRequestException) {
+        if (e.httpResponse.status == HttpStatusCode.NotFound) {
+            return null
+        }
+        throw e
+    }
 }
