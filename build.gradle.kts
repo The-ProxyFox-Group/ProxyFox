@@ -19,6 +19,15 @@ tasks {
     shadowJar {
         archiveClassifier.set("")
     }
+    register<Copy>("poolRelease") {
+        for (proj in subprojects) {
+            val shadowJar = proj.tasks.findByPath("shadowJar")
+            if (shadowJar != null) {
+                from(shadowJar)
+            }
+        }
+        into(project.buildDir.resolve("pool"))
+    }
 }
 
 allprojects {
