@@ -19,8 +19,8 @@ import io.ktor.server.netty.*
 import io.ktor.server.plugins.contentnegotiation.*
 import io.ktor.server.routing.*
 
-
 object ApiMain {
+    private const val version = "1"
     fun main() = embeddedServer(Netty, port = Integer.parseInt(System.getenv("PORT"))) {
         configureRouting()
         configureSerialization()
@@ -34,10 +34,12 @@ object ApiMain {
 
     private fun Application.configureRouting() {
         routing {
-            systemRoutes()
-            memberRoutes()
-            switchRoutes()
-            messageRoutes()
+            route("/v${version}") {
+                systemRoutes()
+                memberRoutes()
+                switchRoutes()
+                messageRoutes()
+            }
         }
     }
 }

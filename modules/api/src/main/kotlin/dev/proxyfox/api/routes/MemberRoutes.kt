@@ -8,7 +8,9 @@
 
 package dev.proxyfox.api.routes
 
+import dev.kord.common.entity.Snowflake
 import dev.proxyfox.api.models.Member
+import dev.proxyfox.api.models.MemberGuildSettings
 import dev.proxyfox.database.database
 import io.ktor.server.application.*
 import io.ktor.server.response.*
@@ -21,10 +23,19 @@ fun Route.memberRoutes() {
             call.respond(database.fetchMembersFromSystem(id)?.map(Member.Companion::fromRecord) ?: emptyList())
         }
 
-        get("/{member}") {
-            val id = call.parameters["id"] ?: return@get call.respond("System not found")
-            val member = database.fetchMemberFromSystem(id, call.parameters["member"]!!) ?: return@get call.respond("Member not found")
-            call.respond(Member.fromRecord(member))
+        route("/{member}") {
+            get {
+                val id = call.parameters["id"] ?: return@get call.respond("System not found")
+                val member = database.fetchMemberFromSystem(id, call.parameters["member"]!!) ?: return@get call.respond("Member not found")
+                call.respond(Member.fromRecord(member))
+            }
+
+            get("/guilds/{guild}") {
+                val id = call.parameters["id"] ?: return@get call.respond("System not found")
+                val member = database.fetchMemberFromSystem(id, call.parameters["member"]!!) ?: return@get call.respond("Member not found")
+                val guildSettings = database.fetchMemberServerSettingsFromSystemAndMember(Snowflake(call.parameters["guild"]!!).value, id, member.id) ?: return@get call.respond("Guild not found")
+                call.respond(MemberGuildSettings.fromRecord(guildSettings))
+            }
         }
     }
 }
