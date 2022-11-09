@@ -6,12 +6,15 @@
  * file, You can obtain one at https://mozilla.org/MPL/2.0/.
  */
 
-package dev.proxyfox.api.server
+plugins {
+    application
+    alias(libs.plugins.kotlin.jvm)
+    alias(libs.plugins.shadow)
+    alias(libs.plugins.serialization)
+}
 
-fun main() = ServerMain.main()
-
-object ServerMain {
-    fun main() {
-
-    }
+dependencies {
+    api(project(":modules:common"))
+    api(project(":modules:database"))
+    api(libs.bundles.api)
 }

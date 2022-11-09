@@ -8,6 +8,7 @@
 
 package dev.proxyfox.bot
 
+import dev.proxyfox.api.ApiMain
 import dev.proxyfox.bot.command.Commands
 import dev.proxyfox.bot.md.parseMarkdown
 import dev.proxyfox.bot.terminal.TerminalCommands
@@ -31,6 +32,9 @@ object BotMain {
 
         // Setup database
         DatabaseMain.main(findUnixValue(args, "--database="))
+
+        // Start API
+        ApiMain.main()
 
         // Start reading console input
         TerminalCommands.start()
