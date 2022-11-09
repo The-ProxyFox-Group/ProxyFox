@@ -8,17 +8,17 @@
 
 package dev.proxyfox.api.routes
 
-import dev.proxyfox.api.models.System
+import dev.proxyfox.api.models.Member
 import dev.proxyfox.database.database
 import io.ktor.server.application.*
 import io.ktor.server.response.*
 import io.ktor.server.routing.*
 
-fun Route.systemRoutes() {
-    route("/systems/{id}") {
+fun Route.memberRoutes() {
+    route("/systems/{id}/members") {
         get {
-            val system = database.fetchSystemFromId(call.parameters["id"]!!) ?: return@get call.respond("System not found")
-            call.respond(System.fromRecord(system))
+            val id = call.parameters["id"] ?: return@get call.respond("System not found")
+            call.respond(database.fetchMembersFromSystem(id)?.map(Member.Companion::fromRecord) ?: emptyList())
         }
     }
 }

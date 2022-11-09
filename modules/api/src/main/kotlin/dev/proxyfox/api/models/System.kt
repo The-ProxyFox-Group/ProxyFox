@@ -8,6 +8,10 @@
 
 package dev.proxyfox.api.models
 
+import dev.proxyfox.common.fromColor
+import dev.proxyfox.database.records.misc.AutoProxyMode
+import dev.proxyfox.database.records.misc.TrustLevel
+import dev.proxyfox.database.records.system.SystemRecord
 import kotlinx.serialization.Serializable
 
 @Serializable
@@ -17,8 +21,26 @@ data class System(
     val description: String?,
     val tag: String?,
     val pronouns: String?,
-    val color: String,
+    val color: String?,
     val avatarUrl: String?,
     val timezone: String?,
-    val timestamp: String
-)
+    val autoProxy: String?,
+    val autoType: AutoProxyMode,
+    val trust: Map<ULong, TrustLevel>
+) {
+    companion object {
+        fun fromRecord(system: SystemRecord) = System(
+            id = system.id,
+            name = system.name,
+            description = system.description,
+            tag = system.tag,
+            pronouns = system.pronouns,
+            color = system.color.fromColor(),
+            avatarUrl = system.avatarUrl,
+            timezone = system.timezone,
+            autoProxy = system.autoProxy,
+            autoType = system.autoType,
+            trust = system.trust
+        )
+    }
+}
