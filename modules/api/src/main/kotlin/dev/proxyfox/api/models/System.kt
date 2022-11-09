@@ -24,6 +24,7 @@ data class System(
     val color: String?,
     val avatarUrl: String?,
     val timezone: String?,
+    val created: String,
     val autoProxy: String?,
     val autoType: AutoProxyMode,
     val trust: Map<ULong, TrustLevel>
@@ -38,6 +39,7 @@ data class System(
             color = system.color.fromColor(),
             avatarUrl = system.avatarUrl,
             timezone = system.timezone,
+            created = system.timestamp.toString(),
             autoProxy = system.autoProxy,
             autoType = system.autoType,
             trust = system.trust

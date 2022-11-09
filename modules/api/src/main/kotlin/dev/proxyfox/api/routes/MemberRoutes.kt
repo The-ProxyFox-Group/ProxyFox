@@ -20,5 +20,11 @@ fun Route.memberRoutes() {
             val id = call.parameters["id"] ?: return@get call.respond("System not found")
             call.respond(database.fetchMembersFromSystem(id)?.map(Member.Companion::fromRecord) ?: emptyList())
         }
+
+        get("/{member}") {
+            val id = call.parameters["id"] ?: return@get call.respond("System not found")
+            val member = database.fetchMemberFromSystem(id, call.parameters["member"]!!) ?: return@get call.respond("Member not found")
+            call.respond(Member.fromRecord(member))
+        }
     }
 }

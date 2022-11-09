@@ -9,6 +9,7 @@
 package dev.proxyfox.api
 
 import dev.proxyfox.api.routes.memberRoutes
+import dev.proxyfox.api.routes.messageRoutes
 import dev.proxyfox.api.routes.switchRoutes
 import dev.proxyfox.api.routes.systemRoutes
 import io.ktor.serialization.kotlinx.json.*
@@ -36,6 +37,7 @@ object ApiMain {
             systemRoutes()
             memberRoutes()
             switchRoutes()
+            messageRoutes()
         }
     }
 }
