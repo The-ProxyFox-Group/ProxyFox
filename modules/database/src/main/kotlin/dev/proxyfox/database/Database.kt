@@ -313,6 +313,10 @@ abstract class Database : AutoCloseable {
     abstract suspend fun fetchMessage(messageId: Snowflake): ProxiedMessageRecord?
     abstract suspend fun fetchLatestMessage(systemId: String, channelId: Snowflake): ProxiedMessageRecord?
 
+    abstract suspend fun getOrCreateTokenFromSystem(systemId: String): TokenRecord
+
+    abstract suspend fun updateToken(token: TokenRecord)
+
     /**
      * Allocates a proxy tag
      * @param systemId The system ID to assign it to

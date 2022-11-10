@@ -9,6 +9,7 @@
 package dev.proxyfox.api.routes
 
 import dev.kord.common.entity.Snowflake
+import dev.proxyfox.api.AuthenticationPlugin
 import dev.proxyfox.api.models.System
 import dev.proxyfox.api.models.SystemGuildSettings
 import dev.proxyfox.database.database
@@ -18,6 +19,7 @@ import io.ktor.server.routing.*
 
 fun Route.systemRoutes() {
     route("/systems/{id}") {
+        install(AuthenticationPlugin)
         get {
             val system = database.fetchSystemFromId(call.parameters["id"]!!) ?: return@get call.respond("System not found")
             call.respond(System.fromRecord(system))

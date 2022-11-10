@@ -9,6 +9,7 @@
 package dev.proxyfox.api.routes
 
 import dev.kord.common.entity.Snowflake
+import dev.proxyfox.api.AuthenticationPlugin
 import dev.proxyfox.api.models.Member
 import dev.proxyfox.api.models.MemberGuildSettings
 import dev.proxyfox.database.database
@@ -18,6 +19,7 @@ import io.ktor.server.routing.*
 
 fun Route.memberRoutes() {
     route("/systems/{id}/members") {
+        install(AuthenticationPlugin)
         get {
             val id = call.parameters["id"] ?: return@get call.respond("System not found")
             call.respond(database.fetchMembersFromSystem(id)?.map(Member.Companion::fromRecord) ?: emptyList())

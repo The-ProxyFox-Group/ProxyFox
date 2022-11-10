@@ -62,6 +62,8 @@ import kotlin.time.Duration
  *               "auto", "memid",
  *               // the autoproxy type
  *               "autoType": "autoproxy type",
+ *               // system access token
+ *               "token": "token",
  *               "members": {
  *                   "memid": {
  *                       // here for redundancy
@@ -458,6 +460,14 @@ class JsonDatabase(val file: File = File("systems.json")) : Database() {
         return messages.firstOrNull { it.channelId == channelId.value && it.systemId == systemId }
     }
 
+    override suspend fun getOrCreateTokenFromSystem(systemId: String): TokenRecord {
+        return TokenRecord(systems[systemId]?.token ?: generateToken(), systemId)
+    }
+
+    override suspend fun updateToken(token: TokenRecord) {
+        systems[token.systemId]?.token = token.token
+    }
+
     override suspend fun createProxyTag(record: MemberProxyTagRecord): Boolean {
         return systems[record.systemId]!!.proxyTags.add(record)
     }
@@ -626,6 +636,7 @@ class JsonDatabase(val file: File = File("systems.json")) : Database() {
         var timestamp: OffsetDateTime? = OffsetDateTime.now(ZoneOffset.UTC),
         var auto: String? = null,
         var autoType: AutoProxyMode? = AutoProxyMode.OFF,
+        var token: String = generateToken(),
 
         val members: MutableMap<String, JsonMemberStruct> = HashMap(),
         val serverSettings: MutableMap<ULong, SystemServerSettingsRecord> = HashMap(),
@@ -678,6 +689,7 @@ class JsonDatabase(val file: File = File("systems.json")) : Database() {
             autoType?.let {
                 record.autoType = it
             }
+            record.token = token
             record.trust = trust
         }
 
@@ -694,6 +706,7 @@ class JsonDatabase(val file: File = File("systems.json")) : Database() {
             timestamp = record.timestamp
             auto = record.autoProxy
             autoType = record.autoType
+            token = record.token
         }
 
         fun putMember(member: JsonMemberStruct): JsonMemberStruct {

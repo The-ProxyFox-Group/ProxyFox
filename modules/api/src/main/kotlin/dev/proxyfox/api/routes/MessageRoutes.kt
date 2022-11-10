@@ -16,10 +16,8 @@ import io.ktor.server.response.*
 import io.ktor.server.routing.*
 
 fun Route.messageRoutes() {
-    route("/messages/{id}") {
-        get {
-            val message = database.fetchMessage(Snowflake(call.parameters["id"]!!)) ?: return@get call.respond("Message not found")
-            call.respond(Message.fromRecord(message))
-        }
+    get("/messages/{id}") {
+        val message = database.fetchMessage(Snowflake(call.parameters["id"]!!)) ?: return@get call.respond("Message not found")
+        call.respond(Message.fromRecord(message))
     }
 }

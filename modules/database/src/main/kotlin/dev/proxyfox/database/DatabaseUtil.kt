@@ -146,3 +146,8 @@ suspend inline fun <reified T : Any> Mongo.getOrCreateCollection(): MongoCollect
         }
     return getCollection()
 }
+
+fun generateToken(): String {
+    val alphabet: List<Char> = ('a'..'z') + ('A'..'Z') + ('0'..'9')
+    return List(64) { alphabet.random() }.joinToString("")
+}

@@ -35,6 +35,7 @@ class SystemRecord : MongoRecord {
     var avatarUrl: String? = null
     var timezone: String? = null
     var timestamp: OffsetDateTime = OffsetDateTime.now(ZoneOffset.UTC)
+    var token: String = generateToken()
 
     /** The ID of the member that's currently being auto-proxied. */
     var autoProxy: PkId? = null

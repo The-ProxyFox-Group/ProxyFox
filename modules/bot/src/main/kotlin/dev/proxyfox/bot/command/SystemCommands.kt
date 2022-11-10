@@ -26,6 +26,7 @@ import dev.proxyfox.common.printStep
 import dev.proxyfox.common.toColor
 import dev.proxyfox.database.database
 import dev.proxyfox.database.etc.exporter.Exporter
+import dev.proxyfox.database.generateToken
 
 /**
  * Commands for accessing and changing system settings
@@ -82,6 +83,10 @@ object SystemCommands {
         registerCommand(literal(arrayOf("list", "l"), ::list) {
             unixLiteral(arrayOf("by-message-count", "bmc"), ::listByMessage)
             unixLiteral(arrayOf("verbose", "v"), ::listVerbose)
+        })
+
+        registerCommand(literal(arrayOf("token", "t"), ::token) {
+            literal(arrayOf("refresh", "r"), ::tokenRefresh)
         })
     }
 
@@ -310,6 +315,23 @@ object SystemCommands {
         val system = database.fetchSystemFromUser(ctx.message.author)
             ?: return "System does not exist. Create one using `pf>system new`"
         return system.tag ?: "System tag not set."
+    }
+
+    private suspend fun token(ctx: MessageHolder): String {
+        val system = database.fetchSystemFromUser(ctx.message.author)
+            ?: return "System does not exist. Create one using `pf>system new`"
+        ctx.respond("`${database.getOrCreateTokenFromSystem(system.id).token}`", true)
+        return "Token sent in DMs"
+    }
+
+    private suspend fun tokenRefresh(ctx: MessageHolder): String {
+        val system = database.fetchSystemFromUser(ctx.message.author)
+            ?: return "System does not exist. Create one using `pf>system new`"
+        val token = database.getOrCreateTokenFromSystem(system.id)
+        token.token = generateToken()
+        database.updateToken(token)
+        ctx.respond("`${token.token}`", true)
+        return "Token refreshed. New token sent in DMs"
     }
 
     private suspend fun delete(ctx: MessageHolder): String {

@@ -23,10 +23,10 @@ object ApiMain {
     private const val version = "1"
     fun main() = embeddedServer(Netty, port = Integer.parseInt(System.getenv("PORT"))) {
         configureRouting()
-        configureSerialization()
+        configurePlugins()
     }.start()
 
-    private fun Application.configureSerialization() {
+    private fun Application.configurePlugins() {
         install(ContentNegotiation) {
             json()
         }

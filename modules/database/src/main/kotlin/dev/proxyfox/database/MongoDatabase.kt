@@ -64,6 +64,7 @@ class MongoDatabase(private val dbName: String = "ProxyFox") : Database() {
 
     private lateinit var systems: KCollection<SystemRecord>
     private lateinit var systemSwitches: KCollection<SystemSwitchRecord>
+    private lateinit var systemTokens: KCollection<TokenRecord>
 
     private lateinit var systemServers: KCollection<SystemServerSettingsRecord>
     private lateinit var systemChannels: KCollection<SystemChannelSettingsRecord>
@@ -94,6 +95,7 @@ class MongoDatabase(private val dbName: String = "ProxyFox") : Database() {
         channels = db.getOrCreateCollection()
 
         systems = db.getOrCreateCollection()
+        systemTokens = db.getOrCreateCollection()
         systemSwitches = db.getOrCreateCollection()
 
         systemServers = db.getOrCreateCollection()
@@ -266,6 +268,13 @@ class MongoDatabase(private val dbName: String = "ProxyFox") : Database() {
         channelId: Snowflake
     ): ProxiedMessageRecord? =
         messages.find("systemId" eq systemId, "channelId" eq channelId).sort("{'creationDate':-1}").limit(1).awaitFirstOrNull()
+
+    override suspend fun getOrCreateTokenFromSystem(systemId: String): TokenRecord =
+        systemTokens.findFirstOrNull("systemId" eq systemId) ?: TokenRecord(generateToken(), systemId)
+
+    override suspend fun updateToken(token: TokenRecord) {
+        systemTokens.replaceOneById(token._id, token, upsert()).awaitFirst()
+    }
 
     override suspend fun createProxyTag(record: MemberProxyTagRecord): Boolean {
         memberProxies.insertOne(record).awaitFirst()
