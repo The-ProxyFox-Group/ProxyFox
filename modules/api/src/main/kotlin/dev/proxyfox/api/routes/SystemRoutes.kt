@@ -8,7 +8,9 @@
 
 package dev.proxyfox.api.routes
 
+import dev.kord.common.entity.Snowflake
 import dev.proxyfox.api.models.System
+import dev.proxyfox.api.models.SystemGuildSettings
 import dev.proxyfox.database.database
 import io.ktor.server.application.*
 import io.ktor.server.response.*
@@ -19,6 +21,12 @@ fun Route.systemRoutes() {
         get {
             val system = database.fetchSystemFromId(call.parameters["id"]!!) ?: return@get call.respond("System not found")
             call.respond(System.fromRecord(system))
+        }
+
+        get("/guilds/{guild}") {
+            val id = call.parameters["id"] ?: return@get call.respond("System not found")
+            val settings = database.getOrCreateServerSettingsFromSystem(Snowflake(call.parameters["guild"]!!).value, id)
+            call.respond(SystemGuildSettings.fromRecord(settings))
         }
     }
 }

@@ -8,6 +8,7 @@
 
 package dev.proxyfox.api.routes
 
+import dev.proxyfox.api.models.Member
 import dev.proxyfox.api.models.Switch
 import dev.proxyfox.database.database
 import io.ktor.server.application.*
@@ -19,6 +20,13 @@ fun Route.switchRoutes() {
         get {
             val id = call.parameters["id"] ?: return@get call.respond("System not found")
             call.respond(database.fetchSwitchesFromSystem(id)?.map(Switch.Companion::fromRecord) ?: emptyList())
+        }
+    }
+
+    route("/systems/{id}/fronters") {
+        get {
+            val id = call.parameters["id"] ?: return@get call.respond("System not found")
+            call.respond(database.fetchFrontingMembersFromSystem(id)?.map(Member.Companion::fromRecord) ?: emptyList())
         }
     }
 }

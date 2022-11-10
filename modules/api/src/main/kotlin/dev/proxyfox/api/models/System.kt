@@ -22,11 +22,11 @@ data class System(
     val tag: String?,
     val pronouns: String?,
     val color: String?,
-    val avatarUrl: String?,
+    val avatar_url: String?,
     val timezone: String?,
     val created: String,
-    val autoProxy: String?,
-    val autoType: AutoProxyMode,
+    val auto_proxy: String?,
+    val auto_type: AutoProxyMode,
     val trust: Map<ULong, TrustLevel>
 ) {
     companion object {
@@ -37,11 +37,11 @@ data class System(
             tag = system.tag,
             pronouns = system.pronouns,
             color = system.color.fromColor(),
-            avatarUrl = system.avatarUrl,
+            avatar_url = system.avatarUrl,
             timezone = system.timezone,
             created = system.timestamp.toString(),
-            autoProxy = system.autoProxy,
-            autoType = system.autoType,
+            auto_proxy = system.autoProxy,
+            auto_type = system.autoType,
             trust = system.trust
         )
     }

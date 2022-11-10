@@ -13,17 +13,17 @@ import kotlinx.serialization.Serializable
 
 @Serializable
 data class MemberGuildSettings(
-    val displayName: String?,
-    val avatarUrl: String?,
-    val autoProxy: Boolean,
-    val proxyEnabled: Boolean
+    val display_name: String?,
+    val avatar_url: String?,
+    val auto_proxy: Boolean,
+    val proxy_enabled: Boolean
 ) {
     companion object {
         fun fromRecord(record: MemberServerSettingsRecord) = MemberGuildSettings(
-            displayName = record.nickname,
-            avatarUrl = record.avatarUrl,
-            autoProxy = record.autoProxy,
-            proxyEnabled = record.proxyEnabled
+            display_name = record.nickname,
+            avatar_url = record.avatarUrl,
+            auto_proxy = record.autoProxy,
+            proxy_enabled = record.proxyEnabled
         )
     }
 }
