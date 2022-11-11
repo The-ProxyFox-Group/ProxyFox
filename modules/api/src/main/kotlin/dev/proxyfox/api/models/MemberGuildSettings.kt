@@ -9,21 +9,26 @@
 package dev.proxyfox.api.models
 
 import dev.proxyfox.database.records.member.MemberServerSettingsRecord
+import kotlinx.serialization.SerialName
 import kotlinx.serialization.Serializable
 
 @Serializable
 data class MemberGuildSettings(
-    val display_name: String?,
-    val avatar_url: String?,
-    val auto_proxy: Boolean,
-    val proxy_enabled: Boolean
+    @SerialName("display_name")
+    val displayName: String?,
+    @SerialName("avatar_url")
+    val avatarUrl: String?,
+    @SerialName("auto_proxy")
+    val autoProxy: Boolean,
+    @SerialName("proxy_enabled")
+    val proxyEnabled: Boolean
 ) {
     companion object {
         fun fromRecord(record: MemberServerSettingsRecord) = MemberGuildSettings(
-            display_name = record.nickname,
-            avatar_url = record.avatarUrl,
-            auto_proxy = record.autoProxy,
-            proxy_enabled = record.proxyEnabled
+            displayName = record.nickname,
+            avatarUrl = record.avatarUrl,
+            autoProxy = record.autoProxy,
+            proxyEnabled = record.proxyEnabled
         )
     }
 }

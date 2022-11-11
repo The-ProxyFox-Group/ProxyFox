@@ -26,6 +26,7 @@ fun Route.switchRoutes() {
     }
 
     route("/systems/{id}/fronters") {
+        install(AuthenticationPlugin)
         get {
             val id = call.parameters["id"] ?: return@get call.respond("System not found")
             call.respond(database.fetchFrontingMembersFromSystem(id)?.map(Member.Companion::fromRecord) ?: emptyList())

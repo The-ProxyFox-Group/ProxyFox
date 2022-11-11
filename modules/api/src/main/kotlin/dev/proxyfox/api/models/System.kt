@@ -12,6 +12,7 @@ import dev.proxyfox.common.fromColor
 import dev.proxyfox.database.records.misc.AutoProxyMode
 import dev.proxyfox.database.records.misc.TrustLevel
 import dev.proxyfox.database.records.system.SystemRecord
+import kotlinx.serialization.SerialName
 import kotlinx.serialization.Serializable
 
 @Serializable
@@ -22,11 +23,14 @@ data class System(
     val tag: String?,
     val pronouns: String?,
     val color: String?,
-    val avatar_url: String?,
+    @SerialName("avatar_url")
+    val avatarUrl: String?,
     val timezone: String?,
     val created: String,
-    val auto_proxy: String?,
-    val auto_type: AutoProxyMode,
+    @SerialName("autoProxy")
+    val autoProxy: String?,
+    @SerialName("autoType")
+    val autoType: AutoProxyMode,
     val trust: Map<ULong, TrustLevel>
 ) {
     companion object {
@@ -37,11 +41,11 @@ data class System(
             tag = system.tag,
             pronouns = system.pronouns,
             color = system.color.fromColor(),
-            avatar_url = system.avatarUrl,
+            avatarUrl = system.avatarUrl,
             timezone = system.timezone,
             created = system.timestamp.toString(),
-            auto_proxy = system.autoProxy,
-            auto_type = system.autoType,
+            autoProxy = system.autoProxy,
+            autoType = system.autoType,
             trust = system.trust
         )
     }
