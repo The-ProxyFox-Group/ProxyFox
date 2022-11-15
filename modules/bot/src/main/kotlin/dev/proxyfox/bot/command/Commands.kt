@@ -12,6 +12,9 @@ import dev.kord.rest.builder.interaction.*
 import dev.proxyfox.bot.command.context.DiscordContext
 import dev.proxyfox.command.CommandParser
 import dev.proxyfox.common.printStep
+import dev.proxyfox.database.records.member.MemberRecord
+import dev.proxyfox.database.records.system.SystemRecord
+import dev.proxyfox.database.records.system.SystemSwitchRecord
 
 /**
  * General utilities relating to commands
@@ -55,4 +58,28 @@ fun SubCommandBuilder.clear() = bool("clear", "Whether to clear the data")
 fun SubCommandBuilder.member() = name("member")
 fun GlobalChatInputCreateBuilder.access(type: String, name: String, builder: SubCommandBuilder.() -> Unit) {
     subCommand(name, "Accesses the $type's $name", builder)
+}
+
+suspend fun <T> checkSystem(ctx: DiscordContext<T>, system: SystemRecord?): Boolean {
+    system ?: run {
+        ctx.respondFailure("System does not exist. Create one using a slash command or `pf>system new`")
+        return false
+    }
+    return true
+}
+
+suspend fun <T> checkMember(ctx: DiscordContext<T>, member: MemberRecord?): Boolean {
+    member ?: run {
+        ctx.respondFailure("Member does not exist. Create one using a slash command or `pf>member new`")
+        return false
+    }
+    return true
+}
+
+suspend fun <T> checkSwitch(ctx: DiscordContext<T>, switch: SystemSwitchRecord?): Boolean {
+    switch ?: run {
+        ctx.respondFailure("Looks like you haven't registered any switches yet. Create one using a slash command or `pf>switch`")
+        return false
+    }
+    return true
 }

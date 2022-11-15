@@ -23,6 +23,9 @@ import dev.proxyfox.command.NodeActionParam
 import dev.proxyfox.command.NodeHolder
 import dev.proxyfox.command.node.CommandNode
 import dev.proxyfox.command.node.builtin.int
+import dev.proxyfox.command.node.builtin.string
+import dev.proxyfox.database.database
+import dev.proxyfox.database.records.system.SystemRecord
 
 abstract class DiscordContext<T>(override val value: T) : CommandContext<T>() {
     abstract fun getAttachment(): Attachment?
@@ -53,6 +56,19 @@ suspend fun<T, C: DiscordContext<T>> CommandNode<T, C>.guild(action: NodeActionP
     int("server") {
         action {
             Snowflake(it())
+        }
+    }
+}
+
+suspend fun<T, C: DiscordContext<T>> CommandNode<T, C>.system(action: NodeActionParam<T, C, SystemRecord?>) {
+    action {
+        val ctx = this as? DiscordContext<T> ?: return@action null
+        database.fetchSystemFromUser(ctx.getUser())
+    }
+    // TODO: Check trust
+    string("sysid") {
+        action {
+            null
         }
     }
 }

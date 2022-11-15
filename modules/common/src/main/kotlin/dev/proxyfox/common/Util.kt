@@ -82,3 +82,9 @@ fun getRamUsage(): Long = getMaxRam() - getFreeRam()
 fun getRamUsagePercentage(): Double = (getRamUsage().toDouble() / getMaxRam().toDouble()) * 100
 
 fun getThreadCount() = threadMXBean.threadCount
+
+fun Array<String>.trimEach() {
+    forEachIndexed { i, s ->
+        this[i] = s.trim()
+    }
+}

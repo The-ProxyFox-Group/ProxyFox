@@ -26,6 +26,7 @@ import dev.proxyfox.bot.prompts.Button.Companion.multiply
 import kotlin.time.Duration
 import kotlin.time.Duration.Companion.minutes
 
+// TODO: Move to DiscordContext
 /**
  * @author Ampflower
  * @since ${version}

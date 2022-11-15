@@ -38,6 +38,7 @@ import dev.kord.rest.builder.message.create.embed
 import dev.kord.rest.request.KtorRequestException
 import dev.proxyfox.bot.command.Commands
 import dev.proxyfox.bot.command.MemberCommands.registerMemberCommands
+import dev.proxyfox.bot.command.SystemCommands.registerSystemCommands
 import dev.proxyfox.bot.command.context.DiscordContext
 import dev.proxyfox.command.node.CommandNode
 import dev.proxyfox.command.node.builtin.LiteralNode
@@ -127,9 +128,6 @@ suspend fun login() {
     kord.on<GlobalMessageCommandInteractionCreateEvent> {
         onInteract()
     }
-    kord.on<GlobalChatInputCommandInteractionCreateEvent> {
-        onInteract()
-    }
     kord.on<ChatInputCommandInteractionCreateEvent> {
         onInteract()
     }
@@ -171,6 +169,7 @@ suspend fun Kord.registerApplicationCommands() {
     createGlobalMessageCommand("Ping Message Author")
     createGlobalMessageCommand("Edit Message")
     registerMemberCommands()
+    registerSystemCommands()
 }
 
 suspend fun updatePresence() {
@@ -241,6 +240,14 @@ fun findUnixValue(args: Array<String>, key: String): String? {
         }
     }
     return null
+}
+fun hasUnixValue(args: Array<String>, key: String): Boolean {
+    for (i in args.indices) {
+        if (args[i].startsWith(key)) {
+            return true
+        }
+    }
+    return true
 }
 
 fun OffsetDateTime.toKtInstant() = Instant.fromEpochSeconds(epochSeconds = toEpochSecond(), nanosecondAdjustment = nano)

@@ -4,7 +4,7 @@ logback = "1.2.11"
 kord = "0.8.0-M16"
 kotlin = "1.7.10"
 kotlinx_coroutines = "1.6.4"
-proxyfox_command = "1.1"
+proxyfox_command = "1.2"
 
 # Database-specific
 postgres = "42.3.3"

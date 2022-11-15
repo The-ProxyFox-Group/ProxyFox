@@ -42,6 +42,7 @@ import kotlin.time.Duration.Companion.minutes
 
 // Created 2022-15-10T08:37:40
 
+// TODO: Move to DiscordContext
 /**
  * @author Ampflower
  * @since ${version}

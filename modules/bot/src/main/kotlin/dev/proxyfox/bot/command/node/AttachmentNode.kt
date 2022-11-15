@@ -24,7 +24,7 @@ class AttachmentNode<T, C: DiscordContext<T>>(override val name: String) : Comma
     }
 }
 
-suspend fun <T, C: DiscordContext<T>> NodeHolder<T,C>.attachment(
+suspend fun <T, C: DiscordContext<T>> NodeHolder<T, C>.attachment(
     name: String,
     action: NodeActionParam<T, C, Attachment>
 ): CommandNode<T, C> {

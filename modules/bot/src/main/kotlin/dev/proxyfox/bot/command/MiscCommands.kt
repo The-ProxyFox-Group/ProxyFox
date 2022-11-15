@@ -10,11 +10,17 @@ package dev.proxyfox.bot.command
 
 import dev.kord.common.entity.Permission
 import dev.kord.common.entity.Snowflake
+import dev.kord.core.Kord
 import dev.kord.core.behavior.channel.asChannelOf
 import dev.kord.core.behavior.channel.threads.ThreadChannelBehavior
+import dev.kord.core.entity.Guild
 import dev.kord.core.entity.Message
 import dev.kord.rest.NamedFile
 import dev.proxyfox.bot.*
+import dev.proxyfox.bot.command.context.DiscordContext
+import dev.proxyfox.bot.command.context.guild
+import dev.proxyfox.bot.command.context.runs
+import dev.proxyfox.bot.command.node.attachment
 import dev.proxyfox.bot.string.dsl.greedy
 import dev.proxyfox.bot.string.dsl.literal
 import dev.proxyfox.bot.string.dsl.string
@@ -23,15 +29,19 @@ import dev.proxyfox.bot.string.parser.MessageHolder
 import dev.proxyfox.bot.string.parser.registerCommand
 import dev.proxyfox.bot.webhook.GuildMessage
 import dev.proxyfox.bot.webhook.WebhookUtil
+import dev.proxyfox.command.node.builtin.greedy
+import dev.proxyfox.command.node.builtin.literal
 import dev.proxyfox.common.*
 import dev.proxyfox.database.database
 import dev.proxyfox.database.displayDate
 import dev.proxyfox.database.etc.exporter.Exporter
 import dev.proxyfox.database.etc.importer.ImporterException
 import dev.proxyfox.database.etc.importer.import
+import dev.proxyfox.database.records.member.MemberRecord
 import dev.proxyfox.database.records.misc.AutoProxyMode
 import dev.proxyfox.database.records.misc.ProxiedMessageRecord
 import dev.proxyfox.database.records.system.SystemRecord
+import dev.proxyfox.database.records.system.SystemServerSettingsRecord
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.flow.filter
 import kotlinx.coroutines.flow.firstOrNull
@@ -47,28 +57,159 @@ import kotlin.math.floor
 object MiscCommands {
     private val roleMatcher = Regex("\\d+")
 
+    suspend fun Kord.registerMiscCommands() {
+        createGlobalChatInputCommand("info", "Fetches info about the bot") {
+
+        }
+        createGlobalChatInputCommand("moderation", "Moderator-only commands") {
+
+        }
+        createGlobalChatInputCommand("misc", "Other commands that don't fit in a category") {
+
+        }
+    }
+
     suspend fun register() {
         printStep("Registering misc commands", 2)
-        registerCommand(literal("import", ::importEmpty) {
-            greedy("url", ::import)
-        })
+        Commands.parser.literal("import") {
+            runs {
+                import(this, null)
+            }
+            attachment("file") { getFile ->
+                runs {
+                    import(this, URL(getFile().url))
+                }
+            }
+            greedy("file") { getFile ->
+                runs {
+                    import(this, URL(getFile()))
+                }
+            }
+        }
         //TODO: export --full
-        registerCommand(literal("export", ::export))
-        registerCommand(literal("time", ::time))
-        registerCommand(literal("help", ::help))
-        registerCommand(literal("explain", ::explain))
-        registerCommand(literal("invite", ::invite))
-        registerCommand(literal("source", ::source))
-        registerCommand(literal(arrayOf("proxy", "p"), ::serverProxyEmpty) {
-            literal(arrayOf("off", "disable"), ::serverProxyOff)
-            literal(arrayOf("on", "enable"), ::serverProxyOn)
-        })
-        registerCommand(literal(arrayOf("autoproxy", "ap"), ::proxyEmpty) {
-            literal(arrayOf("off", "disable"), ::proxyOff)
-            literal(arrayOf("latch", "l"), ::proxyLatch)
-            literal(arrayOf("front", "f"), ::proxyFront)
-            greedy("member", MiscCommands::proxyMember)
-        })
+        Commands.parser.literal("export") {
+            runs {
+                val system = database.fetchSystemFromUser(getUser())
+                if (!checkSystem(this, system)) return@runs false
+                export(this, system!!)
+            }
+        }
+        Commands.parser.literal("time") {
+            runs {
+                time(this)
+            }
+        }
+        Commands.parser.literal("help") {
+            runs {
+                respondSuccess(getHelp())
+                true
+            }
+        }
+        Commands.parser.literal("explain") {
+            runs {
+                respondSuccess(getExplain())
+                true
+            }
+        }
+        Commands.parser.literal("invite") {
+            runs {
+                respondSuccess(getInvite())
+                true
+            }
+        }
+        Commands.parser.literal("source") {
+            runs {
+                respondSuccess(getSource())
+                true
+            }
+        }
+        Commands.parser.literal("proxy", "p") {
+            guild { getGuildId ->
+                runs {
+                    val system = database.fetchSystemFromUser(getUser())
+                    if (!checkSystem(this, system)) return@runs false
+                    val guildId = getGuildId() ?: run {
+                        respondFailure("Command not ran in server.")
+                        return@runs false
+                    }
+                    val guild = kord.getGuild(guildId) ?: run {
+                        respondFailure("Cannot find server. Am I in it?")
+                        return@runs false
+                    }
+                    val serverSystem = database.getOrCreateServerSettingsFromSystem(guild, system!!.id)
+                    serverProxy(this, system, serverSystem, null)
+                }
+                literal("on", "enable") {
+                    runs {
+                        val system = database.fetchSystemFromUser(getUser())
+                        if (!checkSystem(this, system)) return@runs false
+                        val guildId = getGuildId() ?: run {
+                            respondFailure("Command not ran in server.")
+                            return@runs false
+                        }
+                        val guild = kord.getGuild(guildId) ?: run {
+                            respondFailure("Cannot find server. Am I in it?")
+                            return@runs false
+                        }
+                        val serverSystem = database.getOrCreateServerSettingsFromSystem(guild, system!!.id)
+                        serverProxy(this, system, serverSystem, true)
+                    }
+                }
+                literal("off", "disable") {
+                    runs {
+                        val system = database.fetchSystemFromUser(getUser())
+                        if (!checkSystem(this, system)) return@runs false
+                        val guildId = getGuildId() ?: run {
+                            respondFailure("Command not ran in server.")
+                            return@runs false
+                        }
+                        val guild = kord.getGuild(guildId) ?: run {
+                            respondFailure("Cannot find server. Am I in it?")
+                            return@runs false
+                        }
+                        val serverSystem = database.getOrCreateServerSettingsFromSystem(guild, system!!.id)
+                        serverProxy(this, system, serverSystem, false)
+                    }
+                }
+            }
+        }
+        Commands.parser.literal("autoproxy", "ap") {
+            runs {
+                val system = database.fetchSystemFromUser(getUser())
+                if (!checkSystem(this, system)) return@runs false
+                proxy(this, system!!, null, null)
+            }
+            literal("off", "disable", "o") {
+                runs {
+                    val system = database.fetchSystemFromUser(getUser())
+                    if (!checkSystem(this, system)) return@runs false
+                    proxy(this, system!!, AutoProxyMode.OFF, null)
+                }
+            }
+            literal("latch", "l") {
+                runs {
+                    val system = database.fetchSystemFromUser(getUser())
+                    if (!checkSystem(this, system)) return@runs false
+                    proxy(this, system!!, AutoProxyMode.LATCH, null)
+                }
+            }
+            literal("front", "f") {
+                runs {
+                    val system = database.fetchSystemFromUser(getUser())
+                    if (!checkSystem(this, system)) return@runs false
+                    proxy(this, system!!, AutoProxyMode.FRONT, null)
+                }
+            }
+            greedy("member") { getMem ->
+                runs {
+                    val system = database.fetchSystemFromUser(getUser())
+                    if (!checkSystem(this, system)) return@runs false
+                    val member = database.findMember(system!!.id, getMem())
+                    if (!checkMember(this, member)) return@runs false
+                    proxy(this, system, AutoProxyMode.MEMBER, member)
+                }
+            }
+        }
 
         registerCommand(literal(arrayOf("serverautoproxy", "sap"), ::serverAutoProxyEmpty) {
             literal(arrayOf("off", "disable"), ::serverAutoProxyOff)
@@ -116,20 +257,34 @@ object MiscCommands {
             }
         })
 
-        registerCommand(literal("debug", ::debug))
+        Commands.parser.literal("debug") {
+            runs {
+                debug(this)
+            }
+        }
 
-        registerCommand(literal("fox", ::getFox))
+        Commands.parser.literal("fox") {
+            runs {
+                getFox(this)
+            }
+        }
     }
 
-    private suspend fun getFox(ctx: MessageHolder): String {
-        return FoxFetch.fetch()
+    private suspend fun <T> getFox(ctx: DiscordContext<T>): Boolean {
+        ctx.respondEmbed {
+            val fox = FoxFetch.fetch()
+            title = "**Link**"
+            url = fox
+            image = fox
+        }
+        return true
     }
 
-    private suspend fun debug(ctx: MessageHolder): String {
-        val shardid = ctx.message.getGuildOrNull()?.id?.value?.toShard() ?: 0
-        ctx.respond {
+    private suspend fun <T> debug(ctx: DiscordContext<T>): Boolean {
+        val shardid = ctx.getGuild()?.id?.value?.toShard() ?: 0
+        ctx.respondEmbed {
             title = "ProxyFox Debug"
-            val gatewayPing = ctx.message.kord.gateway.gateways[shardid]!!.ping.value!!
+            val gatewayPing = kord.gateway.gateways[shardid]!!.ping.value!!
             field {
                 inline = true
                 name = "Shard ID"
@@ -195,101 +350,66 @@ object MiscCommands {
         throw DebugException()
     }
 
-    private suspend fun importEmpty(ctx: MessageHolder): String {
+    private suspend fun <T> import(ctx: DiscordContext<T>, url: URL?): Boolean {
+        url ?: run {
+            ctx.respondFailure("Please provide a file to import")
+            return false
+        }
+
         return try {
-            if (ctx.message.attachments.isEmpty()) return "Please attach a file or link to import"
-            val attach = URL(ctx.message.attachments.toList()[0].url)
             val importer = withContext(Dispatchers.IO) {
-                attach.openStream().reader().use { import(it, ctx.message.author) }
+                url.openStream().reader().use { import(it, ctx.getUser()) }
             }
-            "File imported. created ${importer.createdMembers} member(s), updated ${importer.updatedMembers} member(s)"
+            ctx.respondSuccess("File imported. created ${importer.createdMembers} member(s), updated ${importer.updatedMembers} member(s)")
+            true
         } catch (exception: ImporterException) {
-            "Failed to import file: ${exception.message}"
+            ctx.respondFailure("Failed to import file: ${exception.message}")
+            false
         }
     }
 
-    private suspend fun import(ctx: MessageHolder): String {
-        return try {
-            val attach = URL(ctx.params["url"]!![0])
-            val importer = withContext(Dispatchers.IO) {
-                attach.openStream().reader().use { import(it, ctx.message.author) }
-            }
-            "File imported. created ${importer.createdMembers} member(s), updated ${importer.updatedMembers} member(s)"
-        } catch (exception: ImporterException) {
-            "Failed to import file: ${exception.message}"
-        }
+    private suspend fun <T> export(ctx: DiscordContext<T>, system: SystemRecord): Boolean {
+        val export = Exporter.export(ctx.getUser()!!.id.value)
+        ctx.respondFiles(null, NamedFile("system.json", export.byteInputStream()))
+        ctx.respondSuccess("Check your DMs~")
+        return true
     }
 
-    private suspend fun export(ctx: MessageHolder): String {
-        database.fetchSystemFromUser(ctx.message.author)
-            ?: return "System does not exist. Create one using `pf>system new`"
-        val export = Exporter.export(ctx.message.author!!.id.value)
-        ctx.sendFiles(NamedFile("system.json", export.byteInputStream()))
-        return "Check your DMs~"
-    }
-
-    private fun time(ctx: MessageHolder): String {
+    private suspend fun <T> time(ctx: DiscordContext<T>): Boolean {
         val date = System.currentTimeMillis() / 1000
-        return "It is currently <t:$date:f>"
+        ctx.respondSuccess("It is currently <t:$date:f>")
+        return true
     }
 
-    private fun help(ctx: MessageHolder): String =
+    private fun getHelp(): String =
         """To view commands for ProxyFox, visit <https://github.com/The-ProxyFox-Group/ProxyFox/blob/master/commands.md>
 For quick setup:
 - pf>system new name
 - pf>member new John Doe
 - pf>member "John Doe" proxy j:text"""
 
-    private fun explain(ctx: MessageHolder): String =
+    private fun getExplain(): String =
         """ProxyFox is modern Discord bot designed to help systems communicate.
 It uses discord's webhooks to generate "pseudo-users" which different members of the system can use. Someone will likely be willing to explain further if need be."""
 
-    private fun invite(ctx: MessageHolder): String =
-        """Use <https://discord.com/api/oauth2/authorize?client_id=${ctx.message.kord.selfId}&permissions=277696539728&scope=applications.commands+bot> to invite ProxyFox to your server!
+    private fun getInvite(): String =
+        """Use <https://discord.com/api/oauth2/authorize?client_id=${kord.selfId}&permissions=277696539728&scope=applications.commands+bot> to invite ProxyFox to your server!
 To get support, head on over to https://discord.gg/q3yF8ay9V7"""
 
-    private fun source(ctx: MessageHolder): String =
+    private fun getSource(): String =
         "Source code for ProxyFox is available at https://github.com/The-ProxyFox-Group/ProxyFox!"
 
-    private suspend fun proxyEmpty(ctx: MessageHolder): String {
-        database.fetchSystemFromUser(ctx.message.author)
-            ?: return "System does not exist. Create one using `pf>system new`"
-        return "Please provide whether you want autoproxy set to `off`, `latch`, `front`, or a member"
-    }
+    private suspend fun <T> proxy(ctx: DiscordContext<T>, system: SystemRecord, mode: AutoProxyMode?, member: MemberRecord?): Boolean {
+        mode ?: run {
+            ctx.respondSuccess("Autoproxy is set to ${system.autoType.name}")
+            return true
+        }
 
-    private suspend fun proxyLatch(ctx: MessageHolder): String {
-        val system = database.fetchSystemFromUser(ctx.message.author)
-            ?: return "System does not exist. Create one using `pf>system new`"
-        system.autoType = AutoProxyMode.LATCH
+        system.autoType = mode
+        val response = if (member != null) {system.autoProxy = member.id; "Now autoproxying as ${member.showDisplayName()}"} else "Autoproxy mode is now set to ${mode.name}"
         database.updateSystem(system)
-        return "Autoproxy mode is now set to `latch`"
-    }
-
-    private suspend fun proxyFront(ctx: MessageHolder): String {
-        val system = database.fetchSystemFromUser(ctx.message.author)
-            ?: return "System does not exist. Create one using `pf>system new`"
-        system.autoType = AutoProxyMode.FRONT
-        database.updateSystem(system)
-        return "Autoproxy mode is now set to `front`"
-    }
-
-    private suspend fun proxyMember(ctx: MessageHolder): String {
-        val system = database.fetchSystemFromUser(ctx.message.author)
-            ?: return "System does not exist. Create one using `pf>system new`"
-        val member = database.findMember(system.id, ctx.params["member"]!![0])
-            ?: return "Member does not exist. Create one using `pf>member new`"
-        system.autoType = AutoProxyMode.MEMBER
-        system.autoProxy = member.id
-        database.updateSystem(system)
-        return "Autoproxy mode is now set to ${member.name}"
-    }
-
-    private suspend fun proxyOff(ctx: MessageHolder): String {
-        val system = database.fetchSystemFromUser(ctx.message.author)
-            ?: return "System does not exist. Create one using `pf>system new`"
-        system.autoType = AutoProxyMode.OFF
-        database.updateSystem(system)
-        return "Autoproxy disabled"
+        ctx.respondSuccess(response)
+        return true
     }
 
     private suspend fun serverAutoProxyEmpty(ctx: MessageHolder): String {
@@ -346,29 +466,16 @@ To get support, head on over to https://discord.gg/q3yF8ay9V7"""
         return "Autoproxy disabled for this server."
     }
 
-    private suspend fun serverProxyEmpty(ctx: MessageHolder): String {
-        val system = database.fetchSystemFromUser(ctx.message.author)
-            ?: return "System does not exist. Create one using `pf>system new`"
-        val systemServer = database.getOrCreateServerSettingsFromSystem(ctx.message.getGuild(), system.id)
-        return "Proxy for this server is currently ${if (systemServer.proxyEnabled) "enabled" else "disabled"}."
-    }
+    private suspend fun <T> serverProxy(ctx: DiscordContext<T>, system: SystemRecord, systemServer: SystemServerSettingsRecord, enabled: Boolean?): Boolean {
+        enabled ?: run {
+            ctx.respondSuccess("Proxy for this server is currently ${if (systemServer.proxyEnabled) "enabled" else "disabled"}.")
+            return false
+        }
 
-    private suspend fun serverProxyOn(ctx: MessageHolder): String {
-        val system = database.fetchSystemFromUser(ctx.message.author)
-            ?: return "System does not exist. Create one using `pf>system new`"
-        val systemServer = database.getOrCreateServerSettingsFromSystem(ctx.message.getGuild(), system.id)
-        systemServer.proxyEnabled = true
+        systemServer.proxyEnabled = enabled
         database.updateSystemServerSettings(systemServer)
-        return "Proxy for this server has been enabled"
-    }
-
-    private suspend fun serverProxyOff(ctx: MessageHolder): String {
-        val system = database.fetchSystemFromUser(ctx.message.author)
-            ?: return "System does not exist. Create one using `pf>system new`"
-        val systemServer = database.getOrCreateServerSettingsFromSystem(ctx.message.getGuild(), system.id)
-        systemServer.proxyEnabled = false
-        database.updateSystemServerSettings(systemServer)
-        return "Proxy for this server has been disabled"
+        ctx.respondSuccess("Proxy for this server has been ${if (enabled) "enabled" else "disabled"}")
+        return true
     }
 
     private suspend fun roleEmpty(ctx: MessageHolder): String {

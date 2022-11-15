@@ -24,6 +24,8 @@ import dev.kord.core.event.message.ReactionAddEvent
 import dev.kord.rest.builder.message.create.embed
 import dev.proxyfox.bot.command.Commands
 import dev.proxyfox.bot.command.MemberCommands
+import dev.proxyfox.bot.command.SwitchCommands
+import dev.proxyfox.bot.command.SystemCommands
 import dev.proxyfox.bot.command.context.DiscordContext
 import dev.proxyfox.bot.command.context.DiscordMessageContext
 import dev.proxyfox.bot.command.context.InteractionCommandContext
@@ -304,6 +306,14 @@ suspend fun ChatInputCommandInteractionCreateEvent.onInteract() {
         "member" -> {
             val command = interaction.command as? SubCommand ?: return
             MemberCommands.interactionExecutors[command.name]?.let { it(InteractionCommandContext(this)) }
+        }
+        "system" -> {
+            val command = interaction.command as? SubCommand ?: return
+            SystemCommands.interactionExecutors[command.name]?.let { it(InteractionCommandContext(this)) }
+        }
+        "switch" -> {
+            val command = interaction.command as? SubCommand ?: return
+            SwitchCommands.interactionExecutors[command.name]?.let { it(InteractionCommandContext(this)) }
         }
         else -> {
 
