@@ -8,10 +8,7 @@
 
 package dev.proxyfox.bot
 
-import dev.kord.common.entity.MessageType
-import dev.kord.common.entity.Permission
-import dev.kord.common.entity.Permissions
-import dev.kord.common.entity.Snowflake
+import dev.kord.common.entity.*
 import dev.kord.core.behavior.channel.asChannelOf
 import dev.kord.core.behavior.channel.createMessage
 import dev.kord.core.cache.data.AttachmentData
@@ -20,10 +17,16 @@ import dev.kord.core.entity.Attachment
 import dev.kord.core.entity.Embed
 import dev.kord.core.entity.channel.GuildMessageChannel
 import dev.kord.core.event.interaction.*
+import dev.kord.core.entity.interaction.SubCommand
 import dev.kord.core.event.message.MessageCreateEvent
 import dev.kord.core.event.message.MessageUpdateEvent
 import dev.kord.core.event.message.ReactionAddEvent
 import dev.kord.rest.builder.message.create.embed
+import dev.proxyfox.bot.command.Commands
+import dev.proxyfox.bot.command.MemberCommands
+import dev.proxyfox.bot.command.context.DiscordContext
+import dev.proxyfox.bot.command.context.DiscordMessageContext
+import dev.proxyfox.bot.command.context.InteractionCommandContext
 import dev.proxyfox.bot.string.parser.parseString
 import dev.proxyfox.bot.webhook.GuildMessage
 import dev.proxyfox.bot.webhook.WebhookUtil
@@ -34,6 +37,7 @@ import dev.proxyfox.database.records.member.MemberRecord
 import dev.proxyfox.database.records.misc.AutoProxyMode
 import dev.proxyfox.database.records.system.SystemRecord
 import dev.proxyfox.database.records.system.SystemServerSettingsRecord
+import org.litote.kmongo.json
 import org.slf4j.LoggerFactory
 
 val prefixRegex = Regex("^(?:(<@!?${kord.selfId}>)|pf[>;!:])\\s*", RegexOption.IGNORE_CASE)
@@ -61,8 +65,12 @@ suspend fun MessageCreateEvent.onMessageCreate() {
         if (contentWithoutRegex.isBlank() && matcher.start(1) >= 0) {
             channel.createMessage("Hi, I'm ProxyFox! My prefix is `pf>`.")
         } else {
+            // Currently running both parsers for testing. TODO: Remove legacy parser
             // Run the command
-            val output = parseString(contentWithoutRegex, message) ?: return
+            val output = parseString(contentWithoutRegex, message) ?: run {
+                Commands.parser.parse(DiscordMessageContext(message, contentWithoutRegex) as DiscordContext<Any>)
+                return
+            }
             // Send output message if exists
             if (output.isNotBlank())
                 channel.createMessage(output)
@@ -287,6 +295,18 @@ suspend fun ReactionAddEvent.onReactionAdd() {
     }
 }
 
-fun GlobalMessageCommandInteractionCreateEvent.onInteract() {
+suspend fun GlobalMessageCommandInteractionCreateEvent.onInteract() {
 
+}
+
+suspend fun ChatInputCommandInteractionCreateEvent.onInteract() {
+    when (interaction.invokedCommandName) {
+        "member" -> {
+            val command = interaction.command as? SubCommand ?: return
+            MemberCommands.interactionExecutors[command.name]?.let { it(InteractionCommandContext(this)) }
+        }
+        else -> {
+
+        }
+    }
 }

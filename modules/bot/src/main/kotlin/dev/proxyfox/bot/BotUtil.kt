@@ -30,9 +30,17 @@ import dev.kord.core.on
 import dev.kord.gateway.Intent
 import dev.kord.gateway.PrivilegedIntent
 import dev.kord.gateway.builder.Shards
+import dev.kord.rest.builder.interaction.BaseInputChatBuilder
+import dev.kord.rest.builder.interaction.string
+import dev.kord.rest.builder.interaction.subCommand
 import dev.kord.rest.builder.message.EmbedBuilder
 import dev.kord.rest.builder.message.create.embed
 import dev.kord.rest.request.KtorRequestException
+import dev.proxyfox.bot.command.Commands
+import dev.proxyfox.bot.command.MemberCommands.registerMemberCommands
+import dev.proxyfox.bot.command.context.DiscordContext
+import dev.proxyfox.command.node.CommandNode
+import dev.proxyfox.command.node.builtin.LiteralNode
 import dev.proxyfox.common.*
 import dev.proxyfox.database.database
 import dev.proxyfox.database.records.member.MemberRecord
@@ -113,8 +121,16 @@ suspend fun login() {
         }
     }
 
-    kord.registerMessageCommands()
+    printStep("Registering slash commands", 2)
+
+    kord.registerApplicationCommands()
     kord.on<GlobalMessageCommandInteractionCreateEvent> {
+        onInteract()
+    }
+    kord.on<GlobalChatInputCommandInteractionCreateEvent> {
+        onInteract()
+    }
+    kord.on<ChatInputCommandInteractionCreateEvent> {
         onInteract()
     }
 
@@ -149,11 +165,12 @@ suspend fun login() {
     }
 }
 
-suspend fun Kord.registerMessageCommands() {
-    createGlobalMessageCommand("Delete Message") {}
-    createGlobalMessageCommand("Fetch Message Info") {}
-    createGlobalMessageCommand("Ping Message Author") {}
+suspend fun Kord.registerApplicationCommands() {
+    createGlobalMessageCommand("Delete Message")
+    createGlobalMessageCommand("Fetch Message Info")
+    createGlobalMessageCommand("Ping Message Author")
     createGlobalMessageCommand("Edit Message")
+    registerMemberCommands()
 }
 
 suspend fun updatePresence() {
