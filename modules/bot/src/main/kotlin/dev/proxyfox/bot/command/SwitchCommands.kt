@@ -20,11 +20,6 @@ import dev.proxyfox.bot.parseDuration
 import dev.proxyfox.bot.prompts.Button
 import dev.proxyfox.bot.prompts.Pager
 import dev.proxyfox.bot.prompts.TimedYesNoPrompt
-import dev.proxyfox.bot.string.dsl.greedy
-import dev.proxyfox.bot.string.dsl.literal
-import dev.proxyfox.bot.string.dsl.stringList
-import dev.proxyfox.bot.string.parser.MessageHolder
-import dev.proxyfox.bot.string.parser.registerCommand
 import dev.proxyfox.command.node.builtin.greedy
 import dev.proxyfox.command.node.builtin.literal
 import dev.proxyfox.command.node.builtin.stringList

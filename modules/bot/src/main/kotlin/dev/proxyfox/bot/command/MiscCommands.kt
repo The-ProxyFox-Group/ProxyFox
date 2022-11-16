@@ -24,12 +24,6 @@ import dev.proxyfox.bot.command.context.InteractionCommandContext
 import dev.proxyfox.bot.command.context.guild
 import dev.proxyfox.bot.command.context.runs
 import dev.proxyfox.bot.command.node.attachment
-import dev.proxyfox.bot.string.dsl.greedy
-import dev.proxyfox.bot.string.dsl.literal
-import dev.proxyfox.bot.string.dsl.string
-import dev.proxyfox.bot.string.dsl.unixLiteral
-import dev.proxyfox.bot.string.parser.MessageHolder
-import dev.proxyfox.bot.string.parser.registerCommand
 import dev.proxyfox.bot.webhook.GuildMessage
 import dev.proxyfox.bot.webhook.WebhookUtil
 import dev.proxyfox.command.node.builtin.*
