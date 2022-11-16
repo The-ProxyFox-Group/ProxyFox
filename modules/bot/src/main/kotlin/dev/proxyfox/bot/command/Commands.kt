@@ -60,17 +60,17 @@ fun GlobalChatInputCreateBuilder.access(type: String, name: String, builder: Sub
     subCommand(name, "Accesses the $type's $name", builder)
 }
 
-suspend fun <T> checkSystem(ctx: DiscordContext<T>, system: SystemRecord?): Boolean {
+suspend fun <T> checkSystem(ctx: DiscordContext<T>, system: SystemRecord?, private: Boolean = false): Boolean {
     system ?: run {
-        ctx.respondFailure("System does not exist. Create one using a slash command or `pf>system new`")
+        ctx.respondFailure("System does not exist. Create one using a slash command or `pf>system new`", private)
         return false
     }
     return true
 }
 
-suspend fun <T> checkMember(ctx: DiscordContext<T>, member: MemberRecord?): Boolean {
+suspend fun <T> checkMember(ctx: DiscordContext<T>, member: MemberRecord?, private: Boolean = false): Boolean {
     member ?: run {
-        ctx.respondFailure("Member does not exist. Create one using a slash command or `pf>member new`")
+        ctx.respondFailure("Member does not exist. Create one using a slash command or `pf>member new`", private)
         return false
     }
     return true

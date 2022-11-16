@@ -8,20 +8,21 @@
 
 package dev.proxyfox.bot.command.context
 
+import dev.kord.common.entity.Snowflake
 import dev.kord.core.behavior.channel.GuildChannelBehavior
 import dev.kord.core.behavior.channel.MessageChannelBehavior
 import dev.kord.core.behavior.channel.createMessage
 import dev.kord.core.behavior.interaction.respondEphemeral
 import dev.kord.core.behavior.interaction.respondPublic
-import dev.kord.core.entity.Attachment
-import dev.kord.core.entity.Guild
-import dev.kord.core.entity.Member
-import dev.kord.core.entity.User
+import dev.kord.core.entity.*
 import dev.kord.core.event.interaction.ChatInputCommandInteractionCreateEvent
 import dev.kord.rest.NamedFile
 import dev.kord.rest.builder.message.EmbedBuilder
 import dev.kord.rest.builder.message.create.embed
 import dev.proxyfox.command.CommandContext
+import dev.proxyfox.database.database
+import dev.proxyfox.database.records.misc.ProxiedMessageRecord
+import dev.proxyfox.database.records.system.SystemRecord
 import kotlin.jvm.optionals.getOrNull
 
 class InteractionCommandContext(value: ChatInputCommandInteractionCreateEvent) :
@@ -132,10 +133,28 @@ class InteractionCommandContext(value: ChatInputCommandInteractionCreateEvent) :
     }
 
     override suspend fun tryDeleteTrigger(reason: String?) {
+    }
 
+    override suspend fun optionalSuccess(text: String): ChatInputCommandInteractionCreateEvent {
+        respondSuccess(text, true)
+        return value
     }
 
     override suspend fun respondPager() {
         TODO("Not yet implemented")
+    }
+
+    override suspend fun getDatabaseMessage(
+        system: SystemRecord?,
+        messageId: Snowflake?
+    ): Pair<Message?, ProxiedMessageRecord?> {
+        val databaseMessage = if (messageId != null) {
+            database.fetchMessage(messageId)
+        } else if (system != null) {
+            database.fetchLatestMessage(system.id, getChannel().id)
+        } else null
+        databaseMessage ?: return null to null
+        val message = getChannel().getMessageOrNull(Snowflake(databaseMessage.newMessageId))
+        return message to databaseMessage
     }
 }

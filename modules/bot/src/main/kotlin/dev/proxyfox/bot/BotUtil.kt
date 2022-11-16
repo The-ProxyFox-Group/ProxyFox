@@ -38,6 +38,7 @@ import dev.kord.rest.builder.message.create.embed
 import dev.kord.rest.request.KtorRequestException
 import dev.proxyfox.bot.command.Commands
 import dev.proxyfox.bot.command.MemberCommands.registerMemberCommands
+import dev.proxyfox.bot.command.MiscCommands.registerMiscCommands
 import dev.proxyfox.bot.command.SwitchCommands.registerSwitchCommands
 import dev.proxyfox.bot.command.SystemCommands.registerSystemCommands
 import dev.proxyfox.bot.command.context.DiscordContext
@@ -172,6 +173,7 @@ suspend fun Kord.registerApplicationCommands() {
     registerMemberCommands()
     registerSystemCommands()
     registerSwitchCommands()
+    registerMiscCommands()
 }
 
 suspend fun updatePresence() {
@@ -196,7 +198,7 @@ suspend fun updatePresence() {
             else -> throw IllegalStateException("Count is not 0, 1, or 2!")
         }
         kord.editPresence {
-            watching("for pf>help! $append")
+            watching("for /info help! $append")
         }
         delay(120000)
     }

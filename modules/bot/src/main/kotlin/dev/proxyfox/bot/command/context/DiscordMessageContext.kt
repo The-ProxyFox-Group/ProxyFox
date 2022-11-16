@@ -8,6 +8,7 @@
 
 package dev.proxyfox.bot.command.context
 
+import dev.kord.common.entity.Snowflake
 import dev.kord.core.behavior.channel.createMessage
 import dev.kord.core.behavior.channel.MessageChannelBehavior
 import dev.kord.core.entity.*
@@ -16,6 +17,9 @@ import dev.kord.rest.builder.message.EmbedBuilder
 import dev.proxyfox.bot.prompts.TimedYesNoPrompt
 import dev.proxyfox.command.CommandContext
 import dev.proxyfox.common.applyAsync
+import dev.proxyfox.database.database
+import dev.proxyfox.database.records.misc.ProxiedMessageRecord
+import dev.proxyfox.database.records.system.SystemRecord
 import kotlin.jvm.optionals.getOrNull
 
 class DiscordMessageContext(message: Message, override val command: String): DiscordContext<Message>(message) {
@@ -65,8 +69,25 @@ class DiscordMessageContext(message: Message, override val command: String): Dis
         if (value.getGuildOrNull() != null) value.delete(reason)
     }
 
+    override suspend fun optionalSuccess(text: String): Message {
+        return value
+    }
+
     override suspend fun respondPager() {
         TODO("Not yet implemented")
+    }
+
+    override suspend fun getDatabaseMessage(system: SystemRecord?, messageId: Snowflake?): Pair<Message?, ProxiedMessageRecord?> {
+        val databaseMessage = if (messageId != null) {
+            database.fetchMessage(messageId)
+        } else if (value.referencedMessage != null) {
+            database.fetchMessage(value.referencedMessage!!.id)
+        } else if (system != null) {
+            database.fetchLatestMessage(system.id, getChannel().id)
+        } else null
+        databaseMessage ?: return null to null
+        val message = getChannel().getMessageOrNull(Snowflake(databaseMessage.newMessageId))
+        return message to databaseMessage
     }
 
     override suspend fun respondPlain(text: String, private: Boolean): Message {

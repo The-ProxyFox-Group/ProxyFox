@@ -434,7 +434,7 @@ object SystemCommands {
         system.name = name
         database.updateSystem(system)
         val add = if (name != null) "with name ${name}" else ""
-        ctx.respondSuccess("System created $add! See `pf>help` or `/pf-help` for how to set up your system further.")
+        ctx.respondSuccess("System created $add! See `pf>help` or `/info help` for how to set up your system further.")
         return true
     }
 

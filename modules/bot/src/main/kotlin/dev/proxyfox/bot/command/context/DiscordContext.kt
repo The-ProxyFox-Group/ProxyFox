@@ -11,10 +11,7 @@ package dev.proxyfox.bot.command.context
 import dev.kord.common.entity.Permission
 import dev.kord.common.entity.Snowflake
 import dev.kord.core.behavior.channel.MessageChannelBehavior
-import dev.kord.core.entity.Attachment
-import dev.kord.core.entity.Guild
-import dev.kord.core.entity.Member
-import dev.kord.core.entity.User
+import dev.kord.core.entity.*
 import dev.kord.rest.NamedFile
 import dev.kord.rest.builder.message.EmbedBuilder
 import dev.proxyfox.bot.kord
@@ -25,6 +22,7 @@ import dev.proxyfox.command.node.CommandNode
 import dev.proxyfox.command.node.builtin.int
 import dev.proxyfox.command.node.builtin.string
 import dev.proxyfox.database.database
+import dev.proxyfox.database.records.misc.ProxiedMessageRecord
 import dev.proxyfox.database.records.system.SystemRecord
 
 abstract class DiscordContext<T>(override val value: T) : CommandContext<T>() {
@@ -37,12 +35,16 @@ abstract class DiscordContext<T>(override val value: T) : CommandContext<T>() {
     abstract suspend fun respondEmbed(private: Boolean = false, text: String? = null, embed: suspend EmbedBuilder.() -> Unit): T
     abstract suspend fun tryDeleteTrigger(reason: String? = null)
 
+    abstract suspend fun optionalSuccess(text: String): T
+
     suspend fun hasRequired(permission: Permission): Boolean {
         val author = getMember() ?: return false
         return author.getPermissions().contains(permission)
     }
 
     abstract suspend fun respondPager()
+
+    abstract suspend fun getDatabaseMessage(system: SystemRecord?, messageId: Snowflake?): Pair<Message?, ProxiedMessageRecord?>
 }
 
 // Get a DiscordContext.
