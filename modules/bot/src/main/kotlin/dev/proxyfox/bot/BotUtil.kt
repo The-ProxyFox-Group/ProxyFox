@@ -38,6 +38,7 @@ import dev.kord.rest.builder.message.create.embed
 import dev.kord.rest.request.KtorRequestException
 import dev.proxyfox.bot.command.Commands
 import dev.proxyfox.bot.command.MemberCommands.registerMemberCommands
+import dev.proxyfox.bot.command.SwitchCommands.registerSwitchCommands
 import dev.proxyfox.bot.command.SystemCommands.registerSystemCommands
 import dev.proxyfox.bot.command.context.DiscordContext
 import dev.proxyfox.command.node.CommandNode
@@ -170,6 +171,7 @@ suspend fun Kord.registerApplicationCommands() {
     createGlobalMessageCommand("Edit Message")
     registerMemberCommands()
     registerSystemCommands()
+    registerSwitchCommands()
 }
 
 suspend fun updatePresence() {

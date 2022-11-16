@@ -65,6 +65,10 @@ class DiscordMessageContext(message: Message, override val command: String): Dis
         if (value.getGuildOrNull() != null) value.delete(reason)
     }
 
+    override suspend fun respondPager() {
+        TODO("Not yet implemented")
+    }
+
     override suspend fun respondPlain(text: String, private: Boolean): Message {
         return getChannel(private).createMessage(text)
     }

@@ -208,8 +208,7 @@ object SwitchCommands {
             runner = ctx.getUser()!!.id,
             channel = ctx.getChannel(),
             message = """
-                Are you sure you want to delete the latest switch (${switch.membersAsString()}, <t:$epoch:R>)?
-                $oldSwitch
+                Are you sure you want to delete the latest switch (${switch.membersAsString()}, <t:$epoch:R>)? ${if (oldSwitch != null) "\nThe previous switch would be at <t:${oldSwitch.timestamp.epochSecond}:R>" else ""}
                 The data will be lost forever (A long time!)
                 """.trimIndent(),
             yes = Button("Delete switch", Button.wastebasket, ButtonStyle.Danger) {

@@ -134,4 +134,8 @@ class InteractionCommandContext(value: ChatInputCommandInteractionCreateEvent) :
     override suspend fun tryDeleteTrigger(reason: String?) {
 
     }
+
+    override suspend fun respondPager() {
+        TODO("Not yet implemented")
+    }
 }

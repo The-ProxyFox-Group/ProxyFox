@@ -41,6 +41,8 @@ abstract class DiscordContext<T>(override val value: T) : CommandContext<T>() {
         val author = getMember() ?: return false
         return author.getPermissions().contains(permission)
     }
+
+    abstract suspend fun respondPager()
 }
 
 // Get a DiscordContext.
