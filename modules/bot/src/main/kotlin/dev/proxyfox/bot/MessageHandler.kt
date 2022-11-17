@@ -26,7 +26,6 @@ import dev.proxyfox.bot.command.*
 import dev.proxyfox.bot.command.context.DiscordContext
 import dev.proxyfox.bot.command.context.DiscordMessageContext
 import dev.proxyfox.bot.command.context.InteractionCommandContext
-import dev.proxyfox.bot.string.parser.parseString
 import dev.proxyfox.bot.webhook.GuildMessage
 import dev.proxyfox.bot.webhook.WebhookUtil
 import dev.proxyfox.common.ellipsis
