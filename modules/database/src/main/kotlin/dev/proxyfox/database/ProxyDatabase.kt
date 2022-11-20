@@ -10,6 +10,7 @@ package dev.proxyfox.database
 
 import dev.kord.common.entity.Snowflake
 import dev.kord.core.behavior.channel.ChannelBehavior
+import dev.proxyfox.database.records.group.GroupRecord
 import dev.proxyfox.database.records.member.MemberProxyTagRecord
 import dev.proxyfox.database.records.member.MemberRecord
 import dev.proxyfox.database.records.member.MemberServerSettingsRecord
@@ -191,6 +192,14 @@ open class ProxyDatabase<T : Database>(protected val proxy: T) : Database() {
 
     override suspend fun fetchMemberFromSystemAndName(systemId: String, memberName: String, caseSensitive: Boolean): MemberRecord? {
         return proxy.fetchMemberFromSystemAndName(systemId, memberName)
+    }
+
+    override suspend fun fetchGroupsFromMember(member: MemberRecord): List<GroupRecord> {
+        return proxy.fetchGroupsFromMember(member)
+    }
+
+    override suspend fun fetchMembersFromGroup(group: GroupRecord): List<MemberRecord> {
+        return proxy.fetchMembersFromGroup(group)
     }
 
     override suspend fun export(other: Database) {

@@ -17,6 +17,7 @@ import dev.proxyfox.common.ellipsis
 import dev.proxyfox.common.fromColor
 import dev.proxyfox.common.logger
 import dev.proxyfox.common.toColor
+import dev.proxyfox.database.records.group.GroupRecord
 import dev.proxyfox.database.records.member.MemberProxyTagRecord
 import dev.proxyfox.database.records.member.MemberRecord
 import dev.proxyfox.database.records.member.MemberServerSettingsRecord
@@ -508,6 +509,14 @@ class JsonDatabase(val file: File = File("systems.json")) : Database() {
 
     override suspend fun fetchMemberFromSystemAndName(systemId: String, memberName: String, caseSensitive: Boolean): MemberRecord? {
         return systems[systemId]?.membersByName?.get(memberName)?.view()
+    }
+
+    override suspend fun fetchGroupsFromMember(member: MemberRecord): List<GroupRecord> {
+        TODO("Not yet implemented")
+    }
+
+    override suspend fun fetchMembersFromGroup(group: GroupRecord): List<MemberRecord> {
+        TODO("Not yet implemented")
     }
 
     override suspend fun export(other: Database) {
