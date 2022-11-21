@@ -10,9 +10,13 @@ package dev.proxyfox.database.records.misc
 
 import dev.proxyfox.database.*
 import dev.proxyfox.database.records.MongoRecord
+import kotlinx.serialization.Contextual
+import kotlinx.serialization.Serializable
 import org.bson.types.ObjectId
 
+@Serializable
 class UserRecord : MongoRecord {
+    @Contextual
     override var _id: ObjectId = ObjectId()
     var id: ULong = 0UL
     var systemId: PkId? = null

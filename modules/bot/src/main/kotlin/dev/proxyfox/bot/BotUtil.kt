@@ -48,7 +48,6 @@ import kotlinx.coroutines.flow.fold
 import kotlinx.datetime.Clock
 import kotlinx.datetime.Instant
 import java.lang.Integer.min
-import java.time.OffsetDateTime
 import kotlin.contracts.ExperimentalContracts
 import kotlin.contracts.InvocationKind
 import kotlin.contracts.contract
@@ -215,8 +214,6 @@ fun findUnixValue(args: Array<String>, key: String): String? {
     }
     return null
 }
-
-fun OffsetDateTime.toKtInstant() = Instant.fromEpochSeconds(epochSeconds = toEpochSecond(), nanosecondAdjustment = nano)
 
 fun Int.kordColor() = if (this < 0) null else Color(this)
 

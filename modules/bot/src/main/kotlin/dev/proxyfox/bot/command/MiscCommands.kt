@@ -37,6 +37,7 @@ import kotlinx.coroutines.flow.filter
 import kotlinx.coroutines.flow.firstOrNull
 import kotlinx.coroutines.withContext
 import kotlinx.datetime.Clock
+import kotlinx.datetime.toJavaLocalDate
 import java.net.URL
 import kotlin.math.floor
 
@@ -583,14 +584,14 @@ To get support, head on over to https://discord.gg/q3yF8ay9V7"""
             member.birthday?.let {
                 field {
                     name = "Birthday"
-                    value = it.displayDate()
+                    value = it.toJavaLocalDate().displayDate()
                     inline = true
                 }
             }
             footer {
                 text = "Member ID \u2009• \u2009${member.id}\u2007|\u2007System ID \u2009• \u2009${system.id}\u2007|\u2007Created "
             }
-            timestamp = system.timestamp.toKtInstant()
+            timestamp = system.timestamp
         }
 
         ctx.message.delete("User requested message deletion")

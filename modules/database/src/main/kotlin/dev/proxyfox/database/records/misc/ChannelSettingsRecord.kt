@@ -9,20 +9,19 @@
 package dev.proxyfox.database.records.misc
 
 import dev.proxyfox.database.records.MongoRecord
+import kotlinx.serialization.Contextual
+import kotlinx.serialization.Serializable
 import org.bson.types.ObjectId
 
-class ChannelSettingsRecord : MongoRecord {
+@Serializable
+class ChannelSettingsRecord() : MongoRecord {
+    @Contextual
     override var _id: ObjectId = ObjectId()
     var serverId: ULong = 0UL
     var channelId: ULong = 0UL
     var proxyEnabled: Boolean = true
 
-    constructor()
-
-    constructor(
-        serverId: ULong,
-        channelId: ULong,
-    ) {
+    constructor(serverId: ULong, channelId: ULong) : this() {
         this.serverId = serverId
         this.channelId = channelId
     }

@@ -33,6 +33,7 @@ import dev.proxyfox.database.records.member.MemberRecord
 import dev.proxyfox.database.records.misc.AutoProxyMode
 import dev.proxyfox.database.records.system.SystemRecord
 import dev.proxyfox.database.records.system.SystemServerSettingsRecord
+import kotlinx.datetime.toJavaLocalDate
 import org.slf4j.LoggerFactory
 
 val prefixRegex = Regex("^(?:(<@!?${kord.selfId}>)|pf[>;!:])\\s*", RegexOption.IGNORE_CASE)
@@ -271,14 +272,14 @@ suspend fun ReactionAddEvent.onReactionAdd() {
                     member.birthday?.let {
                         field {
                             name = "Birthday"
-                            value = it.displayDate()
+                            value = it.toJavaLocalDate().displayDate()
                             inline = true
                         }
                     }
                     footer {
                         text = "Member ID \u2009• \u2009${member.id}\u2007|\u2007System ID \u2009• \u2009${system.id}\u2007|\u2007Created "
                     }
-                    timestamp = system.timestamp.toKtInstant()
+                    timestamp = system.timestamp
                 }
             }
             message.deleteReaction(userId, emoji)

@@ -8,14 +8,15 @@
 
 package dev.proxyfox.database.etc.importer
 
-import com.google.gson.JsonObject
 import dev.proxyfox.database.Database
-import dev.proxyfox.database.gson
 import dev.proxyfox.database.records.member.MemberProxyTagRecord
 import dev.proxyfox.database.records.member.MemberRecord
 import dev.proxyfox.database.records.system.SystemRecord
 import dev.proxyfox.database.validate
 import dev.proxyfox.database.etc.types.TbSystem
+import kotlinx.serialization.json.Json
+import kotlinx.serialization.json.JsonObject
+import kotlinx.serialization.json.decodeFromJsonElement
 
 /**
  * [Importer] to import a JSON with a TupperBox format
@@ -26,7 +27,9 @@ class TupperBoxImporter : Importer {
     private var proxies = HashMap<MemberRecord, MemberProxyTagRecord>()
 
     override suspend fun import(database: Database, json: JsonObject, userId: ULong) {
-        val tbSystem = gson.fromJson(json, TbSystem::class.java)
+        // Do lenient decoding
+        val decoder = Json { isLenient = true; coerceInputValues = true; ignoreUnknownKeys = true }
+        val tbSystem = decoder.decodeFromJsonElement<TbSystem>(json)
         system = database.getOrCreateSystem(userId)
 
         tbSystem.tuppers?.let { tbMembers ->

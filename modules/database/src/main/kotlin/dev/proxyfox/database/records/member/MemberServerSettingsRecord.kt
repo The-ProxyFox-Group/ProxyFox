@@ -10,6 +10,8 @@ package dev.proxyfox.database.records.member
 
 import dev.proxyfox.database.*
 import dev.proxyfox.database.records.MongoRecord
+import kotlinx.serialization.Contextual
+import kotlinx.serialization.Serializable
 import org.bson.types.ObjectId
 
 // Created 2022-09-04T14:16:19
@@ -19,7 +21,9 @@ import org.bson.types.ObjectId
  *
  * @author Ampflower
  **/
+@Serializable
 class MemberServerSettingsRecord : MongoRecord {
+    @Contextual
     override var _id: ObjectId = ObjectId()
     var serverId: ULong = 0UL
     var systemId: PkId = ""

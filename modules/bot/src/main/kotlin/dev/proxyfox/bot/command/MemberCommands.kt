@@ -19,11 +19,11 @@ import dev.proxyfox.bot.string.dsl.string
 import dev.proxyfox.bot.string.dsl.unixLiteral
 import dev.proxyfox.bot.string.parser.MessageHolder
 import dev.proxyfox.bot.string.parser.registerCommand
-import dev.proxyfox.bot.toKtInstant
 import dev.proxyfox.common.*
 import dev.proxyfox.database.database
 import dev.proxyfox.database.displayDate
 import dev.proxyfox.database.tryParseLocalDate
+import kotlinx.datetime.toJavaLocalDate
 
 /**
  * Commands for accessing and changing system  settings
@@ -147,7 +147,7 @@ object MemberCommands {
             member.birthday?.let {
                 field {
                     name = "Birthday"
-                    value = it.displayDate()
+                    value = it.toJavaLocalDate().displayDate()
                     inline = true
                 }
             }
@@ -173,7 +173,7 @@ object MemberCommands {
             footer {
                 text = "Member ID \u2009• \u2009${member.id}\u2007|\u2007System ID \u2009• \u2009${system.id}\u2007|\u2007Created "
             }
-            timestamp = member.timestamp.toKtInstant()
+            timestamp = member.timestamp
         }
         return ""
     }

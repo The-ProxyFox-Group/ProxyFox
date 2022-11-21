@@ -21,8 +21,8 @@ import dev.proxyfox.database.records.system.SystemChannelSettingsRecord
 import dev.proxyfox.database.records.system.SystemRecord
 import dev.proxyfox.database.records.system.SystemServerSettingsRecord
 import dev.proxyfox.database.records.system.SystemSwitchRecord
+import kotlinx.datetime.Instant
 import org.jetbrains.annotations.TestOnly
-import java.time.Instant
 import kotlin.contracts.ExperimentalContracts
 import kotlin.contracts.contract
 import kotlin.time.Duration

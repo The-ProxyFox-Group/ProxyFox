@@ -8,16 +8,16 @@
 
 package dev.proxyfox.database.etc.importer
 
-import com.google.gson.JsonElement
-import com.google.gson.JsonObject
-import com.google.gson.JsonParser
-import com.google.gson.JsonSyntaxException
 import dev.kord.core.entity.Entity
 import dev.proxyfox.database.Database
 import dev.proxyfox.database.database
 import dev.proxyfox.database.records.member.MemberProxyTagRecord
 import dev.proxyfox.database.records.member.MemberRecord
 import dev.proxyfox.database.records.system.SystemRecord
+import kotlinx.serialization.json.Json
+import kotlinx.serialization.json.JsonElement
+import kotlinx.serialization.json.JsonObject
+import kotlinx.serialization.json.jsonObject
 import java.io.InputStreamReader
 import java.io.Reader
 
@@ -41,6 +41,8 @@ suspend fun import(string: String, user: Entity?) = import(database, string, use
  * */
 suspend fun import(reader: Reader, user: Entity?) = import(database, reader, user)
 
+private val json1 = Json { ignoreUnknownKeys = true }
+
 /**
  * Imports a system file from a [String]. Supports both PluralKit and TupperBox formats.
  *
@@ -51,9 +53,9 @@ suspend fun import(reader: Reader, user: Entity?) = import(database, reader, use
  * */
 suspend fun import(database: Database, string: String, user: Entity?): Importer {
     try {
-        return import(database, JsonParser.parseString(string), user)
-    } catch (syntax: JsonSyntaxException) {
-        throw ImporterException("Not a JSON file", syntax)
+        return import(database, Json.parseToJsonElement(string), user)
+    } catch (reason: Throwable) {
+        throw ImporterException("Not a JSON file $reason", reason)
     }
 }
 
@@ -66,11 +68,7 @@ suspend fun import(database: Database, string: String, user: Entity?): Importer 
  * @author Oliver
  * */
 suspend fun import(database: Database, reader: Reader, user: Entity?): Importer {
-    try {
-        return import(database, JsonParser.parseReader(reader), user)
-    } catch (syntax: JsonSyntaxException) {
-        throw ImporterException("Not a JSON file", syntax)
-    }
+    return import(database, reader.readText(), user)
 }
 
 /**
@@ -82,13 +80,12 @@ suspend fun import(database: Database, reader: Reader, user: Entity?): Importer 
  * @author Oliver
  * */
 suspend fun import(database: Database, element: JsonElement, user: Entity?): Importer {
-    if (!element.isJsonObject) throw ImporterException("Not a JSON object")
-    val map = element.asJsonObject
-    if (map.size() == 0) throw ImporterException("No data to import.")
-    if (map.has("type") && map.has("uri") && map.size() == 2) {
+    val map = element.jsonObject
+    if (map.isEmpty()) throw ImporterException("No data to import.")
+    if (map.contains("type") && map.contains("uri") && map.size == 2) {
         throw ImporterException("Your system file is invalid; try fetching directly from ${map["uri"]}?")
     }
-    val importer = if (map.has("tuppers")) TupperBoxImporter() else PluralKitImporter()
+    val importer = if (map.contains("tuppers")) TupperBoxImporter() else PluralKitImporter()
     val bulk = database.bulkInserter()
     importer.import(bulk, map, user!!.id.value)
     bulk.commit()

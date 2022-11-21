@@ -20,7 +20,6 @@ import dev.proxyfox.bot.string.dsl.unixLiteral
 import dev.proxyfox.bot.string.parser.MessageHolder
 import dev.proxyfox.bot.string.parser.registerCommand
 import dev.proxyfox.bot.system
-import dev.proxyfox.bot.toKtInstant
 import dev.proxyfox.common.fromColor
 import dev.proxyfox.common.printStep
 import dev.proxyfox.common.toColor
@@ -128,7 +127,7 @@ object SystemCommands {
             footer {
                 text = "ID \u2009• \u2009${system.id}\u2007|\u2007Created "
             }
-            timestamp = system.timestamp.toKtInstant()
+            timestamp = system.timestamp
         }
         return ""
     }

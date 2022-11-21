@@ -21,7 +21,9 @@ import dev.proxyfox.bot.string.parser.registerCommand
 import dev.proxyfox.common.printStep
 import dev.proxyfox.database.database
 import dev.proxyfox.database.records.system.SystemSwitchRecord
-import java.time.Instant
+import kotlinx.datetime.Clock
+import kotlinx.datetime.DateTimeUnit
+import kotlinx.datetime.minus
 
 object SwitchCommands {
     suspend fun register() {
@@ -60,7 +62,7 @@ object SwitchCommands {
             return it
         }
 
-        val nowMinus = Instant.now().minusMillis(either.left!!.inWholeMilliseconds)
+        val nowMinus = Clock.System.now().minus(either.left!!.inWholeMilliseconds, DateTimeUnit.MILLISECOND)
         if (oldSwitch != null && oldSwitch.timestamp > nowMinus) {
             return "It looks like you're trying to break the space-time continuum..\n" +
                     "The provided time is set before the previous switch"
@@ -73,7 +75,7 @@ object SwitchCommands {
         TimedYesNoPrompt.build(
             runner = author.id,
             channel = ctx.message.channel,
-            message = "Are you sure you want to move the switch $members back to <t:${nowMinus.epochSecond}>?",
+            message = "Are you sure you want to move the switch $members back to <t:${nowMinus.epochSeconds}>?",
             yes = Button("Move switch", Button.move, ButtonStyle.Primary) {
                 switch.timestamp = nowMinus
                 database.updateSwitch(switch)
@@ -91,10 +93,10 @@ object SwitchCommands {
             ?: return "No switches registered"
 
         val switchBefore = database.fetchSecondLatestSwitch(system.id)?.let {
-            "The next latest switch is ${it.membersAsString()} (<t:${it.timestamp.epochSecond}:R>)."
+            "The next latest switch is ${it.membersAsString()} (<t:${it.timestamp.epochSeconds}:R>)."
         } ?: "There is no previous switch."
 
-        val epoch = switch.timestamp.epochSecond
+        val epoch = switch.timestamp.epochSeconds
 
         TimedYesNoPrompt.build(
             runner = ctx.message.author!!.id,
@@ -121,7 +123,7 @@ object SwitchCommands {
 
         Pager.build(ctx.message.author!!.id, ctx.message.channel, switches, 20, {
             title = "[$it] Front history of ${system.showName}"
-        }, { it.membersAsString("**", "**") + " (<t:${it.timestamp.epochSecond}:R>)\n" })
+        }, { it.membersAsString("**", "**") + " (<t:${it.timestamp.epochSeconds}:R>)\n" })
 
         return ""
     }

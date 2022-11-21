@@ -8,9 +8,6 @@
 
 package dev.proxyfox.database
 
-import com.google.gson.JsonObject
-import com.google.gson.JsonParser
-import com.google.gson.reflect.TypeToken
 import dev.kord.common.entity.Snowflake
 import dev.kord.core.behavior.channel.ChannelBehavior
 import dev.proxyfox.common.ellipsis
@@ -25,12 +22,13 @@ import dev.proxyfox.database.records.system.SystemChannelSettingsRecord
 import dev.proxyfox.database.records.system.SystemRecord
 import dev.proxyfox.database.records.system.SystemServerSettingsRecord
 import dev.proxyfox.database.records.system.SystemSwitchRecord
+import kotlinx.datetime.Clock
+import kotlinx.datetime.Instant
+import kotlinx.datetime.LocalDate
+import kotlinx.serialization.*
+import kotlinx.serialization.json.Json
 import org.jetbrains.annotations.TestOnly
 import java.io.File
-import java.time.Instant
-import java.time.LocalDate
-import java.time.OffsetDateTime
-import java.time.ZoneOffset
 import java.util.concurrent.ConcurrentHashMap
 import kotlin.time.Duration
 
@@ -158,7 +156,12 @@ import kotlin.time.Duration
  * @author Ampflower, Ram
  * @since ${version}
  **/
-class JsonDatabase(val file: File = File("systems.json")) : Database() {
+@Serializable
+class JsonDatabase(@Transient val file: File = File("systems.json")) : Database() {
+    @OptIn(ExperimentalSerializationApi::class)
+    @EncodeDefault
+    private val schema = 1
+
     private lateinit var systems: MutableMap<String, JsonSystemStruct>
     private lateinit var servers: MutableMap<ULong, ServerSettingsRecord>
     private lateinit var channels: MutableMap<ULong, ChannelSettingsRecord>
@@ -177,12 +180,11 @@ class JsonDatabase(val file: File = File("systems.json")) : Database() {
         users = ConcurrentHashMap()
         messageMap = ConcurrentHashMap()
         if (file.exists()) {
-            val db = file.reader().use(JsonParser::parseReader)
-            if (db != null && db.isJsonObject) {
-                read(db.asJsonObject)
+            val data = file.reader().readText()
+            val db = Json.decodeFromString<JsonDatabase>(data)
+            read(db)
 
-                return this
-            }
+            return this
         }
         init()
 
@@ -190,15 +192,12 @@ class JsonDatabase(val file: File = File("systems.json")) : Database() {
     }
 
     @TestOnly
-    fun read(dbObject: JsonObject) {
-        if (!dbObject.has("schema")) {
-            throw IllegalStateException("JSON Database missing schema.")
-        }
-        if (dbObject["schema"].asInt == 1) {
-            systems = gson.fromJson(dbObject.getAsJsonObject("systems"), systemMapToken.type) ?: ConcurrentHashMap()
-            servers = gson.fromJson(dbObject.getAsJsonObject("servers"), serverMapToken.type) ?: ConcurrentHashMap()
-            channels = gson.fromJson(dbObject.getAsJsonObject("channels"), channelMapToken.type) ?: ConcurrentHashMap()
-            messages = gson.fromJson(dbObject.getAsJsonArray("messages"), messageSetToken.type) ?: HashSet()
+    fun read(db: JsonDatabase) {
+        if (db.schema == 1) {
+            systems = db.systems
+            servers = db.servers
+            channels = db.channels
+            messages = db.messages
             for ((_, system) in systems) {
                 system.init()
             }
@@ -213,7 +212,7 @@ class JsonDatabase(val file: File = File("systems.json")) : Database() {
                 users[account] = system
             }
         }
-        OffsetDateTime.now().offset.totalSeconds
+        Clock.System.now().epochSeconds
     }
 
     @TestOnly
@@ -613,15 +612,10 @@ class JsonDatabase(val file: File = File("systems.json")) : Database() {
 
     override fun close() {
         if (dropped) return
-        val obj = JsonObject()
-        obj.addProperty("schema", 1)
-        obj.add("systems", gson.toJsonTree(systems))
-        obj.add("servers", gson.toJsonTree(servers))
-        obj.add("channels", gson.toJsonTree(channels))
-        obj.add("messages", gson.toJsonTree(messages))
-        file.writer().use { gson.toJson(obj, it) }
+        file.writeText(Json.encodeToString(this))
     }
 
+    @Serializable
     data class JsonSystemStruct(
         val id: String,
         /** The user must have their snowflake bound to `system` to be included here. */
@@ -633,7 +627,7 @@ class JsonDatabase(val file: File = File("systems.json")) : Database() {
         var color: Int = -1,
         var avatarUrl: String? = null,
         var timezone: String? = null,
-        var timestamp: OffsetDateTime? = OffsetDateTime.now(ZoneOffset.UTC),
+        var timestamp: Instant? = Clock.System.now(),
         var auto: String? = null,
         var autoType: AutoProxyMode? = AutoProxyMode.OFF,
         var token: String = generateToken(),
@@ -726,6 +720,7 @@ class JsonDatabase(val file: File = File("systems.json")) : Database() {
         }
     }
 
+    @Serializable
     data class JsonMemberStruct(
         val id: String,
         var systemId: String,
@@ -740,7 +735,7 @@ class JsonDatabase(val file: File = File("systems.json")) : Database() {
         var avatarUrl: String? = null,
         var keepProxy: Boolean = false,
         var messageCount: ULong = 0UL,
-        var timestamp: OffsetDateTime? = OffsetDateTime.now(ZoneOffset.UTC),
+        var timestamp: Instant? = Clock.System.now(),
 
         val serverSettings: MutableMap<ULong, MemberServerSettingsRecord> = HashMap()
     ) {
@@ -792,12 +787,5 @@ class JsonDatabase(val file: File = File("systems.json")) : Database() {
             messageCount = record.messageCount
             timestamp = record.timestamp
         }
-    }
-
-    companion object {
-        private val systemMapToken = object : TypeToken<ConcurrentHashMap<String, JsonSystemStruct>>() {}
-        private val serverMapToken = object : TypeToken<ConcurrentHashMap<ULong, ServerSettingsRecord>>() {}
-        private val channelMapToken = object : TypeToken<ConcurrentHashMap<ULong, ChannelSettingsRecord>>() {}
-        private val messageSetToken = object : TypeToken<HashSet<ProxiedMessageRecord>>() {}
     }
 }

@@ -18,7 +18,7 @@ import dev.proxyfox.database.records.system.SystemChannelSettingsRecord
 import dev.proxyfox.database.records.system.SystemRecord
 import dev.proxyfox.database.records.system.SystemServerSettingsRecord
 import dev.proxyfox.database.records.system.SystemSwitchRecord
-import java.time.Instant
+import kotlinx.datetime.Instant
 import kotlin.time.Duration
 
 // Created 2022-07-10T23:56:55

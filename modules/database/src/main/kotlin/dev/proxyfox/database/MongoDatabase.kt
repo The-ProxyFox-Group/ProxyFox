@@ -18,13 +18,12 @@ import dev.proxyfox.database.records.member.MemberProxyTagRecord
 import dev.proxyfox.database.records.member.MemberRecord
 import dev.proxyfox.database.records.member.MemberServerSettingsRecord
 import dev.proxyfox.database.records.misc.*
-import dev.proxyfox.database.records.system.SystemChannelSettingsRecord
-import dev.proxyfox.database.records.system.SystemRecord
-import dev.proxyfox.database.records.system.SystemServerSettingsRecord
-import dev.proxyfox.database.records.system.SystemSwitchRecord
+import dev.proxyfox.database.records.system.*
 import kotlinx.coroutines.reactive.awaitFirst
 import kotlinx.coroutines.reactive.awaitFirstOrElse
 import kotlinx.coroutines.reactive.awaitFirstOrNull
+import kotlinx.datetime.Instant
+import kotlinx.serialization.json.JsonObject
 import org.bson.conversions.Bson
 import org.litote.kmongo.and
 import org.litote.kmongo.coroutine.toList
@@ -33,7 +32,6 @@ import org.litote.kmongo.path
 import org.litote.kmongo.reactivestreams.*
 import org.litote.kmongo.util.KMongoUtil
 import org.slf4j.LoggerFactory
-import java.time.Instant
 import java.util.concurrent.ConcurrentLinkedQueue
 import java.util.concurrent.TimeUnit
 import kotlin.reflect.KProperty0
@@ -106,13 +104,15 @@ class MongoDatabase(private val dbName: String = "ProxyFox") : Database() {
 
         memberServers = db.getOrCreateCollection()
 
+        ping()
+
         return this
     }
 
     @OptIn(ExperimentalTime::class)
     override suspend fun ping(): Duration {
         return measureTime {
-            db.runCommand<Any>("{ping: 1}").awaitFirst()
+            db.runCommand<JsonObject>("{ping: 1}").awaitFirst()
         }
     }
 
@@ -196,7 +196,11 @@ class MongoDatabase(private val dbName: String = "ProxyFox") : Database() {
         memberProxies.deleteMany(filter).awaitFirst()
         memberServers.deleteMany(filter).awaitFirst()
         members.deleteMany(filter).awaitFirst()
-        systems.deleteOneById(system._id).awaitFirst()
+        if (system is MongoSystemRecord) {
+            systems.deleteOneById(system._id).awaitFirst()
+        } else {
+            throw IllegalStateException("SystemRecord is not a MongoSystemRecord")
+        }
         users.deleteMany(filter).awaitFirst()
         return true
     }
@@ -219,7 +223,11 @@ class MongoDatabase(private val dbName: String = "ProxyFox") : Database() {
     }
 
     override suspend fun updateSystem(system: SystemRecord) {
-        systems.replaceOneById(system._id, system, upsert()).awaitFirst()
+        if (system is MongoSystemRecord) {
+            systems.replaceOneById(system._id, system, upsert()).awaitFirst()
+        } else {
+            throw IllegalArgumentException("SystemRecord is not a MongoSystemRecord")
+        }
     }
 
     override suspend fun updateSystemServerSettings(serverSettings: SystemServerSettingsRecord) {
@@ -401,7 +409,11 @@ class MongoDatabase(private val dbName: String = "ProxyFox") : Database() {
 
         override suspend fun updateSystem(system: SystemRecord) {
             if (witness.add(system)) {
-                systemQueue += system.replace()
+                if (system is MongoSystemRecord) {
+                    systemQueue += system.replace()
+                } else {
+                    throw IllegalArgumentException("SystemRecord is not a MongoSystemRecord")
+                }
             }
         }
 
@@ -508,7 +520,11 @@ class MongoDatabase(private val dbName: String = "ProxyFox") : Database() {
             memberProxiesQueue += DeleteManyModel(filter)
             memberServerSettingsQueue += DeleteManyModel(filter)
             memberQueue += DeleteManyModel(filter)
-            systemQueue += system.delete()
+            if (system is MongoSystemRecord) {
+                systemQueue += system.delete()
+            } else {
+                throw IllegalStateException("SystemRecord is not a MongoSystemRecord")
+            }
             userQueue += DeleteManyModel(filter)
             return true
         }

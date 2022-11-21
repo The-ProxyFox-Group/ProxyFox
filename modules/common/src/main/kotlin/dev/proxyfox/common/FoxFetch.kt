@@ -8,8 +8,10 @@
 
 package dev.proxyfox.common
 
-import com.google.gson.*
 import kotlinx.coroutines.*
+import kotlinx.serialization.json.Json
+import kotlinx.serialization.json.jsonObject
+import kotlinx.serialization.json.jsonPrimitive
 import java.net.*
 
 object FoxFetch {
@@ -17,6 +19,6 @@ object FoxFetch {
     private val url = URL("https://api.tinyfox.dev/img?animal=fox&json")
 
     suspend fun fetch()  = withContext(Dispatchers.IO) {
-        baseUrl + url.openStream().reader().use { JsonParser.parseReader(it).asJsonObject["loc"].asString }
+        baseUrl + Json.parseToJsonElement(url.readText()).jsonObject["loc"]!!.jsonPrimitive.content
     }
 }

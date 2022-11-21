@@ -9,6 +9,8 @@
 package dev.proxyfox.database.records.misc
 
 import dev.proxyfox.database.records.MongoRecord
+import kotlinx.serialization.Contextual
+import kotlinx.serialization.Serializable
 import org.bson.types.ObjectId
 
 // Created 2022-10-04T21:06:30
@@ -17,15 +19,15 @@ import org.bson.types.ObjectId
  * @author Ampflower
  * @since ${version}
  **/
-class ServerSettingsRecord : MongoRecord {
+@Serializable
+class ServerSettingsRecord() : MongoRecord {
+    @Contextual
     override var _id: ObjectId = ObjectId()
     var serverId: ULong = 0UL
     var proxyRole: ULong = 0UL
     var moderationDelay: Short = 250
 
-    constructor()
-
-    constructor(serverId: ULong) {
+    constructor(serverId: ULong) : this() {
         this.serverId = serverId
     }
 
