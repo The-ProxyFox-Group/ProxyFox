@@ -60,7 +60,7 @@ class MongoDatabase(private val dbName: String = "ProxyFox") : Database() {
     private lateinit var servers: KCollection<ServerSettingsRecord>
     private lateinit var channels: KCollection<ChannelSettingsRecord>
 
-    private lateinit var systems: KCollection<SystemRecord>
+    private lateinit var systems: KCollection<MongoSystemRecord>
     private lateinit var systemSwitches: KCollection<SystemSwitchRecord>
     private lateinit var systemTokens: KCollection<TokenRecord>
 
@@ -182,7 +182,7 @@ class MongoDatabase(private val dbName: String = "ProxyFox") : Database() {
             system.users.add(userId)
             user.systemId = system.id
             updateUser(user)
-            this.systems.insertOne(system).awaitFirst()
+            this.systems.insertOne(MongoSystemRecord(system)).awaitFirst()
             system
         }
     }
@@ -378,7 +378,7 @@ class MongoDatabase(private val dbName: String = "ProxyFox") : Database() {
         private val channelSettingsQueue = ConcurrentLinkedQueue<WriteModel<ChannelSettingsRecord>>()
         private val memberQueue = ConcurrentLinkedQueue<WriteModel<MemberRecord>>()
         private val memberServerSettingsQueue = ConcurrentLinkedQueue<WriteModel<MemberServerSettingsRecord>>()
-        private val systemQueue = ConcurrentLinkedQueue<WriteModel<SystemRecord>>()
+        private val systemQueue = ConcurrentLinkedQueue<WriteModel<MongoSystemRecord>>()
         private val systemServerSettingsQueue = ConcurrentLinkedQueue<WriteModel<SystemServerSettingsRecord>>()
         private val systemChannelSettingsQueue = ConcurrentLinkedQueue<WriteModel<SystemChannelSettingsRecord>>()
         private val userQueue = ConcurrentLinkedQueue<WriteModel<UserRecord>>()
@@ -409,11 +409,7 @@ class MongoDatabase(private val dbName: String = "ProxyFox") : Database() {
 
         override suspend fun updateSystem(system: SystemRecord) {
             if (witness.add(system)) {
-                if (system is MongoSystemRecord) {
-                    systemQueue += system.replace()
-                } else {
-                    throw IllegalArgumentException("SystemRecord is not a MongoSystemRecord")
-                }
+                systemQueue += (if (system is MongoSystemRecord) system else MongoSystemRecord(system)).replace()
             }
         }
 
@@ -450,7 +446,7 @@ class MongoDatabase(private val dbName: String = "ProxyFox") : Database() {
         }
 
         override suspend fun createSystem(system: SystemRecord) {
-            if (witness.add(system)) systemQueue += system.create()
+            systemQueue += (if (system is MongoSystemRecord) system else MongoSystemRecord(system)).create()
         }
 
         override suspend fun createSystemServerSettings(serverSettings: SystemServerSettingsRecord) {
@@ -520,11 +516,7 @@ class MongoDatabase(private val dbName: String = "ProxyFox") : Database() {
             memberProxiesQueue += DeleteManyModel(filter)
             memberServerSettingsQueue += DeleteManyModel(filter)
             memberQueue += DeleteManyModel(filter)
-            if (system is MongoSystemRecord) {
-                systemQueue += system.delete()
-            } else {
-                throw IllegalStateException("SystemRecord is not a MongoSystemRecord")
-            }
+            systemQueue += (if (system is MongoSystemRecord) system else MongoSystemRecord(system)).delete()
             userQueue += DeleteManyModel(filter)
             return true
         }

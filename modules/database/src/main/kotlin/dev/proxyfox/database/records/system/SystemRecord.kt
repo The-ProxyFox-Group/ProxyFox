@@ -50,15 +50,25 @@ open class SystemRecord {
     val showName get() = name?.let { "$it [`$id`]" } ?: "`$id`"
 }
 
-class MongoSystemRecord : SystemRecord(), MongoRecord {
+@Serializable
+class MongoSystemRecord() : SystemRecord(), MongoRecord {
     @Contextual
     override var _id: ObjectId = ObjectId()
-}
 
-class JsonSystemStruct : SystemRecord() {
-    val members: MutableMap<String, JsonDatabase.JsonMemberStruct> = HashMap()
-    val serverSettings: MutableMap<ULong, SystemServerSettingsRecord> = HashMap()
-    val channelSettings: MutableMap<ULong, SystemChannelSettingsRecord> = HashMap()
-    val proxyTags: MutableSet<MemberProxyTagRecord> = HashSet()
-    val switches: MutableMap<String, SystemSwitchRecord> = HashMap()
+    constructor(system: SystemRecord) : this() {
+        id = system.id
+        users = system.users
+        name = system.name
+        description = system.description
+        tag = system.tag
+        pronouns = system.pronouns
+        color = system.color
+        avatarUrl = system.avatarUrl
+        timezone = system.timezone
+        timestamp = system.timestamp
+        token = system.token
+        autoProxy = system.autoProxy
+        autoType = system.autoType
+        trust = system.trust
+    }
 }
