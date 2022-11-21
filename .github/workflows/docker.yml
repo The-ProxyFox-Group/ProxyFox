@@ -1,4 +1,4 @@
-name: Build
+name: Docker Build and Publish
 on:
   push:
     branches:
@@ -49,5 +49,6 @@ jobs:
           username: ${{ github.repository_owner }}
           password: ${{ secrets.GITHUB_TOKEN }}
 
-      - run: docker build -t ghcr.io/the-proxyfox-group/proxyfox:latest .
+      - run: docker build -t ghcr.io/the-proxyfox-group/proxyfox:latest -t ghcr.io/the-proxyfox-group/proxyfox:${GITHUB_SHA} .
       - run: docker push ghcr.io/the-proxyfox-group/proxyfox:latest
+      - run: docker push ghcr.io/the-proxyfox-group/proxyfox:${GITHUB_SHA}
