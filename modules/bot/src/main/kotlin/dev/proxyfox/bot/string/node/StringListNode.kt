@@ -18,51 +18,62 @@ class StringListNode(val name: String, val executor: suspend MessageHolder.() ->
         var i = 0
         val arr = ArrayList<String>()
         while (i < string.length) {
+            if (string[i] == ' ') {
+                i++
+                continue
+            }
             when (string[i]) {
                 '"' -> {
                     var out = ""
-                    for (j in string.substring(1).indices) {
-                        if (string[j] == '"') {
-                            arr.add(out)
-                            out = ""
-                            i += j + 1
-                            continue
-                        }
-                        out += string[j].toString()
+                    val substr = string.substring(i + 1)
+                    for (j in substr.indices) {
+                        if (substr[j] == '"')
+                            break
+                        out += substr[j].toString()
                     }
-                    arr.add(out)
+                    if (out.isNotEmpty()) {
+                        arr.add(out)
+                        i += out.length + 2
+                        continue
+                    }
+                    if (out.isNotEmpty()) arr.add(out)
                 }
 
                 '\'' -> {
                     var out = ""
-                    for (j in string.substring(1).indices) {
-                        if (string[j] == '\'') {
-                            arr.add(out)
-                            out = ""
-                            i += j + 1
-                            continue
-                        }
-                        out += string[j].toString()
+                    val substr = string.substring(i + 1)
+                    for (j in substr.indices) {
+                        if (substr[j] == '\'')
+                            break
+                        out += substr[j].toString()
                     }
-                    arr.add(out)
+                    if (out.isNotEmpty()) {
+                        arr.add(out)
+                        i += out.length + 2
+                        continue
+                    }
                 }
 
                 else -> {
                     var out = ""
-                    for (j in string.indices) {
-                        if (string[j] == ' ') {
-                            arr.add(out)
-                            out = ""
-                            i += j
-                            continue
-                        }
-                        out += string[j].toString()
+                    val substr = string.substring(i)
+                    for (j in substr.indices) {
+                        if (substr[j] == ' ')
+                            break
+                        out += substr[j].toString()
                     }
-                    arr.add(out)
+                    if (out.isNotEmpty()) {
+                        arr.add(out)
+                        i += out.length
+                        continue
+                    }
                 }
             }
-            i = string.length
+            i++
         }
+//        for (s in arr) {
+//            logger.info(s)
+//        }
         holder.params[name] = arr.toTypedArray()
         return string.length
     }
