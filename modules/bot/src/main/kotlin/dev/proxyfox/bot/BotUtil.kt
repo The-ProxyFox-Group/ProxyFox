@@ -49,20 +49,29 @@ import kotlinx.datetime.Clock
 import kotlinx.datetime.Instant
 import java.lang.Integer.min
 import java.time.OffsetDateTime
+import java.util.concurrent.Executors
 import kotlin.contracts.ExperimentalContracts
 import kotlin.contracts.InvocationKind
 import kotlin.contracts.contract
 import kotlin.time.Duration
 import kotlin.time.Duration.Companion.milliseconds
+import kotlin.time.Duration.Companion.minutes
 
 const val UPLOAD_LIMIT = 1024 * 1024 * 8
+
+val scheduler = Executors.newScheduledThreadPool(Runtime.getRuntime().availableProcessors())
 
 lateinit var scope: CoroutineScope
 lateinit var kord: Kord
 lateinit var http: HttpClient
 lateinit var startTime: Instant
+private var count: Int = 0
 var shardCount: Int = 0
-val errorChannelId = try { Snowflake(System.getenv("PROXYFOX_LOG")) } catch (_: Throwable) { null }
+val errorChannelId = try {
+    Snowflake(System.getenv("PROXYFOX_LOG"))
+} catch (_: Throwable) {
+    null
+}
 var errorChannel: TextChannel? = null
 
 @OptIn(PrivilegedIntent::class)
@@ -148,29 +157,28 @@ suspend fun login() {
 
 suspend fun updatePresence() {
     startTime = Clock.System.now()
-    var count = 0
-    while (true) {
-        count++
-        count %= 3
+    scheduler.fixedRateAction(Duration.ZERO, 2.minutes) {
+        count = (count + 1) % 3
         val append = when (count) {
             0 -> {
                 val servers = kord.guilds.count()
                 "in $servers servers!"
             }
+
             1 -> {
                 val systemCount = database.fetchTotalSystems()
                 "$systemCount systems registered!"
             }
+
             2 -> {
                 "uptime: ${(Clock.System.now() - startTime).inWholeHours} hours!"
             }
 
-            else -> throw IllegalStateException("Count is not 0, 1, or 2!")
+            else -> throw AssertionError("Count ($count) not in 0..2")
         }
         kord.editPresence {
             watching("for pf>help! $append")
         }
-        delay(120000)
     }
 }
 
