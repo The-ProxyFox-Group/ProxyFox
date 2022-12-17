@@ -9,7 +9,6 @@
 package dev.proxyfox.database.records.misc
 
 import dev.proxyfox.database.records.MongoRecord
-import dev.proxyfox.database.records.Record
 import kotlinx.serialization.Contextual
 import kotlinx.serialization.Serializable
 import org.bson.types.ObjectId
@@ -21,7 +20,9 @@ import org.bson.types.ObjectId
  * @since ${version}
  **/
 @Serializable
-open class ServerSettingsRecord() : Record {
+class ServerSettingsRecord() : MongoRecord {
+    @Contextual
+    override var _id: ObjectId = ObjectId()
     var serverId: ULong = 0UL
     var proxyRole: ULong = 0UL
     var moderationDelay: Short = 250
@@ -33,20 +34,4 @@ open class ServerSettingsRecord() : Record {
     fun writeTo(other: ServerSettingsRecord) {
         other.proxyRole = proxyRole
     }
-
-    override fun toMongo() = MongoServerSettingsRecord(this)
-}
-
-@Serializable
-class MongoServerSettingsRecord : ServerSettingsRecord, MongoRecord {
-    @Contextual
-    override var _id: ObjectId = ObjectId()
-
-    constructor(record: ServerSettingsRecord) {
-        this.serverId = record.serverId
-        this.proxyRole = record.proxyRole
-        this.moderationDelay = record.moderationDelay
-    }
-
-    override fun toMongo() = this
 }

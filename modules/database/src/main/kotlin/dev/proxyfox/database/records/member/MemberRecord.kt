@@ -11,7 +11,6 @@ package dev.proxyfox.database.records.member
 import dev.proxyfox.database.PkId
 import dev.proxyfox.database.database
 import dev.proxyfox.database.records.MongoRecord
-import dev.proxyfox.database.records.Record
 import kotlinx.datetime.Clock
 import kotlinx.datetime.Instant
 import kotlinx.datetime.LocalDate
@@ -27,12 +26,15 @@ import org.bson.types.ObjectId
  * @author Ampflower
  **/
 @Serializable
-open class MemberRecord() : Record {
+class MemberRecord() : MongoRecord {
     constructor(id: PkId, systemId: PkId, name: String) : this() {
         this.id = id
         this.systemId = systemId
         this.name = name
     }
+
+    @Contextual
+    override var _id: ObjectId = ObjectId()
 
     var id: PkId = ""
     var systemId: PkId = ""
@@ -58,32 +60,4 @@ open class MemberRecord() : Record {
 
     suspend fun serverName(serverId: ULong) =
         if (serverId == 0UL) null else database.fetchMemberServerSettingsFromSystemAndMember(serverId, systemId, id)?.nickname
-
-    override fun toMongo() = MongoMemberRecord(this)
-}
-
-@Serializable
-class MongoMemberRecord : MemberRecord, MongoRecord {
-    @Contextual
-    override var _id: ObjectId = ObjectId()
-
-    constructor(record: MemberRecord) {
-        this.id = record.id
-        this.systemId = record.systemId
-        this.name = record.name
-        this.displayName = record.displayName
-        this.description = record.description
-        this.pronouns = record.pronouns
-        this.color = record.color
-        this.avatarUrl = record.avatarUrl
-        this.keepProxy = record.keepProxy
-        this.autoProxy = record.autoProxy
-        this.messageCount = record.messageCount
-        this.timestamp = record.timestamp
-        this.birthday = record.birthday
-        this.age = record.age
-        this.role = record.role
-    }
-
-    override fun toMongo() = this
 }

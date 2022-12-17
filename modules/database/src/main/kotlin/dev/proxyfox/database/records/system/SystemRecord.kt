@@ -8,10 +8,11 @@
 
 package dev.proxyfox.database.records.system
 
+import dev.proxyfox.database.JsonDatabase
 import dev.proxyfox.database.PkId
 import dev.proxyfox.database.generateToken
 import dev.proxyfox.database.records.MongoRecord
-import dev.proxyfox.database.records.Record
+import dev.proxyfox.database.records.member.MemberProxyTagRecord
 import dev.proxyfox.database.records.misc.AutoProxyMode
 import dev.proxyfox.database.records.misc.TrustLevel
 import kotlinx.datetime.Clock
@@ -28,7 +29,7 @@ import org.bson.types.ObjectId
  * @author Ampflower
  **/
 @Serializable
-open class SystemRecord : Record {
+open class SystemRecord {
     var id: PkId = ""
     var users: ArrayList<ULong> = ArrayList()
     var name: String? = null
@@ -47,31 +48,27 @@ open class SystemRecord : Record {
     var trust: HashMap<ULong, TrustLevel> = HashMap()
 
     val showName get() = name?.let { "$it [`$id`]" } ?: "`$id`"
-
-    override fun toMongo() = MongoSystemRecord(this)
 }
 
 @Serializable
-class MongoSystemRecord : SystemRecord, MongoRecord {
+class MongoSystemRecord() : SystemRecord(), MongoRecord {
     @Contextual
     override var _id: ObjectId = ObjectId()
 
-    constructor(record: SystemRecord) {
-        id = record.id
-        users = record.users
-        name = record.name
-        description = record.description
-        tag = record.tag
-        pronouns = record.pronouns
-        color = record.color
-        avatarUrl = record.avatarUrl
-        timezone = record.timezone
-        timestamp = record.timestamp
-        token = record.token
-        autoProxy = record.autoProxy
-        autoType = record.autoType
-        trust = record.trust
+    constructor(system: SystemRecord) : this() {
+        id = system.id
+        users = system.users
+        name = system.name
+        description = system.description
+        tag = system.tag
+        pronouns = system.pronouns
+        color = system.color
+        avatarUrl = system.avatarUrl
+        timezone = system.timezone
+        timestamp = system.timestamp
+        token = system.token
+        autoProxy = system.autoProxy
+        autoType = system.autoType
+        trust = system.trust
     }
-
-    override fun toMongo() = this
 }

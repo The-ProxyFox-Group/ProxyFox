@@ -10,14 +10,15 @@ package dev.proxyfox.database.records.misc
 
 import dev.proxyfox.database.PkId
 import dev.proxyfox.database.records.MongoRecord
-import dev.proxyfox.database.records.Record
 import kotlinx.datetime.Clock
 import kotlinx.serialization.Contextual
 import kotlinx.serialization.Serializable
 import org.bson.types.ObjectId
 
 @Serializable
-open class ProxiedMessageRecord : Record {
+class ProxiedMessageRecord : MongoRecord {
+    @Contextual
+    override var _id: ObjectId = ObjectId()
     var creationDate = Clock.System.now()
     var memberName: String = ""
     var userId: ULong = 0UL
@@ -29,28 +30,4 @@ open class ProxiedMessageRecord : Record {
     var memberId: PkId = ""
     var systemId: PkId = ""
     var deleted = false
-
-    override fun toMongo() = MongoProxiedMessageRecord(this)
-}
-
-@Serializable
-class MongoProxiedMessageRecord : ProxiedMessageRecord, MongoRecord {
-    @Contextual
-    override var _id: ObjectId = ObjectId()
-
-    constructor(record: ProxiedMessageRecord) {
-        this.creationDate = record.creationDate
-        this.memberName = record.memberName
-        this.userId = record.userId
-        this.oldMessageId = record.oldMessageId
-        this.newMessageId = record.newMessageId
-        this.guildId = record.guildId
-        this.channelId = record.channelId
-        this.threadId = record.threadId
-        this.memberId = record.memberId
-        this.systemId = record.systemId
-        this.deleted = record.deleted
-    }
-
-    override fun toMongo() = this
 }

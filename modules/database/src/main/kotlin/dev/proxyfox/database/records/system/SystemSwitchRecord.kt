@@ -10,7 +10,6 @@ package dev.proxyfox.database.records.system
 
 import dev.proxyfox.database.*
 import dev.proxyfox.database.records.MongoRecord
-import dev.proxyfox.database.records.Record
 import kotlinx.datetime.Clock
 import kotlinx.datetime.Instant
 import kotlinx.serialization.Contextual
@@ -26,7 +25,9 @@ import java.time.Duration
  * @author Ampflower
  **/
 @Serializable
-open class SystemSwitchRecord : Record {
+class SystemSwitchRecord : MongoRecord {
+    @Contextual
+    override var _id: ObjectId = ObjectId()
     var systemId: PkId
     var id: PkId
     var memberIds: List<PkId>
@@ -60,21 +61,4 @@ open class SystemSwitchRecord : Record {
     override fun toString(): String {
         return "Switch{systemId=$systemId, memberIds=$memberIds, timestamp=$timestamp}"
     }
-
-    override fun toMongo() = MongoSystemSwitchRecord(this)
-}
-
-@Serializable
-class MongoSystemSwitchRecord : SystemSwitchRecord, MongoRecord {
-    @Contextual
-    override var _id: ObjectId = ObjectId()
-
-    constructor(record: SystemSwitchRecord) {
-        this.systemId = record.systemId
-        this.id = record.id
-        this.memberIds = record.memberIds
-        this.timestamp = record.timestamp
-    }
-
-    override fun toMongo() = this
 }
