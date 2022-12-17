@@ -381,7 +381,7 @@ class MongoDatabase(private val dbName: String = "ProxyFox") : Database() {
         if (switch is MongoSystemSwitchRecord) {
             systemSwitches.deleteOneById(switch._id).awaitFirst()
         } else {
-            val id = systemSwitches.findFirstOrNull("id" eq  switch.id, "systemId" eq switch.systemId)?._id
+            val id = systemSwitches.findFirstOrNull("id" eq  switch.id)?._id
             if (id != null) {
                 systemSwitches.deleteOneById(id).awaitFirst()
             }
@@ -392,7 +392,7 @@ class MongoDatabase(private val dbName: String = "ProxyFox") : Database() {
         if (switch is MongoSystemSwitchRecord) {
             systemSwitches.replaceOneById(switch._id, switch.toMongo(), upsert()).awaitFirst()
         } else {
-            val id = systemSwitches.findFirstOrNull("id" eq  switch.id, "systemId" eq switch.systemId)?._id
+            val id = systemSwitches.findFirstOrNull("id" eq  switch.id)?._id
             if (id != null) {
                 systemSwitches.replaceOneById(id, switch.toMongo(), upsert()).awaitFirst()
             }
