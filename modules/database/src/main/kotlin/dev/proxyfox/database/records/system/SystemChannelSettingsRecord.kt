@@ -10,14 +10,13 @@ package dev.proxyfox.database.records.system
 
 import dev.proxyfox.database.*
 import dev.proxyfox.database.records.MongoRecord
+import dev.proxyfox.database.records.Record
 import kotlinx.serialization.Contextual
 import kotlinx.serialization.Serializable
 import org.bson.types.ObjectId
 
 @Serializable
-class SystemChannelSettingsRecord() : MongoRecord {
-    @Contextual
-    override var _id: ObjectId = ObjectId()
+open class SystemChannelSettingsRecord() : Record {
     var serverId: ULong = 0UL
     var channelId: ULong = 0UL
     var systemId: PkId = ""
@@ -31,4 +30,21 @@ class SystemChannelSettingsRecord() : MongoRecord {
     fun writeTo(other: SystemChannelSettingsRecord) {
         other.proxyEnabled = proxyEnabled
     }
+
+    override fun toMongo() = MongoSystemChannelSettingsRecord(this)
+}
+
+@Serializable
+class MongoSystemChannelSettingsRecord: SystemChannelSettingsRecord, MongoRecord {
+    @Contextual
+    override var _id: ObjectId = ObjectId()
+
+    constructor(record: SystemChannelSettingsRecord) {
+        serverId = record.serverId
+        channelId = record.channelId
+        systemId = record.systemId
+        proxyEnabled = record.proxyEnabled
+    }
+
+    override fun toMongo() = this
 }

@@ -12,6 +12,7 @@ import com.google.gson.annotations.Expose
 import com.google.gson.annotations.SerializedName
 import dev.proxyfox.database.*
 import dev.proxyfox.database.records.MongoRecord
+import dev.proxyfox.database.records.Record
 import kotlinx.serialization.Contextual
 import kotlinx.serialization.Serializable
 import org.bson.types.ObjectId
@@ -24,10 +25,7 @@ import org.bson.types.ObjectId
  * @author Ampflower
  **/
 @Serializable
-class MemberProxyTagRecord(): MongoRecord {
-    @Contextual
-    override var _id: ObjectId = ObjectId()
-
+open class MemberProxyTagRecord() : Record {
     var systemId: PkId = ""
     var memberId: PkId = ""
 
@@ -78,4 +76,20 @@ class MemberProxyTagRecord(): MongoRecord {
     }
 
     override fun toString() = "${prefix ?: ""}text${suffix ?: ""}"
+
+    override fun toMongo() = MongoMemberProxyTagRecord(this)
+}
+
+class MongoMemberProxyTagRecord : MemberProxyTagRecord, MongoRecord {
+    @Contextual
+    override var _id: ObjectId = ObjectId()
+
+    constructor(record: MemberProxyTagRecord) {
+        this.systemId = record.systemId
+        this.memberId = record.memberId
+        this.prefix = record.prefix
+        this.suffix = record.suffix
+    }
+
+    override fun toMongo() = this
 }

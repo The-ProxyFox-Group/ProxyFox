@@ -14,9 +14,8 @@ import com.mongodb.reactivestreams.client.MongoCollection
 import dev.kord.common.entity.Snowflake
 import dev.kord.core.behavior.channel.ChannelBehavior
 import dev.proxyfox.database.records.MongoRecord
-import dev.proxyfox.database.records.member.MemberProxyTagRecord
-import dev.proxyfox.database.records.member.MemberRecord
-import dev.proxyfox.database.records.member.MemberServerSettingsRecord
+import dev.proxyfox.database.records.Record
+import dev.proxyfox.database.records.member.*
 import dev.proxyfox.database.records.misc.*
 import dev.proxyfox.database.records.system.*
 import kotlinx.coroutines.reactive.awaitFirst
@@ -53,24 +52,24 @@ class MongoDatabase(private val dbName: String = "ProxyFox") : Database() {
     private lateinit var kmongo: MongoClient
     private lateinit var db: Mongo
 
-    private lateinit var users: KCollection<UserRecord>
+    private lateinit var users: KCollection<MongoUserRecord>
 
-    private lateinit var messages: KCollection<ProxiedMessageRecord>
+    private lateinit var messages: KCollection<MongoProxiedMessageRecord>
 
-    private lateinit var servers: KCollection<ServerSettingsRecord>
-    private lateinit var channels: KCollection<ChannelSettingsRecord>
+    private lateinit var servers: KCollection<MongoServerSettingsRecord>
+    private lateinit var channels: KCollection<MongoChannelSettingsRecord>
 
     private lateinit var systems: KCollection<MongoSystemRecord>
-    private lateinit var systemSwitches: KCollection<SystemSwitchRecord>
-    private lateinit var systemTokens: KCollection<TokenRecord>
+    private lateinit var systemSwitches: KCollection<MongoSystemSwitchRecord>
+    private lateinit var systemTokens: KCollection<MongoTokenRecord>
 
-    private lateinit var systemServers: KCollection<SystemServerSettingsRecord>
-    private lateinit var systemChannels: KCollection<SystemChannelSettingsRecord>
+    private lateinit var systemServers: KCollection<MongoSystemServerSettingsRecord>
+    private lateinit var systemChannels: KCollection<MongoSystemChannelSettingsRecord>
 
-    private lateinit var members: KCollection<MemberRecord>
-    private lateinit var memberProxies: KCollection<MemberProxyTagRecord>
+    private lateinit var members: KCollection<MongoMemberRecord>
+    private lateinit var memberProxies: KCollection<MongoMemberProxyTagRecord>
 
-    private lateinit var memberServers: KCollection<MemberServerSettingsRecord>
+    private lateinit var memberServers: KCollection<MongoMemberServerSettingsRecord>
 
     override suspend fun setup(): MongoDatabase {
         val connectionString = System.getenv("PROXYFOX_MONGO")
@@ -159,7 +158,14 @@ class MongoDatabase(private val dbName: String = "ProxyFox") : Database() {
         servers.findFirstOrNull("serverId" eq serverId) ?: ServerSettingsRecord(serverId)
 
     override suspend fun updateServerSettings(serverSettings: ServerSettingsRecord) {
-        servers.replaceOneById(serverSettings._id, serverSettings, upsert()).awaitFirst()
+        if (serverSettings is MongoServerSettingsRecord) {
+            servers.replaceOneById(serverSettings._id, serverSettings, upsert()).awaitFirst()
+        } else {
+            val id = servers.findFirstOrNull("serverId" eq serverSettings.serverId)?._id
+            if (id != null) {
+                servers.replaceOneById(id, serverSettings.toMongo(), upsert()).awaitFirst()
+            }
+        }
     }
 
     override suspend fun getOrCreateChannelSettingsFromSystem(channelId: ULong, systemId: String): SystemChannelSettingsRecord =
@@ -171,7 +177,14 @@ class MongoDatabase(private val dbName: String = "ProxyFox") : Database() {
             ?: ChannelSettingsRecord(serverId, channelId)
 
     override suspend fun updateChannel(channel: ChannelSettingsRecord) {
-        channels.replaceOneById(channel._id, channel, upsert()).awaitFirst()
+        if (channel is MongoChannelSettingsRecord) {
+            channels.replaceOneById(channel._id, channel, upsert()).awaitFirst()
+        } else {
+            val id = channels.findFirstOrNull("channelId" eq  channel.channelId)?._id
+            if (id != null) {
+                channels.replaceOneById(id, channel.toMongo(), upsert()).awaitFirst()
+            }
+        }
     }
 
     override suspend fun getOrCreateSystem(userId: ULong, id: String?): SystemRecord {
@@ -199,7 +212,10 @@ class MongoDatabase(private val dbName: String = "ProxyFox") : Database() {
         if (system is MongoSystemRecord) {
             systems.deleteOneById(system._id).awaitFirst()
         } else {
-            throw IllegalStateException("SystemRecord is not a MongoSystemRecord")
+            val id = systems.findFirstOrNull("systemId" eq system.id)?._id
+            if (id != null) {
+                systems.deleteOneById(id).awaitFirst()
+            }
         }
         users.deleteMany(filter).awaitFirst()
         return true
@@ -210,36 +226,81 @@ class MongoDatabase(private val dbName: String = "ProxyFox") : Database() {
         val filter = and("systemId" eq systemId, "memberId" eq memberId)
         memberProxies.deleteMany(filter).awaitFirst()
         memberServers.deleteMany(filter).awaitFirst()
-        members.deleteOneById(member._id).awaitFirst()
+        if (member is MongoMemberRecord) {
+            members.deleteOneById(member._id).awaitFirst()
+        } else {
+            val id = members.findFirstOrNull("memberId" eq member.id)?._id
+            if (id != null) {
+                members.deleteOneById(id).awaitFirst()
+            }
+        }
         return true
     }
 
     override suspend fun updateMember(member: MemberRecord) {
-        members.replaceOneById(member._id, member, upsert()).awaitFirst()
+        if (member is MongoMemberRecord) {
+            members.replaceOneById(member._id, member, upsert()).awaitFirst()
+        } else {
+            val id = members.findFirstOrNull("id" eq  member.id)?._id
+            if (id != null) {
+                members.replaceOneById(id, member.toMongo(), upsert()).awaitFirst()
+            }
+        }
     }
 
     override suspend fun updateMemberServerSettings(serverSettings: MemberServerSettingsRecord) {
-        memberServers.replaceOneById(serverSettings._id, serverSettings, upsert()).awaitFirst()
+        if (serverSettings is MongoMemberServerSettingsRecord) {
+            memberServers.replaceOneById(serverSettings._id, serverSettings, upsert()).awaitFirst()
+        } else {
+            val id = memberServers.findFirstOrNull("memberId" eq  serverSettings.memberId, "serverId" eq serverSettings.serverId)?._id
+            if (id != null) {
+                memberServers.replaceOneById(id, serverSettings.toMongo(), upsert()).awaitFirst()
+            }
+        }
     }
 
     override suspend fun updateSystem(system: SystemRecord) {
         if (system is MongoSystemRecord) {
             systems.replaceOneById(system._id, system, upsert()).awaitFirst()
         } else {
-            throw IllegalArgumentException("SystemRecord is not a MongoSystemRecord")
+            val id = systems.findFirstOrNull("systemId" eq system.id)?._id
+            if (id != null) {
+                systems.replaceOneById(id, system.toMongo(), upsert()).awaitFirst()
+            }
         }
     }
 
     override suspend fun updateSystemServerSettings(serverSettings: SystemServerSettingsRecord) {
-        systemServers.replaceOneById(serverSettings._id, serverSettings, upsert()).awaitFirst()
+        if (serverSettings is MongoSystemServerSettingsRecord) {
+            systemServers.replaceOneById(serverSettings._id, serverSettings, upsert()).awaitFirst()
+        } else {
+            val id = systemServers.findFirstOrNull("systemId" eq serverSettings.systemId, "serverId" eq serverSettings.serverId)?._id
+            if (id != null) {
+                systemServers.replaceOneById(id, serverSettings.toMongo(), upsert()).awaitFirst()
+            }
+        }
     }
 
     override suspend fun updateSystemChannelSettings(channelSettings: SystemChannelSettingsRecord) {
-        systemChannels.replaceOneById(channelSettings._id, channelSettings, upsert()).awaitFirst()
+        if (channelSettings is MongoSystemChannelSettingsRecord) {
+            systemChannels.replaceOneById(channelSettings._id, channelSettings, upsert()).awaitFirst()
+        } else {
+            val id = systemChannels.findFirstOrNull("systemId" eq channelSettings.systemId, "serverId" eq channelSettings.serverId)?._id
+            if (id != null) {
+                systemChannels.replaceOneById(id, channelSettings.toMongo(), upsert()).awaitFirst()
+            }
+        }
     }
 
     override suspend fun updateUser(user: UserRecord) {
-        users.replaceOneById(user._id, user, upsert()).awaitFirst()
+        if (user is MongoUserRecord) {
+            users.replaceOneById(user._id, user, upsert()).awaitFirst()
+        } else {
+            val id = users.findFirstOrNull("userId" eq user.id)?._id
+            if (id != null) {
+                users.replaceOneById(id, user.toMongo(), upsert()).awaitFirst()
+            }
+        }
     }
 
     override suspend fun createMessage(
@@ -261,11 +322,18 @@ class MongoDatabase(private val dbName: String = "ProxyFox") : Database() {
         message.channelId = channel.id.value
         message.memberId = memberId
         message.systemId = systemId
-        messages.insertOne(message).awaitFirst()
+        messages.insertOne(message.toMongo()).awaitFirst()
     }
 
     override suspend fun updateMessage(message: ProxiedMessageRecord) {
-        messages.replaceOneById(message._id, message, upsert()).awaitFirst()
+        if (message is MongoProxiedMessageRecord) {
+            messages.replaceOneById(message._id, message, upsert()).awaitFirst()
+        } else {
+            val id = messages.findFirstOrNull("oldMessageId" eq  message.oldMessageId)?._id
+            if (id != null) {
+                messages.replaceOneById(id, message.toMongo(), upsert()).awaitFirst()
+            }
+        }
     }
 
     override suspend fun fetchMessage(messageId: Snowflake): ProxiedMessageRecord? =
@@ -281,11 +349,18 @@ class MongoDatabase(private val dbName: String = "ProxyFox") : Database() {
         systemTokens.findFirstOrNull("systemId" eq systemId) ?: TokenRecord(generateToken(), systemId)
 
     override suspend fun updateToken(token: TokenRecord) {
-        systemTokens.replaceOneById(token._id, token, upsert()).awaitFirst()
+        if (token is MongoTokenRecord) {
+            systemTokens.replaceOneById(token._id, token, upsert()).awaitFirst()
+        } else {
+            val id = systemTokens.findFirstOrNull("token" eq  token.token)?._id
+            if (id != null) {
+                systemTokens.replaceOneById(id, token.toMongo(), upsert()).awaitFirst()
+            }
+        }
     }
 
     override suspend fun createProxyTag(record: MemberProxyTagRecord): Boolean {
-        memberProxies.insertOne(record).awaitFirst()
+        memberProxies.insertOne(record.toMongo()).awaitFirst()
         return true
     }
 
@@ -298,16 +373,30 @@ class MongoDatabase(private val dbName: String = "ProxyFox") : Database() {
         switch.systemId = systemId
         switch.memberIds = memberId
         timestamp?.let { switch.timestamp = it }
-        systemSwitches.insertOne(switch).awaitFirst()
+        systemSwitches.insertOne(switch.toMongo()).awaitFirst()
         return switch
     }
 
     override suspend fun dropSwitch(switch: SystemSwitchRecord) {
-        systemSwitches.deleteOneById(switch._id).awaitFirst()
+        if (switch is MongoSystemSwitchRecord) {
+            systemSwitches.deleteOneById(switch._id).awaitFirst()
+        } else {
+            val id = systemSwitches.findFirstOrNull("id" eq  switch.id)?._id
+            if (id != null) {
+                systemSwitches.deleteOneById(id).awaitFirst()
+            }
+        }
     }
 
     override suspend fun updateSwitch(switch: SystemSwitchRecord) {
-        systemSwitches.replaceOneById(switch._id, switch, upsert()).awaitFirst()
+        if (switch is MongoSystemSwitchRecord) {
+            systemSwitches.replaceOneById(switch._id, switch.toMongo(), upsert()).awaitFirst()
+        } else {
+            val id = systemSwitches.findFirstOrNull("id" eq  switch.id)?._id
+            if (id != null) {
+                systemSwitches.replaceOneById(id, switch.toMongo(), upsert()).awaitFirst()
+            }
+        }
     }
 
     override suspend fun fetchSwitchesFromSystem(systemId: String): List<SystemSwitchRecord> =
@@ -374,17 +463,17 @@ class MongoDatabase(private val dbName: String = "ProxyFox") : Database() {
     private class BulkInserter(mongo: MongoDatabase) : ProxyDatabase<MongoDatabase>(mongo) {
         private val logger = LoggerFactory.getLogger(BulkInserter::class.java)
 
-        private val serverSettingsQueue = ConcurrentLinkedQueue<WriteModel<ServerSettingsRecord>>()
-        private val channelSettingsQueue = ConcurrentLinkedQueue<WriteModel<ChannelSettingsRecord>>()
-        private val memberQueue = ConcurrentLinkedQueue<WriteModel<MemberRecord>>()
-        private val memberServerSettingsQueue = ConcurrentLinkedQueue<WriteModel<MemberServerSettingsRecord>>()
+        private val serverSettingsQueue = ConcurrentLinkedQueue<WriteModel<MongoServerSettingsRecord>>()
+        private val channelSettingsQueue = ConcurrentLinkedQueue<WriteModel<MongoChannelSettingsRecord>>()
+        private val memberQueue = ConcurrentLinkedQueue<WriteModel<MongoMemberRecord>>()
+        private val memberServerSettingsQueue = ConcurrentLinkedQueue<WriteModel<MongoMemberServerSettingsRecord>>()
         private val systemQueue = ConcurrentLinkedQueue<WriteModel<MongoSystemRecord>>()
-        private val systemServerSettingsQueue = ConcurrentLinkedQueue<WriteModel<SystemServerSettingsRecord>>()
-        private val systemChannelSettingsQueue = ConcurrentLinkedQueue<WriteModel<SystemChannelSettingsRecord>>()
-        private val userQueue = ConcurrentLinkedQueue<WriteModel<UserRecord>>()
-        private val proxiedMessageQueue = ConcurrentLinkedQueue<WriteModel<ProxiedMessageRecord>>()
-        private val systemSwitchQueue = ConcurrentLinkedQueue<WriteModel<SystemSwitchRecord>>()
-        private val memberProxiesQueue = ConcurrentLinkedQueue<WriteModel<MemberProxyTagRecord>>()
+        private val systemServerSettingsQueue = ConcurrentLinkedQueue<WriteModel<MongoSystemServerSettingsRecord>>()
+        private val systemChannelSettingsQueue = ConcurrentLinkedQueue<WriteModel<MongoSystemChannelSettingsRecord>>()
+        private val userQueue = ConcurrentLinkedQueue<WriteModel<MongoUserRecord>>()
+        private val proxiedMessageQueue = ConcurrentLinkedQueue<WriteModel<MongoProxiedMessageRecord>>()
+        private val systemSwitchQueue = ConcurrentLinkedQueue<WriteModel<MongoSystemSwitchRecord>>()
+        private val memberProxiesQueue = ConcurrentLinkedQueue<WriteModel<MongoMemberProxyTagRecord>>()
         private val witness = HashSet<Any?>()
 
         override suspend fun getDatabaseName(): String {
@@ -392,96 +481,98 @@ class MongoDatabase(private val dbName: String = "ProxyFox") : Database() {
         }
 
         override suspend fun updateServerSettings(serverSettings: ServerSettingsRecord) {
-            if (witness.add(serverSettings)) serverSettingsQueue += serverSettings.replace()
+            if (witness.add(serverSettings))
+                serverSettingsQueue += (if (serverSettings is MongoServerSettingsRecord) serverSettings else MongoServerSettingsRecord(serverSettings)).replace()
         }
 
         override suspend fun updateChannel(channel: ChannelSettingsRecord) {
-            if (witness.add(channel)) channelSettingsQueue += channel.replace()
+            if (witness.add(channel)) channelSettingsQueue += channel.toMongo().replace()
         }
 
         override suspend fun updateMember(member: MemberRecord) {
-            if (witness.add(member)) memberQueue += member.replace()
+            if (witness.add(member)) memberQueue += member.toMongo().replace()
         }
 
         override suspend fun updateMemberServerSettings(serverSettings: MemberServerSettingsRecord) {
-            if (witness.add(serverSettings)) memberServerSettingsQueue += serverSettings.replace()
+            if (witness.add(serverSettings)) memberServerSettingsQueue += serverSettings.toMongo().replace()
         }
 
         override suspend fun updateSystem(system: SystemRecord) {
-            if (witness.add(system)) {
-                systemQueue += (if (system is MongoSystemRecord) system else MongoSystemRecord(system)).replace()
-            }
+            if (witness.add(system))
+                systemQueue += system.toMongo().replace()
         }
 
         override suspend fun updateSystemServerSettings(serverSettings: SystemServerSettingsRecord) {
-            if (witness.add(serverSettings)) systemServerSettingsQueue += serverSettings.replace()
+            if (witness.add(serverSettings)) systemServerSettingsQueue += serverSettings.toMongo().replace()
         }
 
         override suspend fun updateSystemChannelSettings(channelSettings: SystemChannelSettingsRecord) {
-            if (witness.add(channelSettings)) systemChannelSettingsQueue += channelSettings.replace()
+            if (witness.add(channelSettings)) {
+                systemChannelSettingsQueue += channelSettings.toMongo().replace()
+            }
         }
 
         override suspend fun updateUser(user: UserRecord) {
-            if (witness.add(user)) userQueue += user.replace()
+            if (witness.add(user)) userQueue += user.toMongo().replace()
         }
 
         override suspend fun updateMessage(message: ProxiedMessageRecord) {
-            if (witness.add(message)) proxiedMessageQueue += message.replace()
+            if (witness.add(message)) proxiedMessageQueue += message.toMongo().replace()
         }
 
         override suspend fun createServerSettings(serverSettings: ServerSettingsRecord) {
-            if (witness.add(serverSettings)) serverSettingsQueue += serverSettings.create()
+            if (witness.add(serverSettings)) serverSettingsQueue += serverSettings.toMongo().create()
         }
 
         override suspend fun createChannel(channel: ChannelSettingsRecord) {
-            if (witness.add(channel)) channelSettingsQueue += channel.create()
+            if (witness.add(channel)) channelSettingsQueue += channel.toMongo().create()
         }
 
         override suspend fun createMember(member: MemberRecord) {
-            if (witness.add(member)) memberQueue += member.create()
+            if (witness.add(member)) memberQueue += member.toMongo().create()
         }
 
         override suspend fun createMemberServerSettings(serverSettings: MemberServerSettingsRecord) {
-            if (witness.add(serverSettings)) memberServerSettingsQueue += serverSettings.create()
+            if (witness.add(serverSettings)) memberServerSettingsQueue += serverSettings.toMongo().create()
         }
 
         override suspend fun createSystem(system: SystemRecord) {
-            systemQueue += (if (system is MongoSystemRecord) system else MongoSystemRecord(system)).create()
+            systemQueue += system.toMongo().create()
         }
 
         override suspend fun createSystemServerSettings(serverSettings: SystemServerSettingsRecord) {
-            if (witness.add(serverSettings)) systemServerSettingsQueue += serverSettings.create()
+            if (witness.add(serverSettings)) systemServerSettingsQueue += serverSettings.toMongo().create()
         }
 
         override suspend fun createSystemChannelSettings(channelSettings: SystemChannelSettingsRecord) {
-            if (witness.add(channelSettings)) systemChannelSettingsQueue += channelSettings.create()
+            if (witness.add(channelSettings)) systemChannelSettingsQueue += channelSettings.toMongo().create()
         }
 
         override suspend fun createUser(user: UserRecord) {
-            if (witness.add(user)) userQueue += user.create()
+            if (witness.add(user)) userQueue += user.toMongo().create()
         }
 
         override suspend fun createMessage(message: ProxiedMessageRecord) {
-            if (witness.add(message)) proxiedMessageQueue += message.create()
+            if (witness.add(message)) proxiedMessageQueue += message.toMongo().create()
         }
 
         override suspend fun updateSwitch(switch: SystemSwitchRecord) {
-            if (witness.add(switch)) systemSwitchQueue += switch.replace()
+            if (witness.add(switch)) systemSwitchQueue += switch.toMongo().replace()
         }
 
         override suspend fun createProxyTag(record: MemberProxyTagRecord): Boolean {
-            if (witness.add(record)) memberProxiesQueue += record.create()
+            if (witness.add(record)) memberProxiesQueue += record.toMongo().create()
             return true
         }
 
         override suspend fun createSwitch(systemId: String, memberId: List<String>, timestamp: Instant?): SystemSwitchRecord {
             val record = SystemSwitchRecord(systemId, "", memberId, timestamp)
-            systemSwitchQueue += record.create()
+            systemSwitchQueue += record.toMongo().create()
             return record
         }
 
         override suspend fun createSwitch(switch: SystemSwitchRecord) {
-            if (witness.add(switch)) systemSwitchQueue += switch.create()
+            if (witness.add(switch)) systemSwitchQueue += switch.toMongo().create()
         }
 
         override suspend fun updateTrustLevel(systemId: String, trustee: ULong, level: TrustLevel): Boolean {
@@ -499,12 +590,12 @@ class MongoDatabase(private val dbName: String = "ProxyFox") : Database() {
             val filter = KMongoUtil.toBson("{systemId:'$systemId',memberId:'$memberId'}")
             memberProxiesQueue += DeleteManyModel(filter)
             memberServerSettingsQueue += DeleteManyModel(filter)
-            memberQueue += member.delete()
+            memberQueue += member.toMongo().delete()
             return true
         }
 
         override suspend fun dropSwitch(switch: SystemSwitchRecord) {
-            systemSwitchQueue += switch.delete()
+            systemSwitchQueue += switch.toMongo().delete()
         }
 
         override suspend fun dropSystem(userId: ULong): Boolean {
@@ -516,13 +607,13 @@ class MongoDatabase(private val dbName: String = "ProxyFox") : Database() {
             memberProxiesQueue += DeleteManyModel(filter)
             memberServerSettingsQueue += DeleteManyModel(filter)
             memberQueue += DeleteManyModel(filter)
-            systemQueue += (if (system is MongoSystemRecord) system else MongoSystemRecord(system)).delete()
+            systemQueue += system.toMongo().delete()
             userQueue += DeleteManyModel(filter)
             return true
         }
 
         override suspend fun dropProxyTag(proxyTag: MemberProxyTagRecord) {
-            memberProxiesQueue += proxyTag.delete()
+            memberProxiesQueue += proxyTag.toMongo().delete()
         }
 
         override suspend fun commit() {

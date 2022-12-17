@@ -10,6 +10,7 @@ package dev.proxyfox.database.records.member
 
 import dev.proxyfox.database.*
 import dev.proxyfox.database.records.MongoRecord
+import dev.proxyfox.database.records.Record
 import kotlinx.serialization.Contextual
 import kotlinx.serialization.Serializable
 import org.bson.types.ObjectId
@@ -22,9 +23,7 @@ import org.bson.types.ObjectId
  * @author Ampflower
  **/
 @Serializable
-class MemberServerSettingsRecord : MongoRecord {
-    @Contextual
-    override var _id: ObjectId = ObjectId()
+open class MemberServerSettingsRecord() : Record {
     var serverId: ULong = 0UL
     var systemId: PkId = ""
     var memberId: PkId = ""
@@ -35,15 +34,29 @@ class MemberServerSettingsRecord : MongoRecord {
     var autoProxy: Boolean = false
     var proxyEnabled: Boolean = true
 
-    constructor()
-
-    constructor(
-        serverId: ULong,
-        systemId: PkId,
-        memberId: PkId,
-    ) {
+    constructor(serverId: ULong, systemId: PkId, memberId: PkId) : this() {
         this.serverId = serverId
         this.systemId = systemId
         this.memberId = memberId
     }
+
+    override fun toMongo() = MongoMemberServerSettingsRecord(this)
+}
+
+@Serializable
+class MongoMemberServerSettingsRecord : MemberServerSettingsRecord, MongoRecord {
+    @Contextual
+    override var _id: ObjectId = ObjectId()
+
+    constructor(record: MemberServerSettingsRecord) {
+        this.serverId = record.serverId
+        this.systemId = record.systemId
+        this.memberId = record.memberId
+        this.avatarUrl = record.avatarUrl
+        this.nickname = record.nickname
+        this.autoProxy = record.autoProxy
+        this.proxyEnabled = record.proxyEnabled
+    }
+
+    override fun toMongo() = this
 }

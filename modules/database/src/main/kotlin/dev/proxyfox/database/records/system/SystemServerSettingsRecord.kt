@@ -10,6 +10,7 @@ package dev.proxyfox.database.records.system
 
 import dev.proxyfox.database.*
 import dev.proxyfox.database.records.MongoRecord
+import dev.proxyfox.database.records.Record
 import dev.proxyfox.database.records.misc.AutoProxyMode
 import kotlinx.serialization.Contextual
 import kotlinx.serialization.Serializable
@@ -24,9 +25,7 @@ import org.bson.types.ObjectId
  * @since ${version}
  **/
 @Serializable
-class SystemServerSettingsRecord() : MongoRecord {
-    @Contextual
-    override var _id: ObjectId = ObjectId()
+open class SystemServerSettingsRecord() : Record {
     var serverId: ULong = 0UL
     var systemId: PkId = ""
     var proxyEnabled: Boolean = true
@@ -45,4 +44,22 @@ class SystemServerSettingsRecord() : MongoRecord {
         other.autoProxy = autoProxy
         other.autoProxyMode = autoProxyMode
     }
+
+    override fun toMongo() = MongoSystemServerSettingsRecord(this)
+}
+
+@Serializable
+class MongoSystemServerSettingsRecord : SystemServerSettingsRecord, MongoRecord {
+    @Contextual
+    override var _id: ObjectId = ObjectId()
+
+    constructor(record: SystemServerSettingsRecord) {
+        this.serverId = record.serverId
+        this.systemId = record.systemId
+        this.proxyEnabled = record.proxyEnabled
+        this.autoProxy = record.autoProxy
+        this.autoProxyMode = record.autoProxyMode
+    }
+
+    override fun toMongo() = this
 }

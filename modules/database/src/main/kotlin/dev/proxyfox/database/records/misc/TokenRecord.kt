@@ -9,19 +9,33 @@
 package dev.proxyfox.database.records.misc
 
 import dev.proxyfox.database.records.MongoRecord
+import dev.proxyfox.database.records.Record
 import kotlinx.serialization.Contextual
 import kotlinx.serialization.Serializable
 import org.bson.types.ObjectId
 
 @Serializable
-class TokenRecord : MongoRecord {
-    @Contextual
-    override var _id: ObjectId = ObjectId()
+open class TokenRecord() : Record {
     var token: String = ""
     var systemId: String = ""
 
-    constructor(token: String, systemId: String) {
+    constructor(token: String, systemId: String) : this() {
         this.token = token
         this.systemId = systemId
     }
+
+    override fun toMongo() = MongoTokenRecord(this)
+}
+
+@Serializable
+class MongoTokenRecord : TokenRecord, MongoRecord {
+    @Contextual
+    override var _id: ObjectId = ObjectId()
+
+    constructor(record: TokenRecord) {
+        this.token = record.token
+        this.systemId = record.systemId
+    }
+
+    override fun toMongo() = this
 }

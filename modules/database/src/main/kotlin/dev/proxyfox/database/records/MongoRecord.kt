@@ -16,6 +16,6 @@ import org.bson.types.ObjectId
  * @author Ampflower
  * @since ${version}
  **/
-interface MongoRecord {
+interface MongoRecord : Record {
     val _id: ObjectId
 }
