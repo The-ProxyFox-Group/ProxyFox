@@ -8,11 +8,9 @@
 
 package dev.proxyfox.database.records.system
 
-import dev.proxyfox.database.JsonDatabase
 import dev.proxyfox.database.PkId
 import dev.proxyfox.database.generateToken
 import dev.proxyfox.database.records.MongoRecord
-import dev.proxyfox.database.records.member.MemberProxyTagRecord
 import dev.proxyfox.database.records.misc.AutoProxyMode
 import dev.proxyfox.database.records.misc.TrustLevel
 import kotlinx.datetime.Clock
@@ -29,7 +27,9 @@ import org.bson.types.ObjectId
  * @author Ampflower
  **/
 @Serializable
-open class SystemRecord {
+open class SystemRecord : MongoRecord {
+    @Contextual
+    override var _id: ObjectId = ObjectId()
     var id: PkId = ""
     var users: ArrayList<ULong> = ArrayList()
     var name: String? = null
@@ -48,17 +48,4 @@ open class SystemRecord {
     var trust: HashMap<ULong, TrustLevel> = HashMap()
 
     val showName get() = name?.let { "$it [`$id`]" } ?: "`$id`"
-}
-
-class MongoSystemRecord : SystemRecord(), MongoRecord {
-    @Contextual
-    override var _id: ObjectId = ObjectId()
-}
-
-class JsonSystemStruct : SystemRecord() {
-    val members: MutableMap<String, JsonDatabase.JsonMemberStruct> = HashMap()
-    val serverSettings: MutableMap<ULong, SystemServerSettingsRecord> = HashMap()
-    val channelSettings: MutableMap<ULong, SystemChannelSettingsRecord> = HashMap()
-    val proxyTags: MutableSet<MemberProxyTagRecord> = HashSet()
-    val switches: MutableMap<String, SystemSwitchRecord> = HashMap()
 }

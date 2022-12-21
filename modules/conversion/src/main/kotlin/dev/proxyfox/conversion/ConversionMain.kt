@@ -11,7 +11,6 @@ package dev.proxyfox.conversion
 import com.google.gson.stream.JsonReader
 import com.google.gson.stream.JsonToken
 import dev.proxyfox.database.Database
-import dev.proxyfox.database.JsonDatabase
 import dev.proxyfox.database.databaseFromString
 import dev.proxyfox.database.gson
 import dev.proxyfox.database.records.misc.ServerSettingsRecord
@@ -54,13 +53,6 @@ suspend fun main(args: Array<String>) {
 
         val systems = if (file.isFile) file else file.resolve("systems.json")
         val roles = (if (file.isFile) file.parentFile else file).resolve("roles.json")
-
-        // NIO is used here as it has a much stronger guarantee that ./systems.json will match correctly.
-        if (outputDatabase is JsonDatabase && Path("./systems.json") == systems.toPath()) {
-            logger.warn("JSON database selected as output while trying to import legacy database from current directory.")
-            logger.warn("Select either a different database or directory before importing.")
-            exit(2)
-        }
 
         if (!systems.exists() || !roles.exists()) exit(1, "No data to import at $file; does `systems.json` or `roles.json` exist?")
 

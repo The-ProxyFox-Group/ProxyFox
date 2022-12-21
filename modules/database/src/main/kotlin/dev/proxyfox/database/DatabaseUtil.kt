@@ -126,8 +126,7 @@ fun Collection<String>.firstFree(): String {
 fun databaseFromString(db: String?) =
     when (db) {
         "nop" -> NopDatabase()
-        "json" -> JsonDatabase()
-        "postgres" -> TODO("Postgres db isn't implemented yet!")
+        "in-memory" -> InMemoryDatabase()
         "mongo", null -> MongoDatabase()
         else -> throw IllegalArgumentException("Unknown database $db")
     }

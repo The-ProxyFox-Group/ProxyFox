@@ -196,11 +196,7 @@ class MongoDatabase(private val dbName: String = "ProxyFox") : Database() {
         memberProxies.deleteMany(filter).awaitFirst()
         memberServers.deleteMany(filter).awaitFirst()
         members.deleteMany(filter).awaitFirst()
-        if (system is MongoSystemRecord) {
-            systems.deleteOneById(system._id).awaitFirst()
-        } else {
-            throw IllegalStateException("SystemRecord is not a MongoSystemRecord")
-        }
+        systems.deleteOneById(system._id).awaitFirst()
         users.deleteMany(filter).awaitFirst()
         return true
     }
@@ -223,11 +219,7 @@ class MongoDatabase(private val dbName: String = "ProxyFox") : Database() {
     }
 
     override suspend fun updateSystem(system: SystemRecord) {
-        if (system is MongoSystemRecord) {
-            systems.replaceOneById(system._id, system, upsert()).awaitFirst()
-        } else {
-            throw IllegalArgumentException("SystemRecord is not a MongoSystemRecord")
-        }
+        systems.replaceOneById(system._id, system, upsert()).awaitFirst()
     }
 
     override suspend fun updateSystemServerSettings(serverSettings: SystemServerSettingsRecord) {
@@ -408,13 +400,7 @@ class MongoDatabase(private val dbName: String = "ProxyFox") : Database() {
         }
 
         override suspend fun updateSystem(system: SystemRecord) {
-            if (witness.add(system)) {
-                if (system is MongoSystemRecord) {
-                    systemQueue += system.replace()
-                } else {
-                    throw IllegalArgumentException("SystemRecord is not a MongoSystemRecord")
-                }
-            }
+            if (witness.add(system)) systemQueue += system.replace()
         }
 
         override suspend fun updateSystemServerSettings(serverSettings: SystemServerSettingsRecord) {
@@ -520,11 +506,7 @@ class MongoDatabase(private val dbName: String = "ProxyFox") : Database() {
             memberProxiesQueue += DeleteManyModel(filter)
             memberServerSettingsQueue += DeleteManyModel(filter)
             memberQueue += DeleteManyModel(filter)
-            if (system is MongoSystemRecord) {
-                systemQueue += system.delete()
-            } else {
-                throw IllegalStateException("SystemRecord is not a MongoSystemRecord")
-            }
+            systemQueue += system.delete()
             userQueue += DeleteManyModel(filter)
             return true
         }

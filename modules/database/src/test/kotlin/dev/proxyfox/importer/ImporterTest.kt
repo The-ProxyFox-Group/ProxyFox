@@ -15,7 +15,7 @@ import dev.proxyfox.database.DatabaseTestUtil.entity
 import dev.proxyfox.database.DatabaseTestUtil.instantEpoch
 import dev.proxyfox.database.DatabaseTestUtil.instantLastMicroOfEpochDay
 import dev.proxyfox.database.DatabaseTestUtil.seeded
-import dev.proxyfox.database.JsonDatabase
+import dev.proxyfox.database.InMemoryDatabase
 import dev.proxyfox.database.MongoDatabase
 import dev.proxyfox.database.etc.importer.*
 import kotlinx.coroutines.ExperimentalCoroutinesApi

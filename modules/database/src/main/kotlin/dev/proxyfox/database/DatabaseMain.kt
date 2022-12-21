@@ -20,8 +20,8 @@ object DatabaseMain {
         database = try {
             databaseFromString(db)
         } catch (err: Throwable) {
-            printStep("Database setup failed. Falling back to JSON", 2)
-            JsonDatabase()
+            printStep("Database setup failed. Falling back to in-memory database", 2)
+            InMemoryDatabase()
         }.setup()
         printStep("Registering shutdown hook for database", 2)
         // Allows the database to shut down & save correctly.
