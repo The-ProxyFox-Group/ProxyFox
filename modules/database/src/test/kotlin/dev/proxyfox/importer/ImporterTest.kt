@@ -189,7 +189,7 @@ constructor(private val name: String, databaseFactory: () -> Database) {
         @DataProvider
         @JvmStatic
         fun constructorParameters() = arrayOf(
-            arrayOf("JSON", { JsonDatabase(test.resolve("systems-${System.nanoTime()}.json").toFile()) }),
+            arrayOf("InMemory", { InMemoryDatabase() }),
             arrayOf("MongoDB", { MongoDatabase("TestFoxy-" + System.nanoTime()) }),
         )
 

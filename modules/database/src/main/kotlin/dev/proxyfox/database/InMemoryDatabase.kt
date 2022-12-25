@@ -47,7 +47,7 @@ class InMemoryDatabase : Database() {
         return Duration.ZERO
     }
 
-    override suspend fun getDatabaseName() = "In-Memory Database"
+    override suspend fun getDatabaseName() = "In-Memory"
 
     override suspend fun fetchUser(userId: ULong): UserRecord? = users[userId]
 

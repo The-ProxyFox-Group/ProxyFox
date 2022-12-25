@@ -9,14 +9,13 @@
 package dev.proxyfox.exporter
 
 import dev.proxyfox.database.DatabaseTestUtil.instantEpoch
-import dev.proxyfox.database.DatabaseTestUtil.offsetDateTimeEpoch
 import dev.proxyfox.database.DatabaseTestUtil.offsetDateTimeEpochString
-import dev.proxyfox.database.records.member.MemberRecord
-import dev.proxyfox.database.records.system.SystemRecord
-import dev.proxyfox.database.records.system.SystemSwitchRecord
 import dev.proxyfox.database.etc.types.PkMember
 import dev.proxyfox.database.etc.types.PkSwitch
 import dev.proxyfox.database.etc.types.PkSystem
+import dev.proxyfox.database.records.member.MemberRecord
+import dev.proxyfox.database.records.system.SystemRecord
+import dev.proxyfox.database.records.system.SystemSwitchRecord
 import org.testng.Assert
 import org.testng.annotations.Test
 
@@ -30,7 +29,7 @@ class ExporterTest {
     @Test
     fun `Exporter(System) - retain seconds`() {
         val system = PkSystem(SystemRecord().apply {
-            timestamp = offsetDateTimeEpoch
+            timestamp = instantEpoch
         })
         Assert.assertEquals(system.created, offsetDateTimeEpochString)
     }
@@ -38,7 +37,7 @@ class ExporterTest {
     @Test
     fun `Exporter(Member) - retain seconds`() {
         val member = PkMember(MemberRecord().apply {
-            timestamp = offsetDateTimeEpoch
+            timestamp = instantEpoch
         }, null)
         Assert.assertEquals(member.created, offsetDateTimeEpochString)
     }
