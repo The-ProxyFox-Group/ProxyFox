@@ -102,7 +102,7 @@ data class ProxyContext(
                 val id = if (channel is ThreadChannelBehavior) channel.parentId.value else channel.id.value
                 WebhookCache -= id
             }
-            throw RuntimeException("Failed to proxy your message.", e)
+            throw RuntimeException("Failed to proxy your message: $e", e)
         }
         if (newMessage.content != messageContent && messageContent.isNotBlank())
             webhook.edit(newMessage.id, threadId) {
