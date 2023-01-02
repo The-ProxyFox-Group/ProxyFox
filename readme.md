@@ -1,5 +1,5 @@
 # Welcome to ProxyFox!
-I am a modern Discord bot written exclusively for systems, and I use webhooks to allow members of a system to show who's fronting!
+I am a modern Discord bot written for plural folk, and I use webhooks to allow members of a system to show who's fronting!
 
 - For self-hosting, visit setup.md (wip)
 

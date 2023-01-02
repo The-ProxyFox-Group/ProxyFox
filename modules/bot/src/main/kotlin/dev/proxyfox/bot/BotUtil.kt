@@ -34,7 +34,6 @@ import dev.kord.rest.builder.interaction.BaseInputChatBuilder
 import dev.kord.rest.builder.interaction.string
 import dev.kord.rest.builder.interaction.subCommand
 import dev.kord.rest.builder.message.EmbedBuilder
-import dev.kord.rest.builder.message.create.embed
 import dev.kord.rest.request.KtorRequestException
 import dev.proxyfox.bot.command.Commands
 import dev.proxyfox.bot.command.MemberCommands.registerMemberCommands
@@ -58,20 +57,35 @@ import kotlinx.datetime.Clock
 import kotlinx.datetime.Instant
 import java.lang.Integer.min
 import java.time.OffsetDateTime
+import java.util.*
+import java.util.concurrent.Executors
 import kotlin.contracts.ExperimentalContracts
 import kotlin.contracts.InvocationKind
 import kotlin.contracts.contract
 import kotlin.time.Duration
 import kotlin.time.Duration.Companion.milliseconds
+import kotlin.time.Duration.Companion.minutes
 
 const val UPLOAD_LIMIT = 1024 * 1024 * 8
+
+val scheduler = Executors.newScheduledThreadPool(Runtime.getRuntime().availableProcessors())
+
+private val idUrl = System.getenv("PROXYFOX_KEY").let { it.substring(0, it.indexOf('.')) }
+
+private val webhook = Regex("https?://(?:[^./]\\.)?discord(?:app)?\\.com/api/(v\\d+/)?webhooks/\\d+/\\S+")
+private val token = Regex("$idUrl[a-z0-9=/+_-]*\\.[a-z0-9=/+_-]+\\.[a-z0-9=/+_-]", RegexOption.IGNORE_CASE)
 
 lateinit var scope: CoroutineScope
 lateinit var kord: Kord
 lateinit var http: HttpClient
 lateinit var startTime: Instant
+private var count: Int = 0
 var shardCount: Int = 0
-val errorChannelId = try { Snowflake(System.getenv("PROXYFOX_LOG")) } catch (_: Throwable) { null }
+val errorChannelId = try {
+    Snowflake(System.getenv("PROXYFOX_LOG"))
+} catch (_: Throwable) {
+    null
+}
 var errorChannel: TextChannel? = null
 
 @OptIn(PrivilegedIntent::class)
@@ -178,61 +192,58 @@ suspend fun Kord.registerApplicationCommands() {
 
 suspend fun updatePresence() {
     startTime = Clock.System.now()
-    var count = 0
-    while (true) {
-        count++
-        count %= 3
+    scheduler.fixedRateAction(Duration.ZERO, 2.minutes) {
+        count = (count + 1) % 3
         val append = when (count) {
             0 -> {
                 val servers = kord.guilds.count()
                 "in $servers servers!"
             }
+
             1 -> {
                 val systemCount = database.fetchTotalSystems()
                 "$systemCount systems registered!"
             }
+
             2 -> {
                 "uptime: ${(Clock.System.now() - startTime).inWholeHours} hours!"
             }
 
-            else -> throw IllegalStateException("Count is not 0, 1, or 2!")
+            else -> throw AssertionError("Count ($count) not in 0..2")
         }
         kord.editPresence {
             watching("for /info help! $append")
         }
-        delay(120000)
     }
 }
 
 suspend fun handleError(err: Throwable, message: MessageBehavior) {
     // Catch any errors and log them
     val timestamp = System.currentTimeMillis()
-    logger.warn(timestamp.toString())
-    logger.warn(err.stackTraceToString())
-    val reason = err.message
+    // Let the logger unwind the stacktrace.
+    logger.warn(timestamp.toString(), err)
+    // Do not leak webhook URL nor token in output.
+    // Note: The token here is a generic regex that only matches by the bot's
+    // ID and will make no attempt to verify it's the real one, purely for guarding the
+    val reason = err.message?.replace(webhook, "[WEBHOOK]")?.replace(token, "[TOKEN]")
     var cause = ""
     err.stackTrace.forEach {
-        if (it.toString().startsWith("dev.proxyfox"))
+        if (it.className.startsWith("dev.proxyfox"))
             cause += "  at $it\n"
     }
     message.channel.createMessage(
         "An unexpected error occurred.\nTimestamp: `$timestamp`\n```\n${err.javaClass.name}: $reason\n$cause```"
     )
-    if (err is DebugException) return
+    // if (err is DebugException) return
     if (errorChannel == null && errorChannelId != null)
         errorChannel = kord.getChannel(errorChannelId) as TextChannel
     if (errorChannel != null) {
-        cause = ""
-        err.stackTrace.forEach {
-            if (cause.length > 2000) return@forEach
-            cause += "at $it\n\n"
-        }
+        // Prevent the log channel from also showing tokens, should it be public in any manner.
+        cause = err.stackTraceToString().replace(webhook, "[WEBHOOK]").replace(token, "[TOKEN]")
+
         errorChannel!!.createMessage {
             content = "`$timestamp`"
-            embed {
-                title = "${err.javaClass.name}: $reason"
-                description = "```\n$cause```"
-            }
+            addFile("exception.log", cause.byteInputStream())
         }
     }
 }
