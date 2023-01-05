@@ -4,7 +4,10 @@ logback = "1.2.11"
 kord = "0.8.0-M17"
 kotlin = "1.7.21"
 kotlinx_coroutines = "1.6.4"
+
+# ProxyFox Libraries
 proxyfox_command = "1.5"
+pluralkt = "1.2"
 
 # Database-specific
 postgres = "42.3.3"
@@ -24,7 +27,9 @@ licenser = "1.1.2"
 guava = { module = "com.google.guava:guava", version.ref = "guava" }
 kord = { module = "dev.kord:kord-core", version.ref = "kord" }
 logback = { module = "ch.qos.logback:logback-classic", version.ref = "logback" }
+
 proxyfox_command = { module = "dev.proxyfox:proxyfox-command", version.ref = "proxyfox_command" }
+pluralkt = { module = "dev.proxyfox:pluralkt", version.ref = "pluralkt" }
 
 kotlin_stdlib = { module = "org.jetbrains.kotlin:kotlin-stdlib", version.ref = "kotlin" }
 kotlinx_coroutines_core = { module = "org.jetbrains.kotlinx:kotlinx-coroutines-core", version.ref = "kotlinx_coroutines" }
@@ -41,7 +46,7 @@ mockk = { module = "io.mockk:mockk", version.ref = "mockk" }
 kotlinx_coroutines_test = { module = "org.jetbrains.kotlinx:kotlinx-coroutines-test", version.ref = "kotlinx_coroutines" }
 
 [bundles]
-base = ["guava", "logback", "kotlin_stdlib", "kotlinx_coroutines_core", "kord", "proxyfox_command"]
+base = ["guava", "logback", "kotlin_stdlib", "kotlinx_coroutines_core", "kord", "proxyfox_command", "pluralkt"]
 test = ["testng", "kotlinx_coroutines_test", "mockk"]
 database = ["gson", "kmongo_base", "kmongo_coroutine", "kmongo_async"]
 

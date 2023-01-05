@@ -15,7 +15,6 @@ plugins {
 dependencies {
     implementation(project(":modules:common"))
     implementation(project(":modules:database"))
-    implementation(project(":modules:sync"))
 }
 
 application.mainClass.set("dev.proxyfox.bot.BotMainKt")
