@@ -2,6 +2,7 @@
 .idea/
 build/
 out/
+mods/
 proxyfox.db.properties
 systems.json
 .env
