@@ -48,6 +48,9 @@ allprojects {
         mavenCentral()
         maven("https://libraries.minecraft.net/")
         maven("https://oss.sonatype.org/content/repositories/snapshots")
+        maven("https://maven.quiltmc.org/repository/release/")
+        maven("https://maven.quiltmc.org/repository/snapshot/")
+        maven("https://maven.fabricmc.net/")
         maven("https://jitpack.io")
     }
 
