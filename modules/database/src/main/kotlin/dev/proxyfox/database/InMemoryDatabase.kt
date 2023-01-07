@@ -152,30 +152,40 @@ class InMemoryDatabase : Database() {
     }
 
     override suspend fun getOrCreateSystem(userId: ULong, id: String?): SystemRecord {
-        if (users.containsKey(userId) && users[userId]!!.systemId != null && systems.containsKey(users[userId]!!.systemId)) {
-            return systems[users[userId]!!.systemId]!!
+        return fetchSystemFromUser(userId) ?: run {
+            val system = SystemRecord()
+
+            system.id = if (!id.isValidPkString() || systems.containsKey(id)) systems.keys.firstFree() else id
+            system.users.add(userId)
+
+            systems[system.id] = system
+            systemSwitches[system.id] = ArrayList()
+            systemServers[system.id] = HashMap()
+            systemChannels[system.id] = HashMap()
+            members[system.id] = HashMap()
+
+            val user = getOrCreateUser(userId)
+            user.systemId = system.id
+
+            system
         }
-
-        if (id != null && systems.containsKey(id)) {
-            return systems[id]!!
-        }
-
-        val system = SystemRecord()
-        systems[system.id] = system
-        systemSwitches[system.id] = ArrayList()
-        systemServers[system.id] = HashMap()
-        systemChannels[system.id] = HashMap()
-        members[system.id] = HashMap()
-
-        val user = getOrCreateUser(userId)
-        user.systemId = system.id
-
-        return system
     }
 
     override suspend fun dropSystem(userId: ULong): Boolean {
-        val system = fetchSystemFromUser(userId) ?: return false
+        val user = users[userId] ?: return false
+
+        val system = systems[user.systemId] ?: return false
+        assert(user.systemId == system.id) { "User $userId's system ID ${user.systemId} does not match ${system.id}" }
         systems.remove(system.id)
+        systemSwitches.remove(system.id)
+        systemServers.remove(system.id)
+        systemChannels.remove(system.id)
+        members.remove(system.id)
+
+        for (systemUserId in system.users) {
+            users.remove(systemUserId)
+        }
+
         return true
     }
 
@@ -257,7 +267,7 @@ class InMemoryDatabase : Database() {
         return true
     }
 
-    override suspend fun createSwitch(systemId: String, memberId: List<String>, timestamp: Instant?): SystemSwitchRecord? {
+    override suspend fun createSwitch(systemId: String, memberId: List<String>, timestamp: Instant?): SystemSwitchRecord {
         val switches = fetchSwitchesFromSystem(systemId)
         if (switches == null) {
             systemSwitches[systemId] = ArrayList()
@@ -267,6 +277,7 @@ class InMemoryDatabase : Database() {
         systemSwitches[systemId]!!.add(switch)
         return switch
     }
+
     override suspend fun dropSwitch(switch: SystemSwitchRecord) {
         systemSwitches[switch.systemId]?.remove(switch)
     }
@@ -294,7 +305,14 @@ class InMemoryDatabase : Database() {
     override suspend fun fetchTotalMembersFromSystem(systemId: String): Int? = members[systemId]?.size
 
     override suspend fun fetchMemberFromSystemAndName(systemId: String, memberName: String, caseSensitive: Boolean): MemberRecord? {
-        return members[systemId]?.values?.find { if (caseSensitive) it.name == memberName else it.name.lowercase() == memberName.lowercase() }
+        return members[systemId]?.values?.run {
+            find { it.name == memberName }
+                ?: if (caseSensitive) {
+                    null
+                } else {
+                    find { it.name.lowercase() == memberName.lowercase() }
+                }
+        }
     }
 
     override suspend fun export(other: Database) {
