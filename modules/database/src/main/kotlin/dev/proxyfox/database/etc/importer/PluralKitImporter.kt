@@ -130,7 +130,7 @@ open class PluralKitImporter protected constructor(
                 val member = run {
                     if (!fresh) {
                         val record = pkMember.id?.let { database.fetchMemberFromSystem(system.id, it) }
-                            ?: database.fetchMemberFromSystemAndName(system.id, memberName, caseSensitive = false)
+                            ?: database.fetchMemberFromSystemAndName(system.id, memberName, caseSensitive = true)
                         if (record != null && seenMemberIds.add(record.id)) {
                             assert(record.name == memberName) { "$record did not match $pkMember" }
                             freshMember = false
