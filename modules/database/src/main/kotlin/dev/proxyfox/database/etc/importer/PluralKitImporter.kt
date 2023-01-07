@@ -310,7 +310,7 @@ open class PluralKitImporter protected constructor(
             if (otherCount > expectedCount) {
                 for (pkMember in ambiguousBirthdays) {
                     // Not null assertion as it was already parsed successfully once.
-                    birthdays.computeIfPresent(pkMember) { _, (date, _) -> LocalDate(date.year, date.monthNumber, date.dayOfMonth) to otherFormat }
+                    birthdays.computeIfPresent(pkMember) { _, (date, _) -> LocalDate(date.year, date.dayOfMonth, date.monthNumber) to otherFormat }
                 }
             }
         }
