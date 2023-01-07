@@ -10,7 +10,6 @@ package dev.proxyfox.database.etc.types
 
 import dev.proxyfox.common.fromColorForExport
 import dev.proxyfox.database.*
-import dev.proxyfox.database.pkValid
 import dev.proxyfox.database.records.member.MemberProxyTagRecord
 import dev.proxyfox.database.records.member.MemberRecord
 import dev.proxyfox.database.records.misc.AutoProxyMode

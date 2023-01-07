@@ -22,27 +22,42 @@ import kotlinx.datetime.Instant
 import kotlin.time.Duration
 
 class InMemoryDatabase : Database() {
-    private var users = HashMap<ULong, UserRecord>()
+    private lateinit var users: HashMap<ULong, UserRecord>
 
-    private var messages = ArrayList<ProxiedMessageRecord>()
+    private lateinit var messages: ArrayList<ProxiedMessageRecord>
 
-    private var servers = HashMap<ULong, ServerSettingsRecord>()
-    private var channels = HashMap<ULong, HashMap<ULong, ChannelSettingsRecord>>()
+    private lateinit var servers: HashMap<ULong, ServerSettingsRecord>
+    private lateinit var channels: HashMap<ULong, HashMap<ULong, ChannelSettingsRecord>>
 
-    private var systems = HashMap<String, SystemRecord>()
-    private var systemSwitches = HashMap<String, ArrayList<SystemSwitchRecord>>()
-    private var systemTokens = HashMap<String, TokenRecord>()
+    private lateinit var systems: HashMap<String, SystemRecord>
+    private lateinit var systemSwitches: HashMap<String, ArrayList<SystemSwitchRecord>>
+    private lateinit var systemTokens: HashMap<String, TokenRecord>
 
-    private var systemServers = HashMap<String, HashMap<ULong, SystemServerSettingsRecord>>()
-    private var systemChannels = HashMap<String, HashMap<ULong, SystemChannelSettingsRecord>>()
+    private lateinit var systemServers: HashMap<String, HashMap<ULong, SystemServerSettingsRecord>>
+    private lateinit var systemChannels: HashMap<String, HashMap<ULong, SystemChannelSettingsRecord>>
 
-    private var members = HashMap<String, HashMap<String, MemberRecord>>()
-    private var memberProxies = HashMap<String, ArrayList<MemberProxyTagRecord>>()
+    private lateinit var members: HashMap<String, HashMap<String, MemberRecord>>
+    private lateinit var memberProxies: HashMap<String, ArrayList<MemberProxyTagRecord>>
 
-    private var memberServers = HashMap<String, HashMap<ULong, MemberServerSettingsRecord>>()
+    private lateinit var memberServers: HashMap<String, HashMap<ULong, MemberServerSettingsRecord>>
 
 
-    override suspend fun setup() = this
+    override suspend fun setup(): InMemoryDatabase {
+        users = HashMap()
+        messages = ArrayList()
+        servers = HashMap()
+        channels = HashMap()
+        systems = HashMap()
+        systemSwitches = HashMap()
+        systemTokens = HashMap()
+        systemServers = HashMap()
+        systemChannels = HashMap()
+        members = HashMap()
+        memberProxies = HashMap()
+        memberServers = HashMap()
+
+        return this
+    }
     override suspend fun ping(): Duration {
         return Duration.ZERO
     }
@@ -287,7 +302,18 @@ class InMemoryDatabase : Database() {
 
     @Deprecated("Not for regular use.", level = DeprecationLevel.ERROR)
     override suspend fun drop() {
-        TODO("Not yet implemented")
+        users.clear()
+        messages.clear()
+        servers.clear()
+        channels.clear()
+        systems.clear()
+        systemSwitches.clear()
+        systemTokens.clear()
+        systemServers.clear()
+        systemChannels.clear()
+        members.clear()
+        memberProxies.clear()
+        memberServers.clear()
     }
 
     override suspend fun firstFreeSystemId(id: String?): String {

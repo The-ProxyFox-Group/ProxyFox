@@ -17,8 +17,8 @@ import com.google.gson.reflect.TypeToken
 import com.google.gson.stream.JsonReader
 import com.google.gson.stream.JsonToken
 import com.google.gson.stream.JsonWriter
-import dev.proxyfox.database.mapArray
 import dev.proxyfox.database.etc.importer.ImporterException
+import dev.proxyfox.database.mapArray
 import org.slf4j.LoggerFactory
 import java.lang.reflect.RecordComponent
 import java.lang.reflect.Type

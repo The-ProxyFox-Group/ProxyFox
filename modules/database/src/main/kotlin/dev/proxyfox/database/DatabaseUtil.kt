@@ -13,13 +13,12 @@ import com.mongodb.reactivestreams.client.MongoCollection
 import dev.proxyfox.database.etc.gson.*
 import dev.proxyfox.database.etc.importer.ImporterException
 import kotlinx.coroutines.reactive.awaitFirst
+import kotlinx.datetime.Instant
+import kotlinx.datetime.LocalDate
 import org.bson.types.ObjectId
 import org.litote.kmongo.coroutine.toList
 import org.litote.kmongo.reactivestreams.getCollection
 import org.litote.kmongo.util.KMongoUtil
-import java.time.Instant
-import java.time.LocalDate
-import java.time.OffsetDateTime
 import kotlin.contracts.ExperimentalContracts
 import kotlin.contracts.contract
 
@@ -30,7 +29,6 @@ typealias PkId = String
 const val pkIdBound = 11881376
 
 val gson = GsonBuilder()
-    .registerTypeAdapter(OffsetDateTime::class.java, OffsetDateTimeAdaptor)
     .registerTypeAdapter(LocalDate::class.java, LocalDateAdaptor)
     .registerTypeAdapter(ObjectId::class.java, ObjectIdNullifier)
     .registerTypeAdapter(Instant::class.java, InstantAdaptor)

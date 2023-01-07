@@ -20,13 +20,13 @@ import dev.proxyfox.database.MongoDatabase
 import dev.proxyfox.database.etc.importer.*
 import kotlinx.coroutines.ExperimentalCoroutinesApi
 import kotlinx.coroutines.test.runTest
+import kotlinx.datetime.LocalDate
 import org.slf4j.LoggerFactory
 import org.testng.Assert.*
 import org.testng.annotations.*
 import java.io.Reader
 import java.net.URL
 import java.nio.file.Files
-import java.time.LocalDate
 
 // Created 2022-29-09T22:17:51
 
@@ -99,12 +99,12 @@ constructor(private val name: String, databaseFactory: () -> Database) {
             import(database, it, user)
         }
 
-        assertEquals(database.fetchMemberFromUserAndName(user, "Azalea")!!.birthday, LocalDate.of(1, 12, 25))
-        assertEquals(database.fetchMemberFromUserAndName(user, "Berry")!!.birthday, LocalDate.of(1, 1, 2))
-        assertEquals(database.fetchMemberFromUserAndName(user, "Cherry")!!.birthday, LocalDate.of(1, 4, 10))
-        assertEquals(database.fetchMemberFromUserAndName(user, "Hibiscus")!!.birthday, LocalDate.of(1990, 7, 4))
-        assertEquals(database.fetchMemberFromUserAndName(user, "Zinnia")!!.birthday, LocalDate.of(2000, 2, 4))
-        assertEquals(database.fetchMemberFromUserAndName(user, "Ivy")!!.birthday, LocalDate.of(1995, 8, 24))
+        assertEquals(database.fetchMemberFromUserAndName(user, "Azalea")!!.birthday, LocalDate(1, 12, 25))
+        assertEquals(database.fetchMemberFromUserAndName(user, "Berry")!!.birthday, LocalDate(1, 1, 2))
+        assertEquals(database.fetchMemberFromUserAndName(user, "Cherry")!!.birthday, LocalDate(1, 4, 10))
+        assertEquals(database.fetchMemberFromUserAndName(user, "Hibiscus")!!.birthday, LocalDate(1990, 7, 4))
+        assertEquals(database.fetchMemberFromUserAndName(user, "Zinnia")!!.birthday, LocalDate(2000, 2, 4))
+        assertEquals(database.fetchMemberFromUserAndName(user, "Ivy")!!.birthday, LocalDate(1995, 8, 24))
     }
 
     @Test
@@ -114,12 +114,12 @@ constructor(private val name: String, databaseFactory: () -> Database) {
             import(database, it, user)
         }
 
-        assertEquals(database.fetchMemberFromUserAndName(user, "Azalea")!!.birthday, LocalDate.of(1, 12, 25))
-        assertEquals(database.fetchMemberFromUserAndName(user, "Berry")!!.birthday, LocalDate.of(1, 2, 1))
-        assertEquals(database.fetchMemberFromUserAndName(user, "Cherry")!!.birthday, LocalDate.of(1, 10, 4))
-        assertEquals(database.fetchMemberFromUserAndName(user, "Hibiscus")!!.birthday, LocalDate.of(1990, 4, 7))
-        assertEquals(database.fetchMemberFromUserAndName(user, "Zinnia")!!.birthday, LocalDate.of(2000, 2, 4))
-        assertEquals(database.fetchMemberFromUserAndName(user, "Ivy")!!.birthday, LocalDate.of(1995, 8, 24))
+        assertEquals(database.fetchMemberFromUserAndName(user, "Azalea")!!.birthday, LocalDate(1, 12, 25))
+        assertEquals(database.fetchMemberFromUserAndName(user, "Berry")!!.birthday, LocalDate(1, 2, 1))
+        assertEquals(database.fetchMemberFromUserAndName(user, "Cherry")!!.birthday, LocalDate(1, 10, 4))
+        assertEquals(database.fetchMemberFromUserAndName(user, "Hibiscus")!!.birthday, LocalDate(1990, 4, 7))
+        assertEquals(database.fetchMemberFromUserAndName(user, "Zinnia")!!.birthday, LocalDate(2000, 2, 4))
+        assertEquals(database.fetchMemberFromUserAndName(user, "Ivy")!!.birthday, LocalDate(1995, 8, 24))
     }
 
     @Test

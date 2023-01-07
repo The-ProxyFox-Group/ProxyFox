@@ -8,14 +8,13 @@
 
 package dev.proxyfox.database.records.system
 
-import dev.proxyfox.database.*
+import dev.proxyfox.database.PkId
 import dev.proxyfox.database.records.MongoRecord
 import kotlinx.datetime.Clock
 import kotlinx.datetime.Instant
 import kotlinx.serialization.Contextual
 import kotlinx.serialization.Serializable
 import org.bson.types.ObjectId
-import java.time.Duration
 
 // Created 2022-09-04T15:18:49
 

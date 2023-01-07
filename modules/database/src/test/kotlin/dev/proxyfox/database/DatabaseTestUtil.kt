@@ -12,9 +12,8 @@ import dev.kord.common.entity.Snowflake
 import dev.kord.core.entity.Entity
 import io.mockk.every
 import io.mockk.mockk
-import kotlinx.datetime.toKotlinInstant
+import kotlinx.datetime.Instant
 import org.testng.annotations.DataProvider
-import java.time.Instant
 import java.util.*
 import java.util.concurrent.TimeUnit
 import java.util.stream.IntStream
@@ -38,8 +37,8 @@ object DatabaseTestUtil {
 
     const val offsetDateTimeEpochString = "1970-01-01T00:00:00Z"
 
-    val instantEpoch = Instant.EPOCH!!.toKotlinInstant()
-    val instantLastMicroOfEpochDay = Instant.ofEpochSecond(TimeUnit.DAYS.toSeconds(1) - 1L, 999_999_000L)!!
+    val instantEpoch = Instant.fromEpochSeconds(0L)
+    val instantLastMicroOfEpochDay = Instant.fromEpochSeconds(TimeUnit.DAYS.toSeconds(1) - 1L)
 
     inline fun <reified T : Entity> entity(ret: ULong): T {
         return mockk {

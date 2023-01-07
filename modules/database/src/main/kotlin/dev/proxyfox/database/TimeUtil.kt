@@ -274,7 +274,7 @@ fun tryParseLocalDate(str: String?, preferMonthDay: Boolean = true): Pair<LocalD
     val day = parsed.getLong(ChronoField.DAY_OF_MONTH).toInt()
     // Construct local date
     return if (month > 12)
-        LocalDate(year, month, day) to if (preferMonthDay) DDMMuuuu else MMDDuuuu
+        LocalDate(year, day, month) to if (preferMonthDay) DDMMuuuu else MMDDuuuu
     else
         LocalDate(year, month, day) to parser
 }

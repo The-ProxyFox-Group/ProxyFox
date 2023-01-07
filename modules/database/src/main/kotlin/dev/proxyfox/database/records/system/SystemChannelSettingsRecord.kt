@@ -8,7 +8,7 @@
 
 package dev.proxyfox.database.records.system
 
-import dev.proxyfox.database.*
+import dev.proxyfox.database.PkId
 import dev.proxyfox.database.records.MongoRecord
 import kotlinx.serialization.Contextual
 import kotlinx.serialization.Serializable

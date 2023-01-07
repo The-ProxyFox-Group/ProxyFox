@@ -41,8 +41,6 @@ suspend fun import(string: String, user: Entity?) = import(database, string, use
  * */
 suspend fun import(reader: Reader, user: Entity?) = import(database, reader, user)
 
-private val json1 = Json { ignoreUnknownKeys = true }
-
 /**
  * Imports a system file from a [String]. Supports both PluralKit and TupperBox formats.
  *
@@ -53,6 +51,7 @@ private val json1 = Json { ignoreUnknownKeys = true }
  * */
 suspend fun import(database: Database, string: String, user: Entity?): Importer {
     try {
+        println(string)
         return import(database, Json.parseToJsonElement(string), user)
     } catch (reason: Throwable) {
         throw ImporterException("Not a JSON file $reason", reason)
@@ -80,7 +79,7 @@ suspend fun import(database: Database, reader: Reader, user: Entity?): Importer 
  * @author Oliver
  * */
 suspend fun import(database: Database, element: JsonElement, user: Entity?): Importer {
-    val map = element.jsonObject
+     val map = element.jsonObject
     if (map.isEmpty()) throw ImporterException("No data to import.")
     if (map.contains("type") && map.contains("uri") && map.size == 2) {
         throw ImporterException("Your system file is invalid; try fetching directly from ${map["uri"]}?")

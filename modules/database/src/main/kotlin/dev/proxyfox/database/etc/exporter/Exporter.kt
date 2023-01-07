@@ -10,11 +10,11 @@ package dev.proxyfox.database.etc.exporter
 
 import dev.proxyfox.database.Database
 import dev.proxyfox.database.database
-import dev.proxyfox.database.gson
 import dev.proxyfox.database.etc.types.PkMember
 import dev.proxyfox.database.etc.types.PkProxy
 import dev.proxyfox.database.etc.types.PkSwitch
 import dev.proxyfox.database.etc.types.PkSystem
+import dev.proxyfox.database.gson
 
 object Exporter {
     suspend inline fun export(userId: ULong) = export(database, userId)

@@ -10,8 +10,10 @@ package dev.proxyfox.database.etc.gson
 
 import com.google.gson.*
 import dev.proxyfox.database.sanitise
+import kotlinx.datetime.Instant
+import kotlinx.datetime.toJavaInstant
+import kotlinx.datetime.toKotlinInstant
 import java.lang.reflect.Type
-import java.time.Instant
 import java.time.format.DateTimeFormatter
 
 object InstantAdaptor : JsonSerializer<Instant>, JsonDeserializer<Instant> {
@@ -19,7 +21,7 @@ object InstantAdaptor : JsonSerializer<Instant>, JsonDeserializer<Instant> {
         return if (src == null)
             JsonNull.INSTANCE
         else
-            JsonPrimitive(DateTimeFormatter.ISO_INSTANT.format(src))
+            JsonPrimitive(DateTimeFormatter.ISO_INSTANT.format(src.toJavaInstant()))
     }
 
     override fun deserialize(json: JsonElement, typeOfT: Type, context: JsonDeserializationContext): Instant? {
@@ -27,7 +29,7 @@ object InstantAdaptor : JsonSerializer<Instant>, JsonDeserializer<Instant> {
             if (isNullOrBlank()) {
                 null
             } else {
-                DateTimeFormatter.ISO_INSTANT.parse(this, Instant::from)
+                DateTimeFormatter.ISO_INSTANT.parse(this, java.time.Instant::from).toKotlinInstant()
             }
         }
     }

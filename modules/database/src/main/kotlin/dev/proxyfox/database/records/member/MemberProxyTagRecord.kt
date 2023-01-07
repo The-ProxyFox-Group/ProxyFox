@@ -8,9 +8,7 @@
 
 package dev.proxyfox.database.records.member
 
-import com.google.gson.annotations.Expose
-import com.google.gson.annotations.SerializedName
-import dev.proxyfox.database.*
+import dev.proxyfox.database.PkId
 import dev.proxyfox.database.records.MongoRecord
 import kotlinx.serialization.Contextual
 import kotlinx.serialization.Serializable

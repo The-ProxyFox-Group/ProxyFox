@@ -10,8 +10,10 @@ package dev.proxyfox.database.etc.gson
 
 import com.google.gson.*
 import dev.proxyfox.database.sanitise
+import kotlinx.datetime.LocalDate
+import kotlinx.datetime.toJavaLocalDate
+import kotlinx.datetime.toKotlinLocalDate
 import java.lang.reflect.Type
-import java.time.LocalDate
 import java.time.format.DateTimeFormatter
 import java.time.temporal.TemporalQueries
 
@@ -26,7 +28,7 @@ object LocalDateAdaptor : JsonSerializer<LocalDate>, JsonDeserializer<LocalDate>
         return if (src == null) {
             JsonNull.INSTANCE
         } else {
-            JsonPrimitive(DateTimeFormatter.ISO_DATE.format(src))
+            JsonPrimitive(DateTimeFormatter.ISO_DATE.format(src.toJavaLocalDate()))
         }
     }
 
@@ -35,7 +37,7 @@ object LocalDateAdaptor : JsonSerializer<LocalDate>, JsonDeserializer<LocalDate>
             if (isNullOrBlank()) {
                 null
             } else {
-                DateTimeFormatter.ISO_DATE.parse(this, TemporalQueries.localDate())
+                DateTimeFormatter.ISO_DATE.parse(this, TemporalQueries.localDate()).toKotlinLocalDate()
             }
         }
     }
