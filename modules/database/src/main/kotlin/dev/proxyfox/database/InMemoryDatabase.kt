@@ -19,42 +19,43 @@ import dev.proxyfox.database.records.system.SystemRecord
 import dev.proxyfox.database.records.system.SystemServerSettingsRecord
 import dev.proxyfox.database.records.system.SystemSwitchRecord
 import kotlinx.datetime.Instant
+import java.util.concurrent.ConcurrentHashMap
 import kotlin.time.Duration
 
 class InMemoryDatabase : Database() {
-    private lateinit var users: HashMap<ULong, UserRecord>
+    private lateinit var users: MutableMap<ULong, UserRecord>
 
     private lateinit var messages: ArrayList<ProxiedMessageRecord>
 
-    private lateinit var servers: HashMap<ULong, ServerSettingsRecord>
-    private lateinit var channels: HashMap<ULong, HashMap<ULong, ChannelSettingsRecord>>
+    private lateinit var servers: MutableMap<ULong, ServerSettingsRecord>
+    private lateinit var channels: MutableMap<ULong, HashMap<ULong, ChannelSettingsRecord>>
 
-    private lateinit var systems: HashMap<String, SystemRecord>
-    private lateinit var systemSwitches: HashMap<String, ArrayList<SystemSwitchRecord>>
-    private lateinit var systemTokens: HashMap<String, TokenRecord>
+    private lateinit var systems: MutableMap<String, SystemRecord>
+    private lateinit var systemSwitches: MutableMap<String, ArrayList<SystemSwitchRecord>>
+    private lateinit var systemTokens: MutableMap<String, TokenRecord>
 
-    private lateinit var systemServers: HashMap<String, HashMap<ULong, SystemServerSettingsRecord>>
-    private lateinit var systemChannels: HashMap<String, HashMap<ULong, SystemChannelSettingsRecord>>
+    private lateinit var systemServers: MutableMap<String, HashMap<ULong, SystemServerSettingsRecord>>
+    private lateinit var systemChannels: MutableMap<String, HashMap<ULong, SystemChannelSettingsRecord>>
 
-    private lateinit var members: HashMap<String, HashMap<String, MemberRecord>>
-    private lateinit var memberProxies: HashMap<String, ArrayList<MemberProxyTagRecord>>
+    private lateinit var members: MutableMap<String, HashMap<String, MemberRecord>>
+    private lateinit var memberProxies: MutableMap<String, ArrayList<MemberProxyTagRecord>>
 
-    private lateinit var memberServers: HashMap<String, HashMap<ULong, MemberServerSettingsRecord>>
+    private lateinit var memberServers: MutableMap<String, HashMap<ULong, MemberServerSettingsRecord>>
 
 
     override suspend fun setup(): InMemoryDatabase {
-        users = HashMap()
+        users = ConcurrentHashMap()
         messages = ArrayList()
-        servers = HashMap()
-        channels = HashMap()
-        systems = HashMap()
-        systemSwitches = HashMap()
-        systemTokens = HashMap()
-        systemServers = HashMap()
-        systemChannels = HashMap()
-        members = HashMap()
-        memberProxies = HashMap()
-        memberServers = HashMap()
+        servers = ConcurrentHashMap()
+        channels = ConcurrentHashMap()
+        systems = ConcurrentHashMap()
+        systemSwitches = ConcurrentHashMap()
+        systemTokens = ConcurrentHashMap()
+        systemServers = ConcurrentHashMap()
+        systemChannels = ConcurrentHashMap()
+        members = ConcurrentHashMap()
+        memberProxies = ConcurrentHashMap()
+        memberServers = ConcurrentHashMap()
 
         return this
     }
