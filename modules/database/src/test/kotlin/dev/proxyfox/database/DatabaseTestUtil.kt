@@ -41,6 +41,7 @@ object DatabaseTestUtil {
 
     val stringEpoch = "1970-01-01T00:00:00Z"
     val stringLastMicroOfEpochDay = "1970-01-01T23:59:59.999999Z"
+    val stringLastNanoOfEpochDay = "1970-01-01T23:59:59.999999999Z"
 
     inline fun <reified T : Entity> entity(ret: ULong): T {
         return mockk {

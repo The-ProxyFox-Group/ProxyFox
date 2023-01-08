@@ -13,6 +13,7 @@ import dev.proxyfox.database.DatabaseTestUtil.instantLastMicroOfEpochDay
 import dev.proxyfox.database.DatabaseTestUtil.instantLastNanoOfEpochDay
 import dev.proxyfox.database.DatabaseTestUtil.stringEpoch
 import dev.proxyfox.database.DatabaseTestUtil.stringLastMicroOfEpochDay
+import dev.proxyfox.database.DatabaseTestUtil.stringLastNanoOfEpochDay
 import dev.proxyfox.database.etc.types.PkMember
 import dev.proxyfox.database.etc.types.PkSwitch
 import dev.proxyfox.database.etc.types.PkSystem
@@ -37,12 +38,45 @@ class ExporterTest {
         Assert.assertEquals(system.created, stringEpoch)
     }
 
+
+    @Test
+    fun `Exporter(System) - retain microseconds`() {
+        val system = PkSystem(SystemRecord().apply {
+            timestamp = instantLastMicroOfEpochDay
+        }, null)
+        Assert.assertEquals(system.created, stringLastMicroOfEpochDay)
+    }
+
+    @Test
+    fun `Exporter(System) - retain nanoseconds`() {
+        val system = PkSystem(SystemRecord().apply {
+            timestamp = instantLastNanoOfEpochDay
+        }, null)
+        Assert.assertEquals(system.created, stringLastNanoOfEpochDay)
+    }
+
     @Test
     fun `Exporter(Member) - retain seconds`() {
         val member = PkMember(MemberRecord().apply {
             timestamp = instantEpoch
         }, null)
         Assert.assertEquals(member.created, stringEpoch)
+    }
+
+    @Test
+    fun `Exporter(Member) - retain microseconds`() {
+        val member = PkMember(MemberRecord().apply {
+            timestamp = instantLastMicroOfEpochDay
+        }, null)
+        Assert.assertEquals(member.created, stringLastMicroOfEpochDay)
+    }
+
+    @Test
+    fun `Exporter(Member) - retain nanoseconds`() {
+        val member = PkMember(MemberRecord().apply {
+            timestamp = instantLastNanoOfEpochDay
+        }, null)
+        Assert.assertEquals(member.created, stringLastNanoOfEpochDay)
     }
 
     @Test
