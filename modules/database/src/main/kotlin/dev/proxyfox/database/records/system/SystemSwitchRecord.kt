@@ -11,7 +11,9 @@ package dev.proxyfox.database.records.system
 import dev.proxyfox.database.PkId
 import dev.proxyfox.database.records.MongoRecord
 import kotlinx.datetime.Clock
+import kotlinx.datetime.DateTimeUnit
 import kotlinx.datetime.Instant
+import kotlinx.datetime.minus
 import kotlinx.serialization.Contextual
 import kotlinx.serialization.Serializable
 import org.bson.types.ObjectId
@@ -33,7 +35,7 @@ class SystemSwitchRecord : MongoRecord {
 
     var timestamp: Instant
         set(inst) {
-            field = Instant.fromEpochSeconds(inst.epochSeconds)
+            field = inst.minus(inst.nanosecondsOfSecond % 1000, DateTimeUnit.NANOSECOND)
         }
 
     constructor(systemId: PkId = "", id: PkId = "", memberIds: List<PkId> = ArrayList(), timestamp: Instant? = null) {
