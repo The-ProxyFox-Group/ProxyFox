@@ -19,6 +19,8 @@ import org.bson.types.ObjectId
 import org.litote.kmongo.coroutine.toList
 import org.litote.kmongo.reactivestreams.getCollection
 import org.litote.kmongo.util.KMongoUtil
+import java.security.SecureRandom
+import java.util.*
 import kotlin.contracts.ExperimentalContracts
 import kotlin.contracts.contract
 
@@ -26,6 +28,7 @@ import kotlin.contracts.contract
 
 typealias PkId = String
 
+private val secureRandom = SecureRandom()
 const val pkIdBound = 11881376
 
 val gson = GsonBuilder()
@@ -145,6 +148,7 @@ suspend inline fun <reified T : Any> Mongo.getOrCreateCollection(): MongoCollect
 }
 
 fun generateToken(): String {
-    val alphabet: List<Char> = ('a'..'z') + ('A'..'Z') + ('0'..'9')
-    return List(64) { alphabet.random() }.joinToString("")
+    val buffer = ByteArray(24)
+    secureRandom.nextBytes(buffer)
+    return Base64.getUrlEncoder().encodeToString(buffer)
 }
