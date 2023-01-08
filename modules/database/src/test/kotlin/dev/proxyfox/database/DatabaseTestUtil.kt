@@ -37,6 +37,7 @@ object DatabaseTestUtil {
 
     val instantEpoch = Instant.fromEpochSeconds(0L)
     val instantLastMicroOfEpochDay = Instant.fromEpochSeconds(TimeUnit.DAYS.toSeconds(1) - 1L, 999_999_000L)
+    val instantLastNanoOfEpochDay = Instant.fromEpochSeconds(TimeUnit.DAYS.toSeconds(1) - 1L, 999_999_999L)
 
     val stringEpoch = "1970-01-01T00:00:00Z"
     val stringLastMicroOfEpochDay = "1970-01-01T23:59:59.999999Z"
