@@ -8,6 +8,7 @@
 
 package dev.proxyfox.database
 
+import kotlinx.datetime.Instant
 import kotlinx.datetime.LocalDate
 import java.text.ParsePosition
 import java.time.format.DateTimeFormatter
@@ -277,6 +278,17 @@ fun tryParseLocalDate(str: String?, preferMonthDay: Boolean = true): Pair<LocalD
         LocalDate(year, day, month) to if (preferMonthDay) DDMMuuuu else MMDDuuuu
     else
         LocalDate(year, month, day) to parser
+}
+
+/**
+ * Helper method to try to parse an instant if the string is not blank.
+ * */
+fun String?.tryParseInstant() = sanitise()?.run {
+    if (isNullOrBlank()) {
+        null
+    } else {
+        Instant.parse(this)
+    }
 }
 
 fun shouldPreferMonthDay(timezone: String?) =

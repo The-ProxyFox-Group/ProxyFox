@@ -17,7 +17,6 @@ import dev.proxyfox.database.records.misc.AutoProxyMode
 import dev.proxyfox.database.records.misc.TrustLevel
 import dev.proxyfox.database.records.system.SystemRecord
 import dev.proxyfox.database.records.system.SystemSwitchRecord
-import kotlinx.datetime.Instant
 import kotlinx.datetime.LocalDate
 import kotlinx.serialization.SerialName
 import kotlinx.serialization.Serializable
@@ -229,7 +228,7 @@ data class PkGroup(
     val icon: String? = null,
     val banner: String? = null,
     val color: String? = null,
-    val created: Instant? = null,
+    val created: String? = null,
     val members: List<String>? = null,
 
     @Serializable(PkGroupPrivacyIgnorePrimitive::class)

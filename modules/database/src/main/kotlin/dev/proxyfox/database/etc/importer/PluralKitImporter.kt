@@ -247,7 +247,7 @@ open class PluralKitImporter protected constructor(
             id = existingIds.firstFreeRaw()
             val switchMap = TreeMap<Instant, LinkedHashSet<String>>(Instant::compareTo)
             for (switch in switches) {
-                val timestamp = switch.timestamp?.let { Instant.parse(it) } ?: continue
+                val timestamp = switch.timestamp.tryParseInstant() ?: continue
                 switchMap.computeIfAbsent(timestamp) { LinkedHashSet() }.addAll(switch.members?.filterNotNull() ?: emptyList())
             }
             var lastMember: LinkedHashSet<String>? = null
