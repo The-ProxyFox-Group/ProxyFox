@@ -35,8 +35,6 @@ object DatabaseTestUtil {
     private val seed = System.getenv("TEST_SEED")?.toLongOrNull()
     private val rng = Random()
 
-    const val offsetDateTimeEpochString = "1970-01-01T00:00:00Z"
-
     val instantEpoch = Instant.fromEpochSeconds(0L)
     val instantLastMicroOfEpochDay = Instant.fromEpochSeconds(TimeUnit.DAYS.toSeconds(1) - 1L, 999_999_000L)
 
