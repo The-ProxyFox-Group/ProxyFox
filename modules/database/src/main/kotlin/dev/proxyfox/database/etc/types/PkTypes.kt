@@ -10,6 +10,7 @@ package dev.proxyfox.database.etc.types
 
 import dev.proxyfox.common.fromColorForExport
 import dev.proxyfox.database.*
+import dev.proxyfox.database.etc.ktx.serializaton.PolyIgnorePrimitive
 import dev.proxyfox.database.records.member.MemberProxyTagRecord
 import dev.proxyfox.database.records.member.MemberRecord
 import dev.proxyfox.database.records.misc.AutoProxyMode
@@ -37,6 +38,7 @@ data class PkSystem(
     val created: String? = null,
     val webhook_url: String? = null,
 
+    @Serializable(PkSystemPrivacyIgnorePrimitive::class)
     val privacy: PkSystemPrivacy? = null,
     val config: PkConfig? = null,
 
@@ -153,6 +155,7 @@ data class PkMember(
     val proxy_tags: Set<PkProxy>? = emptySet(),
 
     // Some data structures from here will need to be flattened in.
+    @Serializable(PkMemberPrivacyIgnorePrimitive::class)
     val privacy: PkMemberPrivacy? = null,
 
     // ProxyFox-specific extensions.
@@ -229,6 +232,7 @@ data class PkGroup(
     val created: Instant? = null,
     val members: List<String>? = null,
 
+    @Serializable(PkGroupPrivacyIgnorePrimitive::class)
     val privacy: PkGroupPrivacy? = null,
 
     // The following are ignored. We don't use these.
@@ -285,6 +289,8 @@ data class PkSystemPrivacy(
     )
 }
 
+object PkSystemPrivacyIgnorePrimitive : PolyIgnorePrimitive<PkSystemPrivacy>(PkSystemPrivacy.serializer())
+
 @JvmRecord
 @Serializable
 data class PkMemberPrivacy(
@@ -307,6 +313,8 @@ data class PkMemberPrivacy(
     )
 }
 
+object PkMemberPrivacyIgnorePrimitive : PolyIgnorePrimitive<PkMemberPrivacy>(PkMemberPrivacy.serializer())
+
 @JvmRecord
 @Serializable
 data class PkGroupPrivacy(
@@ -326,6 +334,8 @@ data class PkGroupPrivacy(
         visibility = privacy,
     )
 }
+
+object PkGroupPrivacyIgnorePrimitive : PolyIgnorePrimitive<PkGroupPrivacy>(PkGroupPrivacy.serializer())
 
 @JvmRecord
 @Serializable
