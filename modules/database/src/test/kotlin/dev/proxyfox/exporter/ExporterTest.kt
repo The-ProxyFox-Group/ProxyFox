@@ -9,7 +9,9 @@
 package dev.proxyfox.exporter
 
 import dev.proxyfox.database.DatabaseTestUtil.instantEpoch
+import dev.proxyfox.database.DatabaseTestUtil.instantLastMicroOfEpochDay
 import dev.proxyfox.database.DatabaseTestUtil.offsetDateTimeEpochString
+import dev.proxyfox.database.DatabaseTestUtil.stringLastMicroOfEpochDay
 import dev.proxyfox.database.etc.types.PkMember
 import dev.proxyfox.database.etc.types.PkSwitch
 import dev.proxyfox.database.etc.types.PkSystem
@@ -48,5 +50,13 @@ class ExporterTest {
             timestamp = instantEpoch
         })
         Assert.assertEquals(switch.timestamp, offsetDateTimeEpochString)
+    }
+
+    @Test
+    fun `Exporter(Switch) - retain microseconds`() {
+        val switch = PkSwitch(SystemSwitchRecord().apply {
+            timestamp = instantLastMicroOfEpochDay
+        })
+        Assert.assertEquals(switch.timestamp, stringLastMicroOfEpochDay)
     }
 }
