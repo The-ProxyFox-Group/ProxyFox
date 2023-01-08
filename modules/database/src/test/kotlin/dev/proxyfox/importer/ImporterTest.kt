@@ -15,8 +15,11 @@ import dev.proxyfox.database.DatabaseTestUtil.entity
 import dev.proxyfox.database.DatabaseTestUtil.instantEpoch
 import dev.proxyfox.database.DatabaseTestUtil.instantLastMicroOfEpochDay
 import dev.proxyfox.database.DatabaseTestUtil.seeded
+import dev.proxyfox.database.DatabaseTestUtil.stringEpoch
+import dev.proxyfox.database.DatabaseTestUtil.stringLastMicroOfEpochDay
 import dev.proxyfox.database.JsonDatabase
 import dev.proxyfox.database.MongoDatabase
+import dev.proxyfox.database.etc.exporter.Exporter
 import dev.proxyfox.database.etc.importer.*
 import kotlinx.coroutines.ExperimentalCoroutinesApi
 import kotlinx.coroutines.test.runTest
@@ -134,6 +137,13 @@ constructor(private val name: String, databaseFactory: () -> Database) {
         val sorted = switches!!.sortedBy { it.timestamp }
         assertEquals(sorted[0].timestamp, instantEpoch)
         assertEquals(sorted[1].timestamp, instantLastMicroOfEpochDay)
+
+        val system = Exporter.exportToPkObject(database, user.id.value)!!
+
+        val sortedExport = system.switches!!.sortedBy { it.timestamp }
+
+        assertEquals(sortedExport[0].timestamp, stringEpoch)
+        assertEquals(sortedExport[1].timestamp, stringLastMicroOfEpochDay)
     }
 
     @Test

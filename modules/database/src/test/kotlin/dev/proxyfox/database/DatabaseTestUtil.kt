@@ -44,6 +44,9 @@ object DatabaseTestUtil {
     val instantEpoch = Instant.EPOCH!!
     val instantLastMicroOfEpochDay = Instant.ofEpochSecond(TimeUnit.DAYS.toSeconds(1) - 1L, 999_999_000L)!!
 
+    val stringEpoch = "1970-01-01T00:00:00Z"
+    val stringLastMicroOfEpochDay = "1970-01-01T23:59:59.999999Z"
+
     inline fun <reified T : Entity> entity(ret: ULong): T {
         return mockk {
             every { id } returns Snowflake(ret)
