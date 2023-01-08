@@ -21,7 +21,7 @@ import io.ktor.server.routing.*
 
 object ApiMain {
     private const val version = "1"
-    fun main() = embeddedServer(Netty, port = Integer.parseInt(System.getenv("PORT"))) {
+    fun main() = embeddedServer(Netty, port = System.getenv("PORT")?.toIntOrNull() ?: 8080) {
         configureRouting()
         configurePlugins()
     }.start()
