@@ -10,6 +10,7 @@ package dev.proxyfox.database
 
 import dev.kord.common.entity.Snowflake
 import dev.kord.core.behavior.channel.ChannelBehavior
+import dev.proxyfox.database.records.group.GroupRecord
 import dev.proxyfox.database.records.member.MemberProxyTagRecord
 import dev.proxyfox.database.records.member.MemberRecord
 import dev.proxyfox.database.records.member.MemberServerSettingsRecord
@@ -131,6 +132,13 @@ class NopDatabase : Database() {
     override suspend fun fetchTotalMembersFromSystem(systemId: String): Int? = null
 
     override suspend fun fetchMemberFromSystemAndName(systemId: String, memberName: String, caseSensitive: Boolean): MemberRecord? = null
+    override suspend fun fetchGroupsFromMember(member: MemberRecord): List<GroupRecord> {
+        return emptyList()
+    }
+
+    override suspend fun fetchMembersFromGroup(group: GroupRecord): List<MemberRecord> {
+        return emptyList()
+    }
 
     override suspend fun export(other: Database) {}
 

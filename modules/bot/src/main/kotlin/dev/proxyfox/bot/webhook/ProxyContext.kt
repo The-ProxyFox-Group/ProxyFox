@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2022, The ProxyFox Group
+ * Copyright (c) 2022-2023, The ProxyFox Group
  *
  * This Source Code is subject to the terms of the Mozilla Public
  * License, v. 2.0. If a copy of the MPL was not distributed with this
@@ -102,7 +102,7 @@ data class ProxyContext(
                 val id = if (channel is ThreadChannelBehavior) channel.parentId.value else channel.id.value
                 WebhookCache -= id
             }
-            throw RuntimeException("Failed to proxy your message.", e)
+            throw RuntimeException("Failed to proxy your message: $e", e)
         }
         if (newMessage.content != messageContent && messageContent.isNotBlank())
             webhook.edit(newMessage.id, threadId) {

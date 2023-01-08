@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2022, The ProxyFox Group
+ * Copyright (c) 2022-2023, The ProxyFox Group
  *
  * This Source Code is subject to the terms of the Mozilla Public
  * License, v. 2.0. If a copy of the MPL was not distributed with this
@@ -42,6 +42,7 @@ import kotlin.time.Duration.Companion.minutes
 
 // Created 2022-15-10T08:37:40
 
+// TODO: Move to DiscordContext
 /**
  * @author Ampflower
  * @since ${version}

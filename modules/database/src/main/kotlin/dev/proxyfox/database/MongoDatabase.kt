@@ -14,6 +14,7 @@ import com.mongodb.reactivestreams.client.MongoCollection
 import dev.kord.common.entity.Snowflake
 import dev.kord.core.behavior.channel.ChannelBehavior
 import dev.proxyfox.database.records.MongoRecord
+import dev.proxyfox.database.records.group.GroupRecord
 import dev.proxyfox.database.records.member.MemberProxyTagRecord
 import dev.proxyfox.database.records.member.MemberRecord
 import dev.proxyfox.database.records.member.MemberServerSettingsRecord
@@ -72,6 +73,8 @@ class MongoDatabase(private val dbName: String = "ProxyFox") : Database() {
 
     private lateinit var memberServers: KCollection<MemberServerSettingsRecord>
 
+    private lateinit var groups: KCollection<GroupRecord>
+
     override suspend fun setup(): MongoDatabase {
         val connectionString = System.getenv("PROXYFOX_MONGO")
         kmongo =
@@ -103,6 +106,8 @@ class MongoDatabase(private val dbName: String = "ProxyFox") : Database() {
         memberProxies = db.getOrCreateCollection()
 
         memberServers = db.getOrCreateCollection()
+
+        groups = db.getOrCreateCollection()
 
         ping()
 
@@ -339,6 +344,17 @@ class MongoDatabase(private val dbName: String = "ProxyFox") : Database() {
             locale("en_US")
         }.build())
         return search.awaitFirstOrNull()
+    }
+
+    override suspend fun fetchGroupsFromMember(member: MemberRecord): List<GroupRecord> {
+        return groups.find(
+            "systemId" eq member.systemId,
+            "members" eq member.id
+        ).toList()
+    }
+
+    override suspend fun fetchMembersFromGroup(group: GroupRecord): List<MemberRecord> {
+        TODO("Not yet implemented")
     }
 
     override suspend fun export(other: Database) {

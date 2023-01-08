@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2022, The ProxyFox Group
+ * Copyright (c) 2022-2023, The ProxyFox Group
  *
  * This Source Code is subject to the terms of the Mozilla Public
  * License, v. 2.0. If a copy of the MPL was not distributed with this
@@ -8,10 +8,7 @@
 
 package dev.proxyfox.bot
 
-import dev.kord.common.entity.MessageType
-import dev.kord.common.entity.Permission
-import dev.kord.common.entity.Permissions
-import dev.kord.common.entity.Snowflake
+import dev.kord.common.entity.*
 import dev.kord.core.behavior.channel.asChannelOf
 import dev.kord.core.behavior.channel.createMessage
 import dev.kord.core.cache.data.AttachmentData
@@ -19,11 +16,16 @@ import dev.kord.core.cache.data.EmbedData
 import dev.kord.core.entity.Attachment
 import dev.kord.core.entity.Embed
 import dev.kord.core.entity.channel.GuildMessageChannel
+import dev.kord.core.event.interaction.*
+import dev.kord.core.entity.interaction.SubCommand
 import dev.kord.core.event.message.MessageCreateEvent
 import dev.kord.core.event.message.MessageUpdateEvent
 import dev.kord.core.event.message.ReactionAddEvent
 import dev.kord.rest.builder.message.create.embed
-import dev.proxyfox.bot.string.parser.parseString
+import dev.proxyfox.bot.command.*
+import dev.proxyfox.bot.command.context.DiscordContext
+import dev.proxyfox.bot.command.context.DiscordMessageContext
+import dev.proxyfox.bot.command.context.InteractionCommandContext
 import dev.proxyfox.bot.webhook.GuildMessage
 import dev.proxyfox.bot.webhook.WebhookUtil
 import dev.proxyfox.common.ellipsis
@@ -34,6 +36,7 @@ import dev.proxyfox.database.records.misc.AutoProxyMode
 import dev.proxyfox.database.records.system.SystemRecord
 import dev.proxyfox.database.records.system.SystemServerSettingsRecord
 import kotlinx.datetime.toJavaLocalDate
+import org.litote.kmongo.json
 import org.slf4j.LoggerFactory
 
 val prefixRegex = Regex("^(?:(<@!?${kord.selfId}>)|pf[>;!:])\\s*", RegexOption.IGNORE_CASE)
@@ -59,13 +62,10 @@ suspend fun MessageCreateEvent.onMessageCreate() {
         val contentWithoutRegex = content.substring(matcher.end())
 
         if (contentWithoutRegex.isBlank() && matcher.start(1) >= 0) {
-            channel.createMessage("Hi, I'm ProxyFox! My prefix is `pf>`.")
+            channel.createMessage("Hi, I'm ProxyFox! My prefix is `pf>`. I also support slash commands!")
         } else {
             // Run the command
-            val output = parseString(contentWithoutRegex, message) ?: return
-            // Send output message if exists
-            if (output.isNotBlank())
-                channel.createMessage(output)
+            Commands.parser.parse(DiscordMessageContext(message, contentWithoutRegex) as DiscordContext<Any>)
         }
     } else if (channel is GuildMessageChannel && channel.selfHasPermissions(Permissions(Permission.ManageWebhooks, Permission.ManageMessages))) {
         val guild = channel.getGuild()
@@ -283,6 +283,36 @@ suspend fun ReactionAddEvent.onReactionAdd() {
                 }
             }
             message.deleteReaction(userId, emoji)
+        }
+    }
+}
+
+suspend fun GlobalMessageCommandInteractionCreateEvent.onInteract() {
+
+}
+
+suspend fun ChatInputCommandInteractionCreateEvent.onInteract() {
+    when (interaction.invokedCommandName) {
+        "member" -> {
+            val command = interaction.command as? SubCommand ?: return
+            MemberCommands.interactionExecutors[command.name]?.let { it(InteractionCommandContext(this)) }
+        }
+        "system" -> {
+            val command = interaction.command as? SubCommand ?: return
+            SystemCommands.interactionExecutors[command.name]?.let { it(InteractionCommandContext(this)) }
+        }
+        "switch" -> {
+            val command = interaction.command as? SubCommand ?: return
+            SwitchCommands.interactionExecutors[command.name]?.let { it(InteractionCommandContext(this)) }
+        }
+        else -> {
+            val command = interaction.command as? SubCommand ?: return
+            when(command.rootName) {
+                "info" -> MiscCommands.infoInteractionExecutors
+                "moderation" -> MiscCommands.moderationInteractionExecutors
+                "misc" -> MiscCommands.miscInteractionExecutors
+                else -> return
+            }[command.name]?.let { it(InteractionCommandContext(this)) }
         }
     }
 }

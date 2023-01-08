@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2022, The ProxyFox Group
+ * Copyright (c) 2022-2023, The ProxyFox Group
  *
  * This Source Code is subject to the terms of the Mozilla Public
  * License, v. 2.0. If a copy of the MPL was not distributed with this
@@ -26,6 +26,7 @@ import dev.proxyfox.bot.prompts.Button.Companion.multiply
 import kotlin.time.Duration
 import kotlin.time.Duration.Companion.minutes
 
+// TODO: Move to DiscordContext
 /**
  * @author Ampflower
  * @since ${version}

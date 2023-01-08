@@ -6,10 +6,10 @@
  * file, You can obtain one at https://mozilla.org/MPL/2.0/.
  */
 
-package dev.proxyfox.bot.string.node
+package dev.proxyfox.database.records.group
 
-enum class NodeType {
-    LITERAL,
-    VARIABLE,
-    GREEDY
+enum class TagMode {
+    HIDDEN,
+    BEFORE,
+    AFTER
 }

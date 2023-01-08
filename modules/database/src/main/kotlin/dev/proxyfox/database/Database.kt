@@ -13,6 +13,7 @@ import dev.kord.core.behavior.GuildBehavior
 import dev.kord.core.behavior.UserBehavior
 import dev.kord.core.behavior.channel.ChannelBehavior
 import dev.proxyfox.database.records.DatabaseException
+import dev.proxyfox.database.records.group.GroupRecord
 import dev.proxyfox.database.records.member.MemberProxyTagRecord
 import dev.proxyfox.database.records.member.MemberRecord
 import dev.proxyfox.database.records.member.MemberServerSettingsRecord
@@ -35,6 +36,10 @@ import kotlin.time.Duration
  * @author Ampflower
  **/
 // Suppression since unused warnings aren't useful for an API.
+/*
+* TODO: Move methods that require an id for an object in the database to use that object.
+*  ex: systemId: String, memberName: String -> system: SystemRecord, memberName: String
+* */
 @Suppress("unused")
 abstract class Database : AutoCloseable {
     abstract suspend fun setup(): Database
@@ -468,6 +473,16 @@ abstract class Database : AutoCloseable {
      * Gets a member by system ID and member name
      * */
     abstract suspend fun fetchMemberFromSystemAndName(systemId: String, memberName: String, caseSensitive: Boolean = true): MemberRecord?
+
+    /**
+     * Gets the groups a member is a part of
+     * */
+    abstract suspend fun fetchGroupsFromMember(member: MemberRecord): List<GroupRecord>
+
+    /**
+     * Gets the members that are a part of a group
+     * */
+    abstract suspend fun fetchMembersFromGroup(group: GroupRecord): List<MemberRecord>
 
     /**
      * Gets a member by system ID and either member ID or name.

@@ -40,14 +40,15 @@ allprojects {
     }
 
     java {
-        sourceCompatibility = JavaVersion.VERSION_17
-        targetCompatibility = JavaVersion.VERSION_17
+        sourceCompatibility = JavaVersion.VERSION_18
+        targetCompatibility = JavaVersion.VERSION_18
     }
 
     repositories {
         mavenCentral()
         maven("https://oss.sonatype.org/content/repositories/snapshots")
         maven("https://jitpack.io")
+        maven("https://maven.proxyfox.dev")
     }
 
     dependencies {

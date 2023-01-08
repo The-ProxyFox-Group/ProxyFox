@@ -1,15 +1,12 @@
-name: Build
-on: [ pull_request, push ]
+name: Docker Build and Publish
+on:
+  push:
+    branches:
+      - master
 
 jobs:
   build:
     runs-on: ubuntu-latest
-
-    services:
-      mongo:
-        image: mongo
-        ports:
-          - 27017:27017
 
     steps:
       - name: Checkout repository
@@ -35,7 +32,7 @@ jobs:
           java-version: 18
 
       - name: Build
-        run: ./gradlew build --no-daemon
+        run: ./gradlew build -x check -x test --no-daemon
 
       - name: Upload build artifacts
         uses: actions/upload-artifact@v3
@@ -45,11 +42,13 @@ jobs:
             build/libs/
             module/**/build/libs/
 
-      - name: Capture test reports on failure
-        uses: actions/upload-artifact@v3
-        if: failure()
+      - name: Login to GitHub Container Registry
+        uses: docker/login-action@v2
         with:
-          name: Logs
-          path: |
-            build/reports
-            modules/**/build/reports
+          registry: ghcr.io
+          username: ${{ github.repository_owner }}
+          password: ${{ secrets.GITHUB_TOKEN }}
+
+      - run: docker build -t ghcr.io/the-proxyfox-group/proxyfox:latest -t ghcr.io/the-proxyfox-group/proxyfox:${GITHUB_SHA} .
+      - run: docker push ghcr.io/the-proxyfox-group/proxyfox:latest
+      - run: docker push ghcr.io/the-proxyfox-group/proxyfox:${GITHUB_SHA}
