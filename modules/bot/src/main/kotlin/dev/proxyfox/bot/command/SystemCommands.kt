@@ -13,7 +13,6 @@ import dev.kord.core.Kord
 import dev.kord.rest.NamedFile
 import dev.kord.rest.builder.interaction.SubCommandBuilder
 import dev.kord.rest.builder.interaction.subCommand
-import dev.proxyfox.bot.command.MemberCommands.runs
 import dev.proxyfox.bot.command.context.DiscordContext
 import dev.proxyfox.bot.command.context.InteractionCommandContext
 import dev.proxyfox.bot.command.context.runs
@@ -32,8 +31,9 @@ import dev.proxyfox.common.toColor
 import dev.proxyfox.database.database
 import dev.proxyfox.database.etc.exporter.Exporter
 import dev.proxyfox.database.generateToken
-import dev.proxyfox.database.records.member.MemberRecord
 import dev.proxyfox.database.records.system.SystemRecord
+import io.ktor.client.request.forms.*
+import io.ktor.utils.io.jvm.javaio.*
 
 /**
  * Commands for accessing and changing system settings
@@ -387,9 +387,20 @@ object SystemCommands {
 //            unixLiteral(arrayOf("verbose", "v"), ::listVerbose)
 //        })
 
-        registerCommand(literal(arrayOf("token", "t"), ::token) {
-            literal(arrayOf("refresh", "r"), ::tokenRefresh)
-        })
+        Commands.parser.literal("token", "t") {
+            runs {
+                val system = database.fetchSystemFromUser(getUser())
+                if (!checkSystem(this, system)) return@runs false
+                token(this, system!!)
+            }
+            literal("refresh", "r") {
+                runs {
+                    val system = database.fetchSystemFromUser(getUser())
+                    if (!checkSystem(this, system)) return@runs false
+                    tokenRefresh(this, system!!)
+                }
+            }
+        }
     }
 
     private suspend fun <T> access(ctx: DiscordContext<T>, system: SystemRecord): Boolean {
@@ -626,21 +637,20 @@ object SystemCommands {
         ctx.respondSuccess("System tag updated to $tag!")
         return true
     }
-    private suspend fun token(ctx: MessageHolder): String {
-        val system = database.fetchSystemFromUser(ctx.message.author)
-            ?: return "System does not exist. Create one using `pf>system new`"
-        ctx.respond("`${database.getOrCreateTokenFromSystem(system.id).token}`", true)
-        return "Token sent in DMs"
+
+    private suspend fun <T> token(ctx: DiscordContext<T>, system: SystemRecord): Boolean {
+        ctx.respondSuccess("`${database.getOrCreateTokenFromSystem(system.id).token}`", true)
+        ctx.respondSuccess("Token sent in DMs")
+        return true
     }
 
-    private suspend fun tokenRefresh(ctx: MessageHolder): String {
-        val system = database.fetchSystemFromUser(ctx.message.author)
-            ?: return "System does not exist. Create one using `pf>system new`"
+    private suspend fun <T> tokenRefresh(ctx: DiscordContext<T>, system: SystemRecord): Boolean {
         val token = database.getOrCreateTokenFromSystem(system.id)
         token.token = generateToken()
         database.updateToken(token)
-        ctx.respond("`${token.token}`", true)
-        return "Token refreshed. New token sent in DMs"
+        ctx.respondSuccess("`${token.token}`", true)
+        ctx.respondSuccess("Token refreshed. New token sent in DMs")
+        return true
     }
 
     private suspend fun <T> delete(ctx: DiscordContext<T>, system: SystemRecord): Boolean {
@@ -651,7 +661,7 @@ object SystemCommands {
                     "The data will be lost forever (A long time!)",
             yes = Button("Delete system", Button.wastebasket, ButtonStyle.Danger) {
                 val export = Exporter.export(ctx.getUser()!!.id.value)
-                ctx.respondFiles(null, NamedFile("system.json", export.byteInputStream()))
+                ctx.respondFiles(null, NamedFile("system.json", ChannelProvider { export.byteInputStream().toByteReadChannel() }))
                 database.dropSystem(ctx.getUser()!!)
                 content = "System deleted."
             },

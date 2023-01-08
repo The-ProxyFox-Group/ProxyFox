@@ -22,9 +22,6 @@ import dev.proxyfox.bot.kordColor
 import dev.proxyfox.bot.member
 import dev.proxyfox.bot.prompts.Button
 import dev.proxyfox.bot.prompts.TimedYesNoPrompt
-import dev.proxyfox.command.NodeActionParam
-import dev.proxyfox.command.NodeHolder
-import dev.proxyfox.command.ParamGetter
 import dev.proxyfox.command.node.CommandNode
 import dev.proxyfox.command.node.builtin.*
 import dev.proxyfox.common.*
@@ -35,8 +32,8 @@ import dev.proxyfox.database.records.member.MemberRecord
 import dev.proxyfox.database.records.member.MemberServerSettingsRecord
 import dev.proxyfox.database.records.system.SystemRecord
 import dev.proxyfox.database.tryParseLocalDate
+import kotlinx.datetime.LocalDate
 import kotlinx.datetime.toJavaLocalDate
-import java.time.LocalDate
 
 /**
  * Commands for accessing and changing system  settings
@@ -131,7 +128,7 @@ object MemberCommands {
                         respondFailure("Command not ran in server.")
                         return@runs false
                     }
-                    val guild = kord.getGuild(guildId) ?: run {
+                    val guild = kord.getGuildOrNull(guildId) ?: run {
                         respondFailure("Cannot find server. Am I in it?")
                         return@runs false
                     }
@@ -189,7 +186,7 @@ object MemberCommands {
                         respondFailure("Command not ran in server.")
                         return@runs false
                     }
-                    val guild = kord.getGuild(guildId) ?: run {
+                    val guild = kord.getGuildOrNull(guildId) ?: run {
                         respondFailure("Cannot find server. Am I in it?")
                         return@runs false
                     }
@@ -384,11 +381,11 @@ object MemberCommands {
                         respondFailure("Command not ran in server.")
                         return@runs false
                     }
-                    val guild = kord.getGuild(guildId) ?: run {
+                    val guild = kord.getGuildOrNull(guildId) ?: run {
                         respondFailure("Cannot find server. Am I in it?")
                         return@runs false
                     }
-                    val serverMember = database.fetchMemberServerSettingsFromSystemAndMember(guild, system!!.id, member!!.id)
+                    val serverMember = database.fetchMemberServerSettingsFromSystemAndMember(guild, system.id, member!!.id)
                     servername(this, serverMember!!, null, false, false)
                 }
                 unixLiteral("clear", "remove") {
@@ -401,11 +398,11 @@ object MemberCommands {
                             respondFailure("Command not ran in server.")
                             return@runs false
                         }
-                        val guild = kord.getGuild(guildId) ?: run {
+                        val guild = kord.getGuildOrNull(guildId) ?: run {
                             respondFailure("Cannot find server. Am I in it?")
                             return@runs false
                         }
-                        val serverMember = database.fetchMemberServerSettingsFromSystemAndMember(guild, system!!.id, member!!.id)
+                        val serverMember = database.fetchMemberServerSettingsFromSystemAndMember(guild, system.id, member!!.id)
                         servername(this, serverMember!!, null, false, true)
                     }
                 }
@@ -419,11 +416,11 @@ object MemberCommands {
                             respondFailure("Command not ran in server.")
                             return@runs false
                         }
-                        val guild = kord.getGuild(guildId) ?: run {
+                        val guild = kord.getGuildOrNull(guildId) ?: run {
                             respondFailure("Cannot find server. Am I in it?")
                             return@runs false
                         }
-                        val serverMember = database.fetchMemberServerSettingsFromSystemAndMember(guild, system!!.id, member!!.id)
+                        val serverMember = database.fetchMemberServerSettingsFromSystemAndMember(guild, system.id, member!!.id)
                         servername(this, serverMember!!, null, true, false)
                     }
                 }
@@ -437,11 +434,11 @@ object MemberCommands {
                             respondFailure("Command not ran in server.")
                             return@runs false
                         }
-                        val guild = kord.getGuild(guildId) ?: run {
+                        val guild = kord.getGuildOrNull(guildId) ?: run {
                             respondFailure("Cannot find server. Am I in it?")
                             return@runs false
                         }
-                        val serverMember = database.fetchMemberServerSettingsFromSystemAndMember(guild, system!!.id, member!!.id)
+                        val serverMember = database.fetchMemberServerSettingsFromSystemAndMember(guild, system.id, member!!.id)
                         servername(this, serverMember!!, getName(), false, false)
                     }
                 }
@@ -533,11 +530,11 @@ object MemberCommands {
                         respondFailure("Command not ran in server.")
                         return@runs false
                     }
-                    val guild = kord.getGuild(guildId) ?: run {
+                    val guild = kord.getGuildOrNull(guildId) ?: run {
                         respondFailure("Cannot find server. Am I in it?")
                         return@runs false
                     }
-                    val serverMember = database.fetchMemberServerSettingsFromSystemAndMember(guild, system!!.id, member!!.id)
+                    val serverMember = database.fetchMemberServerSettingsFromSystemAndMember(guild, system.id, member!!.id)
                     serverAvatar(this, serverMember!!, null, false)
                 }
                 unixLiteral("clear", "remove") {
@@ -550,11 +547,11 @@ object MemberCommands {
                             respondFailure("Command not ran in server.")
                             return@runs false
                         }
-                        val guild = kord.getGuild(guildId) ?: run {
+                        val guild = kord.getGuildOrNull(guildId) ?: run {
                             respondFailure("Cannot find server. Am I in it?")
                             return@runs false
                         }
-                        val serverMember = database.fetchMemberServerSettingsFromSystemAndMember(guild, system!!.id, member!!.id)
+                        val serverMember = database.fetchMemberServerSettingsFromSystemAndMember(guild, system.id, member!!.id)
                         serverAvatar(this, serverMember!!, null, true)
                     }
                 }
@@ -568,11 +565,11 @@ object MemberCommands {
                             respondFailure("Command not ran in server.")
                             return@runs false
                         }
-                        val guild = kord.getGuild(guildId) ?: run {
+                        val guild = kord.getGuildOrNull(guildId) ?: run {
                             respondFailure("Cannot find server. Am I in it?")
                             return@runs false
                         }
-                        val serverMember = database.fetchMemberServerSettingsFromSystemAndMember(guild, system!!.id, member!!.id)
+                        val serverMember = database.fetchMemberServerSettingsFromSystemAndMember(guild, system.id, member!!.id)
                         serverAvatar(this, serverMember!!, getAvatar().url, false)
                     }
                 }
@@ -586,11 +583,11 @@ object MemberCommands {
                             respondFailure("Command not ran in server.")
                             return@runs false
                         }
-                        val guild = kord.getGuild(guildId) ?: run {
+                        val guild = kord.getGuildOrNull(guildId) ?: run {
                             respondFailure("Cannot find server. Am I in it?")
                             return@runs false
                         }
-                        val serverMember = database.fetchMemberServerSettingsFromSystemAndMember(guild, system!!.id, member!!.id)
+                        val serverMember = database.fetchMemberServerSettingsFromSystemAndMember(guild, system.id, member!!.id)
                         serverAvatar(this, serverMember!!, getAvatar(), false)
                     }
                 }

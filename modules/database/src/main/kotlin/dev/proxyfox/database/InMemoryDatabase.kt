@@ -10,6 +10,7 @@ package dev.proxyfox.database
 
 import dev.kord.common.entity.Snowflake
 import dev.kord.core.behavior.channel.ChannelBehavior
+import dev.proxyfox.database.records.group.GroupRecord
 import dev.proxyfox.database.records.member.MemberProxyTagRecord
 import dev.proxyfox.database.records.member.MemberRecord
 import dev.proxyfox.database.records.member.MemberServerSettingsRecord
@@ -42,6 +43,7 @@ class InMemoryDatabase : Database() {
 
     private lateinit var memberServers: MutableMap<String, HashMap<ULong, MemberServerSettingsRecord>>
 
+    private lateinit var groups: MutableMap<String, HashMap<String, GroupRecord>>
 
     override suspend fun setup(): InMemoryDatabase {
         users = ConcurrentHashMap()
@@ -56,6 +58,7 @@ class InMemoryDatabase : Database() {
         members = ConcurrentHashMap()
         memberProxies = ConcurrentHashMap()
         memberServers = ConcurrentHashMap()
+        groups = ConcurrentHashMap()
 
         return this
     }
@@ -313,6 +316,14 @@ class InMemoryDatabase : Database() {
                     find { it.name.lowercase() == memberName.lowercase() }
                 }
         }
+    }
+
+    override suspend fun fetchGroupsFromMember(member: MemberRecord): List<GroupRecord> {
+        return groups[member.systemId]?.values?.filter { it.members.contains(member.id) } ?: emptyList()
+    }
+
+    override suspend fun fetchMembersFromGroup(group: GroupRecord): List<MemberRecord> {
+        return members[group.systemId]?.let { group.members.mapNotNull(it::get) } ?: emptyList()
     }
 
     override suspend fun export(other: Database) {
