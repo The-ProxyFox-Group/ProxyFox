@@ -9,6 +9,7 @@
 package dev.proxyfox.database.records.system
 
 import dev.proxyfox.database.PkId
+import dev.proxyfox.database.etc.ktx.serializaton.InstantLongMillisecondSerializer
 import dev.proxyfox.database.generateToken
 import dev.proxyfox.database.records.MongoRecord
 import dev.proxyfox.database.records.misc.AutoProxyMode
@@ -39,6 +40,8 @@ open class SystemRecord : MongoRecord {
     var color: Int = -1
     var avatarUrl: String? = null
     var timezone: String? = null
+
+    @Serializable(InstantLongMillisecondSerializer::class)
     var timestamp: Instant = Clock.System.now()
     var token: String = generateToken()
 

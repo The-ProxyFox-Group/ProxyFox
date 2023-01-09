@@ -10,6 +10,8 @@ package dev.proxyfox.database.records.member
 
 import dev.proxyfox.database.PkId
 import dev.proxyfox.database.database
+import dev.proxyfox.database.etc.ktx.serializaton.InstantLongMillisecondSerializer
+import dev.proxyfox.database.etc.ktx.serializaton.LocalDateLongMillisecondSerializer
 import dev.proxyfox.database.records.MongoRecord
 import kotlinx.datetime.Clock
 import kotlinx.datetime.Instant
@@ -49,7 +51,11 @@ class MemberRecord() : MongoRecord {
     var keepProxy: Boolean = false
     var autoProxy: Boolean = true
     var messageCount: ULong = 0UL
+
+    @Serializable(InstantLongMillisecondSerializer::class)
     var timestamp: Instant = Clock.System.now()
+
+    @Serializable(LocalDateLongMillisecondSerializer::class)
     var birthday: LocalDate? = null
     var age: String? = null
     var role: String? = null
