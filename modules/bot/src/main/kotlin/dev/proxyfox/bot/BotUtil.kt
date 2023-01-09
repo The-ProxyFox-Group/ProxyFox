@@ -30,33 +30,27 @@ import dev.kord.core.on
 import dev.kord.gateway.Intent
 import dev.kord.gateway.PrivilegedIntent
 import dev.kord.gateway.builder.Shards
-import dev.kord.rest.builder.interaction.BaseInputChatBuilder
-import dev.kord.rest.builder.interaction.string
-import dev.kord.rest.builder.interaction.subCommand
 import dev.kord.rest.builder.message.EmbedBuilder
 import dev.kord.rest.request.KtorRequestException
-import dev.proxyfox.bot.command.Commands
 import dev.proxyfox.bot.command.MemberCommands.registerMemberCommands
 import dev.proxyfox.bot.command.MiscCommands.registerMiscCommands
 import dev.proxyfox.bot.command.SwitchCommands.registerSwitchCommands
 import dev.proxyfox.bot.command.SystemCommands.registerSystemCommands
-import dev.proxyfox.bot.command.context.DiscordContext
-import dev.proxyfox.command.node.CommandNode
-import dev.proxyfox.command.node.builtin.LiteralNode
 import dev.proxyfox.common.*
 import dev.proxyfox.database.database
 import dev.proxyfox.database.records.member.MemberRecord
 import dev.proxyfox.database.records.system.SystemRecord
 import io.ktor.client.*
 import io.ktor.client.engine.cio.*
+import io.ktor.client.request.forms.*
 import io.ktor.http.*
+import io.ktor.utils.io.jvm.javaio.*
 import kotlinx.coroutines.*
 import kotlinx.coroutines.flow.count
 import kotlinx.coroutines.flow.fold
 import kotlinx.datetime.Clock
 import kotlinx.datetime.Instant
 import java.lang.Integer.min
-import java.time.OffsetDateTime
 import java.util.*
 import java.util.concurrent.Executors
 import kotlin.contracts.ExperimentalContracts
@@ -138,9 +132,15 @@ suspend fun login() {
         }
     }
 
-    printStep("Registering slash commands", 2)
+    // TODO: Figure out why registerApplicationCommands is so abysmally slow
+    // For now, launch asynchronously so it's not the main point of hanging
+    // when starting the bot.
+    scope.launch {
+        printStep("Registering slash commands", 2)
+        kord.registerApplicationCommands()
+        printStep("Finished registering slash commands", 2)
+    }
 
-    kord.registerApplicationCommands()
     kord.on<GlobalMessageCommandInteractionCreateEvent> {
         onInteract()
     }
@@ -243,7 +243,7 @@ suspend fun handleError(err: Throwable, message: MessageBehavior) {
 
         errorChannel!!.createMessage {
             content = "`$timestamp`"
-            addFile("exception.log", cause.byteInputStream())
+            addFile("exception.log", ChannelProvider { cause.byteInputStream().toByteReadChannel() })
         }
     }
 }
