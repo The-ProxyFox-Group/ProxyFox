@@ -12,7 +12,6 @@ pluralkt = "1.2"
 # Database
 postgres = "42.3.3"
 kjdbc = "0.5.2"
-gson = "2.9.0"
 kmongo = "4.6.0"
 kotlinx_datetime = "0.4.0"
 
@@ -38,7 +37,6 @@ pluralkt = { module = "dev.proxyfox:pluralkt", version.ref = "pluralkt" }
 kotlin_stdlib = { module = "org.jetbrains.kotlin:kotlin-stdlib", version.ref = "kotlin" }
 kotlinx_coroutines_core = { module = "org.jetbrains.kotlinx:kotlinx-coroutines-core", version.ref = "kotlinx_coroutines" }
 
-gson = { module = "com.google.code.gson:gson", version.ref = "gson" }
 kjdbc = { module = "com.vladsch.kotlin-jdbc:kotlin-jdbc", version.ref = "kjdbc" }
 postgres = { module = "org.postgresql:postgresql", version.ref = "postgres" }
 kmongo_base = { module = "org.litote.kmongo:kmongo-serialization", version.ref = "kmongo" }
@@ -57,7 +55,7 @@ kotlinx_coroutines_test = { module = "org.jetbrains.kotlinx:kotlinx-coroutines-t
 
 [bundles]
 base = ["guava", "logback", "kotlin_stdlib", "kotlinx_coroutines_core", "kord", "proxyfox_command", "pluralkt"]
-database = ["gson", "kmongo_base", "kmongo_coroutine", "kmongo_async", "kotlinx_datetime"]
+database = ["kmongo_base", "kmongo_coroutine", "kmongo_async", "kotlinx_datetime"]
 api = ["ktor_server", "ktor_server_netty", "ktor_content_negotiation", "ktor_serialization"]
 test = ["testng", "kotlinx_coroutines_test", "mockk"]
 

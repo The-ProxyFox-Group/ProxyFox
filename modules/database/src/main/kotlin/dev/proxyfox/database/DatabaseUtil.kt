@@ -8,14 +8,9 @@
 
 package dev.proxyfox.database
 
-import com.google.gson.*
 import com.mongodb.reactivestreams.client.MongoCollection
-import dev.proxyfox.database.etc.gson.*
 import dev.proxyfox.database.etc.importer.ImporterException
 import kotlinx.coroutines.reactive.awaitFirst
-import kotlinx.datetime.Instant
-import kotlinx.datetime.LocalDate
-import org.bson.types.ObjectId
 import org.litote.kmongo.coroutine.toList
 import org.litote.kmongo.reactivestreams.getCollection
 import org.litote.kmongo.util.KMongoUtil
@@ -30,15 +25,6 @@ typealias PkId = String
 
 private val secureRandom = SecureRandom()
 const val pkIdBound = 11881376
-
-val gson = GsonBuilder()
-    .registerTypeAdapter(LocalDate::class.java, LocalDateAdaptor)
-    .registerTypeAdapter(ObjectId::class.java, ObjectIdNullifier)
-    .registerTypeAdapter(Instant::class.java, InstantAdaptor)
-    .registerTypeAdapter(ULong::class.java, ULongAdaptor)
-    .registerTypeAdapter(Void::class.java, VoidAdaptor)
-    .registerTypeAdapterFactory(RecordAdapterFactory)
-    .create()!!
 
 fun String.sanitise(): String {
     return replace("\u0000", "").trim()

@@ -14,14 +14,15 @@ import dev.proxyfox.database.etc.types.PkMember
 import dev.proxyfox.database.etc.types.PkProxy
 import dev.proxyfox.database.etc.types.PkSwitch
 import dev.proxyfox.database.etc.types.PkSystem
-import dev.proxyfox.database.gson
+import kotlinx.serialization.encodeToString
+import kotlinx.serialization.json.Json
 import org.jetbrains.annotations.TestOnly
 
 object Exporter {
     suspend inline fun export(userId: ULong) = export(database, userId)
 
     suspend fun export(database: Database, userId: ULong): String {
-        return exportToPkObject(database, userId)?.let { gson.toJson(it) } ?: ""
+        return exportToPkObject(database, userId)?.let { Json.Default.encodeToString(it) } ?: ""
     }
 
     @TestOnly
