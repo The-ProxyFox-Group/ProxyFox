@@ -20,6 +20,7 @@ tasks {
         archiveClassifier.set("")
     }
     register<Copy>("poolRelease") {
+        group = "build"
         for (proj in subprojects) {
             val shadowJar = proj.tasks.findByPath("shadowJar")
             if (shadowJar != null) {
