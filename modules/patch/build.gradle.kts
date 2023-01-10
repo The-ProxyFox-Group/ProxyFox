@@ -33,3 +33,13 @@ dependencies {
     // Bot module to avoid shadowing in Quilt Loader into ProxyFox.
     implementation(project(":modules:bot"))
 }
+
+tasks {
+    compileKotlin {
+        kotlinOptions.freeCompilerArgs += listOf(
+            "-Xno-call-assertions",
+            "-Xno-receiver-assertions",
+            "-Xno-param-assertions"
+        )
+    }
+}

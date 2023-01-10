@@ -27,8 +27,11 @@ import java.lang.reflect.InvocationTargetException
 import java.nio.file.Files
 import java.nio.file.Path
 import java.nio.file.Paths
+import kotlin.collections.List
+import kotlin.collections.Set
 import kotlin.io.path.notExists
-import kotlin.io.path.writeText
+import java.util.List as JList
+import java.util.Set as JSet
 
 // Created 2023-05-01T19:51:55
 
@@ -42,9 +45,9 @@ class ProxyFoxProvider : GameProvider {
     private val TRANSFORMER = GameTransformer()
 
     private var arguments: Arguments? = null
-    private lateinit var entrypoint: String
-    private lateinit var appJar: Path
-    private lateinit var miscJars: Set<Path>
+    private var entrypoint: String? = null
+    private var appJar: Path? = null
+    private var miscJars: Set<Path>? = null
 
     override fun getGameId() = "proxyfox"
 
@@ -54,7 +57,7 @@ class ProxyFoxProvider : GameProvider {
 
     override fun getNormalizedGameVersion() = "0.0.0"
 
-    override fun getBuiltinMods() = setOf(BuiltinMod(listOf(appJar), V1ModMetadataBuilder().apply {
+    override fun getBuiltinMods(): Set<BuiltinMod> = JSet.of(BuiltinMod(JList.of(appJar), V1ModMetadataBuilder().apply {
         id = gameId
         group = "builtin"
         version = Version.of(normalizedGameVersion)
@@ -76,18 +79,20 @@ class ProxyFoxProvider : GameProvider {
 
         try {
             val jar = System.getProperty(SystemProperties.GAME_JAR_PATH)
-            val lookupPaths: List<Path>
-
-            if (jar != null) {
+            val lookupPaths: List<Path> = if (jar != null) {
                 val path = Paths.get(jar).toAbsolutePath().normalize()
 
                 if (path.notExists()) {
                     throw RuntimeException("ProxyFox jar $path configured through ${SystemProperties.GAME_JAR_PATH} system property doesn't exist!")
                 }
 
-                lookupPaths = path + launcher.classPath
+
+                ArrayList<Path>(launcher.classPath.size + 1).apply {
+                    add(path)
+                    addAll(launcher.classPath)
+                }
             } else {
-                lookupPaths = launcher.classPath
+                launcher.classPath
             }
 
             val classifier = BudgetLibClassifier(ProxyFoxLibrary::class.java)
@@ -112,7 +117,9 @@ class ProxyFoxProvider : GameProvider {
         Log.init(ConsoleLogHandler(), true)
 
         val path = Files.createTempFile("Hacky-Classpath", ".txt").toAbsolutePath()
-        path.writeText("$appJar${File.pathSeparator}${miscJars.joinToString(File.pathSeparator)}")
+        val builder = StringBuilder("$appJar${File.pathSeparatorChar}")
+        miscJars?.forEach { builder.append(it).append(File.pathSeparatorChar) }
+        Files.writeString(path, builder)
 
         // This is honestly stupidly hacky.
         // There's no other workaround available that I can see, so
@@ -126,16 +133,15 @@ class ProxyFoxProvider : GameProvider {
 
     override fun unlockClassPath(launcher: QuiltLauncher) {
         launcher.addToClassPath(appJar)
-        for (path in miscJars) {
-            launcher.addToClassPath(path)
-        }
+        miscJars?.forEach(launcher::addToClassPath)
     }
 
     override fun launch(loader: ClassLoader) {
         try {
             val c = loader.loadClass(entrypoint)
             val m = c.getMethod("main", Array<String>::class.java)
-            m.invoke(null, arguments!!.toArray() as Any)
+            val args: Any = arguments?.toArray() ?: throw NullPointerException("arguments")
+            m.invoke(null, args)
         } catch (e: InvocationTargetException) {
             throw FormattedException("ProxyFox has crashed", e.cause)
         } catch (e: ReflectiveOperationException) {
