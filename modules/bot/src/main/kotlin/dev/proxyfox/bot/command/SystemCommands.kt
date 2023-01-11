@@ -30,7 +30,6 @@ import dev.proxyfox.common.printStep
 import dev.proxyfox.common.toColor
 import dev.proxyfox.database.database
 import dev.proxyfox.database.etc.exporter.Exporter
-import dev.proxyfox.database.generateToken
 import dev.proxyfox.database.records.system.SystemRecord
 import io.ktor.client.request.forms.*
 import io.ktor.utils.io.jvm.javaio.*
@@ -378,29 +377,6 @@ object SystemCommands {
                 }
             }
         }
-//        registerCommand(literal(arrayOf("system", "s"), ::empty) {
-//            literal(arrayOf("delete", "del", "remove"), ::delete)
-//        })
-//
-//        registerCommand(literal(arrayOf("list", "l"), ::list) {
-//            unixLiteral(arrayOf("by-message-count", "bmc"), ::listByMessage)
-//            unixLiteral(arrayOf("verbose", "v"), ::listVerbose)
-//        })
-
-        Commands.parser.literal("token", "t") {
-            runs {
-                val system = database.fetchSystemFromUser(getUser())
-                if (!checkSystem(this, system)) return@runs false
-                token(this, system!!)
-            }
-            literal("refresh", "r") {
-                runs {
-                    val system = database.fetchSystemFromUser(getUser())
-                    if (!checkSystem(this, system)) return@runs false
-                    tokenRefresh(this, system!!)
-                }
-            }
-        }
     }
 
     private suspend fun <T> access(ctx: DiscordContext<T>, system: SystemRecord): Boolean {
@@ -635,21 +611,6 @@ object SystemCommands {
         system.tag = tag
         database.updateSystem(system)
         ctx.respondSuccess("System tag updated to $tag!")
-        return true
-    }
-
-    private suspend fun <T> token(ctx: DiscordContext<T>, system: SystemRecord): Boolean {
-        ctx.respondSuccess("`${database.getOrCreateTokenFromSystem(system.id).token}`", true)
-        ctx.respondSuccess("Token sent in DMs")
-        return true
-    }
-
-    private suspend fun <T> tokenRefresh(ctx: DiscordContext<T>, system: SystemRecord): Boolean {
-        val token = database.getOrCreateTokenFromSystem(system.id)
-        token.token = generateToken()
-        database.updateToken(token)
-        ctx.respondSuccess("`${token.token}`", true)
-        ctx.respondSuccess("Token refreshed. New token sent in DMs")
         return true
     }
 

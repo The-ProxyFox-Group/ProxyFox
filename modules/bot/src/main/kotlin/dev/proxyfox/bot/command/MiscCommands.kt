@@ -13,9 +13,6 @@ import dev.kord.common.entity.Snowflake
 import dev.kord.core.Kord
 import dev.kord.core.behavior.channel.asChannelOf
 import dev.kord.core.behavior.channel.threads.ThreadChannelBehavior
-import dev.kord.core.entity.Guild
-import dev.kord.core.entity.Member
-import dev.kord.core.entity.Message
 import dev.kord.rest.NamedFile
 import dev.kord.rest.builder.interaction.*
 import dev.proxyfox.bot.*
@@ -35,7 +32,6 @@ import dev.proxyfox.database.etc.importer.ImporterException
 import dev.proxyfox.database.etc.importer.import
 import dev.proxyfox.database.records.member.MemberRecord
 import dev.proxyfox.database.records.misc.AutoProxyMode
-import dev.proxyfox.database.records.misc.ProxiedMessageRecord
 import dev.proxyfox.database.records.misc.ServerSettingsRecord
 import dev.proxyfox.database.records.system.SystemRecord
 import dev.proxyfox.database.records.system.SystemServerSettingsRecord
@@ -662,6 +658,14 @@ object MiscCommands {
                 getFox(this)
             }
         }
+
+        Commands.parser.literal("token", "t") {
+            runs {
+                val system = database.fetchSystemFromUser(getUser())
+                if (!checkSystem(this, system)) return@runs false
+                token(this, system!!)
+            }
+        }
     }
 
     private suspend fun <T> getFox(ctx: DiscordContext<T>): Boolean {
@@ -671,6 +675,12 @@ object MiscCommands {
             url = fox
             image = fox
         }
+        return true
+    }
+
+    private suspend fun <T> token(ctx: DiscordContext<T>, system: SystemRecord): Boolean {
+
+
         return true
     }
 
