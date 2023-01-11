@@ -150,8 +150,8 @@ open class ProxyDatabase<T : Database>(protected val proxy: T) : Database() {
         return proxy.fetchLatestMessage(systemId, channelId)
     }
 
-    override suspend fun getOrCreateTokenFromSystem(systemId: String): TokenRecord {
-        return proxy.getOrCreateTokenFromSystem(systemId)
+    override suspend fun fetchToken(token: String): TokenRecord? {
+        return proxy.fetchToken(token)
     }
 
     override suspend fun updateToken(token: TokenRecord) {

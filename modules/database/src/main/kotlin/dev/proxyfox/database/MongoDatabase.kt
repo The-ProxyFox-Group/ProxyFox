@@ -272,10 +272,11 @@ class MongoDatabase(private val dbName: String = "ProxyFox") : Database() {
         systemId: String,
         channelId: Snowflake
     ): ProxiedMessageRecord? =
-        messages.find("systemId" eq systemId, "channelId" eq channelId).sort("{'creationDate':-1}").limit(1).awaitFirstOrNull()
+        messages.find("systemId" eq systemId, "channelId" eq channelId).sort("{'creationDate':-1}").limit(1)
+            .awaitFirstOrNull()
 
-    override suspend fun getOrCreateTokenFromSystem(systemId: String): TokenRecord =
-        systemTokens.findFirstOrNull("systemId" eq systemId) ?: TokenRecord(generateToken(), systemId)
+    override suspend fun fetchToken(token: String): TokenRecord? =
+        systemTokens.findFirstOrNull("token" eq token)
 
     override suspend fun updateToken(token: TokenRecord) {
         systemTokens.replaceOneById(token._id, token, upsert()).awaitFirst()

@@ -15,7 +15,6 @@ import io.ktor.server.response.*
 val AuthenticationPlugin = createRouteScopedPlugin(name = "AuthenticationPlugin") {
     onCall { call ->
         val token = call.request.headers["Authorization"] ?: return@onCall call.respond("401 Unauthorized")
-        val userToken = database.getOrCreateTokenFromSystem(call.parameters["id"]!!).token
-        if (token != userToken) return@onCall call.respond("403 Forbidden")
+        database.fetchToken(token) ?: return@onCall call.respond("401 Unauthorized")
     }
 }

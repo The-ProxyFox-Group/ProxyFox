@@ -109,7 +109,7 @@ class NopDatabase : Database() {
         channelId: Snowflake
     ): ProxiedMessageRecord? = null
 
-    override suspend fun getOrCreateTokenFromSystem(systemId: String): TokenRecord = fail("Cannot store token for $systemId.")
+    override suspend fun fetchToken(token: String): TokenRecord? = null
 
     override suspend fun updateToken(token: TokenRecord) = fail("Cannot store token for ${token.systemId}.")
 

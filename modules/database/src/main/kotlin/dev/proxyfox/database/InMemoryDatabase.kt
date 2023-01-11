@@ -256,13 +256,13 @@ class InMemoryDatabase : Database() {
         return messages.findLast { it.systemId == systemId && it.channelId == channelId.value }
     }
 
-    override suspend fun getOrCreateTokenFromSystem(systemId: String): TokenRecord {
-        if (!systemTokens.containsKey(systemId)) systemTokens[systemId] = TokenRecord(generateToken(), systemId)
-        return systemTokens[systemId]!!
+    override suspend fun fetchToken(token: String): TokenRecord? {
+        if (!systemTokens.containsKey(token)) return null
+        return systemTokens[token]
     }
 
     override suspend fun updateToken(token: TokenRecord) {
-        systemTokens[token.systemId] = token
+        systemTokens[token.token] = token
     }
 
     override suspend fun createProxyTag(record: MemberProxyTagRecord): Boolean {
