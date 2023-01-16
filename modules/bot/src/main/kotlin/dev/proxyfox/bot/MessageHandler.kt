@@ -8,12 +8,13 @@
 
 package dev.proxyfox.bot
 
-import dev.kord.common.entity.MessageType
-import dev.kord.common.entity.Permission
-import dev.kord.common.entity.Permissions
-import dev.kord.common.entity.Snowflake
+import dev.kord.common.entity.*
 import dev.kord.core.behavior.channel.asChannelOf
 import dev.kord.core.behavior.channel.createMessage
+import dev.kord.core.behavior.channel.threads.ThreadChannelBehavior
+import dev.kord.core.behavior.interaction.modal
+import dev.kord.core.behavior.interaction.respondEphemeral
+import dev.kord.core.behavior.interaction.respondPublic
 import dev.kord.core.cache.data.AttachmentData
 import dev.kord.core.cache.data.EmbedData
 import dev.kord.core.entity.Attachment
@@ -21,10 +22,12 @@ import dev.kord.core.entity.Embed
 import dev.kord.core.entity.channel.GuildMessageChannel
 import dev.kord.core.entity.interaction.SubCommand
 import dev.kord.core.event.interaction.ChatInputCommandInteractionCreateEvent
-import dev.kord.core.event.interaction.GlobalMessageCommandInteractionCreateEvent
+import dev.kord.core.event.interaction.MessageCommandInteractionCreateEvent
+import dev.kord.core.event.interaction.ModalSubmitInteractionCreateEvent
 import dev.kord.core.event.message.MessageCreateEvent
 import dev.kord.core.event.message.MessageUpdateEvent
 import dev.kord.core.event.message.ReactionAddEvent
+import dev.kord.rest.builder.component.ActionRowBuilder
 import dev.kord.rest.builder.message.create.embed
 import dev.proxyfox.bot.command.*
 import dev.proxyfox.bot.command.context.DiscordContext
@@ -281,7 +284,8 @@ suspend fun ReactionAddEvent.onReactionAdd() {
                         }
                     }
                     footer {
-                        text = "Member ID \u2009• \u2009${member.id}\u2007|\u2007System ID \u2009• \u2009${system.id}\u2007|\u2007Created "
+                        text =
+                            "Member ID \u2009• \u2009${member.id}\u2007|\u2007System ID \u2009• \u2009${system.id}\u2007|\u2007Created "
                     }
                     timestamp = system.timestamp
                 }
@@ -291,8 +295,137 @@ suspend fun ReactionAddEvent.onReactionAdd() {
     }
 }
 
-suspend fun GlobalMessageCommandInteractionCreateEvent.onInteract() {
+suspend fun ModalSubmitInteractionCreateEvent.handleModal() {
+    val channel = interaction.channel
+    when {
+        interaction.modalId.startsWith("MessageEdit:") -> {
+            val webhook = WebhookUtil.createOrFetchWebhookFromCache(channel.fetchChannel())
+            val id = Snowflake(interaction.modalId.split(":")[1])
+            val content = interaction.textInputs["MessageEdit"]!!.value ?: return let {
+                interaction.respondEphemeral {
+                    content = "Please provide the content to edit with"
+                }
+            }
+            webhook.edit(id, if (channel is ThreadChannelBehavior) channel.id else null) {
+                this.content = content
+            }
+            interaction.respondEphemeral {
+                this.content = "message edited."
+            }
+        }
+    }
+}
 
+suspend fun MessageCommandInteractionCreateEvent.onInteract() {
+    val message = this.interaction.getTargetOrNull() ?: return let {
+        interaction.respondEphemeral {
+            content = "Message not found. Can I see it?"
+        }
+    }
+    val databaseMessage = database.fetchMessage(message.id) ?: return let {
+        interaction.respondEphemeral {
+            content = "Message not found in database. Did I proxy it?"
+        }
+    }
+    when (interaction.invokedCommandName) {
+        "Delete Message" -> {
+            // System needs to be non-null.
+            val system = database.fetchSystemFromUser(interaction.user) ?: return
+            if (databaseMessage.systemId == system.id) {
+                message.delete("User requested message deletion.")
+                databaseMessage.deleted = true
+                database.updateMessage(databaseMessage)
+                interaction.respondEphemeral {
+                    content = "Message deleted."
+                }
+                return
+            }
+            interaction.respondEphemeral {
+                content = "You're not the original author of the message"
+            }
+        }
+
+        "Fetch Message Info" -> {
+            val system = database.fetchSystemFromId(databaseMessage.systemId)
+                ?: return
+
+            val member = database.fetchMemberFromSystem(databaseMessage.systemId, databaseMessage.memberId)
+                ?: return
+
+            val guild = message.getGuild()
+            val settings = database.fetchMemberServerSettingsFromSystemAndMember(guild, system.id, member.id)
+
+            val user = kord.getUser(Snowflake(databaseMessage.userId))
+
+            interaction.respondEphemeral {
+                content =
+                    "Message by ${member.showDisplayName()} was sent by <@${databaseMessage.userId}> (${user?.tag ?: "Unknown user"})"
+                embed {
+                    val systemName = system.name ?: system.id
+                    author {
+                        name = member.displayName?.let { "$it (${member.name})\u2007•\u2007$systemName" }
+                            ?: "${member.name}\u2007•\u2007$systemName"
+                        icon = member.avatarUrl
+                    }
+                    member.avatarUrl?.let {
+                        thumbnail {
+                            url = it
+                        }
+                    }
+                    color = member.color.kordColor()
+                    description = member.description
+                    settings?.nickname?.let {
+                        field {
+                            name = "Server Name"
+                            value = "> $it\n*For ${guild?.name}*"
+                            inline = true
+                        }
+                    }
+                    member.pronouns?.let {
+                        field {
+                            name = "Pronouns"
+                            value = it
+                            inline = true
+                        }
+                    }
+                    member.birthday?.let {
+                        field {
+                            name = "Birthday"
+                            value = it.toJavaLocalDate().displayDate()
+                            inline = true
+                        }
+                    }
+                    footer {
+                        text =
+                            "Member ID \u2009• \u2009${member.id}\u2007|\u2007System ID \u2009• \u2009${system.id}\u2007|\u2007Created "
+                    }
+                    timestamp = system.timestamp
+                }
+            }
+        }
+
+        "Ping Message Author" -> {
+            interaction.respondPublic {
+                content =
+                    "Psst.. ${databaseMessage.memberName} (<@${databaseMessage.userId}>)$ellipsis You were pinged by <@${interaction.user.id}>"
+            }
+        }
+
+        "Edit Message" -> {
+            val system = database.fetchSystemFromUser(interaction.user) ?: return
+            if (databaseMessage.systemId == system.id) {
+                interaction.modal("Message Edit Screen", "MessageEdit:${message.id}") {
+                    components.add(ActionRowBuilder().apply {
+                        textInput(TextInputStyle.Paragraph, "MessageEdit", "Message") {}
+                    })
+                }
+                return
+            }
+            interaction.respondEphemeral {
+                content = "You're not the original author of the message"
+            }
+        }
+    }
 }
 
 suspend fun ChatInputCommandInteractionCreateEvent.onInteract() {

@@ -478,19 +478,24 @@ object SystemCommands {
         return true
     }
 
-    @Suppress("UNUSED_PARAMETER")
     private suspend fun <T> list(ctx: DiscordContext<T>, system: SystemRecord, byMessage: Boolean, verbose: Boolean): Boolean {
-        // TODO: List by message
-
         if (verbose) {
             ctx.respondEmbed {
                 system(system, nameTransformer = { "Members of $it" })
                 val proxies = database.fetchProxiesFromSystem(system.id)
-                for (m in database.fetchMembersFromSystem(system.id)!!) {
+                for (m in database.fetchMembersFromSystem(system.id)!!.sortedBy {
+                    if (byMessage) it.messageCount
+                    it.name
+                }) {
                     val memberProxies = proxies?.filter { it.memberId == m.id }
                     field {
                         name = "${m.asString()} [`${m.id}`]"
-                        value = if (memberProxies.isNullOrEmpty()) "*No proxy tags set.*" else memberProxies.joinToString("\uFEFF``\n``\uFEFF", "``\uFEFF", "\uFEFF``")
+                        value =
+                            if (memberProxies.isNullOrEmpty()) "*No proxy tags set.*" else memberProxies.joinToString(
+                                "\uFEFF``\n``\uFEFF",
+                                "``\uFEFF",
+                                "\uFEFF``"
+                            )
                         inline = true
                     }
                 }
@@ -502,11 +507,18 @@ object SystemCommands {
         Pager.build(
             ctx.getUser()!!.id,
             ctx.getChannel(),
-            database.fetchMembersFromSystem(system.id)!!.map { m -> m to proxies.filter { it.memberId == m.id } },
+            database.fetchMembersFromSystem(system.id)!!.sortedBy {
+                if (byMessage) it.messageCount
+                it.name
+            }.map { m -> m to proxies.filter { it.memberId == m.id } },
             20,
             { page -> system(system, nameTransformer = { "[$page] Members of $it" }) },
             {
-                val str = if (it.second.isNotEmpty()) it.second.joinToString("\uFEFF``, ``\uFEFF", " (``\uFEFF", "\uFEFF``)") else ""
+                val str = if (it.second.isNotEmpty()) it.second.joinToString(
+                    "\uFEFF``, ``\uFEFF",
+                    " (``\uFEFF",
+                    "\uFEFF``)"
+                ) else ""
                 "`${it.first.id}`\u2007•\u2007**${it.first.name}**${str}\n"
             },
         )

@@ -1107,7 +1107,7 @@ To get support, head on over to https://discord.gg/q3yF8ay9V7"""
         val messages = ctx.getDatabaseMessage(system, message)
         val discordMessage = messages.first
         discordMessage ?: run {
-            ctx.respondFailure("Unable to find message to delete.", true)
+            ctx.respondFailure("Unable to find message to edit.", true)
             return false
         }
         val databaseMessage = messages.second

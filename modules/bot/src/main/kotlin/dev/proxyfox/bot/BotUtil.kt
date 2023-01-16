@@ -137,11 +137,15 @@ suspend fun login() {
         }
     }
 
+    kord.on<ModalSubmitInteractionCreateEvent> {
+        handleModal()
+    }
+
     kord.registerApplicationCommands()
 
     Commands.register()
 
-    kord.on<GlobalMessageCommandInteractionCreateEvent> {
+    kord.on<MessageCommandInteractionCreateEvent> {
         onInteract()
     }
     kord.on<ChatInputCommandInteractionCreateEvent> {
