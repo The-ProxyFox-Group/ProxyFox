@@ -10,8 +10,10 @@ package dev.proxyfox.bot.command
 
 import dev.kord.rest.builder.interaction.*
 import dev.proxyfox.bot.command.context.DiscordContext
+import dev.proxyfox.bot.command.context.InteractionCommandContext
 import dev.proxyfox.command.CommandParser
 import dev.proxyfox.common.printStep
+import dev.proxyfox.database.database
 import dev.proxyfox.database.records.member.MemberRecord
 import dev.proxyfox.database.records.system.SystemRecord
 import dev.proxyfox.database.records.system.SystemSwitchRecord
@@ -89,4 +91,16 @@ suspend fun <T> checkSwitch(ctx: DiscordContext<T>, switch: SystemSwitchRecord?)
         return false
     }
     return true
+}
+
+suspend fun InteractionCommandContext.getSystem(): SystemRecord? {
+    val id = value.interaction.command.strings["system"]
+    return if (id == null)
+        database.fetchSystemFromUser(getUser())
+    else
+        (database.fetchSystemFromId(id) ?: database.fetchSystemFromUser(id.toULongOrNull() ?: return null))?.let {
+            if (!it.canAccess(getUser().id.value))
+                return null
+            return it
+        }
 }

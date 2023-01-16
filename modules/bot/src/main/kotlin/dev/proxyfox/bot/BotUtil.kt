@@ -15,7 +15,6 @@ import dev.kord.core.Kord
 import dev.kord.core.behavior.MessageBehavior
 import dev.kord.core.behavior.channel.MessageChannelBehavior
 import dev.kord.core.behavior.channel.createMessage
-import dev.kord.core.behavior.interaction.respondEphemeral
 import dev.kord.core.builder.kord.KordBuilder
 import dev.kord.core.entity.Member
 import dev.kord.core.entity.channel.Channel
@@ -218,7 +217,12 @@ suspend fun updatePresence() {
     }
 }
 
-suspend fun handleError(err: Throwable, interaction: ChatInputCommandInteractionCreateEvent) {
+suspend fun handleError(err: Throwable, interaction: ChatInputCommandInteractionCreateEvent) =
+    handleError(err, interaction.interaction.channel)
+
+suspend fun handleError(err: Throwable, message: MessageBehavior) = handleError(err, message.channel)
+
+suspend fun handleError(err: Throwable, channel: MessageChannelBehavior) {
     // Catch any errors and log them
     val timestamp = System.currentTimeMillis()
     // Let the logger unwind the stacktrace.
@@ -232,47 +236,15 @@ suspend fun handleError(err: Throwable, interaction: ChatInputCommandInteraction
         if (it.className.startsWith("dev.proxyfox"))
             cause += "  at $it\n"
     }
-    interaction.interaction.respondEphemeral {
-        content =
-            "An unexpected error occurred.\nTimestamp: `$timestamp`\n```\n${err.javaClass.name}: $reason\n$cause```"
-    }
-    // if (err is DebugException) return
-    if (errorChannel == null && errorChannelId != null)
-        errorChannel = kord.getChannel(errorChannelId) as TextChannel
-    if (errorChannel != null) {
-        // Prevent the log channel from also showing tokens, should it be public in any manner.
-        cause = err.stackTraceToString().replace(webhook, "[WEBHOOK]").replace(token, "[TOKEN]")
-
-        errorChannel!!.createMessage {
-            content = "`$timestamp`"
-            addFile("exception.log", ChannelProvider { cause.byteInputStream().toByteReadChannel() })
-        }
-    }
-}
-
-suspend fun handleError(err: Throwable, message: MessageBehavior) {
-    // Catch any errors and log them
-    val timestamp = System.currentTimeMillis()
-    // Let the logger unwind the stacktrace.
-    logger.warn(timestamp.toString(), err)
-    // Do not leak webhook URL nor token in output.
-    // Note: The token here is a generic regex that only matches by the bot's
-    // ID and will make no attempt to verify it's the real one, purely for guarding the
-    val reason = err.message?.replace(webhook, "[WEBHOOK]")?.replace(token, "[TOKEN]")
-    var cause = ""
-    err.stackTrace.forEach {
-        if (it.className.startsWith("dev.proxyfox"))
-            cause += "  at $it\n"
-    }
-    message.channel.createMessage(
+    channel.createMessage(
         "An unexpected error occurred.\nTimestamp: `$timestamp`\n```\n${err.javaClass.name}: $reason\n$cause```"
     )
-    // if (err is DebugException) return
+    // Relay to channel
     if (errorChannel == null && errorChannelId != null)
         errorChannel = kord.getChannel(errorChannelId) as TextChannel
     if (errorChannel != null) {
         // Prevent the log channel from also showing tokens, should it be public in any manner.
-        cause = err.stackTraceToString().replace(webhook, "[WEBHOOK]").replace(token, "[TOKEN]")
+        val cause = err.stackTraceToString().replace(webhook, "[WEBHOOK]").replace(token, "[TOKEN]")
 
         errorChannel!!.createMessage {
             content = "`$timestamp`"

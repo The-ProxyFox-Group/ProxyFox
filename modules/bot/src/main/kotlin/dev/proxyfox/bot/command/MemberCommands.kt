@@ -57,13 +57,7 @@ object MemberCommands {
                 name()
                 system()
                 runs {
-                    val id = value.interaction.command.strings["system"]
-                    val system =
-                        if (id == null)
-                            database.fetchSystemFromUser(getUser())
-                        else
-                            database.fetchSystemFromId(id)
-                                ?: database.fetchSystemFromUser(id.toULongOrNull() ?: 0UL)
+                    val system = getSystem()
                     if (!checkSystem(this, system)) return@runs false
                     val name = value.interaction.command.strings["name"]!!
 
@@ -74,13 +68,7 @@ object MemberCommands {
                 member()
                 system()
                 runs {
-                    val id = value.interaction.command.strings["system"]
-                    val system =
-                        if (id == null)
-                            database.fetchSystemFromUser(getUser())
-                        else
-                            database.fetchSystemFromId(id)
-                                ?: database.fetchSystemFromUser(id.toULongOrNull() ?: 0UL)
+                    val system = getSystem()
                     if (!checkSystem(this, system)) return@runs false
                     val member = database.findMember(system!!.id, value.interaction.command.strings["member"]!!)
                     if (!checkMember(this, member)) return@runs false
@@ -92,13 +80,7 @@ object MemberCommands {
                 member()
                 system()
                 runs {
-                    val id = value.interaction.command.strings["system"]
-                    val system =
-                        if (id == null)
-                            database.fetchSystemFromUser(getUser())
-                        else
-                            database.fetchSystemFromId(id)
-                                ?: database.fetchSystemFromUser(id.toULongOrNull() ?: 0UL)
+                    val system = getSystem()
                     if (!checkSystem(this, system)) return@runs false
                     val member = database.findMember(system!!.id, value.interaction.command.strings["member"]!!)
                     if (!checkMember(this, member)) return@runs false
@@ -112,13 +94,7 @@ object MemberCommands {
                 raw()
                 system()
                 runs {
-                    val id = value.interaction.command.strings["system"]
-                    val system =
-                        if (id == null)
-                            database.fetchSystemFromUser(getUser())
-                        else
-                            database.fetchSystemFromId(id)
-                                ?: database.fetchSystemFromUser(id.toULongOrNull() ?: 0UL)
+                    val system = getSystem()
                     if (!checkSystem(this, system)) return@runs false
                     val member = database.findMember(system!!.id, value.interaction.command.strings["member"]!!)
                     if (!checkMember(this, member)) return@runs false
@@ -135,13 +111,7 @@ object MemberCommands {
                 clear()
                 system()
                 runs {
-                    val id = value.interaction.command.strings["system"]
-                    val system =
-                        if (id == null)
-                            database.fetchSystemFromUser(getUser())
-                        else
-                            database.fetchSystemFromId(id)
-                                ?: database.fetchSystemFromUser(id.toULongOrNull() ?: 0UL)
+                    val system = getSystem()
                     if (!checkSystem(this, system)) return@runs false
                     val member = database.findMember(system!!.id, value.interaction.command.strings["member"]!!)
                     if (!checkMember(this, member)) return@runs false
@@ -160,13 +130,7 @@ object MemberCommands {
                 clear()
                 system()
                 runs {
-                    val id = value.interaction.command.strings["system"]
-                    val system =
-                        if (id == null)
-                            database.fetchSystemFromUser(getUser())
-                        else
-                            database.fetchSystemFromId(id)
-                                ?: database.fetchSystemFromUser(id.toULongOrNull() ?: 0UL)
+                    val system = getSystem()
                     if (!checkSystem(this, system)) return@runs false
                     val member = database.findMember(system!!.id, value.interaction.command.strings["member"]!!)
                     if (!checkMember(this, member)) return@runs false
@@ -195,13 +159,7 @@ object MemberCommands {
                 name("description", required = false)
                 system()
                 runs {
-                    val id = value.interaction.command.strings["system"]
-                    val system =
-                        if (id == null)
-                            database.fetchSystemFromUser(getUser())
-                        else
-                            database.fetchSystemFromId(id)
-                                ?: database.fetchSystemFromUser(id.toULongOrNull() ?: 0UL)
+                    val system = getSystem()
                     if (!checkSystem(this, system)) return@runs false
                     val member = database.findMember(system!!.id, value.interaction.command.strings["member"]!!)
                     if (!checkMember(this, member)) return@runs false
@@ -218,13 +176,7 @@ object MemberCommands {
                 clear()
                 system()
                 runs {
-                    val id = value.interaction.command.strings["system"]
-                    val system =
-                        if (id == null)
-                            database.fetchSystemFromUser(getUser())
-                        else
-                            database.fetchSystemFromId(id)
-                                ?: database.fetchSystemFromUser(id.toULongOrNull() ?: 0UL)
+                    val system = getSystem()
                     if (!checkSystem(this, system)) return@runs false
                     val member = database.findMember(system!!.id, value.interaction.command.strings["member"]!!)
                     if (!checkMember(this, member)) return@runs false
@@ -240,13 +192,7 @@ object MemberCommands {
                 guild()
                 system()
                 runs {
-                    val id = value.interaction.command.strings["system"]
-                    val system =
-                        if (id == null)
-                            database.fetchSystemFromUser(getUser())
-                        else
-                            database.fetchSystemFromId(id)
-                                ?: database.fetchSystemFromUser(id.toULongOrNull() ?: 0UL)
+                    val system = getSystem()
                     if (!checkSystem(this, system)) return@runs false
                     val member = database.findMember(system!!.id, value.interaction.command.strings["member"]!!)
                     if (!checkMember(this, member)) return@runs false
@@ -275,13 +221,7 @@ object MemberCommands {
                 clear()
                 system()
                 runs {
-                    val id = value.interaction.command.strings["system"]
-                    val system =
-                        if (id == null)
-                            database.fetchSystemFromUser(getUser())
-                        else
-                            database.fetchSystemFromId(id)
-                                ?: database.fetchSystemFromUser(id.toULongOrNull() ?: 0UL)
+                    val system = getSystem()
                     if (!checkSystem(this, system)) return@runs false
                     val member = database.findMember(system!!.id, value.interaction.command.strings["member"]!!)
                     if (!checkMember(this, member)) return@runs false
@@ -297,13 +237,7 @@ object MemberCommands {
                 name("color", required = false)
                 system()
                 runs {
-                    val id = value.interaction.command.strings["system"]
-                    val system =
-                        if (id == null)
-                            database.fetchSystemFromUser(getUser())
-                        else
-                            database.fetchSystemFromId(id)
-                                ?: database.fetchSystemFromUser(id.toULongOrNull() ?: 0UL)
+                    val system = getSystem()
                     if (!checkSystem(this, system)) return@runs false
                     val member = database.findMember(system!!.id, value.interaction.command.strings["member"]!!)
                     if (!checkMember(this, member)) return@runs false
@@ -318,13 +252,7 @@ object MemberCommands {
                 clear()
                 system()
                 runs {
-                    val id = value.interaction.command.strings["system"]
-                    val system =
-                        if (id == null)
-                            database.fetchSystemFromUser(getUser())
-                        else
-                            database.fetchSystemFromId(id)
-                                ?: database.fetchSystemFromUser(id.toULongOrNull() ?: 0UL)
+                    val system = getSystem()
                     if (!checkSystem(this, system)) return@runs false
                     val member = database.findMember(system!!.id, value.interaction.command.strings["member"]!!)
                     if (!checkMember(this, member)) return@runs false
@@ -340,13 +268,7 @@ object MemberCommands {
                 name("suffix", required = false)
                 system()
                 runs {
-                    val id = value.interaction.command.strings["system"]
-                    val system =
-                        if (id == null)
-                            database.fetchSystemFromUser(getUser())
-                        else
-                            database.fetchSystemFromId(id)
-                                ?: database.fetchSystemFromUser(id.toULongOrNull() ?: 0UL)
+                    val system = getSystem()
                     if (!checkSystem(this, system)) return@runs false
                     val member = database.findMember(system!!.id, value.interaction.command.strings["member"]!!)
                     if (!checkMember(this, member)) return@runs false
@@ -363,13 +285,7 @@ object MemberCommands {
                 name("suffix", required = false)
                 system()
                 runs {
-                    val id = value.interaction.command.strings["system"]
-                    val system =
-                        if (id == null)
-                            database.fetchSystemFromUser(getUser())
-                        else
-                            database.fetchSystemFromId(id)
-                                ?: database.fetchSystemFromUser(id.toULongOrNull() ?: 0UL)
+                    val system = getSystem()
                     if (!checkSystem(this, system)) return@runs false
                     val member = database.findMember(system!!.id, value.interaction.command.strings["member"]!!)
                     if (!checkMember(this, member)) return@runs false
@@ -387,13 +303,7 @@ object MemberCommands {
                 bool("value", "The value to set")
                 system()
                 runs {
-                    val id = value.interaction.command.strings["system"]
-                    val system =
-                        if (id == null)
-                            database.fetchSystemFromUser(getUser())
-                        else
-                            database.fetchSystemFromId(id)
-                                ?: database.fetchSystemFromUser(id.toULongOrNull() ?: 0UL)
+                    val system = getSystem()
                     if (!checkSystem(this, system)) return@runs false
                     val member = database.findMember(system!!.id, value.interaction.command.strings["member"]!!)
                     if (!checkMember(this, member)) return@runs false
@@ -954,21 +864,11 @@ object MemberCommands {
     }
 
     suspend fun <T> empty(ctx: DiscordContext<T>, system: SystemRecord): Boolean {
-        if (!system.canAccess(ctx.getUser()!!.id.value)) {
-            // Force the bot to treat the system as nonexistent
-            return checkSystem(ctx, null)
-        }
-
         ctx.respondWarning("Make sure to provide a member command!")
         return false
     }
 
     suspend fun <T> access(ctx: DiscordContext<T>, system: SystemRecord, member: MemberRecord): Boolean {
-        if (!system.canAccess(ctx.getUser()!!.id.value)) {
-            // Force the bot to treat the system as nonexistent
-            return checkSystem(ctx, null)
-        }
-
         val guild = ctx.getGuild()
         val settings = database.fetchMemberServerSettingsFromSystemAndMember(guild, system.id, member.id)
         ctx.respondEmbed {
@@ -1041,11 +941,6 @@ object MemberCommands {
         name: String?,
         raw: Boolean
     ): Boolean {
-        if (!system.canAccess(ctx.getUser()!!.id.value)) {
-            // Force the bot to treat the system as nonexistent
-            return checkSystem(ctx, null)
-        }
-
         name ?: run {
             if (raw)
                 ctx.respondPlain("`${member.name}`")
@@ -1075,11 +970,6 @@ object MemberCommands {
         raw: Boolean,
         clear: Boolean
     ): Boolean {
-        if (!system.canAccess(ctx.getUser()!!.id.value)) {
-            // Force the bot to treat the system as nonexistent
-            return checkSystem(ctx, null)
-        }
-
         if (clear) {
             if (!system.canEditMembers(ctx.getUser()!!.id.value)) {
                 ctx.respondFailure("You don't have access to edit this information.")
@@ -1128,11 +1018,6 @@ object MemberCommands {
         raw: Boolean,
         clear: Boolean
     ): Boolean {
-        if (!system.canAccess(ctx.getUser()!!.id.value)) {
-            // Force the bot to treat the system as nonexistent
-            return checkSystem(ctx, null)
-        }
-
         if (clear) {
             if (!system.canEditMembers(ctx.getUser()!!.id.value)) {
                 ctx.respondFailure("You don't have access to edit this information.")
@@ -1181,11 +1066,6 @@ object MemberCommands {
         raw: Boolean,
         clear: Boolean
     ): Boolean {
-        if (!system.canAccess(ctx.getUser()!!.id.value)) {
-            // Force the bot to treat the system as nonexistent
-            return checkSystem(ctx, null)
-        }
-
         if (clear) {
             if (!system.canEditMembers(ctx.getUser()!!.id.value)) {
                 ctx.respondFailure("You don't have access to edit this information.")
@@ -1230,11 +1110,6 @@ object MemberCommands {
         avatar: String?,
         clear: Boolean
     ): Boolean {
-        if (!system.canAccess(ctx.getUser()!!.id.value)) {
-            // Force the bot to treat the system as nonexistent
-            return checkSystem(ctx, null)
-        }
-
         if (clear) {
             if (!system.canEditMembers(ctx.getUser()!!.id.value)) {
                 ctx.respondFailure("You don't have access to edit this information.")
@@ -1279,11 +1154,6 @@ object MemberCommands {
         avatar: String?,
         clear: Boolean
     ): Boolean {
-        if (!system.canAccess(ctx.getUser()!!.id.value)) {
-            // Force the bot to treat the system as nonexistent
-            return checkSystem(ctx, null)
-        }
-
         if (clear) {
             if (!system.canEditMembers(ctx.getUser()!!.id.value)) {
                 ctx.respondFailure("You don't have access to edit this information.")
@@ -1327,11 +1197,6 @@ object MemberCommands {
         exists: Boolean,
         proxy: MemberProxyTagRecord?
     ): Boolean {
-        if (!system.canAccess(ctx.getUser()!!.id.value)) {
-            // Force the bot to treat the system as nonexistent
-            return checkSystem(ctx, null)
-        }
-
         if (!system.canEditMembers(ctx.getUser()!!.id.value)) {
             ctx.respondFailure("You don't have access to edit this information.")
             return false
@@ -1364,11 +1229,6 @@ object MemberCommands {
         member: MemberRecord,
         enabled: Boolean?
     ): Boolean {
-        if (!system.canAccess(ctx.getUser()!!.id.value)) {
-            // Force the bot to treat the system as nonexistent
-            return checkSystem(ctx, null)
-        }
-
         enabled ?: run {
             ctx.respondSuccess("AutoProxy for ${member.showDisplayName()} is set to ${if (member.autoProxy) "on" else "off"}!")
             return true
@@ -1404,11 +1264,6 @@ object MemberCommands {
         member: MemberRecord,
         proxy: Pair<String?, String?>?
     ): Boolean {
-        if (!system.canAccess(ctx.getUser()!!.id.value)) {
-            // Force the bot to treat the system as nonexistent
-            return checkSystem(ctx, null)
-        }
-
         proxy ?: run {
             ctx.respondEmbed {
                 member(member, ctx.getGuild()?.id?.value ?: 0UL)
@@ -1449,11 +1304,6 @@ object MemberCommands {
         raw: Boolean,
         clear: Boolean
     ): Boolean {
-        if (!system.canAccess(ctx.getUser()!!.id.value)) {
-            // Force the bot to treat the system as nonexistent
-            return checkSystem(ctx, null)
-        }
-
         if (clear) {
             if (!system.canEditMembers(ctx.getUser()!!.id.value)) {
                 ctx.respondFailure("You don't have access to edit this information.")
@@ -1491,11 +1341,6 @@ object MemberCommands {
     }
 
     suspend fun <T> color(ctx: DiscordContext<T>, system: SystemRecord, member: MemberRecord, color: Int?): Boolean {
-        if (!system.canAccess(ctx.getUser()!!.id.value)) {
-            // Force the bot to treat the system as nonexistent
-            return checkSystem(ctx, null)
-        }
-
         color ?: run {
             ctx.respondSuccess("Member's color is `${member.color.fromColor()}`")
             return true
@@ -1519,11 +1364,6 @@ object MemberCommands {
         birthday: LocalDate?,
         clear: Boolean
     ): Boolean {
-        if (!system.canAccess(ctx.getUser()!!.id.value)) {
-            // Force the bot to treat the system as nonexistent
-            return checkSystem(ctx, null)
-        }
-
         if (clear) {
             if (!system.canEditMembers(ctx.getUser()!!.id.value)) {
                 ctx.respondFailure("You don't have access to edit this information.")
@@ -1557,10 +1397,6 @@ object MemberCommands {
     }
 
     suspend fun <T> delete(ctx: DiscordContext<T>, system: SystemRecord, member: MemberRecord?): Boolean {
-        if (!system.canAccess(ctx.getUser()!!.id.value)) {
-            // Force the bot to treat the system as nonexistent
-            return checkSystem(ctx, null)
-        }
         if (!system.canEditMembers(ctx.getUser()!!.id.value)) {
             ctx.respondFailure("You don't have access to edit this information.")
             return false
@@ -1586,10 +1422,6 @@ object MemberCommands {
     }
 
     suspend fun <T> create(ctx: DiscordContext<T>, system: SystemRecord, name: String?, ): Boolean {
-        if (!system.canAccess(ctx.getUser()!!.id.value)) {
-            // Force the bot to treat the system as nonexistent
-            return checkSystem(ctx, null)
-        }
         if (!system.canEditMembers(ctx.getUser()!!.id.value)) {
             ctx.respondFailure("You don't have access to edit this information.")
             return false

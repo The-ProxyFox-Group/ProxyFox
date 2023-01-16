@@ -47,6 +47,7 @@ abstract class DiscordContext<T>(override val value: T) : CommandContext<T>() {
 
 // Get a DiscordContext.
 fun <T, C: DiscordContext<T>> CommandNode<T, C>.runs(action: suspend DiscordContext<T>.() -> Boolean) {
+    @Suppress("UNCHECKED_CAST")
     executes(action as suspend CommandContext<T>.() -> Boolean)
 }
 
@@ -76,8 +77,13 @@ suspend fun <T, C : DiscordContext<T>> CommandNode<T, C>.system(action: NodeActi
     string("sysid") {
         action {
             val id = it()
-            database.fetchSystemFromId(id)
-                ?: database.fetchSystemFromUser(id.toULongOrNull() ?: 0UL)
+            (database.fetchSystemFromId(id) ?: database.fetchSystemFromUser(
+                id.toULongOrNull() ?: return@action null
+            ))?.let {
+                if (!it.canAccess((this@action as DiscordContext<T>).getUser()!!.id.value))
+                    return@action null
+                return@action it
+            }
         }
     }
 }
