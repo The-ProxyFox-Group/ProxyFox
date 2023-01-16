@@ -43,6 +43,13 @@ fun SubCommandBuilder.name(name: String = "name", required: Boolean = true) {
         this.required = required
     }
 }
+
+fun SubCommandBuilder.system(name: String = "system") {
+    string(name, "The $name to use") {
+        required = false
+    }
+}
+
 fun SubCommandBuilder.avatar(name: String = "avatar") {
     attachment(name, "The $name to set") {
         required = false

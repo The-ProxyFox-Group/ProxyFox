@@ -49,4 +49,30 @@ open class SystemRecord : MongoRecord {
     var trust: HashMap<ULong, TrustLevel> = HashMap()
 
     val showName get() = name?.let { "$it [`$id`]" } ?: "`$id`"
+
+    fun canAccess(user: ULong): Boolean {
+        if (users.contains(user)) return true
+        val trust = trust[user] ?: return false
+        return trust != TrustLevel.NONE
+    }
+
+    fun canEditSwitches(user: ULong): Boolean {
+        if (users.contains(user)) return true
+        val trust = trust[user] ?: return false
+        if (trust == TrustLevel.SWITCH) return true
+        return trust == TrustLevel.FULL
+    }
+
+    fun canEditMembers(user: ULong): Boolean {
+        if (users.contains(user)) return true
+        val trust = trust[user] ?: return false
+        if (trust == TrustLevel.MEMBER) return true
+        return trust == TrustLevel.FULL
+    }
+
+    fun hasFullAccess(user: ULong): Boolean {
+        if (users.contains(user)) return true
+        val trust = trust[user] ?: return false
+        return trust == TrustLevel.FULL
+    }
 }

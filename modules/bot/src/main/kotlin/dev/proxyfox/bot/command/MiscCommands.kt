@@ -8,6 +8,7 @@
 
 package dev.proxyfox.bot.command
 
+import dev.kord.common.entity.ButtonStyle
 import dev.kord.common.entity.Permission
 import dev.kord.common.entity.Snowflake
 import dev.kord.core.Kord
@@ -21,6 +22,8 @@ import dev.proxyfox.bot.command.context.InteractionCommandContext
 import dev.proxyfox.bot.command.context.guild
 import dev.proxyfox.bot.command.context.runs
 import dev.proxyfox.bot.command.node.attachment
+import dev.proxyfox.bot.prompts.Button
+import dev.proxyfox.bot.prompts.TimedYesNoPrompt
 import dev.proxyfox.bot.webhook.GuildMessage
 import dev.proxyfox.bot.webhook.WebhookUtil
 import dev.proxyfox.command.node.builtin.*
@@ -33,6 +36,7 @@ import dev.proxyfox.database.etc.importer.import
 import dev.proxyfox.database.records.member.MemberRecord
 import dev.proxyfox.database.records.misc.AutoProxyMode
 import dev.proxyfox.database.records.misc.ServerSettingsRecord
+import dev.proxyfox.database.records.misc.TrustLevel
 import dev.proxyfox.database.records.system.SystemRecord
 import dev.proxyfox.database.records.system.SystemServerSettingsRecord
 import kotlinx.coroutines.Dispatchers
@@ -666,6 +670,57 @@ object MiscCommands {
                 token(this, system!!)
             }
         }
+
+        Commands.parser.literal("trust") {
+            runs {
+                val system = database.fetchSystemFromUser(getUser())
+                if (!checkSystem(this, system)) return@runs false
+                respondFailure("Please provide a user to perform this action on")
+                false
+            }
+            int("user") { getId ->
+                runs {
+                    val system = database.fetchSystemFromUser(getUser())
+                    if (!checkSystem(this, system)) return@runs false
+                    trust(this, system!!, getId(), null)
+                }
+                literal("none", "remove", "clear") {
+                    runs {
+                        val system = database.fetchSystemFromUser(getUser())
+                        if (!checkSystem(this, system)) return@runs false
+                        trust(this, system!!, getId(), TrustLevel.NONE)
+                    }
+                }
+                literal("access", "see", "view") {
+                    runs {
+                        val system = database.fetchSystemFromUser(getUser())
+                        if (!checkSystem(this, system)) return@runs false
+                        trust(this, system!!, getId(), TrustLevel.ACCESS)
+                    }
+                }
+                literal("member", "m") {
+                    runs {
+                        val system = database.fetchSystemFromUser(getUser())
+                        if (!checkSystem(this, system)) return@runs false
+                        trust(this, system!!, getId(), TrustLevel.MEMBER)
+                    }
+                }
+                literal("switch", "sw") {
+                    runs {
+                        val system = database.fetchSystemFromUser(getUser())
+                        if (!checkSystem(this, system)) return@runs false
+                        trust(this, system!!, getId(), TrustLevel.SWITCH)
+                    }
+                }
+                literal("full", "all", "everything") {
+                    runs {
+                        val system = database.fetchSystemFromUser(getUser())
+                        if (!checkSystem(this, system)) return@runs false
+                        trust(this, system!!, getId(), TrustLevel.FULL)
+                    }
+                }
+            }
+        }
     }
 
     private suspend fun <T> getFox(ctx: DiscordContext<T>): Boolean {
@@ -678,9 +733,34 @@ object MiscCommands {
         return true
     }
 
+    private suspend fun <T> trust(
+        ctx: DiscordContext<T>,
+        system: SystemRecord,
+        user: ULong,
+        trustLevel: TrustLevel?
+    ): Boolean {
+        trustLevel ?: run {
+            val trust = system.trust[user] ?: TrustLevel.NONE
+            ctx.respondPlain("User's trust level is currently `${trust.name}`")
+            return true
+        }
+
+        TimedYesNoPrompt.build(
+            runner = ctx.getUser()!!.id,
+            channel = ctx.getChannel(),
+            message = "Are you sure you want to trust this user with level `${trustLevel.name}`?\nThis can be changed at any time.",
+            yes = Button("Trust user", Button.check, ButtonStyle.Primary) {
+                system.trust[user] = trustLevel
+                database.updateSystem(system)
+                content = "User trust updated."
+            }
+        )
+
+        return true
+    }
+
     private suspend fun <T> token(ctx: DiscordContext<T>, system: SystemRecord): Boolean {
-
-
+        ctx.respondWarning("Not yet implemented")
         return true
     }
 

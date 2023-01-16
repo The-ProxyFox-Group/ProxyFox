@@ -14,10 +14,8 @@ import dev.kord.core.behavior.channel.MessageChannelBehavior
 import dev.kord.core.entity.*
 import dev.kord.rest.NamedFile
 import dev.kord.rest.builder.message.EmbedBuilder
-import dev.proxyfox.bot.kord
 import dev.proxyfox.command.CommandContext
 import dev.proxyfox.command.NodeActionParam
-import dev.proxyfox.command.NodeHolder
 import dev.proxyfox.command.node.CommandNode
 import dev.proxyfox.command.node.builtin.int
 import dev.proxyfox.command.node.builtin.string
@@ -52,7 +50,7 @@ fun <T, C: DiscordContext<T>> CommandNode<T, C>.runs(action: suspend DiscordCont
     executes(action as suspend CommandContext<T>.() -> Boolean)
 }
 
-suspend fun<T, C: DiscordContext<T>> CommandNode<T, C>.guild(action: NodeActionParam<T, C, Snowflake?>) {
+suspend fun <T, C : DiscordContext<T>> CommandNode<T, C>.guild(action: NodeActionParam<T, C, Snowflake?>) {
     action {
         val ctx = this as? DiscordContext<T> ?: return@action null
         ctx.getGuild()?.id
@@ -64,15 +62,22 @@ suspend fun<T, C: DiscordContext<T>> CommandNode<T, C>.guild(action: NodeActionP
     }
 }
 
-suspend fun<T, C: DiscordContext<T>> CommandNode<T, C>.system(action: NodeActionParam<T, C, SystemRecord?>) {
+//suspend fun <T, C: DiscordContext<T>> CommandNode<T, C>.id(name: String, action: NodeActionParam<T, C, Snowflake?>) {
+//    string(name) {
+//
+//    }
+//}
+
+suspend fun <T, C : DiscordContext<T>> CommandNode<T, C>.system(action: NodeActionParam<T, C, SystemRecord?>) {
     action {
         val ctx = this as? DiscordContext<T> ?: return@action null
         database.fetchSystemFromUser(ctx.getUser())
     }
-    // TODO: Check trust
     string("sysid") {
         action {
-            null
+            val id = it()
+            database.fetchSystemFromId(id)
+                ?: database.fetchSystemFromUser(id.toULongOrNull() ?: 0UL)
         }
     }
 }

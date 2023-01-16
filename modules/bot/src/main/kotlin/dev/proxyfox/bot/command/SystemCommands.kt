@@ -13,6 +13,8 @@ import dev.kord.core.Kord
 import dev.kord.rest.NamedFile
 import dev.kord.rest.builder.interaction.SubCommandBuilder
 import dev.kord.rest.builder.interaction.subCommand
+import dev.proxyfox.bot.command.MemberCommands.registerBaseMemberCommands
+import dev.proxyfox.bot.command.SwitchCommands.registerSwitchCommands
 import dev.proxyfox.bot.command.context.DiscordContext
 import dev.proxyfox.bot.command.context.InteractionCommandContext
 import dev.proxyfox.bot.command.context.runs
@@ -47,9 +49,16 @@ object SystemCommands {
 
     suspend fun Kord.registerSystemCommands() {
         createGlobalChatInputCommand("system", "Manage or create a system!") {
-            subCommand("fetch", "Fetch your system card!") {
+            subCommand("fetch", "Fetch a system card!") {
+                system()
                 runs {
-                    val system = database.fetchSystemFromUser(getUser())
+                    val id = value.interaction.command.strings["system"]
+                    val system =
+                        if (id == null)
+                            database.fetchSystemFromUser(getUser())
+                        else
+                            database.fetchSystemFromId(id)
+                                ?: database.fetchSystemFromUser(id.toULongOrNull() ?: 0UL)
                     if (!checkSystem(this, system)) return@runs false
                     access(this, system!!)
                 }
@@ -75,8 +84,15 @@ object SystemCommands {
                 name(required = false)
                 raw()
                 clear()
+                system()
                 runs {
-                    val system = database.fetchSystemFromUser(getUser())
+                    val id = value.interaction.command.strings["system"]
+                    val system =
+                        if (id == null)
+                            database.fetchSystemFromUser(getUser())
+                        else
+                            database.fetchSystemFromId(id)
+                                ?: database.fetchSystemFromUser(id.toULongOrNull() ?: 0UL)
                     if (!checkSystem(this, system)) return@runs false
                     val name = value.interaction.command.strings["name"]
                     val raw = value.interaction.command.booleans["raw"] ?: false
@@ -85,10 +101,17 @@ object SystemCommands {
                 }
             }
             subCommand("list", "List your system members") {
+                system()
                 bool("by-message", "Whether to sort by message count")
                 bool("verbose", "Whether to display information verbosely")
                 runs {
-                    val system = database.fetchSystemFromUser(getUser())
+                    val id = value.interaction.command.strings["system"]
+                    val system =
+                        if (id == null)
+                            database.fetchSystemFromUser(getUser())
+                        else
+                            database.fetchSystemFromId(id)
+                                ?: database.fetchSystemFromUser(id.toULongOrNull() ?: 0UL)
                     if (!checkSystem(this, system)) return@runs false
                     val byMessage = value.interaction.command.booleans["by-message"] ?: false
                     val verbose = value.interaction.command.booleans["verbose"] ?: false
@@ -97,8 +120,15 @@ object SystemCommands {
             }
             access("system", "color") {
                 name("color", required = false)
+                system()
                 runs {
-                    val system = database.fetchSystemFromUser(getUser())
+                    val id = value.interaction.command.strings["system"]
+                    val system =
+                        if (id == null)
+                            database.fetchSystemFromUser(getUser())
+                        else
+                            database.fetchSystemFromId(id)
+                                ?: database.fetchSystemFromUser(id.toULongOrNull() ?: 0UL)
                     if (!checkSystem(this, system)) return@runs false
                     val color = value.interaction.command.strings["color"]
 
@@ -109,8 +139,15 @@ object SystemCommands {
                 name("pronouns", required = false)
                 raw()
                 clear()
+                system()
                 runs {
-                    val system = database.fetchSystemFromUser(getUser())
+                    val id = value.interaction.command.strings["system"]
+                    val system =
+                        if (id == null)
+                            database.fetchSystemFromUser(getUser())
+                        else
+                            database.fetchSystemFromId(id)
+                                ?: database.fetchSystemFromUser(id.toULongOrNull() ?: 0UL)
                     if (!checkSystem(this, system)) return@runs false
                     val pronouns = value.interaction.command.strings["pronouns"]
                     val raw = value.interaction.command.booleans["raw"] ?: false
@@ -119,11 +156,18 @@ object SystemCommands {
                 }
             }
             access("system", "description") {
+                system()
                 name("description", required = false)
                 raw()
                 clear()
                 runs {
-                    val system = database.fetchSystemFromUser(getUser())
+                    val id = value.interaction.command.strings["system"]
+                    val system =
+                        if (id == null)
+                            database.fetchSystemFromUser(getUser())
+                        else
+                            database.fetchSystemFromId(id)
+                                ?: database.fetchSystemFromUser(id.toULongOrNull() ?: 0UL)
                     if (!checkSystem(this, system)) return@runs false
                     val desc = value.interaction.command.strings["description"]
                     val raw = value.interaction.command.booleans["raw"] ?: false
@@ -135,8 +179,15 @@ object SystemCommands {
             access("system", "avatar") {
                 avatar()
                 clear()
+                system()
                 runs {
-                    val system = database.fetchSystemFromUser(getUser())
+                    val id = value.interaction.command.strings["system"]
+                    val system =
+                        if (id == null)
+                            database.fetchSystemFromUser(getUser())
+                        else
+                            database.fetchSystemFromId(id)
+                                ?: database.fetchSystemFromUser(id.toULongOrNull() ?: 0UL)
                     if (!checkSystem(this, system)) return@runs false
                     val avatar = value.interaction.command.attachments["avatar"]?.data?.url
                     val clear = value.interaction.command.booleans["clear"] ?: false
@@ -148,8 +199,15 @@ object SystemCommands {
                 name("tag", required = false)
                 raw()
                 clear()
+                system()
                 runs {
-                    val system = database.fetchSystemFromUser(getUser())
+                    val id = value.interaction.command.strings["system"]
+                    val system =
+                        if (id == null)
+                            database.fetchSystemFromUser(getUser())
+                        else
+                            database.fetchSystemFromId(id)
+                                ?: database.fetchSystemFromUser(id.toULongOrNull() ?: 0UL)
                     if (!checkSystem(this, system)) return@runs false
                     val tag = value.interaction.command.strings["tag"]
                     val raw = value.interaction.command.booleans["raw"] ?: false
@@ -293,27 +351,27 @@ object SystemCommands {
                 }
                 literal("description", "desc", "d") {
                     runs {
-                        val system = database.fetchSystemFromUser(getUser())
+                        val system = getSys()
                         if (!checkSystem(this, system)) return@runs false
                         description(this, system!!, null, false, false)
                     }
                     unixLiteral("raw") {
                         runs {
-                            val system = database.fetchSystemFromUser(getUser())
+                            val system = getSys()
                             if (!checkSystem(this, system)) return@runs false
                             description(this, system!!, null, true, false)
                         }
                     }
                     unixLiteral("clear", "remove") {
                         runs {
-                            val system = database.fetchSystemFromUser(getUser())
+                            val system = getSys()
                             if (!checkSystem(this, system)) return@runs false
                             description(this, system!!, null, false, true)
                         }
                     }
                     greedy("description") { getDesc ->
                         runs {
-                            val system = database.fetchSystemFromUser(getUser())
+                            val system = getSys()
                             if (!checkSystem(this, system)) return@runs false
                             description(this, system!!, getDesc(), false, false)
                         }
@@ -321,27 +379,27 @@ object SystemCommands {
                 }
                 literal("avatar", "pfp") {
                     runs {
-                        val system = database.fetchSystemFromUser(getUser())
+                        val system = getSys()
                         if (!checkSystem(this, system)) return@runs false
                         avatar(this, system!!, null, false)
                     }
                     unixLiteral("clear", "remove") {
                         runs {
-                            val system = database.fetchSystemFromUser(getUser())
+                            val system = getSys()
                             if (!checkSystem(this, system)) return@runs false
                             avatar(this, system!!, null, true)
                         }
                     }
                     attachment("avatar") { getAvatar ->
                         runs {
-                            val system = database.fetchSystemFromUser(getUser())
+                            val system = getSys()
                             if (!checkSystem(this, system)) return@runs false
                             avatar(this, system!!, getAvatar().url, false)
                         }
                     }
                     string("avatar") { getAvatar ->
                         runs {
-                            val system = database.fetchSystemFromUser(getUser())
+                            val system = getSys()
                             if (!checkSystem(this, system)) return@runs false
                             avatar(this, system!!, getAvatar(), false)
                         }
@@ -349,38 +407,45 @@ object SystemCommands {
                 }
                 literal("tag", "t") {
                     runs {
-                        val system = database.fetchSystemFromUser(getUser())
+                        val system = getSys()
                         if (!checkSystem(this, system)) return@runs false
                         tag(this, system!!, null, false, false)
                     }
                     unixLiteral("raw") {
                         runs {
-                            val system = database.fetchSystemFromUser(getUser())
+                            val system = getSys()
                             if (!checkSystem(this, system)) return@runs false
                             tag(this, system!!, null, true, false)
                         }
                     }
                     unixLiteral("clear", "remove") {
                         runs {
-                            val system = database.fetchSystemFromUser(getUser())
+                            val system = getSys()
                             if (!checkSystem(this, system)) return@runs false
                             tag(this, system!!, null, false, true)
                         }
                     }
                     greedy("description") { getTag ->
                         runs {
-                            val system = database.fetchSystemFromUser(getUser())
+                            val system = getSys()
                             if (!checkSystem(this, system)) return@runs false
                             tag(this, system!!, getTag(), false, false)
                         }
                     }
                 }
+
+                registerBaseMemberCommands(getSys)
+                registerSwitchCommands(getSys)
             }
         }
     }
 
     private suspend fun <T> access(ctx: DiscordContext<T>, system: SystemRecord): Boolean {
-        val members = database.fetchTotalMembersFromUser(ctx.getUser())
+        if (!system.canAccess(ctx.getUser()!!.id.value)) {
+            // Force the bot to treat the system as nonexistent
+            return checkSystem(ctx, null)
+        }
+        val members = database.fetchTotalMembersFromSystem(system.id)
         ctx.respondEmbed {
             title = system.name ?: system.id
             color = system.color.kordColor()
@@ -424,13 +489,23 @@ object SystemCommands {
         val system = database.getOrCreateSystem(ctx.getUser()!!)
         system.name = name
         database.updateSystem(system)
-        val add = if (name != null) "with name ${name}" else ""
-        ctx.respondSuccess("System created $add! See `pf>help` or `/info help` for how to set up your system further.")
+        val add = if (name != null) " with name $name" else ""
+        ctx.respondSuccess("System created$add! See `pf>help` or `/info help` for how to set up your system further.")
         return true
     }
 
     private suspend fun <T> name(ctx: DiscordContext<T>, system: SystemRecord, name: String?, raw: Boolean, clear: Boolean): Boolean {
+        if (!system.canAccess(ctx.getUser()!!.id.value)) {
+            // Force the bot to treat the system as nonexistent
+            return checkSystem(ctx, null)
+        }
+
         if (clear) {
+            if (!system.hasFullAccess(ctx.getUser()!!.id.value)) {
+                ctx.respondFailure("You don't have access to edit this information.")
+                return false
+            }
+
             system.name = null
             database.updateSystem(system)
             ctx.respondSuccess("System name cleared!")
@@ -447,6 +522,11 @@ object SystemCommands {
             else ctx.respondSuccess("System's name is ${system.name}")
         }
 
+        if (!system.hasFullAccess(ctx.getUser()!!.id.value)) {
+            ctx.respondFailure("You don't have access to edit this information.")
+            return false
+        }
+
         system.name = name
         database.updateSystem(system)
         ctx.respondSuccess("System name updated to ${system.name}!")
@@ -454,6 +534,10 @@ object SystemCommands {
     }
 
     private suspend fun <T> list(ctx: DiscordContext<T>, system: SystemRecord, byMessage: Boolean, verbose: Boolean): Boolean {
+        if (!system.canAccess(ctx.getUser()!!.id.value)) {
+            // Force the bot to treat the system as nonexistent
+            return checkSystem(ctx, null)
+        }
         // TODO: List by message
 
         if (verbose) {
@@ -488,9 +572,19 @@ object SystemCommands {
     }
 
     suspend fun <T> color(ctx: DiscordContext<T>, system: SystemRecord, color: Int?): Boolean {
+        if (!system.canAccess(ctx.getUser()!!.id.value)) {
+            // Force the bot to treat the system as nonexistent
+            return checkSystem(ctx, null)
+        }
+
         color ?: run {
             ctx.respondSuccess("Member's color is `${system.color.fromColor()}`")
             return true
+        }
+
+        if (!system.hasFullAccess(ctx.getUser()!!.id.value)) {
+            ctx.respondFailure("You don't have access to edit this information.")
+            return false
         }
 
         system.color = color
@@ -500,7 +594,17 @@ object SystemCommands {
     }
 
     private suspend fun <T> pronouns(ctx: DiscordContext<T>, system: SystemRecord, pronouns: String?, raw: Boolean, clear: Boolean): Boolean {
+        if (!system.canAccess(ctx.getUser()!!.id.value)) {
+            // Force the bot to treat the system as nonexistent
+            return checkSystem(ctx, null)
+        }
+
         if (clear) {
+            if (!system.hasFullAccess(ctx.getUser()!!.id.value)) {
+                ctx.respondFailure("You don't have access to edit this information.")
+                return false
+            }
+
             system.pronouns = null
             database.updateSystem(system)
             ctx.respondSuccess("System pronouns cleared!")
@@ -522,6 +626,11 @@ object SystemCommands {
             return true
         }
 
+        if (!system.hasFullAccess(ctx.getUser()!!.id.value)) {
+            ctx.respondFailure("You don't have access to edit this information.")
+            return false
+        }
+
         system.pronouns = pronouns
         database.updateSystem(system)
         ctx.respondSuccess("System pronouns updated to $pronouns!")
@@ -529,7 +638,17 @@ object SystemCommands {
     }
 
     suspend fun <T> description(ctx: DiscordContext<T>, system: SystemRecord, description: String?, raw: Boolean, clear: Boolean): Boolean {
+        if (!system.canAccess(ctx.getUser()!!.id.value)) {
+            // Force the bot to treat the system as nonexistent
+            return checkSystem(ctx, null)
+        }
+
         if (clear) {
+            if (!system.hasFullAccess(ctx.getUser()!!.id.value)) {
+                ctx.respondFailure("You don't have access to edit this information.")
+                return false
+            }
+
             system.description = null
             database.updateSystem(system)
             ctx.respondSuccess("System's description cleared!")
@@ -549,6 +668,11 @@ object SystemCommands {
             return true
         }
 
+        if (!system.hasFullAccess(ctx.getUser()!!.id.value)) {
+            ctx.respondFailure("You don't have access to edit this information.")
+            return false
+        }
+
         system.description = description
         database.updateSystem(system)
         ctx.respondSuccess("System description updated!")
@@ -557,7 +681,17 @@ object SystemCommands {
     }
 
     suspend fun <T> avatar(ctx: DiscordContext<T>, system: SystemRecord, avatar: String?, clear: Boolean): Boolean {
+        if (!system.canAccess(ctx.getUser()!!.id.value)) {
+            // Force the bot to treat the system as nonexistent
+            return checkSystem(ctx, null)
+        }
+
         if (clear) {
+            if (!system.hasFullAccess(ctx.getUser()!!.id.value)) {
+                ctx.respondFailure("You don't have access to edit this information.")
+                return false
+            }
+
             system.avatarUrl = null
             database.updateSystem(system)
             ctx.respondSuccess("System's avatar cleared!")
@@ -577,6 +711,11 @@ object SystemCommands {
             return true
         }
 
+        if (!system.hasFullAccess(ctx.getUser()!!.id.value)) {
+            ctx.respondFailure("You don't have access to edit this information.")
+            return false
+        }
+
         system.avatarUrl = avatar
         database.updateSystem(system)
         ctx.respondSuccess("Member's avatar updated!")
@@ -585,7 +724,16 @@ object SystemCommands {
     }
 
     private suspend fun <T> tag(ctx: DiscordContext<T>, system: SystemRecord, tag: String?, raw: Boolean, clear: Boolean): Boolean {
+        if (!system.canAccess(ctx.getUser()!!.id.value)) {
+            // Force the bot to treat the system as nonexistent
+            return checkSystem(ctx, null)
+        }
+
         if (clear) {
+            if (!system.hasFullAccess(ctx.getUser()!!.id.value)) {
+                ctx.respondFailure("You don't have access to edit this information.")
+                return false
+            }
             system.tag = null
             database.updateSystem(system)
             ctx.respondSuccess("System tag cleared!")
@@ -606,6 +754,11 @@ object SystemCommands {
             ctx.respondSuccess("System's tag is ${system.tag}")
 
             return true
+        }
+
+        if (!system.hasFullAccess(ctx.getUser()!!.id.value)) {
+            ctx.respondFailure("You don't have access to edit this information.")
+            return false
         }
 
         system.tag = tag

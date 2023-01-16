@@ -20,6 +20,7 @@ import dev.proxyfox.bot.parseDuration
 import dev.proxyfox.bot.prompts.Button
 import dev.proxyfox.bot.prompts.Pager
 import dev.proxyfox.bot.prompts.TimedYesNoPrompt
+import dev.proxyfox.command.NodeHolder
 import dev.proxyfox.command.node.builtin.greedy
 import dev.proxyfox.command.node.builtin.literal
 import dev.proxyfox.command.node.builtin.stringList
@@ -45,8 +46,15 @@ object SwitchCommands {
                 string("members", "The members to use, comma separated") {
                     required = true
                 }
+                system()
                 runs {
-                    val system = database.fetchSystemFromUser(getUser())
+                    val id = value.interaction.command.strings["system"]
+                    val system =
+                        if (id == null)
+                            database.fetchSystemFromUser(getUser())
+                        else
+                            database.fetchSystemFromId(id)
+                                ?: database.fetchSystemFromUser(id.toULongOrNull() ?: 0UL)
                     if (!checkSystem(this, system)) return@runs false
                     val members = value.interaction.command.strings["members"]!!.split(",").toTypedArray()
                     members.trimEach()
@@ -54,15 +62,29 @@ object SwitchCommands {
                 }
             }
             subCommand("out", "Marks that no-one's fronting") {
+                system()
                 runs {
-                    val system = database.fetchSystemFromUser(getUser())
+                    val id = value.interaction.command.strings["system"]
+                    val system =
+                        if (id == null)
+                            database.fetchSystemFromUser(getUser())
+                        else
+                            database.fetchSystemFromId(id)
+                                ?: database.fetchSystemFromUser(id.toULongOrNull() ?: 0UL)
                     if (!checkSystem(this, system)) return@runs false
                     out(this, system!!)
                 }
             }
             subCommand("delete", "Deletes the latest switch") {
+                system()
                 runs {
-                    val system = database.fetchSystemFromUser(getUser())
+                    val id = value.interaction.command.strings["system"]
+                    val system =
+                        if (id == null)
+                            database.fetchSystemFromUser(getUser())
+                        else
+                            database.fetchSystemFromId(id)
+                                ?: database.fetchSystemFromUser(id.toULongOrNull() ?: 0UL)
                     if (!checkSystem(this, system)) return@runs false
                     val switch = database.fetchLatestSwitch(system!!.id)
                     if (!checkSwitch(this, switch)) return@runs false
@@ -72,8 +94,15 @@ object SwitchCommands {
             }
             subCommand("move", "Moves the latest switch") {
                 name("time")
+                system()
                 runs {
-                    val system = database.fetchSystemFromUser(getUser())
+                    val id = value.interaction.command.strings["system"]
+                    val system =
+                        if (id == null)
+                            database.fetchSystemFromUser(getUser())
+                        else
+                            database.fetchSystemFromId(id)
+                                ?: database.fetchSystemFromUser(id.toULongOrNull() ?: 0UL)
                     if (!checkSystem(this, system)) return@runs false
                     val switch = database.fetchLatestSwitch(system!!.id)
                     if (!checkSwitch(this, switch)) return@runs false
@@ -83,8 +112,15 @@ object SwitchCommands {
                 }
             }
             subCommand("list", "Lists your switches") {
+                system()
                 runs {
-                    val system = database.fetchSystemFromUser(getUser())
+                    val id = value.interaction.command.strings["system"]
+                    val system =
+                        if (id == null)
+                            database.fetchSystemFromUser(getUser())
+                        else
+                            database.fetchSystemFromId(id)
+                                ?: database.fetchSystemFromUser(id.toULongOrNull() ?: 0UL)
                     if (!checkSystem(this, system)) return@runs false
                     list(this, system!!)
                 }
@@ -92,23 +128,24 @@ object SwitchCommands {
         }
     }
 
-    suspend fun register() {
-        printStep("Registering switch commands", 2)
-        Commands.parser.literal("switch", "sw") {
+    suspend fun <T, C : DiscordContext<T>> NodeHolder<T, C>.registerSwitchCommands(getSys: suspend DiscordContext<T>.() -> SystemRecord?) {
+        literal("switch", "sw") {
             runs {
+                val system = getSys()
+                if (!checkSystem(this, system)) return@runs false
                 respondFailure("Please provide a switch subcommand.")
                 false
             }
             literal("out", "o") {
                 runs {
-                    val system = database.fetchSystemFromUser(getUser())
+                    val system = getSys()
                     if (!checkSystem(this, system)) return@runs false
                     out(this, system!!)
                 }
             }
             literal("delete", "del", "remove", "rem") {
                 runs {
-                    val system = database.fetchSystemFromUser(getUser())
+                    val system = getSys()
                     if (!checkSystem(this, system)) return@runs false
                     val switch = database.fetchLatestSwitch(system!!.id)
                     if (!checkSwitch(this, switch)) return@runs false
@@ -118,7 +155,7 @@ object SwitchCommands {
             }
             literal("move","mv","m") {
                 runs {
-                    val system = database.fetchSystemFromUser(getUser())
+                    val system = getSys()
                     if (!checkSystem(this, system)) return@runs false
                     val switch = database.fetchLatestSwitch(system!!.id)
                     if (!checkSwitch(this, switch)) return@runs false
@@ -127,7 +164,7 @@ object SwitchCommands {
                 }
                 greedy("time") { getTime ->
                     runs {
-                        val system = database.fetchSystemFromUser(getUser())
+                        val system = getSys()
                         if (!checkSystem(this, system)) return@runs false
                         val switch = database.fetchLatestSwitch(system!!.id)
                         if (!checkSwitch(this, switch)) return@runs false
@@ -138,14 +175,14 @@ object SwitchCommands {
             }
             literal("list", "l") {
                 runs {
-                    val system = database.fetchSystemFromUser(getUser())
+                    val system = getSys()
                     if (!checkSystem(this, system)) return@runs false
                     list(this, system!!)
                 }
             }
             stringList("members") { getMembers ->
                 runs {
-                    val system = database.fetchSystemFromUser(getUser())
+                    val system = getSys()
                     if (!checkSystem(this, system)) return@runs false
                     switch(this, system!!, getMembers().toTypedArray())
                 }
@@ -153,13 +190,38 @@ object SwitchCommands {
         }
     }
 
+    suspend fun register() {
+        printStep("Registering switch commands", 2)
+        Commands.parser.registerSwitchCommands {
+            database.fetchSystemFromUser(getUser())
+        }
+    }
+
     private suspend fun <T> out(ctx: DiscordContext<T>, system: SystemRecord): Boolean {
+        if (!system.canAccess(ctx.getUser()!!.id.value)) {
+            // Force the bot to treat the system as nonexistent
+            return checkSystem(ctx, null)
+        }
+        if (!system.canEditSwitches(ctx.getUser()!!.id.value)) {
+            ctx.respondFailure("You don't have access to edit this information.")
+            return false
+        }
+
         database.createSwitch(system.id, listOf())
         ctx.respondSuccess("Switch registered. Take care!")
         return true
     }
 
     private suspend fun <T> move(ctx: DiscordContext<T>, system: SystemRecord, switch: SystemSwitchRecord, oldSwitch: SystemSwitchRecord?, time: String?): Boolean {
+        if (!system.canAccess(ctx.getUser()!!.id.value)) {
+            // Force the bot to treat the system as nonexistent
+            return checkSystem(ctx, null)
+        }
+        if (!system.canEditSwitches(ctx.getUser()!!.id.value)) {
+            ctx.respondFailure("You don't have access to edit this information.")
+            return false
+        }
+
         time ?: run {
             ctx.respondFailure("Please provide a time to move the switch back")
             return false
@@ -199,6 +261,15 @@ object SwitchCommands {
     }
 
     private suspend fun <T> delete(ctx: DiscordContext<T>, system: SystemRecord, switch: SystemSwitchRecord, oldSwitch: SystemSwitchRecord?): Boolean {
+        if (!system.canAccess(ctx.getUser()!!.id.value)) {
+            // Force the bot to treat the system as nonexistent
+            return checkSystem(ctx, null)
+        }
+        if (!system.canEditSwitches(ctx.getUser()!!.id.value)) {
+            ctx.respondFailure("You don't have access to edit this information.")
+            return false
+        }
+
         val epoch = switch.timestamp.epochSeconds
 
         TimedYesNoPrompt.build(
@@ -218,6 +289,11 @@ object SwitchCommands {
     }
 
     private suspend fun <T> list(ctx: DiscordContext<T>, system: SystemRecord): Boolean {
+        if (!system.canAccess(ctx.getUser()!!.id.value)) {
+            // Force the bot to treat the system as nonexistent
+            return checkSystem(ctx, null)
+        }
+
         // We know the system exists here, will be non-null
         val switches = database.fetchSortedSwitchesFromSystem(system.id)!!
 
@@ -229,6 +305,15 @@ object SwitchCommands {
     }
 
     private suspend fun <T> switch(ctx: DiscordContext<T>, system: SystemRecord, members: Array<String>): Boolean {
+        if (!system.canAccess(ctx.getUser()!!.id.value)) {
+            // Force the bot to treat the system as nonexistent
+            return checkSystem(ctx, null)
+        }
+        if (!system.canEditSwitches(ctx.getUser()!!.id.value)) {
+            ctx.respondFailure("You don't have access to edit this information.")
+            return false
+        }
+
         val membersOut = ArrayList<String>()
         var memberString = ""
         members.forEach {
