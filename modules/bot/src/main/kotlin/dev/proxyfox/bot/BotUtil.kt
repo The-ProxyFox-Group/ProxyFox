@@ -30,12 +30,16 @@ import dev.kord.core.on
 import dev.kord.gateway.Intent
 import dev.kord.gateway.PrivilegedIntent
 import dev.kord.gateway.builder.Shards
+import dev.kord.rest.builder.interaction.GlobalChatInputCreateBuilder
 import dev.kord.rest.builder.message.EmbedBuilder
+import dev.kord.rest.json.request.ApplicationCommandCreateRequest
 import dev.kord.rest.request.KtorRequestException
+import dev.proxyfox.bot.command.Commands
 import dev.proxyfox.bot.command.MemberCommands.registerMemberCommands
 import dev.proxyfox.bot.command.MiscCommands.registerMiscCommands
 import dev.proxyfox.bot.command.SwitchCommands.registerSwitchCommands
 import dev.proxyfox.bot.command.SystemCommands.registerSystemCommands
+import dev.proxyfox.bot.command.interaction.ProxyFoxChatInputCreateBuilderImpl
 import dev.proxyfox.common.*
 import dev.proxyfox.database.database
 import dev.proxyfox.database.records.member.MemberRecord
@@ -50,6 +54,7 @@ import kotlinx.coroutines.flow.count
 import kotlinx.coroutines.flow.fold
 import kotlinx.datetime.Clock
 import kotlinx.datetime.Instant
+import java.io.File
 import java.lang.Integer.*
 import java.util.*
 import java.util.concurrent.Executors
@@ -132,14 +137,9 @@ suspend fun login() {
         }
     }
 
-    // TODO: Figure out why registerApplicationCommands is so abysmally slow
-    // For now, launch asynchronously so it's not the main point of hanging
-    // when starting the bot.
-    scope.launch {
-        printStep("Registering slash commands", 2)
-        kord.registerApplicationCommands()
-        printStep("Finished registering slash commands", 2)
-    }
+    kord.registerApplicationCommands()
+
+    Commands.register()
 
     kord.on<GlobalMessageCommandInteractionCreateEvent> {
         onInteract()
@@ -180,6 +180,7 @@ suspend fun login() {
 }
 
 suspend fun Kord.registerApplicationCommands() {
+    printStep("Registering slash commands", 2)
     createGlobalMessageCommand("Delete Message")
     createGlobalMessageCommand("Fetch Message Info")
     createGlobalMessageCommand("Ping Message Author")
@@ -188,6 +189,31 @@ suspend fun Kord.registerApplicationCommands() {
     registerSystemCommands()
     registerSwitchCommands()
     registerMiscCommands()
+    // Only send commands when discord hasn't registered yet
+    val file = File("./.pf-command-lock")
+    if (!file.exists()) {
+        scope.launch {
+            withContext(Dispatchers.IO) {
+                file.createNewFile()
+            }
+            deferredCommands.forEach {
+                rest.interaction.createGlobalApplicationCommand(
+                    resources.applicationId,
+                    it
+                )
+            }
+        }
+    }
+}
+
+val deferredCommands = arrayListOf<ApplicationCommandCreateRequest>()
+
+fun Kord.deferChatInputCommand(
+    name: String,
+    description: String,
+    builder: GlobalChatInputCreateBuilder.() -> Unit = {}
+) {
+    deferredCommands.add(ProxyFoxChatInputCreateBuilderImpl(name, description).apply(builder).toRequest())
 }
 
 suspend fun updatePresence() {

@@ -15,8 +15,10 @@ import dev.kord.core.behavior.channel.createMessage
 import dev.kord.core.entity.*
 import dev.kord.rest.NamedFile
 import dev.kord.rest.builder.message.EmbedBuilder
+import dev.proxyfox.bot.command.menu.DiscordMenu
 import dev.proxyfox.command.CommandContext
 import dev.proxyfox.command.NodeActionParam
+import dev.proxyfox.command.menu.CommandMenu
 import dev.proxyfox.command.node.CommandNode
 import dev.proxyfox.command.node.builtin.int
 import dev.proxyfox.command.node.builtin.string
@@ -54,6 +56,11 @@ abstract class DiscordContext<T>(override val value: T) : CommandContext<T>() {
         system: SystemRecord?,
         messageId: Snowflake?
     ): Pair<Message?, ProxiedMessageRecord?>
+
+    suspend fun interactionMenu(action: suspend DiscordMenu.() -> Unit) {
+        @Suppress("UNCHECKED_CAST")
+        menu(action as CommandMenu.() -> Unit)
+    }
 }
 
 // Get a DiscordContext.

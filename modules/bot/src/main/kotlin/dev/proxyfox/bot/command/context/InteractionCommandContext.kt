@@ -17,6 +17,7 @@ import dev.kord.core.entity.*
 import dev.kord.core.event.interaction.ChatInputCommandInteractionCreateEvent
 import dev.kord.rest.builder.message.EmbedBuilder
 import dev.kord.rest.builder.message.create.embed
+import dev.proxyfox.bot.command.menu.InteractionCommandMenu
 import dev.proxyfox.command.MenuBuilder
 import dev.proxyfox.database.database
 import dev.proxyfox.database.records.misc.ProxiedMessageRecord
@@ -28,7 +29,12 @@ class InteractionCommandContext(value: ChatInputCommandInteractionCreateEvent) :
     override val command: String = ""
 
     override suspend fun menu(action: MenuBuilder) {
-        TODO("Not yet implemented")
+        val message = value.interaction.respondEphemeral {
+            content = "Thinking..."
+        }
+        val menu = InteractionCommandMenu(message)
+        menu.action()
+        menu.init()
     }
 
     @OptIn(ExperimentalStdlibApi::class)

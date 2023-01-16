@@ -18,6 +18,7 @@ import dev.proxyfox.bot.command.context.InteractionCommandContext
 import dev.proxyfox.bot.command.context.guild
 import dev.proxyfox.bot.command.context.runs
 import dev.proxyfox.bot.command.node.attachment
+import dev.proxyfox.bot.deferChatInputCommand
 import dev.proxyfox.bot.kord
 import dev.proxyfox.bot.kordColor
 import dev.proxyfox.bot.member
@@ -52,7 +53,8 @@ object MemberCommands {
     }
 
     suspend fun Kord.registerMemberCommands() {
-        createGlobalChatInputCommand("member", "Manage or create a system member!") {
+        printStep("Registering member commands", 3)
+        deferChatInputCommand("member", "Manage or create a system member!") {
             subCommand("create", "Create a member") {
                 name()
                 system()
@@ -856,7 +858,7 @@ object MemberCommands {
     }
 
     suspend fun register() {
-        printStep("Registering member commands", 2)
+        printStep("Registering member commands", 3)
         //TODO: Dedupe code
         Commands.parser.registerBaseMemberCommands {
             database.fetchSystemFromUser(getUser())

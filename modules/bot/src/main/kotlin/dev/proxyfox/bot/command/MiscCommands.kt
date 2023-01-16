@@ -67,7 +67,8 @@ object MiscCommands {
     }
 
     suspend fun Kord.registerMiscCommands() {
-        createGlobalChatInputCommand("info", "Fetches info about the bot") {
+        printStep("Registering misc commands", 3)
+        deferChatInputCommand("info", "Fetches info about the bot") {
             subCommand("debug", "Fetch debug information about the bot") {
                 runs("info") {
                     debug(this)
@@ -98,7 +99,7 @@ object MiscCommands {
                 }
             }
         }
-        createGlobalChatInputCommand("moderation", "Moderator-only commands") {
+        deferChatInputCommand("moderation", "Moderator-only commands") {
             subCommand("role", "Access the role required for proxying") {
                 role("role", "The role required for proxying") {
                     required = false
@@ -133,7 +134,7 @@ object MiscCommands {
                 }
             }
         }
-        createGlobalChatInputCommand("misc", "Other commands that don't fit in a category") {
+        deferChatInputCommand("misc", "Other commands that don't fit in a category") {
             subCommand("fox", "Gets a random fox picture") {
                 runs("misc") {
                     getFox(this)
@@ -248,7 +249,7 @@ object MiscCommands {
     }
 
     suspend fun register() {
-        printStep("Registering misc commands", 2)
+        printStep("Registering misc commands", 3)
         Commands.parser.literal("import") {
             runs {
                 import(this, null)

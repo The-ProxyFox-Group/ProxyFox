@@ -16,6 +16,7 @@ import dev.kord.rest.builder.interaction.subCommand
 import dev.proxyfox.bot.command.context.DiscordContext
 import dev.proxyfox.bot.command.context.InteractionCommandContext
 import dev.proxyfox.bot.command.context.runs
+import dev.proxyfox.bot.deferChatInputCommand
 import dev.proxyfox.bot.parseDuration
 import dev.proxyfox.bot.prompts.Button
 import dev.proxyfox.bot.prompts.Pager
@@ -41,7 +42,8 @@ object SwitchCommands {
     }
 
     suspend fun Kord.registerSwitchCommands() {
-        createGlobalChatInputCommand("switch", "Create or manage switches!") {
+        printStep("Registering switch commands", 3)
+        deferChatInputCommand("switch", "Create or manage switches!") {
             subCommand("create", "Create a switch") {
                 string("members", "The members to use, comma separated") {
                     required = true
@@ -161,7 +163,7 @@ object SwitchCommands {
     }
 
     suspend fun register() {
-        printStep("Registering switch commands", 2)
+        printStep("Registering switch commands", 3)
         Commands.parser.registerSwitchCommands {
             database.fetchSystemFromUser(getUser())
         }

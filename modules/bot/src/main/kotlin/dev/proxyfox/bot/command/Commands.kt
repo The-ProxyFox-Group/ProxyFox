@@ -27,7 +27,7 @@ object Commands {
     val parser = CommandParser<Any, DiscordContext<Any>>()
 
     suspend fun register() {
-        printStep("Registering commands",1)
+        printStep("Registering text commands", 2)
         SystemCommands.register()
         MemberCommands.register()
         SwitchCommands.register()

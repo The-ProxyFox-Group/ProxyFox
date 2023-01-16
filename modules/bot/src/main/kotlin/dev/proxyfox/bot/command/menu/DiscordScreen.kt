@@ -1,13 +1,23 @@
+/*
+ * Copyright (c) 2023, The ProxyFox Group
+ *
+ * This Source Code is subject to the terms of the Mozilla Public
+ * License, v. 2.0. If a copy of the MPL was not distributed with this
+ * file, You can obtain one at https://mozilla.org/MPL/2.0/.
+ */
+
 package dev.proxyfox.bot.command.menu
 
-import dev.kord.core.entity.Message
 import dev.proxyfox.command.menu.CommandScreen
 
 class DiscordScreen(name: String, private val menu: DiscordMenu) : CommandScreen(name) {
-    @Suppress("UNUSED")
-    private val message: Message get() = menu.message
+    private var initializer: suspend () -> Unit = {}
+
+    fun onInit(action: suspend () -> Unit) {
+        initializer = action
+    }
 
     override suspend fun init() {
-
+        initializer()
     }
 }

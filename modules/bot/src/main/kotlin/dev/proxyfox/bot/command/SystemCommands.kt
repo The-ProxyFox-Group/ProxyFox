@@ -20,6 +20,7 @@ import dev.proxyfox.bot.command.context.InteractionCommandContext
 import dev.proxyfox.bot.command.context.runs
 import dev.proxyfox.bot.command.context.system
 import dev.proxyfox.bot.command.node.attachment
+import dev.proxyfox.bot.deferChatInputCommand
 import dev.proxyfox.bot.hasUnixValue
 import dev.proxyfox.bot.kordColor
 import dev.proxyfox.bot.prompts.Button
@@ -48,7 +49,8 @@ object SystemCommands {
     }
 
     suspend fun Kord.registerSystemCommands() {
-        createGlobalChatInputCommand("system", "Manage or create a system!") {
+        printStep("Registering system commands", 3)
+        deferChatInputCommand("system", "Manage or create a system!") {
             subCommand("fetch", "Fetch a system card!") {
                 system()
                 runs {
@@ -172,7 +174,7 @@ object SystemCommands {
     }
 
     suspend fun register() {
-        printStep("Registering system commands", 2)
+        printStep("Registering system commands", 3)
         Commands.parser.literal("list", "l") {
             runs {
                 val system = database.fetchSystemFromUser(getUser())

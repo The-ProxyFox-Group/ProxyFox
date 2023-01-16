@@ -13,6 +13,7 @@ import dev.kord.core.behavior.channel.MessageChannelBehavior
 import dev.kord.core.behavior.channel.createMessage
 import dev.kord.core.entity.*
 import dev.kord.rest.builder.message.EmbedBuilder
+import dev.proxyfox.bot.command.menu.DiscordMessageMenu
 import dev.proxyfox.command.MenuBuilder
 import dev.proxyfox.common.applyAsync
 import dev.proxyfox.database.database
@@ -79,7 +80,10 @@ class DiscordMessageContext(message: Message, override val command: String): Dis
     }
 
     override suspend fun menu(action: MenuBuilder) {
-        TODO("Not yet implemented")
+        val message = getChannel().createMessage("Thinking...")
+        val menu = DiscordMessageMenu(message)
+        menu.action()
+        menu.init()
     }
 
     override suspend fun respondPlain(text: String, private: Boolean): Message {
