@@ -11,6 +11,7 @@ package dev.proxyfox.bot.command.context
 import dev.kord.common.entity.Permission
 import dev.kord.common.entity.Snowflake
 import dev.kord.core.behavior.channel.MessageChannelBehavior
+import dev.kord.core.behavior.channel.createMessage
 import dev.kord.core.entity.*
 import dev.kord.rest.NamedFile
 import dev.kord.rest.builder.message.EmbedBuilder
@@ -29,11 +30,20 @@ abstract class DiscordContext<T>(override val value: T) : CommandContext<T>() {
     abstract suspend fun getGuild(): Guild?
     abstract suspend fun getUser(): User?
     abstract suspend fun getMember(): Member?
-    abstract suspend fun respondFiles(text: String? = null, vararg files: NamedFile): T
-    abstract suspend fun respondEmbed(private: Boolean = false, text: String? = null, embed: suspend EmbedBuilder.() -> Unit): T
+    abstract suspend fun respondEmbed(
+        private: Boolean = false,
+        text: String? = null,
+        embed: suspend EmbedBuilder.() -> Unit
+    ): T
+
     abstract suspend fun tryDeleteTrigger(reason: String? = null)
 
     abstract suspend fun optionalSuccess(text: String): T
+
+    suspend fun respondFiles(text: String? = null, vararg files: NamedFile): Message = getChannel(true).createMessage {
+        content = text
+        this.files.addAll(files)
+    }
 
     suspend fun hasRequired(permission: Permission): Boolean {
         val author = getMember() ?: return false
@@ -42,7 +52,10 @@ abstract class DiscordContext<T>(override val value: T) : CommandContext<T>() {
 
     abstract suspend fun respondPager()
 
-    abstract suspend fun getDatabaseMessage(system: SystemRecord?, messageId: Snowflake?): Pair<Message?, ProxiedMessageRecord?>
+    abstract suspend fun getDatabaseMessage(
+        system: SystemRecord?,
+        messageId: Snowflake?
+    ): Pair<Message?, ProxiedMessageRecord?>
 }
 
 // Get a DiscordContext.
@@ -85,5 +98,12 @@ suspend fun <T, C : DiscordContext<T>> CommandNode<T, C>.system(action: NodeActi
                 return@action it
             }
         }
+    }
+}
+
+suspend fun <T, C : DiscordContext<T>> CommandNode<T, C>.responds(content: String) {
+    runs {
+        respondPlain(content)
+        true
     }
 }

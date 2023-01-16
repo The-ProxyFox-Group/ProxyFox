@@ -17,10 +17,7 @@ import dev.kord.core.behavior.channel.threads.ThreadChannelBehavior
 import dev.kord.rest.NamedFile
 import dev.kord.rest.builder.interaction.*
 import dev.proxyfox.bot.*
-import dev.proxyfox.bot.command.context.DiscordContext
-import dev.proxyfox.bot.command.context.InteractionCommandContext
-import dev.proxyfox.bot.command.context.guild
-import dev.proxyfox.bot.command.context.runs
+import dev.proxyfox.bot.command.context.*
 import dev.proxyfox.bot.command.node.attachment
 import dev.proxyfox.bot.prompts.Button
 import dev.proxyfox.bot.prompts.TimedYesNoPrompt
@@ -76,25 +73,25 @@ object MiscCommands {
             }
             subCommand("help", "Get help information") {
                 runs("info") {
-                    respondSuccess(getHelp())
+                    respondSuccess(help)
                     true
                 }
             }
             subCommand("about", "Get about information") {
                 runs("info") {
-                    respondSuccess(getExplain())
+                    respondSuccess(explain)
                     true
                 }
             }
             subCommand("source", "Get the source code") {
                 runs("info") {
-                    respondSuccess(getSource())
+                    respondSuccess(source)
                     true
                 }
             }
             subCommand("invite", "Get the bot invite and the support server invite") {
                 runs("info") {
-                    respondSuccess(getSource())
+                    respondSuccess(invite)
                     true
                 }
             }
@@ -274,33 +271,19 @@ object MiscCommands {
             }
         }
         Commands.parser.literal("time") {
-            runs {
-                time(this)
-            }
+            runs(::time)
         }
         Commands.parser.literal("help") {
-            runs {
-                respondSuccess(getHelp())
-                true
-            }
+            responds(help)
         }
         Commands.parser.literal("explain") {
-            runs {
-                respondSuccess(getExplain())
-                true
-            }
+            responds(explain)
         }
         Commands.parser.literal("invite") {
-            runs {
-                respondSuccess(getInvite())
-                true
-            }
+            responds(invite)
         }
         Commands.parser.literal("source") {
-            runs {
-                respondSuccess(getSource())
-                true
-            }
+            responds(source)
         }
         Commands.parser.literal("proxy", "p") {
             guild { getGuildId ->
@@ -625,10 +608,7 @@ object MiscCommands {
         }
 
         Commands.parser.literal("channel", "c") {
-            runs {
-                respondFiles("Please provide a channel subcommand")
-                false
-            }
+            responds("Please provide a channel subcommand")
             literal("proxy", "p") {
                 runs {
                     channelProxy(this, null, null)
@@ -652,15 +632,11 @@ object MiscCommands {
         }
 
         Commands.parser.literal("debug") {
-            runs {
-                debug(this)
-            }
+            runs(::debug)
         }
 
         Commands.parser.literal("fox") {
-            runs {
-                getFox(this)
-            }
+            runs(::getFox)
         }
 
         Commands.parser.literal("token", "t") {
@@ -866,22 +842,22 @@ object MiscCommands {
     }
 
     // TODO: Provide better help
-    private fun getHelp(): String =
+    private const val help: String =
         """To view commands for ProxyFox, visit <https://github.com/The-ProxyFox-Group/ProxyFox/blob/master/commands.md>
 For quick setup:
 - pf>system new name
 - pf>member new John Doe
 - pf>member "John Doe" proxy j:text"""
 
-    private fun getExplain(): String =
+    private const val explain: String =
         """ProxyFox is modern Discord bot designed to help systems communicate.
 It uses discord's webhooks to generate "pseudo-users" which different members of the system can use. Someone will likely be willing to explain further if need be."""
 
-    private fun getInvite(): String =
+    private val invite: String =
         """Use <https://discord.com/api/oauth2/authorize?client_id=${kord.selfId}&permissions=277696539728&scope=applications.commands+bot> to invite ProxyFox to your server!
 To get support, head on over to https://discord.gg/q3yF8ay9V7"""
 
-    private fun getSource(): String =
+    private const val source: String =
         "Source code for ProxyFox is available at https://github.com/The-ProxyFox-Group/ProxyFox!"
 
     private suspend fun <T> proxy(ctx: DiscordContext<T>, system: SystemRecord, mode: AutoProxyMode?, member: MemberRecord?): Boolean {

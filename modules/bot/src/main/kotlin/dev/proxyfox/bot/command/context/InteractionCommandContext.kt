@@ -11,12 +11,10 @@ package dev.proxyfox.bot.command.context
 import dev.kord.common.entity.Snowflake
 import dev.kord.core.behavior.channel.GuildChannelBehavior
 import dev.kord.core.behavior.channel.MessageChannelBehavior
-import dev.kord.core.behavior.channel.createMessage
 import dev.kord.core.behavior.interaction.respondEphemeral
 import dev.kord.core.behavior.interaction.respondPublic
 import dev.kord.core.entity.*
 import dev.kord.core.event.interaction.ChatInputCommandInteractionCreateEvent
-import dev.kord.rest.NamedFile
 import dev.kord.rest.builder.message.EmbedBuilder
 import dev.kord.rest.builder.message.create.embed
 import dev.proxyfox.command.CommandContext
@@ -104,13 +102,6 @@ class InteractionCommandContext(value: ChatInputCommandInteractionCreateEvent) :
 
     override suspend fun getMember(): Member? {
         return getGuild()?.getMemberOrNull(getUser().id)
-    }
-
-    override suspend fun respondFiles(text: String?, vararg files: NamedFile): ChatInputCommandInteractionCreateEvent {
-        getChannel(true).createMessage {
-            this.files.addAll(files)
-        }
-        return value
     }
 
     override suspend fun respondEmbed(

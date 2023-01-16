@@ -9,12 +9,10 @@
 package dev.proxyfox.bot.command.context
 
 import dev.kord.common.entity.Snowflake
-import dev.kord.core.behavior.channel.createMessage
 import dev.kord.core.behavior.channel.MessageChannelBehavior
+import dev.kord.core.behavior.channel.createMessage
 import dev.kord.core.entity.*
-import dev.kord.rest.NamedFile
 import dev.kord.rest.builder.message.EmbedBuilder
-import dev.proxyfox.bot.prompts.TimedYesNoPrompt
 import dev.proxyfox.command.CommandContext
 import dev.proxyfox.common.applyAsync
 import dev.proxyfox.database.database
@@ -45,12 +43,6 @@ class DiscordMessageContext(message: Message, override val command: String): Dis
 
     override suspend fun getMember(): Member? {
         return value.getAuthorAsMember()
-    }
-
-    override suspend fun respondFiles(text: String?, vararg files: NamedFile): Message {
-        return getChannel(true).createMessage {
-            this.files.addAll(files)
-        }
     }
 
     override suspend fun respondEmbed(
