@@ -189,8 +189,6 @@ object SwitchCommands {
             return false
         }
 
-        val oldSwitch = database.fetchSecondLatestSwitch(system.id)
-
         val either = time.parseDuration()
         either.right?.let {
             ctx.respondFailure(it)

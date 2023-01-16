@@ -68,6 +68,7 @@ suspend fun MessageCreateEvent.onMessageCreate() {
             channel.createMessage("Hi, I'm ProxyFox! My prefix is `pf>`. I also support slash commands!")
         } else {
             // Run the command
+            @Suppress("UNCHECKED_CAST")
             Commands.parser.parse(DiscordMessageContext(message, contentWithoutRegex) as DiscordContext<Any>)
         }
     } else if (channel is GuildMessageChannel && channel.selfHasPermissions(Permissions(Permission.ManageWebhooks, Permission.ManageMessages))) {
@@ -86,7 +87,7 @@ suspend fun MessageCreateEvent.onMessageCreate() {
 }
 
 suspend fun MessageUpdateEvent.onMessageUpdate() {
-    val guild = kord.getGuild(new.guildId.value ?: return) ?: return
+    val guild = kord.getGuildOrNull(new.guildId.value ?: return) ?: return
     val channel = channel.asChannelOf<GuildMessageChannel>()
     val content = new.content.value ?: return
     val authorRaw = new.author.value ?: return

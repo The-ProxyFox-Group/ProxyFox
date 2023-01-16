@@ -350,7 +350,7 @@ object MemberCommands {
                     if (!checkSystem(this, system)) return@runs false
                     val member = database.findMember(system!!.id, getMem())
                     if (!checkMember(this, member)) return@runs false
-                    rename(this, system, member!!, name, false)
+                    rename(this, system, member!!, getName(), false)
                 }
             }
         }
@@ -816,7 +816,7 @@ object MemberCommands {
             runs {
                 val system = getSys()
                 if (!checkSystem(this, system)) return@runs false
-                empty(this, system!!)
+                empty(this)
             }
 
             string("member") {
@@ -863,7 +863,7 @@ object MemberCommands {
         }
     }
 
-    suspend fun <T> empty(ctx: DiscordContext<T>, system: SystemRecord): Boolean {
+    suspend fun <T> empty(ctx: DiscordContext<T>): Boolean {
         ctx.respondWarning("Make sure to provide a member command!")
         return false
     }

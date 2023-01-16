@@ -245,7 +245,7 @@ suspend fun handleError(err: Throwable, channel: MessageChannelBehavior) {
         errorChannel = kord.getChannel(errorChannelId) as TextChannel
     if (errorChannel != null) {
         // Prevent the log channel from also showing tokens, should it be public in any manner.
-        val cause = err.stackTraceToString().replace(webhook, "[WEBHOOK]").replace(token, "[TOKEN]")
+        cause = err.stackTraceToString().replace(webhook, "[WEBHOOK]").replace(token, "[TOKEN]")
 
         errorChannel!!.createMessage {
             content = "`$timestamp`"

@@ -17,7 +17,7 @@ import dev.kord.core.entity.*
 import dev.kord.core.event.interaction.ChatInputCommandInteractionCreateEvent
 import dev.kord.rest.builder.message.EmbedBuilder
 import dev.kord.rest.builder.message.create.embed
-import dev.proxyfox.command.CommandContext
+import dev.proxyfox.command.MenuBuilder
 import dev.proxyfox.database.database
 import dev.proxyfox.database.records.misc.ProxiedMessageRecord
 import dev.proxyfox.database.records.system.SystemRecord
@@ -26,6 +26,10 @@ import kotlin.jvm.optionals.getOrNull
 class InteractionCommandContext(value: ChatInputCommandInteractionCreateEvent) :
     DiscordContext<ChatInputCommandInteractionCreateEvent>(value) {
     override val command: String = ""
+
+    override suspend fun menu(action: MenuBuilder) {
+        TODO("Not yet implemented")
+    }
 
     @OptIn(ExperimentalStdlibApi::class)
     override fun getAttachment(): Attachment? {
@@ -76,15 +80,6 @@ class InteractionCommandContext(value: ChatInputCommandInteractionCreateEvent) :
         return value
     }
 
-    override suspend fun timedYesNoPrompt(
-        text: String,
-        yesAction: Pair<String, suspend CommandContext<ChatInputCommandInteractionCreateEvent>.() -> Boolean>,
-        noAction: Pair<String, suspend CommandContext<ChatInputCommandInteractionCreateEvent>.() -> Boolean>,
-        timeoutAction: suspend CommandContext<ChatInputCommandInteractionCreateEvent>.() -> Boolean,
-        private: Boolean
-    ) {
-    }
-
     override suspend fun getChannel(private: Boolean): MessageChannelBehavior {
         return if (private)
             value.interaction.user.getDmChannelOrNull()
@@ -129,10 +124,6 @@ class InteractionCommandContext(value: ChatInputCommandInteractionCreateEvent) :
     override suspend fun optionalSuccess(text: String): ChatInputCommandInteractionCreateEvent {
         respondSuccess(text, true)
         return value
-    }
-
-    override suspend fun respondPager() {
-        TODO("Not yet implemented")
     }
 
     override suspend fun getDatabaseMessage(

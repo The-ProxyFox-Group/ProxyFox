@@ -50,8 +50,6 @@ abstract class DiscordContext<T>(override val value: T) : CommandContext<T>() {
         return author.getPermissions().contains(permission)
     }
 
-    abstract suspend fun respondPager()
-
     abstract suspend fun getDatabaseMessage(
         system: SystemRecord?,
         messageId: Snowflake?

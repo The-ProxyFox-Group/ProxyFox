@@ -6,8 +6,8 @@ kotlin = "1.7.21"
 kotlinx_coroutines = "1.6.4"
 
 # ProxyFox Libraries
-proxyfox_command = "1.5"
-pluralkt = "1.2"
+proxyfox_command = "1.6"
+pluralkt = "1.3"
 
 # Database
 postgres = "42.3.3"

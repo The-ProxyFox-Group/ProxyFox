@@ -71,7 +71,7 @@ object SystemCommands {
                     val system = database.fetchSystemFromUser(getUser())
                     if (!checkSystem(this, system)) return@runs false
 
-                    delete(this, system!!)
+                    delete(this)
                 }
             }
             access("system", "name") {
@@ -205,7 +205,7 @@ object SystemCommands {
                 runs {
                     val system = database.fetchSystemFromUser(getUser())
                     if (!checkSystem(this, system)) return@runs false
-                    delete(this, system!!)
+                    delete(this)
                 }
             }
             system { getSys ->
@@ -476,6 +476,7 @@ object SystemCommands {
         return true
     }
 
+    @Suppress("UNUSED_PARAMETER")
     private suspend fun <T> list(ctx: DiscordContext<T>, system: SystemRecord, byMessage: Boolean, verbose: Boolean): Boolean {
         // TODO: List by message
 
@@ -681,7 +682,7 @@ object SystemCommands {
         return true
     }
 
-    private suspend fun <T> delete(ctx: DiscordContext<T>, system: SystemRecord): Boolean {
+    private suspend fun <T> delete(ctx: DiscordContext<T>): Boolean {
         TimedYesNoPrompt.build(
             runner = ctx.getUser()!!.id,
             channel = ctx.getChannel(),
@@ -689,7 +690,10 @@ object SystemCommands {
                     "The data will be lost forever (A long time!)",
             yes = Button("Delete system", Button.wastebasket, ButtonStyle.Danger) {
                 val export = Exporter.export(ctx.getUser()!!.id.value)
-                ctx.respondFiles(null, NamedFile("system.json", ChannelProvider { export.byteInputStream().toByteReadChannel() }))
+                ctx.respondFiles(
+                    null,
+                    NamedFile("system.json", ChannelProvider { export.byteInputStream().toByteReadChannel() })
+                )
                 database.dropSystem(ctx.getUser()!!)
                 content = "System deleted."
             },

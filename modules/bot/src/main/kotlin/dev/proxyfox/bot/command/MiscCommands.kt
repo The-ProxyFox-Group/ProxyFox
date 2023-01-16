@@ -36,6 +36,8 @@ import dev.proxyfox.database.records.misc.ServerSettingsRecord
 import dev.proxyfox.database.records.misc.TrustLevel
 import dev.proxyfox.database.records.system.SystemRecord
 import dev.proxyfox.database.records.system.SystemServerSettingsRecord
+import io.ktor.client.request.forms.*
+import io.ktor.utils.io.jvm.javaio.*
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.flow.filter
 import kotlinx.coroutines.flow.firstOrNull
@@ -189,7 +191,7 @@ object MiscCommands {
                         respondFailure("Command not ran in server.")
                         return@runs false
                     }
-                    val guild = kord.getGuild(guildId) ?: run {
+                    val guild = kord.getGuildOrNull(guildId) ?: run {
                         respondFailure("Cannot find server. Am I in it?")
                         return@runs false
                     }
@@ -220,7 +222,7 @@ object MiscCommands {
                         respondFailure("Command not ran in server.")
                         return@runs false
                     }
-                    val guild = kord.getGuild(guildId) ?: run {
+                    val guild = kord.getGuildOrNull(guildId) ?: run {
                         respondFailure("Cannot find server. Am I in it?")
                         return@runs false
                     }
@@ -294,7 +296,7 @@ object MiscCommands {
                         respondFailure("Command not ran in server.")
                         return@runs false
                     }
-                    val guild = kord.getGuild(guildId) ?: run {
+                    val guild = kord.getGuildOrNull(guildId) ?: run {
                         respondFailure("Cannot find server. Am I in it?")
                         return@runs false
                     }
@@ -309,7 +311,7 @@ object MiscCommands {
                             respondFailure("Command not ran in server.")
                             return@runs false
                         }
-                        val guild = kord.getGuild(guildId) ?: run {
+                        val guild = kord.getGuildOrNull(guildId) ?: run {
                             respondFailure("Cannot find server. Am I in it?")
                             return@runs false
                         }
@@ -325,7 +327,7 @@ object MiscCommands {
                             respondFailure("Command not ran in server.")
                             return@runs false
                         }
-                        val guild = kord.getGuild(guildId) ?: run {
+                        val guild = kord.getGuildOrNull(guildId) ?: run {
                             respondFailure("Cannot find server. Am I in it?")
                             return@runs false
                         }
@@ -381,7 +383,7 @@ object MiscCommands {
                         respondFailure("Command not ran in server.")
                         return@runs false
                     }
-                    val guild = kord.getGuild(guildId) ?: run {
+                    val guild = kord.getGuildOrNull(guildId) ?: run {
                         respondFailure("Cannot find server. Am I in it?")
                         return@runs false
                     }
@@ -396,7 +398,7 @@ object MiscCommands {
                             respondFailure("Command not ran in server.")
                             return@runs false
                         }
-                        val guild = kord.getGuild(guildId) ?: run {
+                        val guild = kord.getGuildOrNull(guildId) ?: run {
                             respondFailure("Cannot find server. Am I in it?")
                             return@runs false
                         }
@@ -412,7 +414,7 @@ object MiscCommands {
                             respondFailure("Command not ran in server.")
                             return@runs false
                         }
-                        val guild = kord.getGuild(guildId) ?: run {
+                        val guild = kord.getGuildOrNull(guildId) ?: run {
                             respondFailure("Cannot find server. Am I in it?")
                             return@runs false
                         }
@@ -428,7 +430,7 @@ object MiscCommands {
                             respondFailure("Command not ran in server.")
                             return@runs false
                         }
-                        val guild = kord.getGuild(guildId) ?: run {
+                        val guild = kord.getGuildOrNull(guildId) ?: run {
                             respondFailure("Cannot find server. Am I in it?")
                             return@runs false
                         }
@@ -444,7 +446,7 @@ object MiscCommands {
                             respondFailure("Command not ran in server.")
                             return@runs false
                         }
-                        val guild = kord.getGuild(guildId) ?: run {
+                        val guild = kord.getGuildOrNull(guildId) ?: run {
                             respondFailure("Cannot find server. Am I in it?")
                             return@runs false
                         }
@@ -462,7 +464,7 @@ object MiscCommands {
                             respondFailure("Command not ran in server.")
                             return@runs false
                         }
-                        val guild = kord.getGuild(guildId) ?: run {
+                        val guild = kord.getGuildOrNull(guildId) ?: run {
                             respondFailure("Cannot find server. Am I in it?")
                             return@runs false
                         }
@@ -735,6 +737,7 @@ object MiscCommands {
         return true
     }
 
+    @Suppress("UNUSED_PARAMETER")
     private suspend fun <T> token(ctx: DiscordContext<T>, system: SystemRecord): Boolean {
         ctx.respondWarning("Not yet implemented")
         return true
@@ -830,7 +833,11 @@ object MiscCommands {
 
     private suspend fun <T> export(ctx: DiscordContext<T>): Boolean {
         val export = Exporter.export(ctx.getUser()!!.id.value)
-        ctx.respondFiles(null, NamedFile("system.json", export.byteInputStream()))
+        val message = ctx.respondFiles(
+            null,
+            NamedFile("system.json", ChannelProvider { export.byteInputStream().toByteReadChannel() })
+        )
+        message.channel.createMessage(message.attachments.elementAt(0).url)
         ctx.respondSuccess("Check your DMs~")
         return true
     }

@@ -13,7 +13,7 @@ import dev.kord.core.behavior.channel.MessageChannelBehavior
 import dev.kord.core.behavior.channel.createMessage
 import dev.kord.core.entity.*
 import dev.kord.rest.builder.message.EmbedBuilder
-import dev.proxyfox.command.CommandContext
+import dev.proxyfox.command.MenuBuilder
 import dev.proxyfox.common.applyAsync
 import dev.proxyfox.database.database
 import dev.proxyfox.database.records.misc.ProxiedMessageRecord
@@ -65,10 +65,6 @@ class DiscordMessageContext(message: Message, override val command: String): Dis
         return value
     }
 
-    override suspend fun respondPager() {
-        TODO("Not yet implemented")
-    }
-
     override suspend fun getDatabaseMessage(system: SystemRecord?, messageId: Snowflake?): Pair<Message?, ProxiedMessageRecord?> {
         val databaseMessage = if (messageId != null) {
             database.fetchMessage(messageId)
@@ -80,6 +76,10 @@ class DiscordMessageContext(message: Message, override val command: String): Dis
         databaseMessage ?: return null to null
         val message = getChannel().getMessageOrNull(Snowflake(databaseMessage.newMessageId))
         return message to databaseMessage
+    }
+
+    override suspend fun menu(action: MenuBuilder) {
+        TODO("Not yet implemented")
     }
 
     override suspend fun respondPlain(text: String, private: Boolean): Message {
@@ -96,16 +96,6 @@ class DiscordMessageContext(message: Message, override val command: String): Dis
 
     override suspend fun respondFailure(text: String, private: Boolean): Message {
         return getChannel(private).createMessage("❌ $text")
-    }
-
-    override suspend fun timedYesNoPrompt(
-        text: String,
-        yesAction: Pair<String, suspend CommandContext<Message>.() -> Boolean>,
-        noAction: Pair<String, suspend CommandContext<Message>.() -> Boolean>,
-        timeoutAction: suspend CommandContext<Message>.() -> Boolean,
-        private: Boolean
-    ) {
-        // TODO: Move TimedYesNoPrompt here
     }
 
 }

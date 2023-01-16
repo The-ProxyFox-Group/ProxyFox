@@ -26,6 +26,7 @@ import dev.proxyfox.database.records.member.MemberProxyTagRecord
 import dev.proxyfox.database.records.member.MemberRecord
 import dev.proxyfox.database.records.system.SystemRecord
 import io.ktor.client.request.*
+import io.ktor.client.request.forms.*
 import io.ktor.client.statement.*
 import io.ktor.http.*
 import io.ktor.util.*
@@ -58,9 +59,19 @@ data class ProxyContext(
                 avatarUrl = resolvedAvatar
                 for (attachment in message.attachments) {
                     val response: HttpResponse = http.get(urlString = attachment.url) {
-                        headers { append(HttpHeaders.UserAgent, "ProxyFox/2.0.0 (+https://github.com/The-ProxyFox-Group/ProxyFox/; +https://proxyfox.dev/)") }
+                        headers {
+                            append(
+                                HttpHeaders.UserAgent,
+                                "ProxyFox/2.0.0 (+https://github.com/The-ProxyFox-Group/ProxyFox/; +https://proxyfox.dev/)"
+                            )
+                        }
                     }
-                    files.add(NamedFile(attachment.filename, response.content.toInputStream()))
+                    files.add(
+                        NamedFile(
+                            attachment.filename,
+                            ChannelProvider { response.content.toInputStream().toByteReadChannel() }
+                        )
+                    )
                 }
                 if (reproxy) {
                 message.embeds.forEach {
