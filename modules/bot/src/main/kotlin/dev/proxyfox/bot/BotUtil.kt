@@ -240,6 +240,7 @@ suspend fun handleError(err: Throwable, channel: MessageChannelBehavior) {
         "An unexpected error occurred.\nTimestamp: `$timestamp`\n```\n${err.javaClass.name}: $reason\n$cause```"
     )
     // Relay to channel
+    // if (err is DebugException) return
     if (errorChannel == null && errorChannelId != null)
         errorChannel = kord.getChannel(errorChannelId) as TextChannel
     if (errorChannel != null) {
