@@ -26,6 +26,7 @@ class ServerSettingsRecord() : MongoRecord {
     var serverId: ULong = 0UL
     var proxyRole: ULong = 0UL
     var moderationDelay: Short = 250
+    var enforceTag: Boolean = false
 
     constructor(serverId: ULong) : this() {
         this.serverId = serverId

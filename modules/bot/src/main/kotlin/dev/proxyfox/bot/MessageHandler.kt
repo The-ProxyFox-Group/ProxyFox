@@ -174,7 +174,16 @@ private suspend fun handleProxying(
             database.updateSystem(system)
         }
 
-        WebhookUtil.prepareMessage(message, content, system, member, proxy, memberServer, server.moderationDelay.toLong())?.send()
+        WebhookUtil.prepareMessage(
+            message,
+            content,
+            system,
+            member,
+            proxy,
+            memberServer,
+            server.moderationDelay.toLong(),
+            server.enforceTag
+        )?.send()
     } else if (content.startsWith('\\')) {
         // Doesn't proxy just for this message.
         if (content.startsWith("\\\\")) {
@@ -194,7 +203,16 @@ private suspend fun handleProxying(
         val memberServer = database.fetchMemberServerSettingsFromSystemAndMember(guild, system.id, member.id)
         if (memberServer?.proxyEnabled == false) return
 
-        WebhookUtil.prepareMessage(message, content, system, member, null, memberServer, server.moderationDelay.toLong())?.send()
+        WebhookUtil.prepareMessage(
+            message,
+            content,
+            system,
+            member,
+            null,
+            memberServer,
+            server.moderationDelay.toLong(),
+            server.enforceTag
+        )?.send()
     }
 }
 

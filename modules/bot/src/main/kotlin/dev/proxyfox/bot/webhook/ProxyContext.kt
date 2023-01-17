@@ -49,20 +49,22 @@ data class ProxyContext(
     val resolvedUsername: String,
     val resolvedAvatar: String?,
     val moderationDelay: Long,
+    val enforceTag: Boolean
 ) {
     @OptIn(InternalAPI::class)
     suspend fun send(reproxy: Boolean = false) {
         val newMessage = try {
             webhook.execute(threadId) {
                 if (messageContent.isNotBlank()) content = messageContent
-                username = resolvedUsername + " " + (system.tag ?: "")
+                username = resolvedUsername + " " + (system.tag
+                    ?: if (enforceTag) "| ${message.author.username}#${message.author.discriminator}" else "")
                 avatarUrl = resolvedAvatar
                 for (attachment in message.attachments) {
                     val response: HttpResponse = http.get(urlString = attachment.url) {
                         headers {
                             append(
                                 HttpHeaders.UserAgent,
-                                "ProxyFox/2.0.0 (+https://github.com/The-ProxyFox-Group/ProxyFox/; +https://proxyfox.dev/)"
+                                "ProxyFox/2.1 (+https://github.com/The-ProxyFox-Group/ProxyFox/; +https://proxyfox.dev/)"
                             )
                         }
                     }

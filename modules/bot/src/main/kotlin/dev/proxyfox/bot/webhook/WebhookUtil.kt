@@ -32,6 +32,7 @@ object WebhookUtil {
         proxy: MemberProxyTagRecord?,
         serverMember: MemberServerSettingsRecord?,
         moderationDelay: Long = 500L,
+        enforceTag: Boolean = false
     ): ProxyContext? {
         var messageContent = content
         if (!member.keepProxy && proxy != null)
@@ -50,6 +51,7 @@ object WebhookUtil {
             resolvedUsername = serverMember?.nickname ?: member.displayName ?: member.name,
             resolvedAvatar = serverMember?.avatarUrl ?: member.avatarUrl ?: system.avatarUrl,
             moderationDelay = max(moderationDelay, 0L),
+            enforceTag = enforceTag
         )
     }
 

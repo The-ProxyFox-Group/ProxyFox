@@ -133,6 +133,13 @@ object MiscCommands {
                     channelProxy(this, channel, enabled)
                 }
             }
+            subCommand("force-tag", "Toggle the enforcement of a system tag for this server") {
+                bool("value", "The value to set")
+                runs("moderation") {
+                    val enabled = value.interaction.command.booleans["value"]
+                    forceTag(this, enabled)
+                }
+            }
         }
         deferChatInputCommand("misc", "Other commands that don't fit in a category") {
             subCommand("fox", "Gets a random fox picture") {
@@ -510,6 +517,22 @@ object MiscCommands {
             }
         }
 
+        Commands.parser.literal("forcetag", "requiretag") {
+            runs {
+                forceTag(this, null)
+            }
+            literal("on", "true", "enable", "1") {
+                runs {
+                    forceTag(this, true)
+                }
+            }
+            literal("off", "false", "disable", "0") {
+                runs {
+                    forceTag(this, false)
+                }
+            }
+        }
+
         Commands.parser.literal("delete", "del") {
             runs {
                 val system = database.fetchSystemFromUser(getUser())
@@ -700,6 +723,29 @@ object MiscCommands {
                 }
             }
         }
+    }
+
+    private suspend fun <T> forceTag(ctx: DiscordContext<T>, enabled: Boolean?): Boolean {
+        val server = database.getOrCreateServerSettings(ctx.getGuild() ?: run {
+            ctx.respondFailure("You are not in a server.")
+            return false
+        })
+
+        enabled ?: let {
+            ctx.respondPlain("System tag force is currently ${if (server.enforceTag) "enabled" else "disabled"} for this server.")
+            return true
+        }
+
+        if (!ctx.hasRequired(Permission.ManageGuild)) {
+            ctx.respondFailure("You do not have the proper permissions to run this command.")
+            return false
+        }
+
+        server.enforceTag = enabled
+        database.updateServerSettings(server)
+
+        ctx.respondPlain("System tag force is now ${if (server.enforceTag) "enabled" else "disabled"} for this server.")
+        return true
     }
 
     private suspend fun <T> getFox(ctx: DiscordContext<T>): Boolean {
@@ -1016,11 +1062,33 @@ To get support, head on over to https://discord.gg/q3yF8ay9V7"""
             return false
         }
 
+        val server = database.getOrCreateServerSettings(discordMessage.getGuild())
+
+        val serverSystem = database.getOrCreateServerSettingsFromSystem(databaseMessage.guildId, system.id)
+
+        if (serverSystem.autoProxyMode == AutoProxyMode.LATCH) {
+            serverSystem.autoProxy = member.id
+            database.updateSystemServerSettings(serverSystem)
+        } else if (serverSystem.autoProxyMode == AutoProxyMode.FALLBACK && system.autoType == AutoProxyMode.LATCH) {
+            system.autoProxy = member.id
+            database.updateSystem(system)
+        }
+
         val serverMember = database.fetchMemberServerSettingsFromSystemAndMember(ctx.getGuild(), system.id, member.id)
 
-        val guildMessage = GuildMessage(discordMessage, ctx.getGuild()!!, discordMessage.channel.asChannelOf(), ctx.getUser()!!)
+        val guildMessage =
+            GuildMessage(discordMessage, ctx.getGuild()!!, discordMessage.channel.asChannelOf(), ctx.getUser()!!)
 
-        WebhookUtil.prepareMessage(guildMessage, discordMessage.content, system, member, null, serverMember)?.send(true)
+        WebhookUtil.prepareMessage(
+            guildMessage,
+            discordMessage.content,
+            system,
+            member,
+            null,
+            serverMember,
+            server.moderationDelay.toLong(),
+            server.enforceTag
+        )?.send(true)
             ?: throw AssertionError("Message could not be reproxied. Is the contents empty?")
 
         databaseMessage.deleted = true
