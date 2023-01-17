@@ -56,7 +56,7 @@ object SystemCommands {
                 runs {
                     val system = getSystem()
                     if (!checkSystem(this, system)) return@runs false
-                    access(this, system!!)
+                    access(this, system)
                 }
             }
             subCommand("create", "Create a system") {
@@ -87,7 +87,7 @@ object SystemCommands {
                     val name = value.interaction.command.strings["name"]
                     val raw = value.interaction.command.booleans["raw"] ?: false
                     val clear = value.interaction.command.booleans["clear"] ?: false
-                    name(this, system!!, name, raw, clear)
+                    name(this, system, name, raw, clear)
                 }
             }
             subCommand("list", "List your system members") {
@@ -99,7 +99,7 @@ object SystemCommands {
                     if (!checkSystem(this, system)) return@runs false
                     val byMessage = value.interaction.command.booleans["by-message"] ?: false
                     val verbose = value.interaction.command.booleans["verbose"] ?: false
-                    list(this, system!!, byMessage, verbose)
+                    list(this, system, byMessage, verbose)
                 }
             }
             access("system", "color") {
@@ -110,7 +110,7 @@ object SystemCommands {
                     if (!checkSystem(this, system)) return@runs false
                     val color = value.interaction.command.strings["color"]
 
-                    color(this, system!!, color?.toColor())
+                    color(this, system, color?.toColor())
                 }
             }
             access("system", "pronouns") {
@@ -124,7 +124,7 @@ object SystemCommands {
                     val pronouns = value.interaction.command.strings["pronouns"]
                     val raw = value.interaction.command.booleans["raw"] ?: false
                     val clear = value.interaction.command.booleans["clear"] ?: false
-                    pronouns(this, system!!, pronouns, raw, clear)
+                    pronouns(this, system, pronouns, raw, clear)
                 }
             }
             access("system", "description") {
@@ -139,7 +139,7 @@ object SystemCommands {
                     val raw = value.interaction.command.booleans["raw"] ?: false
                     val clear = value.interaction.command.booleans["clear"] ?: false
 
-                    description(this, system!!, desc, raw, clear)
+                    description(this, system, desc, raw, clear)
                 }
             }
             access("system", "avatar") {
@@ -152,7 +152,7 @@ object SystemCommands {
                     val avatar = value.interaction.command.attachments["avatar"]?.data?.url
                     val clear = value.interaction.command.booleans["clear"] ?: false
 
-                    avatar(this, system!!, avatar, clear)
+                    avatar(this, system, avatar, clear)
                 }
             }
             access("system", "tag") {
@@ -167,7 +167,7 @@ object SystemCommands {
                     val raw = value.interaction.command.booleans["raw"] ?: false
                     val clear = value.interaction.command.booleans["clear"] ?: false
 
-                    tag(this, system!!, tag, raw, clear)
+                    tag(this, system, tag, raw, clear)
                 }
             }
         }
@@ -179,7 +179,7 @@ object SystemCommands {
             runs {
                 val system = database.fetchSystemFromUser(getUser())
                 if (!checkSystem(this, system)) return@runs false
-                list(this, system!!, false, false)
+                list(this, system, false, false)
             }
             unix("params") { getParams ->
                 runs {
@@ -188,7 +188,7 @@ object SystemCommands {
                     val params = getParams().toTypedArray()
                     val byMessage = hasUnixValue(params, "by-message-count") || hasUnixValue(params, "bmc")
                     val verbose = hasUnixValue(params, "verbose") || hasUnixValue(params, "v")
-                    list(this, system!!, byMessage, verbose)
+                    list(this, system, byMessage, verbose)
                 }
             }
         }
@@ -214,33 +214,33 @@ object SystemCommands {
                 runs {
                     val system = getSys()
                     if (!checkSystem(this, system)) return@runs false
-                    access(this, system!!)
+                    access(this, system)
                 }
                 literal("name", "rename") {
                     runs {
                         val system = getSys()
                         if (!checkSystem(this, system)) return@runs false
-                        name(this, system!!, null, false, false)
+                        name(this, system, null, false, false)
                     }
                     unixLiteral("raw") {
                         runs {
                             val system = getSys()
                             if (!checkSystem(this, system)) return@runs false
-                            name(this, system!!, null, true, false)
+                            name(this, system, null, true, false)
                         }
                     }
                     unixLiteral("clear", "remove") {
                         runs {
                             val system = getSys()
                             if (!checkSystem(this, system)) return@runs false
-                            name(this, system!!, null, false, true)
+                            name(this, system, null, false, true)
                         }
                     }
                     greedy("name") { getName ->
                         runs {
                             val system = getSys()
                             if (!checkSystem(this, system)) return@runs false
-                            name(this, system!!, getName(), false, false)
+                            name(this, system, getName(), false, false)
                         }
                     }
                 }
@@ -248,7 +248,7 @@ object SystemCommands {
                     runs {
                         val system = getSys()
                         if (!checkSystem(this, system)) return@runs false
-                        list(this, system!!, false, false)
+                        list(this, system, false, false)
                     }
                     unix("params") { getParams ->
                         runs {
@@ -257,7 +257,7 @@ object SystemCommands {
                             val params = getParams().toTypedArray()
                             val byMessage = hasUnixValue(params, "by-message-count") || hasUnixValue(params, "bmc")
                             val verbose = hasUnixValue(params, "verbose") || hasUnixValue(params, "v")
-                            list(this, system!!, byMessage, verbose)
+                            list(this, system, byMessage, verbose)
                         }
                     }
                 }
@@ -265,13 +265,13 @@ object SystemCommands {
                     runs {
                         val system = getSys()
                         if (!checkSystem(this, system)) return@runs false
-                        color(this, system!!, null)
+                        color(this, system, null)
                     }
                     greedy("color") { getColor ->
                         runs {
                             val system = getSys()
                             if (!checkSystem(this, system)) return@runs false
-                            color(this, system!!, getColor().toColor())
+                            color(this, system, getColor().toColor())
                         }
                     }
                 }
@@ -279,27 +279,27 @@ object SystemCommands {
                     runs {
                         val system = getSys()
                         if (!checkSystem(this, system)) return@runs false
-                        pronouns(this, system!!, null, false, false)
+                        pronouns(this, system, null, false, false)
                     }
                     unixLiteral("raw") {
                         runs {
                             val system = getSys()
                             if (!checkSystem(this, system)) return@runs false
-                            pronouns(this, system!!, null, true, false)
+                            pronouns(this, system, null, true, false)
                         }
                     }
                     unixLiteral("clear", "remove") {
                         runs {
                             val system = getSys()
                             if (!checkSystem(this, system)) return@runs false
-                            pronouns(this, system!!, null, false, true)
+                            pronouns(this, system, null, false, true)
                         }
                     }
                     greedy("pronouns") { getPronouns ->
                         runs {
                             val system = getSys()
                             if (!checkSystem(this, system)) return@runs false
-                            pronouns(this, system!!, getPronouns(), false, false)
+                            pronouns(this, system, getPronouns(), false, false)
                         }
                     }
                 }
@@ -307,27 +307,27 @@ object SystemCommands {
                     runs {
                         val system = getSys()
                         if (!checkSystem(this, system)) return@runs false
-                        description(this, system!!, null, false, false)
+                        description(this, system, null, false, false)
                     }
                     unixLiteral("raw") {
                         runs {
                             val system = getSys()
                             if (!checkSystem(this, system)) return@runs false
-                            description(this, system!!, null, true, false)
+                            description(this, system, null, true, false)
                         }
                     }
                     unixLiteral("clear", "remove") {
                         runs {
                             val system = getSys()
                             if (!checkSystem(this, system)) return@runs false
-                            description(this, system!!, null, false, true)
+                            description(this, system, null, false, true)
                         }
                     }
                     greedy("description") { getDesc ->
                         runs {
                             val system = getSys()
                             if (!checkSystem(this, system)) return@runs false
-                            description(this, system!!, getDesc(), false, false)
+                            description(this, system, getDesc(), false, false)
                         }
                     }
                 }
@@ -335,27 +335,27 @@ object SystemCommands {
                     runs {
                         val system = getSys()
                         if (!checkSystem(this, system)) return@runs false
-                        avatar(this, system!!, null, false)
+                        avatar(this, system, null, false)
                     }
                     unixLiteral("clear", "remove") {
                         runs {
                             val system = getSys()
                             if (!checkSystem(this, system)) return@runs false
-                            avatar(this, system!!, null, true)
+                            avatar(this, system, null, true)
                         }
                     }
                     attachment("avatar") { getAvatar ->
                         runs {
                             val system = getSys()
                             if (!checkSystem(this, system)) return@runs false
-                            avatar(this, system!!, getAvatar().url, false)
+                            avatar(this, system, getAvatar().url, false)
                         }
                     }
                     string("avatar") { getAvatar ->
                         runs {
                             val system = getSys()
                             if (!checkSystem(this, system)) return@runs false
-                            avatar(this, system!!, getAvatar(), false)
+                            avatar(this, system, getAvatar(), false)
                         }
                     }
                 }
@@ -363,27 +363,27 @@ object SystemCommands {
                     runs {
                         val system = getSys()
                         if (!checkSystem(this, system)) return@runs false
-                        tag(this, system!!, null, false, false)
+                        tag(this, system, null, false, false)
                     }
                     unixLiteral("raw") {
                         runs {
                             val system = getSys()
                             if (!checkSystem(this, system)) return@runs false
-                            tag(this, system!!, null, true, false)
+                            tag(this, system, null, true, false)
                         }
                     }
                     unixLiteral("clear", "remove") {
                         runs {
                             val system = getSys()
                             if (!checkSystem(this, system)) return@runs false
-                            tag(this, system!!, null, false, true)
+                            tag(this, system, null, false, true)
                         }
                     }
                     greedy("description") { getTag ->
                         runs {
                             val system = getSys()
                             if (!checkSystem(this, system)) return@runs false
-                            tag(this, system!!, getTag(), false, false)
+                            tag(this, system, getTag(), false, false)
                         }
                     }
                 }

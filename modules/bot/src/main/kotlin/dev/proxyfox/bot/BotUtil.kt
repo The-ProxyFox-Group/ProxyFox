@@ -35,6 +35,7 @@ import dev.kord.rest.builder.message.EmbedBuilder
 import dev.kord.rest.json.request.ApplicationCommandCreateRequest
 import dev.kord.rest.request.KtorRequestException
 import dev.proxyfox.bot.command.Commands
+import dev.proxyfox.bot.command.GroupCommands.registerGroupCommands
 import dev.proxyfox.bot.command.MemberCommands.registerMemberCommands
 import dev.proxyfox.bot.command.MiscCommands.registerMiscCommands
 import dev.proxyfox.bot.command.SwitchCommands.registerSwitchCommands
@@ -189,18 +190,16 @@ suspend fun Kord.registerApplicationCommands() {
     createGlobalMessageCommand("Fetch Message Info")
     createGlobalMessageCommand("Ping Message Author")
     createGlobalMessageCommand("Edit Message")
-    registerMemberCommands()
     registerSystemCommands()
+    registerGroupCommands()
+    registerMemberCommands()
     registerSwitchCommands()
     registerMiscCommands()
     // Only send commands when discord hasn't registered yet
     val file = File("./.pf-command-lock")
     if (!file.exists()) {
-        scope.launch {
-            withContext(Dispatchers.IO) {
-                file.createNewFile()
-            }
-            deferredCommands.forEach {
+        deferredCommands.forEach {
+            scope.launch {
                 rest.interaction.createGlobalApplicationCommand(
                     resources.applicationId,
                     it

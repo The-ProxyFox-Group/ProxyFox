@@ -131,13 +131,38 @@ class NopDatabase : Database() {
 
     override suspend fun fetchTotalMembersFromSystem(systemId: String): Int? = null
 
-    override suspend fun fetchMemberFromSystemAndName(systemId: String, memberName: String, caseSensitive: Boolean): MemberRecord? = null
+    override suspend fun fetchMemberFromSystemAndName(
+        systemId: String,
+        memberName: String,
+        caseSensitive: Boolean
+    ): MemberRecord? = null
+
     override suspend fun fetchGroupsFromMember(member: MemberRecord): List<GroupRecord> {
         return emptyList()
     }
 
     override suspend fun fetchMembersFromGroup(group: GroupRecord): List<MemberRecord> {
         return emptyList()
+    }
+
+    override suspend fun fetchGroupFromSystem(system: PkId, groupId: String): GroupRecord? {
+        return null
+    }
+
+    override suspend fun fetchGroupsFromSystem(system: PkId): List<GroupRecord>? {
+        return null
+    }
+
+    override suspend fun fetchGroupFromSystemAndName(
+        system: PkId,
+        name: String,
+        caseSensitive: Boolean
+    ): GroupRecord? {
+        return null
+    }
+
+    override suspend fun updateGroup(group: GroupRecord) {
+
     }
 
     override suspend fun export(other: Database) {}

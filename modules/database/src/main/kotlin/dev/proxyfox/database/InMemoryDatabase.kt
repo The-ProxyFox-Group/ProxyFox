@@ -326,6 +326,28 @@ class InMemoryDatabase : Database() {
         return members[group.systemId]?.let { group.members.mapNotNull(it::get) } ?: emptyList()
     }
 
+    override suspend fun fetchGroupFromSystem(system: PkId, groupId: String): GroupRecord? {
+        return groups[system]?.values?.find { it.id == groupId }
+    }
+
+    override suspend fun fetchGroupsFromSystem(system: PkId): List<GroupRecord>? {
+        return groups[system]?.values?.toList()
+    }
+
+    override suspend fun fetchGroupFromSystemAndName(
+        system: PkId,
+        name: String,
+        caseSensitive: Boolean
+    ): GroupRecord? {
+        return groups[system]?.values?.find { if (caseSensitive) name == it.name else name.lowercase() == it.name.lowercase() }
+    }
+
+    override suspend fun updateGroup(group: GroupRecord) {
+        systems[group.systemId] ?: return
+        groups[group.systemId] ?: groups.set(group.systemId, hashMapOf())
+        groups[group.systemId]?.set(group.id, group)
+    }
+
     override suspend fun export(other: Database) {
         TODO("Not yet implemented")
     }

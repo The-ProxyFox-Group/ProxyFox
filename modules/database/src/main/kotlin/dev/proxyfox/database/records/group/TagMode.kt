@@ -12,4 +12,13 @@ enum class TagMode {
     HIDDEN,
     BEFORE,
     AFTER
+    ;
+
+    fun getDisplayString(): String {
+        return when (this) {
+            HIDDEN -> "None"
+            BEFORE -> "Before System"
+            AFTER -> "After System"
+        }
+    }
 }

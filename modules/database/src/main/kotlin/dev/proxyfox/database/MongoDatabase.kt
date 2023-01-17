@@ -355,7 +355,46 @@ class MongoDatabase(private val dbName: String = "ProxyFox") : Database() {
     }
 
     override suspend fun fetchMembersFromGroup(group: GroupRecord): List<MemberRecord> {
-        TODO("Not yet implemented")
+        val out = arrayListOf<MemberRecord>()
+        group.members.forEach {
+            out.add(fetchMemberFromSystem(group.systemId, it) ?: return@forEach)
+        }
+        return out
+    }
+
+    override suspend fun fetchGroupFromSystem(system: PkId, groupId: String): GroupRecord? {
+        return groups.find(
+            "systemId" eq system,
+            "id" eq groupId
+        ).awaitFirstOrNull()
+    }
+
+    override suspend fun fetchGroupsFromSystem(system: PkId): List<GroupRecord>? {
+        if (!containsSystem(system)) return null
+        return groups.find(
+            "systemId" eq system,
+        ).toList()
+    }
+
+    override suspend fun fetchGroupFromSystemAndName(
+        system: PkId,
+        name: String,
+        caseSensitive: Boolean
+    ): GroupRecord? {
+        var search = groups.find(
+            "systemId" eq system,
+            "name" eq name
+        )
+        if (!caseSensitive) search = search.collation(Collation.builder().apply {
+            collationStrength(CollationStrength.SECONDARY)
+            caseLevel(false)
+            locale("en_US")
+        }.build())
+        return search.awaitFirstOrNull()
+    }
+
+    override suspend fun updateGroup(group: GroupRecord) {
+        groups.replaceOneById(group._id, group, upsert()).awaitFirst()
     }
 
     override suspend fun export(other: Database) {

@@ -210,6 +210,26 @@ open class ProxyDatabase<T : Database>(protected val proxy: T) : Database() {
         return proxy.fetchMembersFromGroup(group)
     }
 
+    override suspend fun fetchGroupFromSystem(system: PkId, groupId: String): GroupRecord? {
+        return proxy.fetchGroupFromSystem(system, groupId)
+    }
+
+    override suspend fun fetchGroupsFromSystem(system: PkId): List<GroupRecord>? {
+        TODO("Not yet implemented")
+    }
+
+    override suspend fun fetchGroupFromSystemAndName(
+        system: PkId,
+        name: String,
+        caseSensitive: Boolean
+    ): GroupRecord? {
+        return proxy.fetchGroupFromSystemAndName(system, name, caseSensitive)
+    }
+
+    override suspend fun updateGroup(group: GroupRecord) {
+        proxy.updateGroup(group)
+    }
+
     override suspend fun export(other: Database) {
         proxy.export(other)
     }

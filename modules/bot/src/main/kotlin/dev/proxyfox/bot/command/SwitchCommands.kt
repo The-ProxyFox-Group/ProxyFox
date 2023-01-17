@@ -54,7 +54,7 @@ object SwitchCommands {
                     if (!checkSystem(this, system)) return@runs false
                     val members = value.interaction.command.strings["members"]!!.split(",").toTypedArray()
                     members.trimEach()
-                    switch(this, system!!, members)
+                    switch(this, system, members)
                 }
             }
             subCommand("out", "Marks that no-one's fronting") {
@@ -62,7 +62,7 @@ object SwitchCommands {
                 runs {
                     val system = getSystem()
                     if (!checkSystem(this, system)) return@runs false
-                    out(this, system!!)
+                    out(this, system)
                 }
             }
             subCommand("delete", "Deletes the latest switch") {
@@ -73,7 +73,7 @@ object SwitchCommands {
                     val switch = database.fetchLatestSwitch(system!!.id)
                     if (!checkSwitch(this, switch)) return@runs false
                     val oldSwitch = database.fetchSecondLatestSwitch(system.id)
-                    delete(this, system, switch!!, oldSwitch)
+                    delete(this, system, switch, oldSwitch)
                 }
             }
             subCommand("move", "Moves the latest switch") {
@@ -82,11 +82,11 @@ object SwitchCommands {
                 runs {
                     val system = getSystem()
                     if (!checkSystem(this, system)) return@runs false
-                    val switch = database.fetchLatestSwitch(system!!.id)
+                    val switch = database.fetchLatestSwitch(system.id)
                     if (!checkSwitch(this, switch)) return@runs false
                     val oldSwitch = database.fetchSecondLatestSwitch(system.id)
                     val time = value.interaction.command.strings["time"]!!
-                    move(this, system, switch!!, oldSwitch, time)
+                    move(this, system, switch, oldSwitch, time)
                 }
             }
             subCommand("list", "Lists your switches") {
@@ -94,7 +94,7 @@ object SwitchCommands {
                 runs {
                     val system = getSystem()
                     if (!checkSystem(this, system)) return@runs false
-                    list(this, system!!)
+                    list(this, system)
                 }
             }
         }
@@ -112,7 +112,7 @@ object SwitchCommands {
                 runs {
                     val system = getSys()
                     if (!checkSystem(this, system)) return@runs false
-                    out(this, system!!)
+                    out(this, system)
                 }
             }
             literal("delete", "del", "remove", "rem") {
@@ -122,26 +122,26 @@ object SwitchCommands {
                     val switch = database.fetchLatestSwitch(system!!.id)
                     if (!checkSwitch(this, switch)) return@runs false
                     val oldSwitch = database.fetchSecondLatestSwitch(system.id)
-                    delete(this, system, switch!!, oldSwitch)
+                    delete(this, system, switch, oldSwitch)
                 }
             }
             literal("move","mv","m") {
                 runs {
                     val system = getSys()
                     if (!checkSystem(this, system)) return@runs false
-                    val switch = database.fetchLatestSwitch(system!!.id)
+                    val switch = database.fetchLatestSwitch(system.id)
                     if (!checkSwitch(this, switch)) return@runs false
                     val oldSwitch = database.fetchSecondLatestSwitch(system.id)
-                    move(this, system, switch!!, oldSwitch, null)
+                    move(this, system, switch, oldSwitch, null)
                 }
                 greedy("time") { getTime ->
                     runs {
                         val system = getSys()
                         if (!checkSystem(this, system)) return@runs false
-                        val switch = database.fetchLatestSwitch(system!!.id)
+                        val switch = database.fetchLatestSwitch(system.id)
                         if (!checkSwitch(this, switch)) return@runs false
                         val oldSwitch = database.fetchSecondLatestSwitch(system.id)
-                        move(this, system, switch!!, oldSwitch, getTime())
+                        move(this, system, switch, oldSwitch, getTime())
                     }
                 }
             }
@@ -149,14 +149,14 @@ object SwitchCommands {
                 runs {
                     val system = getSys()
                     if (!checkSystem(this, system)) return@runs false
-                    list(this, system!!)
+                    list(this, system)
                 }
             }
             stringList("members") { getMembers ->
                 runs {
                     val system = getSys()
                     if (!checkSystem(this, system)) return@runs false
-                    switch(this, system!!, getMembers().toTypedArray())
+                    switch(this, system, getMembers().toTypedArray())
                 }
             }
         }

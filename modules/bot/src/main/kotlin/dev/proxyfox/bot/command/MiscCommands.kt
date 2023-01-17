@@ -180,11 +180,11 @@ object MiscCommands {
                         else -> AutoProxyMode.MEMBER
                     }
                     val member = if (type == AutoProxyMode.MEMBER) {
-                        val mem = database.findMember(system!!.id, value.interaction.command.strings["member"]!!)
+                        val mem = database.findMember(system.id, value.interaction.command.strings["member"]!!)
                         if (!checkMember(this, mem)) return@runs false
                         mem
                     } else null
-                    proxy(this, system!!, type, member)
+                    proxy(this, system, type, member)
                 }
             }
             subCommand("proxy", "Toggles proxying for this server") {
@@ -203,7 +203,7 @@ object MiscCommands {
                         respondFailure("Cannot find server. Am I in it?")
                         return@runs false
                     }
-                    val serverSystem = database.getOrCreateServerSettingsFromSystem(guild, system!!.id)
+                    val serverSystem = database.getOrCreateServerSettingsFromSystem(guild, system.id)
                     serverProxy(this, serverSystem, enabled)
                 }
             }
@@ -221,7 +221,7 @@ object MiscCommands {
                         else -> AutoProxyMode.MEMBER
                     }
                     val member = if (type == AutoProxyMode.MEMBER) {
-                        val mem = database.findMember(system!!.id, value.interaction.command.strings["member"]!!)
+                        val mem = database.findMember(system.id, value.interaction.command.strings["member"]!!)
                         if (!checkMember(this, mem)) return@runs false
                         mem
                     } else null
@@ -234,7 +234,7 @@ object MiscCommands {
                         respondFailure("Cannot find server. Am I in it?")
                         return@runs false
                     }
-                    val serverSystem = database.getOrCreateServerSettingsFromSystem(guild, system!!.id)
+                    val serverSystem = database.getOrCreateServerSettingsFromSystem(guild, system.id)
                     serverAutoProxy(this, serverSystem, type, member)
                 }
             }
@@ -249,7 +249,7 @@ object MiscCommands {
                     val system = database.fetchSystemFromUser(getUser())
                     if (!checkSystem(this, system, true)) return@runs false
                     val message = value.interaction.command.integers["message"]?.toULong()?.let { Snowflake(it) }
-                    editMessage(this, system!!, message, value.interaction.command.strings["content"]!!)
+                    editMessage(this, system, message, value.interaction.command.strings["content"]!!)
                 }
             }
         }
@@ -308,7 +308,7 @@ object MiscCommands {
                         respondFailure("Cannot find server. Am I in it?")
                         return@runs false
                     }
-                    val serverSystem = database.getOrCreateServerSettingsFromSystem(guild, system!!.id)
+                    val serverSystem = database.getOrCreateServerSettingsFromSystem(guild, system.id)
                     serverProxy(this, serverSystem, null)
                 }
                 literal("on", "enable") {
@@ -323,7 +323,7 @@ object MiscCommands {
                             respondFailure("Cannot find server. Am I in it?")
                             return@runs false
                         }
-                        val serverSystem = database.getOrCreateServerSettingsFromSystem(guild, system!!.id)
+                        val serverSystem = database.getOrCreateServerSettingsFromSystem(guild, system.id)
                         serverProxy(this, serverSystem, true)
                     }
                 }
@@ -339,7 +339,7 @@ object MiscCommands {
                             respondFailure("Cannot find server. Am I in it?")
                             return@runs false
                         }
-                        val serverSystem = database.getOrCreateServerSettingsFromSystem(guild, system!!.id)
+                        val serverSystem = database.getOrCreateServerSettingsFromSystem(guild, system.id)
                         serverProxy(this, serverSystem, false)
                     }
                 }
@@ -349,34 +349,34 @@ object MiscCommands {
             runs {
                 val system = database.fetchSystemFromUser(getUser())
                 if (!checkSystem(this, system)) return@runs false
-                proxy(this, system!!, null, null)
+                proxy(this, system, null, null)
             }
             literal("off", "disable", "o") {
                 runs {
                     val system = database.fetchSystemFromUser(getUser())
                     if (!checkSystem(this, system)) return@runs false
-                    proxy(this, system!!, AutoProxyMode.OFF, null)
+                    proxy(this, system, AutoProxyMode.OFF, null)
                 }
             }
             literal("latch", "l") {
                 runs {
                     val system = database.fetchSystemFromUser(getUser())
                     if (!checkSystem(this, system)) return@runs false
-                    proxy(this, system!!, AutoProxyMode.LATCH, null)
+                    proxy(this, system, AutoProxyMode.LATCH, null)
                 }
             }
             literal("front", "f") {
                 runs {
                     val system = database.fetchSystemFromUser(getUser())
                     if (!checkSystem(this, system)) return@runs false
-                    proxy(this, system!!, AutoProxyMode.FRONT, null)
+                    proxy(this, system, AutoProxyMode.FRONT, null)
                 }
             }
             greedy("member") { getMem ->
                 runs {
                     val system = database.fetchSystemFromUser(getUser())
                     if (!checkSystem(this, system)) return@runs false
-                    val member = database.findMember(system!!.id, getMem())
+                    val member = database.findMember(system.id, getMem())
                     if (!checkMember(this, member)) return@runs false
                     proxy(this, system, AutoProxyMode.MEMBER, member)
                 }
@@ -395,7 +395,7 @@ object MiscCommands {
                         respondFailure("Cannot find server. Am I in it?")
                         return@runs false
                     }
-                    val serverSystem = database.getOrCreateServerSettingsFromSystem(guild, system!!.id)
+                    val serverSystem = database.getOrCreateServerSettingsFromSystem(guild, system.id)
                     serverAutoProxy(this, serverSystem, null, null)
                 }
                 literal("off", "disable", "o") {
@@ -410,7 +410,7 @@ object MiscCommands {
                             respondFailure("Cannot find server. Am I in it?")
                             return@runs false
                         }
-                        val serverSystem = database.getOrCreateServerSettingsFromSystem(guild, system!!.id)
+                        val serverSystem = database.getOrCreateServerSettingsFromSystem(guild, system.id)
                         serverAutoProxy(this, serverSystem, AutoProxyMode.OFF, null)
                     }
                 }
@@ -426,7 +426,7 @@ object MiscCommands {
                             respondFailure("Cannot find server. Am I in it?")
                             return@runs false
                         }
-                        val serverSystem = database.getOrCreateServerSettingsFromSystem(guild, system!!.id)
+                        val serverSystem = database.getOrCreateServerSettingsFromSystem(guild, system.id)
                         serverAutoProxy(this, serverSystem, AutoProxyMode.FALLBACK, null)
                     }
                 }
@@ -442,7 +442,7 @@ object MiscCommands {
                             respondFailure("Cannot find server. Am I in it?")
                             return@runs false
                         }
-                        val serverSystem = database.getOrCreateServerSettingsFromSystem(guild, system!!.id)
+                        val serverSystem = database.getOrCreateServerSettingsFromSystem(guild, system.id)
                         serverAutoProxy(this, serverSystem, AutoProxyMode.LATCH, null)
                     }
                 }
@@ -458,7 +458,7 @@ object MiscCommands {
                             respondFailure("Cannot find server. Am I in it?")
                             return@runs false
                         }
-                        val serverSystem = database.getOrCreateServerSettingsFromSystem(guild, system!!.id)
+                        val serverSystem = database.getOrCreateServerSettingsFromSystem(guild, system.id)
                         serverAutoProxy(this, serverSystem, AutoProxyMode.FRONT, null)
                     }
                 }
@@ -466,7 +466,7 @@ object MiscCommands {
                     runs {
                         val system = database.fetchSystemFromUser(getUser())
                         if (!checkSystem(this, system)) return@runs false
-                        val member = database.findMember(system!!.id, getMem())
+                        val member = database.findMember(system.id, getMem())
                         if (!checkMember(this, member)) return@runs false
                         val guildId = getGuildId() ?: run {
                             respondFailure("Command not ran in server.")
@@ -537,13 +537,13 @@ object MiscCommands {
             runs {
                 val system = database.fetchSystemFromUser(getUser())
                 if (!checkSystem(this, system, true)) return@runs false
-                deleteMessage(this, system!!, null)
+                deleteMessage(this, system, null)
             }
             int("message") { getMessage ->
                 runs {
                     val system = database.fetchSystemFromUser(getUser())
                     if (!checkSystem(this, system, true)) return@runs false
-                    deleteMessage(this, system!!, Snowflake(getMessage()))
+                    deleteMessage(this, system, Snowflake(getMessage()))
                 }
             }
         }
@@ -552,21 +552,21 @@ object MiscCommands {
             runs {
                 val system = database.fetchSystemFromUser(getUser())
                 if (!checkSystem(this, system, true)) return@runs false
-                reproxyMessage(this, system!!, null, null)
+                reproxyMessage(this, system, null, null)
             }
             int("message") { getMessage ->
                 runs {
                     val system = database.fetchSystemFromUser(getUser())
                     if (!checkSystem(this, system, true)) return@runs false
-                    reproxyMessage(this, system!!, Snowflake(getMessage()), null)
+                    reproxyMessage(this, system, Snowflake(getMessage()), null)
                 }
                 greedy("member") { getMem ->
                     runs {
                         val system = database.fetchSystemFromUser(getUser())
                         if (!checkSystem(this, system, true)) return@runs false
-                        val member = database.findMember(system!!.id, getMem())
+                        val member = database.findMember(system.id, getMem())
                         if (!checkMember(this, member, true)) return@runs false
-                        reproxyMessage(this, system, Snowflake(getMessage()), member!!)
+                        reproxyMessage(this, system, Snowflake(getMessage()), member)
                     }
                 }
             }
@@ -574,9 +574,9 @@ object MiscCommands {
                 runs {
                     val system = database.fetchSystemFromUser(getUser())
                     if (!checkSystem(this, system, true)) return@runs false
-                    val member = database.findMember(system!!.id, getMem())
+                    val member = database.findMember(system.id, getMem())
                     if (!checkMember(this, member, true)) return@runs false
-                    reproxyMessage(this, system, null, member!!)
+                    reproxyMessage(this, system, null, member)
                 }
             }
         }
@@ -607,20 +607,20 @@ object MiscCommands {
             runs {
                 val system = database.fetchSystemFromUser(getUser())
                 if (!checkSystem(this, system, true)) return@runs false
-                editMessage(this, system!!, null, null)
+                editMessage(this, system, null, null)
             }
             int("message") { getMessage ->
                 runs {
                     val system = database.fetchSystemFromUser(getUser())
                     if (!checkSystem(this, system, true)) return@runs false
-                    editMessage(this, system!!, Snowflake(getMessage()), null)
+                    editMessage(this, system, Snowflake(getMessage()), null)
                 }
 
                 greedy("content") { getContent ->
                     runs {
                         val system = database.fetchSystemFromUser(getUser())
                         if (!checkSystem(this, system, true)) return@runs false
-                        editMessage(this, system!!, Snowflake(getMessage()), getContent())
+                        editMessage(this, system, Snowflake(getMessage()), getContent())
                     }
                 }
             }
@@ -628,7 +628,7 @@ object MiscCommands {
                 runs {
                     val system = database.fetchSystemFromUser(getUser())
                     if (!checkSystem(this, system, true)) return@runs false
-                    editMessage(this, system!!, null, getContent())
+                    editMessage(this, system, null, getContent())
                 }
             }
         }
@@ -669,7 +669,7 @@ object MiscCommands {
             runs {
                 val system = database.fetchSystemFromUser(getUser())
                 if (!checkSystem(this, system)) return@runs false
-                token(this, system!!)
+                token(this, system)
             }
         }
 
@@ -684,41 +684,41 @@ object MiscCommands {
                 runs {
                     val system = database.fetchSystemFromUser(getUser())
                     if (!checkSystem(this, system)) return@runs false
-                    trust(this, system!!, getId(), null)
+                    trust(this, system, getId(), null)
                 }
                 literal("none", "remove", "clear") {
                     runs {
                         val system = database.fetchSystemFromUser(getUser())
                         if (!checkSystem(this, system)) return@runs false
-                        trust(this, system!!, getId(), TrustLevel.NONE)
+                        trust(this, system, getId(), TrustLevel.NONE)
                     }
                 }
                 literal("access", "see", "view") {
                     runs {
                         val system = database.fetchSystemFromUser(getUser())
                         if (!checkSystem(this, system)) return@runs false
-                        trust(this, system!!, getId(), TrustLevel.ACCESS)
+                        trust(this, system, getId(), TrustLevel.ACCESS)
                     }
                 }
                 literal("member", "m") {
                     runs {
                         val system = database.fetchSystemFromUser(getUser())
                         if (!checkSystem(this, system)) return@runs false
-                        trust(this, system!!, getId(), TrustLevel.MEMBER)
+                        trust(this, system, getId(), TrustLevel.MEMBER)
                     }
                 }
                 literal("switch", "sw") {
                     runs {
                         val system = database.fetchSystemFromUser(getUser())
                         if (!checkSystem(this, system)) return@runs false
-                        trust(this, system!!, getId(), TrustLevel.SWITCH)
+                        trust(this, system, getId(), TrustLevel.SWITCH)
                     }
                 }
                 literal("full", "all", "everything") {
                     runs {
                         val system = database.fetchSystemFromUser(getUser())
                         if (!checkSystem(this, system)) return@runs false
-                        trust(this, system!!, getId(), TrustLevel.FULL)
+                        trust(this, system, getId(), TrustLevel.FULL)
                     }
                 }
             }

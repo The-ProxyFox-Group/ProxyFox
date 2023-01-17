@@ -63,7 +63,7 @@ object MemberCommands {
                     if (!checkSystem(this, system)) return@runs false
                     val name = value.interaction.command.strings["name"]!!
 
-                    create(this, system!!, name)
+                    create(this, system, name)
                 }
             }
             subCommand("delete", "Delete a member") {
@@ -72,10 +72,10 @@ object MemberCommands {
                 runs {
                     val system = getSystem()
                     if (!checkSystem(this, system)) return@runs false
-                    val member = database.findMember(system!!.id, value.interaction.command.strings["member"]!!)
+                    val member = database.findMember(system.id, value.interaction.command.strings["member"]!!)
                     if (!checkMember(this, member)) return@runs false
 
-                    delete(this, system, member!!)
+                    delete(this, system, member)
                 }
             }
             subCommand("fetch", "Fetches the member's card") {
@@ -84,10 +84,10 @@ object MemberCommands {
                 runs {
                     val system = getSystem()
                     if (!checkSystem(this, system)) return@runs false
-                    val member = database.findMember(system!!.id, value.interaction.command.strings["member"]!!)
+                    val member = database.findMember(system.id, value.interaction.command.strings["member"]!!)
                     if (!checkMember(this, member)) return@runs false
 
-                    access(this, system, member!!)
+                    access(this, system, member)
                 }
             }
             access("member", "name") {
@@ -98,12 +98,12 @@ object MemberCommands {
                 runs {
                     val system = getSystem()
                     if (!checkSystem(this, system)) return@runs false
-                    val member = database.findMember(system!!.id, value.interaction.command.strings["member"]!!)
+                    val member = database.findMember(system.id, value.interaction.command.strings["member"]!!)
                     if (!checkMember(this, member)) return@runs false
                     val name = value.interaction.command.strings["name"]
                     val raw = value.interaction.command.booleans["raw"] ?: false
 
-                    rename(this, system, member!!, name, raw)
+                    rename(this, system, member, name, raw)
                 }
             }
             access("member", "nickname") {
@@ -115,13 +115,13 @@ object MemberCommands {
                 runs {
                     val system = getSystem()
                     if (!checkSystem(this, system)) return@runs false
-                    val member = database.findMember(system!!.id, value.interaction.command.strings["member"]!!)
+                    val member = database.findMember(system.id, value.interaction.command.strings["member"]!!)
                     if (!checkMember(this, member)) return@runs false
                     val name = value.interaction.command.strings["name"]
                     val raw = value.interaction.command.booleans["raw"] ?: false
                     val clear = value.interaction.command.booleans["clear"] ?: false
 
-                    nickname(this, system, member!!, name, raw, clear)
+                    nickname(this, system, member, name, raw, clear)
                 }
             }
             access("member", "servernick") {
@@ -134,7 +134,7 @@ object MemberCommands {
                 runs {
                     val system = getSystem()
                     if (!checkSystem(this, system)) return@runs false
-                    val member = database.findMember(system!!.id, value.interaction.command.strings["member"]!!)
+                    val member = database.findMember(system.id, value.interaction.command.strings["member"]!!)
                     if (!checkMember(this, member)) return@runs false
                     val guildId =
                         value.interaction.command.integers["server"]?.toULong()?.let { Snowflake(it) } ?: getGuild()?.id
@@ -146,7 +146,8 @@ object MemberCommands {
                         respondFailure("Cannot find server. Am I in it?")
                         return@runs false
                     }
-                    val serverMember = database.fetchMemberServerSettingsFromSystemAndMember(guild, system.id, member!!.id)
+                    val serverMember =
+                        database.fetchMemberServerSettingsFromSystemAndMember(guild, system.id, member.id)
                     val name = value.interaction.command.strings["name"]
                     val raw = value.interaction.command.booleans["raw"] ?: false
                     val clear = value.interaction.command.booleans["clear"] ?: false
@@ -163,13 +164,13 @@ object MemberCommands {
                 runs {
                     val system = getSystem()
                     if (!checkSystem(this, system)) return@runs false
-                    val member = database.findMember(system!!.id, value.interaction.command.strings["member"]!!)
+                    val member = database.findMember(system.id, value.interaction.command.strings["member"]!!)
                     if (!checkMember(this, member)) return@runs false
                     val desc = value.interaction.command.strings["description"]
                     val raw = value.interaction.command.booleans["raw"] ?: false
                     val clear = value.interaction.command.booleans["clear"] ?: false
 
-                    description(this, system, member!!, desc, raw, clear)
+                    description(this, system, member, desc, raw, clear)
                 }
             }
             access("member", "avatar") {
@@ -180,12 +181,12 @@ object MemberCommands {
                 runs {
                     val system = getSystem()
                     if (!checkSystem(this, system)) return@runs false
-                    val member = database.findMember(system!!.id, value.interaction.command.strings["member"]!!)
+                    val member = database.findMember(system.id, value.interaction.command.strings["member"]!!)
                     if (!checkMember(this, member)) return@runs false
                     val avatar = value.interaction.command.attachments["avatar"]?.data?.url
                     val clear = value.interaction.command.booleans["clear"] ?: false
 
-                    avatar(this, system, member!!, avatar, clear)
+                    avatar(this, system, member, avatar, clear)
                 }
             }
             access("member", "serveravatar") {
@@ -196,7 +197,7 @@ object MemberCommands {
                 runs {
                     val system = getSystem()
                     if (!checkSystem(this, system)) return@runs false
-                    val member = database.findMember(system!!.id, value.interaction.command.strings["member"]!!)
+                    val member = database.findMember(system.id, value.interaction.command.strings["member"]!!)
                     if (!checkMember(this, member)) return@runs false
                     val guildId =
                         value.interaction.command.integers["server"]?.toULong()?.let { Snowflake(it) } ?: getGuild()?.id
@@ -208,7 +209,8 @@ object MemberCommands {
                         respondFailure("Cannot find server. Am I in it?")
                         return@runs false
                     }
-                    val serverMember = database.fetchMemberServerSettingsFromSystemAndMember(guild, system.id, member!!.id)
+                    val serverMember =
+                        database.fetchMemberServerSettingsFromSystemAndMember(guild, system.id, member.id)
 
                     val avatar = value.interaction.command.attachments["avatar"]?.data?.url
                     val clear = value.interaction.command.booleans["clear"] ?: false
@@ -225,13 +227,13 @@ object MemberCommands {
                 runs {
                     val system = getSystem()
                     if (!checkSystem(this, system)) return@runs false
-                    val member = database.findMember(system!!.id, value.interaction.command.strings["member"]!!)
+                    val member = database.findMember(system.id, value.interaction.command.strings["member"]!!)
                     if (!checkMember(this, member)) return@runs false
                     val pro = value.interaction.command.strings["pronouns"]
                     val raw = value.interaction.command.booleans["raw"] ?: false
                     val clear = value.interaction.command.booleans["clear"] ?: false
 
-                    pronouns(this, system, member!!, pro, raw, clear)
+                    pronouns(this, system, member, pro, raw, clear)
                 }
             }
             access("member", "color") {
@@ -241,11 +243,11 @@ object MemberCommands {
                 runs {
                     val system = getSystem()
                     if (!checkSystem(this, system)) return@runs false
-                    val member = database.findMember(system!!.id, value.interaction.command.strings["member"]!!)
+                    val member = database.findMember(system.id, value.interaction.command.strings["member"]!!)
                     if (!checkMember(this, member)) return@runs false
                     val color = value.interaction.command.strings["color"]
 
-                    color(this, system, member!!, color?.toColor())
+                    color(this, system, member, color?.toColor())
                 }
             }
             access("member", "birthday") {
@@ -256,12 +258,12 @@ object MemberCommands {
                 runs {
                     val system = getSystem()
                     if (!checkSystem(this, system)) return@runs false
-                    val member = database.findMember(system!!.id, value.interaction.command.strings["member"]!!)
+                    val member = database.findMember(system.id, value.interaction.command.strings["member"]!!)
                     if (!checkMember(this, member)) return@runs false
                     val birthday = value.interaction.command.strings["birthday"]
                     val clear = value.interaction.command.booleans["clear"] ?: false
 
-                    birthday(this, system, member!!, tryParseLocalDate(birthday)?.first, clear)
+                    birthday(this, system, member, tryParseLocalDate(birthday)?.first, clear)
                 }
             }
             subCommand("proxy-add", "Adds a proxy") {
@@ -272,13 +274,13 @@ object MemberCommands {
                 runs {
                     val system = getSystem()
                     if (!checkSystem(this, system)) return@runs false
-                    val member = database.findMember(system!!.id, value.interaction.command.strings["member"]!!)
+                    val member = database.findMember(system.id, value.interaction.command.strings["member"]!!)
                     if (!checkMember(this, member)) return@runs false
                     val prefix = value.interaction.command.strings["prefix"]
                     val suffix = value.interaction.command.strings["suffix"]
                     val proxy = if (prefix == null && suffix == null) null else Pair(prefix, suffix)
 
-                    proxy(this, system, member!!, proxy)
+                    proxy(this, system, member, proxy)
                 }
             }
             subCommand("proxy-delete", "Delete a proxy") {
@@ -289,7 +291,7 @@ object MemberCommands {
                 runs {
                     val system = getSystem()
                     if (!checkSystem(this, system)) return@runs false
-                    val member = database.findMember(system!!.id, value.interaction.command.strings["member"]!!)
+                    val member = database.findMember(system.id, value.interaction.command.strings["member"]!!)
                     if (!checkMember(this, member)) return@runs false
                     val prefix = value.interaction.command.strings["prefix"]
                     val suffix = value.interaction.command.strings["suffix"]
@@ -297,7 +299,7 @@ object MemberCommands {
                     val exists = proxy != null
                     val proxyTag =
                         if (exists) database.fetchProxyTagFromMessage(getUser(), "${prefix}text$suffix") else null
-                    removeProxy(this, system, member!!, exists, proxyTag)
+                    removeProxy(this, system, member, exists, proxyTag)
                 }
             }
             access("member", "autoproxy") {
@@ -307,11 +309,11 @@ object MemberCommands {
                 runs {
                     val system = getSystem()
                     if (!checkSystem(this, system)) return@runs false
-                    val member = database.findMember(system!!.id, value.interaction.command.strings["member"]!!)
+                    val member = database.findMember(system.id, value.interaction.command.strings["member"]!!)
                     if (!checkMember(this, member)) return@runs false
                     val value = value.interaction.command.booleans["value"]
 
-                    autoproxy(this, system, member!!, value)
+                    autoproxy(this, system, member, value)
                 }
             }
         }
@@ -324,35 +326,35 @@ object MemberCommands {
         runs {
             val system = getSys()
             if (!checkSystem(this, system)) return@runs false
-            val member = database.findMember(system!!.id, getMem())
+            val member = database.findMember(system.id, getMem())
             if (!checkMember(this, member)) return@runs false
-            access(this, system, member!!)
+            access(this, system, member)
         }
 
         literal("remame", "name") {
             runs {
                 val system = getSys()
                 if (!checkSystem(this, system)) return@runs false
-                val member = database.findMember(system!!.id, getMem())
+                val member = database.findMember(system.id, getMem())
                 if (!checkMember(this, member)) return@runs false
-                rename(this, system, member!!, null, false)
+                rename(this, system, member, null, false)
             }
             unixLiteral("raw") {
                 runs {
                     val system = getSys()
                     if (!checkSystem(this, system)) return@runs false
-                    val member = database.findMember(system!!.id, getMem())
+                    val member = database.findMember(system.id, getMem())
                     if (!checkMember(this, member)) return@runs false
-                    rename(this, system, member!!, null, true)
+                    rename(this, system, member, null, true)
                 }
             }
             greedy("name") { getName ->
                 runs {
                     val system = getSys()
                     if (!checkSystem(this, system)) return@runs false
-                    val member = database.findMember(system!!.id, getMem())
+                    val member = database.findMember(system.id, getMem())
                     if (!checkMember(this, member)) return@runs false
-                    rename(this, system, member!!, getName(), false)
+                    rename(this, system, member, getName(), false)
                 }
             }
         }
@@ -361,36 +363,36 @@ object MemberCommands {
             runs {
                 val system = getSys()
                 if (!checkSystem(this, system)) return@runs false
-                val member = database.findMember(system!!.id, getMem())
+                val member = database.findMember(system.id, getMem())
                 if (!checkMember(this, member)) return@runs false
-                nickname(this, system, member!!, null, false, false)
+                nickname(this, system, member, null, false, false)
             }
             unixLiteral("clear", "remove") {
                 runs {
                     val system = getSys()
                     if (!checkSystem(this, system)) return@runs false
-                    val member = database.findMember(system!!.id, getMem())
+                    val member = database.findMember(system.id, getMem())
                     if (!checkMember(this, member)) return@runs false
-                    nickname(this, system, member!!, null, false, true)
+                    nickname(this, system, member, null, false, true)
                 }
             }
             unixLiteral("raw") {
                 runs {
                     val system = getSys()
                     if (!checkSystem(this, system)) return@runs false
-                    val member = database.findMember(system!!.id, getMem())
+                    val member = database.findMember(system.id, getMem())
                     if (!checkMember(this, member)) return@runs false
-                    nickname(this, system, member!!, null, true, false)
+                    nickname(this, system, member, null, true, false)
                 }
             }
             greedy("name") { getName ->
                 runs {
                     val system = getSys()
                     if (!checkSystem(this, system)) return@runs false
-                    val member = database.findMember(system!!.id, getMem())
+                    val member = database.findMember(system.id, getMem())
                     if (!checkMember(this, member)) return@runs false
                     val name = getName()
-                    nickname(this, system, member!!, name, false, false)
+                    nickname(this, system, member, name, false, false)
                 }
             }
         }
@@ -400,7 +402,7 @@ object MemberCommands {
                 runs {
                     val system = getSys()
                     if (!checkSystem(this, system)) return@runs false
-                    val member = database.findMember(system!!.id, getMem())
+                    val member = database.findMember(system.id, getMem())
                     if (!checkMember(this, member)) return@runs false
                     val guildId = getGuildId() ?: run {
                         respondFailure("Command not ran in server.")
@@ -410,14 +412,15 @@ object MemberCommands {
                         respondFailure("Cannot find server. Am I in it?")
                         return@runs false
                     }
-                    val serverMember = database.fetchMemberServerSettingsFromSystemAndMember(guild, system.id, member!!.id)
+                    val serverMember =
+                        database.fetchMemberServerSettingsFromSystemAndMember(guild, system.id, member.id)
                     servername(this, system, serverMember!!, null, false, false)
                 }
                 unixLiteral("clear", "remove") {
                     runs {
                         val system = getSys()
                         if (!checkSystem(this, system)) return@runs false
-                        val member = database.findMember(system!!.id, getMem())
+                        val member = database.findMember(system.id, getMem())
                         if (!checkMember(this, member)) return@runs false
                         val guildId = getGuildId() ?: run {
                             respondFailure("Command not ran in server.")
@@ -427,7 +430,8 @@ object MemberCommands {
                             respondFailure("Cannot find server. Am I in it?")
                             return@runs false
                         }
-                        val serverMember = database.fetchMemberServerSettingsFromSystemAndMember(guild, system.id, member!!.id)
+                        val serverMember =
+                            database.fetchMemberServerSettingsFromSystemAndMember(guild, system.id, member.id)
                         servername(this, system, serverMember!!, null, false, true)
                     }
                 }
@@ -435,7 +439,7 @@ object MemberCommands {
                     runs {
                         val system = getSys()
                         if (!checkSystem(this, system)) return@runs false
-                        val member = database.findMember(system!!.id, getMem())
+                        val member = database.findMember(system.id, getMem())
                         if (!checkMember(this, member)) return@runs false
                         val guildId = getGuildId() ?: run {
                             respondFailure("Command not ran in server.")
@@ -445,7 +449,8 @@ object MemberCommands {
                             respondFailure("Cannot find server. Am I in it?")
                             return@runs false
                         }
-                        val serverMember = database.fetchMemberServerSettingsFromSystemAndMember(guild, system.id, member!!.id)
+                        val serverMember =
+                            database.fetchMemberServerSettingsFromSystemAndMember(guild, system.id, member.id)
                         servername(this, system, serverMember!!, null, true, false)
                     }
                 }
@@ -453,7 +458,7 @@ object MemberCommands {
                     runs {
                         val system = getSys()
                         if (!checkSystem(this, system)) return@runs false
-                        val member = database.findMember(system!!.id, getMem())
+                        val member = database.findMember(system.id, getMem())
                         if (!checkMember(this, member)) return@runs false
                         val guildId = getGuildId() ?: run {
                             respondFailure("Command not ran in server.")
@@ -463,7 +468,8 @@ object MemberCommands {
                             respondFailure("Cannot find server. Am I in it?")
                             return@runs false
                         }
-                        val serverMember = database.fetchMemberServerSettingsFromSystemAndMember(guild, system.id, member!!.id)
+                        val serverMember =
+                            database.fetchMemberServerSettingsFromSystemAndMember(guild, system.id, member.id)
                         servername(this, system, serverMember!!, getName(), false, false)
                     }
                 }
@@ -474,35 +480,35 @@ object MemberCommands {
             runs {
                 val system = getSys()
                 if (!checkSystem(this, system)) return@runs false
-                val member = database.findMember(system!!.id, getMem())
+                val member = database.findMember(system.id, getMem())
                 if (!checkMember(this, member)) return@runs false
-                description(this, system, member!!, null, false, false)
+                description(this, system, member, null, false, false)
             }
             unixLiteral("raw") {
                 runs {
                     val system = getSys()
                     if (!checkSystem(this, system)) return@runs false
-                    val member = database.findMember(system!!.id, getMem())
+                    val member = database.findMember(system.id, getMem())
                     if (!checkMember(this, member)) return@runs false
-                    description(this, system, member!!, null, true, false)
+                    description(this, system, member, null, true, false)
                 }
             }
             unixLiteral("clear", "remove") {
                 runs {
                     val system = getSys()
                     if (!checkSystem(this, system)) return@runs false
-                    val member = database.findMember(system!!.id, getMem())
+                    val member = database.findMember(system.id, getMem())
                     if (!checkMember(this, member)) return@runs false
-                    description(this, system, member!!, null, false, true)
+                    description(this, system, member, null, false, true)
                 }
             }
             greedy("description") { getDesc ->
                 runs {
                     val system = getSys()
                     if (!checkSystem(this, system)) return@runs false
-                    val member = database.findMember(system!!.id, getMem())
+                    val member = database.findMember(system.id, getMem())
                     if (!checkMember(this, member)) return@runs false
-                    description(this, system, member!!, getDesc(), false, false)
+                    description(this, system, member, getDesc(), false, false)
                 }
             }
         }
@@ -511,35 +517,35 @@ object MemberCommands {
             runs {
                 val system = getSys()
                 if (!checkSystem(this, system)) return@runs false
-                val member = database.findMember(system!!.id, getMem())
+                val member = database.findMember(system.id, getMem())
                 if (!checkMember(this, member)) return@runs false
-                avatar(this, system, member!!, null, false)
+                avatar(this, system, member, null, false)
             }
             unixLiteral("clear", "remove") {
                 runs {
                     val system = getSys()
                     if (!checkSystem(this, system)) return@runs false
-                    val member = database.findMember(system!!.id, getMem())
+                    val member = database.findMember(system.id, getMem())
                     if (!checkMember(this, member)) return@runs false
-                    avatar(this, system, member!!, null, true)
+                    avatar(this, system, member, null, true)
                 }
             }
             attachment("avatar") { getAvatar ->
                 runs {
                     val system = getSys()
                     if (!checkSystem(this, system)) return@runs false
-                    val member = database.findMember(system!!.id, getMem())
+                    val member = database.findMember(system.id, getMem())
                     if (!checkMember(this, member)) return@runs false
-                    avatar(this, system, member!!, getAvatar().url, false)
+                    avatar(this, system, member, getAvatar().url, false)
                 }
             }
             string("avatar") { getAvatar ->
                 runs {
                     val system = getSys()
                     if (!checkSystem(this, system)) return@runs false
-                    val member = database.findMember(system!!.id, getMem())
+                    val member = database.findMember(system.id, getMem())
                     if (!checkMember(this, member)) return@runs false
-                    avatar(this, system, member!!, getAvatar(), false)
+                    avatar(this, system, member, getAvatar(), false)
                 }
             }
         }
@@ -549,7 +555,7 @@ object MemberCommands {
                 runs {
                     val system = getSys()
                     if (!checkSystem(this, system)) return@runs false
-                    val member = database.findMember(system!!.id, getMem())
+                    val member = database.findMember(system.id, getMem())
                     if (!checkMember(this, member)) return@runs false
                     val guildId = getGuildId() ?: run {
                         respondFailure("Command not ran in server.")
@@ -559,14 +565,15 @@ object MemberCommands {
                         respondFailure("Cannot find server. Am I in it?")
                         return@runs false
                     }
-                    val serverMember = database.fetchMemberServerSettingsFromSystemAndMember(guild, system.id, member!!.id)
+                    val serverMember =
+                        database.fetchMemberServerSettingsFromSystemAndMember(guild, system.id, member.id)
                     serverAvatar(this, system, serverMember!!, null, false)
                 }
                 unixLiteral("clear", "remove") {
                     runs {
                         val system = getSys()
                         if (!checkSystem(this, system)) return@runs false
-                        val member = database.findMember(system!!.id, getMem())
+                        val member = database.findMember(system.id, getMem())
                         if (!checkMember(this, member)) return@runs false
                         val guildId = getGuildId() ?: run {
                             respondFailure("Command not ran in server.")
@@ -576,7 +583,8 @@ object MemberCommands {
                             respondFailure("Cannot find server. Am I in it?")
                             return@runs false
                         }
-                        val serverMember = database.fetchMemberServerSettingsFromSystemAndMember(guild, system.id, member!!.id)
+                        val serverMember =
+                            database.fetchMemberServerSettingsFromSystemAndMember(guild, system.id, member.id)
                         serverAvatar(this, system, serverMember!!, null, true)
                     }
                 }
@@ -584,7 +592,7 @@ object MemberCommands {
                     runs {
                         val system = getSys()
                         if (!checkSystem(this, system)) return@runs false
-                        val member = database.findMember(system!!.id, getMem())
+                        val member = database.findMember(system.id, getMem())
                         if (!checkMember(this, member)) return@runs false
                         val guildId = getGuildId() ?: run {
                             respondFailure("Command not ran in server.")
@@ -594,7 +602,8 @@ object MemberCommands {
                             respondFailure("Cannot find server. Am I in it?")
                             return@runs false
                         }
-                        val serverMember = database.fetchMemberServerSettingsFromSystemAndMember(guild, system.id, member!!.id)
+                        val serverMember =
+                            database.fetchMemberServerSettingsFromSystemAndMember(guild, system.id, member.id)
                         serverAvatar(this, system, serverMember!!, getAvatar().url, false)
                     }
                 }
@@ -602,7 +611,7 @@ object MemberCommands {
                     runs {
                         val system = getSys()
                         if (!checkSystem(this, system)) return@runs false
-                        val member = database.findMember(system!!.id, getMem())
+                        val member = database.findMember(system.id, getMem())
                         if (!checkMember(this, member)) return@runs false
                         val guildId = getGuildId() ?: run {
                             respondFailure("Command not ran in server.")
@@ -612,7 +621,8 @@ object MemberCommands {
                             respondFailure("Cannot find server. Am I in it?")
                             return@runs false
                         }
-                        val serverMember = database.fetchMemberServerSettingsFromSystemAndMember(guild, system.id, member!!.id)
+                        val serverMember =
+                            database.fetchMemberServerSettingsFromSystemAndMember(guild, system.id, member.id)
                         serverAvatar(this, system, serverMember!!, getAvatar(), false)
                     }
                 }
@@ -623,27 +633,27 @@ object MemberCommands {
             runs {
                 val system = getSys()
                 if (!checkSystem(this, system)) return@runs false
-                val member = database.findMember(system!!.id, getMem())
+                val member = database.findMember(system.id, getMem())
                 if (!checkMember(this, member)) return@runs false
-                autoproxy(this, system, member!!, null)
+                autoproxy(this, system, member, null)
             }
             // TODO: BooleanNode
             literal("disable", "off", "false", "0") {
                 runs {
                     val system = getSys()
                     if (!checkSystem(this, system)) return@runs false
-                    val member = database.findMember(system!!.id, getMem())
+                    val member = database.findMember(system.id, getMem())
                     if (!checkMember(this, member)) return@runs false
-                    autoproxy(this, system, member!!, false)
+                    autoproxy(this, system, member, false)
                 }
             }
             literal("enable", "on", "true", "1") {
                 runs {
                     val system = getSys()
                     if (!checkSystem(this, system)) return@runs false
-                    val member = database.findMember(system!!.id, getMem())
+                    val member = database.findMember(system.id, getMem())
                     if (!checkMember(this, member)) return@runs false
-                    autoproxy(this, system, member!!, true)
+                    autoproxy(this, system, member, true)
                 }
             }
         }
@@ -652,24 +662,24 @@ object MemberCommands {
             runs {
                 val system = getSys()
                 if (!checkSystem(this, system)) return@runs false
-                val member = database.findMember(system!!.id, getMem())
+                val member = database.findMember(system.id, getMem())
                 if (!checkMember(this, member)) return@runs false
-                proxy(this, system, member!!, null)
+                proxy(this, system, member, null)
             }
 
             literal("remove", "rem", "delete", "del") {
                 runs {
                     val system = getSys()
                     if (!checkSystem(this, system)) return@runs false
-                    val member = database.findMember(system!!.id, getMem())
+                    val member = database.findMember(system.id, getMem())
                     if (!checkMember(this, member)) return@runs false
-                    removeProxy(this, system, member!!, false, null)
+                    removeProxy(this, system, member, false, null)
                 }
                 greedy("proxy") { getProxy ->
                     runs {
                         val system = getSys()
                         if (!checkSystem(this, system)) return@runs false
-                        val member = database.findMember(system!!.id, getMem())
+                        val member = database.findMember(system.id, getMem())
                         if (!checkMember(this, member)) return@runs false
                         extractProxyFromTag(this, getProxy()) ?: return@runs false
                         val proxy = database.fetchProxyTagFromMessage(getUser(), getProxy())
@@ -677,7 +687,7 @@ object MemberCommands {
                             respondFailure("Proxy tag doesn't exist in this member.")
                             return@runs false
                         }
-                        if (proxy.memberId != member!!.id) {
+                        if (proxy.memberId != member.id) {
                             respondFailure("Proxy tag doesn't exist in this member.")
                             return@runs false
                         }
@@ -690,19 +700,19 @@ object MemberCommands {
                 runs {
                     val system = getSys()
                     if (!checkSystem(this, system)) return@runs false
-                    val member = database.findMember(system!!.id, getMem())
+                    val member = database.findMember(system.id, getMem())
                     if (!checkMember(this, member)) return@runs false
-                    proxy(this, system, member!!, null)
+                    proxy(this, system, member, null)
                 }
 
                 greedy("proxy") { getProxy ->
                     runs {
                         val system = getSys()
                         if (!checkSystem(this, system)) return@runs false
-                        val member = database.findMember(system!!.id, getMem())
+                        val member = database.findMember(system.id, getMem())
                         if (!checkMember(this, member)) return@runs false
                         val proxy = extractProxyFromTag(this, getProxy()) ?: return@runs false
-                        proxy(this, system, member!!, proxy)
+                        proxy(this, system, member, proxy)
                     }
                 }
             }
@@ -711,10 +721,10 @@ object MemberCommands {
                 runs {
                     val system = getSys()
                     if (!checkSystem(this, system)) return@runs false
-                    val member = database.findMember(system!!.id, getMem())
+                    val member = database.findMember(system.id, getMem())
                     if (!checkMember(this, member)) return@runs false
                     val proxy = extractProxyFromTag(this, getProxy()) ?: return@runs false
-                    proxy(this, system, member!!, proxy)
+                    proxy(this, system, member, proxy)
                 }
             }
         }
@@ -723,35 +733,35 @@ object MemberCommands {
             runs {
                 val system = getSys()
                 if (!checkSystem(this, system)) return@runs false
-                val member = database.findMember(system!!.id, getMem())
+                val member = database.findMember(system.id, getMem())
                 if (!checkMember(this, member)) return@runs false
-                pronouns(this, system, member!!, null, false, false)
+                pronouns(this, system, member, null, false, false)
             }
             unixLiteral("clear", "remove") {
                 runs {
                     val system = getSys()
                     if (!checkSystem(this, system)) return@runs false
-                    val member = database.findMember(system!!.id, getMem())
+                    val member = database.findMember(system.id, getMem())
                     if (!checkMember(this, member)) return@runs false
-                    pronouns(this, system, member!!, null, false, true)
+                    pronouns(this, system, member, null, false, true)
                 }
             }
             unixLiteral("raw") {
                 runs {
                     val system = getSys()
                     if (!checkSystem(this, system)) return@runs false
-                    val member = database.findMember(system!!.id, getMem())
+                    val member = database.findMember(system.id, getMem())
                     if (!checkMember(this, member)) return@runs false
-                    pronouns(this, system, member!!, null, true, false)
+                    pronouns(this, system, member, null, true, false)
                 }
             }
             greedy("pronouns") { getPronouns ->
                 runs {
                     val system = getSys()
                     if (!checkSystem(this, system)) return@runs false
-                    val member = database.findMember(system!!.id, getMem())
+                    val member = database.findMember(system.id, getMem())
                     if (!checkMember(this, member)) return@runs false
-                    pronouns(this, system, member!!, getPronouns(), false, false)
+                    pronouns(this, system, member, getPronouns(), false, false)
                 }
             }
         }
@@ -760,17 +770,17 @@ object MemberCommands {
             runs {
                 val system = getSys()
                 if (!checkSystem(this, system)) return@runs false
-                val member = database.findMember(system!!.id, getMem())
+                val member = database.findMember(system.id, getMem())
                 if (!checkMember(this, member)) return@runs false
-                color(this, system, member!!, null)
+                color(this, system, member, null)
             }
             greedy("color") { getColor ->
                 runs {
                     val system = getSys()
                     if (!checkSystem(this, system)) return@runs false
-                    val member = database.findMember(system!!.id, getMem())
+                    val member = database.findMember(system.id, getMem())
                     if (!checkMember(this, member)) return@runs false
-                    color(this, system, member!!, getColor().toColor())
+                    color(this, system, member, getColor().toColor())
                 }
             }
         }
@@ -779,26 +789,26 @@ object MemberCommands {
             runs {
                 val system = getSys()
                 if (!checkSystem(this, system)) return@runs false
-                val member = database.findMember(system!!.id, getMem())
+                val member = database.findMember(system.id, getMem())
                 if (!checkMember(this, member)) return@runs false
-                birthday(this, system, member!!, null, false)
+                birthday(this, system, member, null, false)
             }
             unixLiteral("clear", "remove") {
                 runs {
                     val system = getSys()
                     if (!checkSystem(this, system)) return@runs false
-                    val member = database.findMember(system!!.id, getMem())
+                    val member = database.findMember(system.id, getMem())
                     if (!checkMember(this, member)) return@runs false
-                    birthday(this, system, member!!, null, true)
+                    birthday(this, system, member, null, true)
                 }
             }
             greedy("birthday") { getBirthday ->
                 runs {
                     val system = getSys()
                     if (!checkSystem(this, system)) return@runs false
-                    val member = database.findMember(system!!.id, getMem())
+                    val member = database.findMember(system.id, getMem())
                     if (!checkMember(this, member)) return@runs false
-                    birthday(this, system, member!!, tryParseLocalDate(getBirthday())?.first, false)
+                    birthday(this, system, member, tryParseLocalDate(getBirthday())?.first, false)
                 }
             }
         }
@@ -806,9 +816,9 @@ object MemberCommands {
             runs {
                 val system = getSys()
                 if (!checkSystem(this, system)) return@runs false
-                val member = database.findMember(system!!.id, getMem())
+                val member = database.findMember(system.id, getMem())
                 if (!checkMember(this, member)) return@runs false
-                delete(this, system, member!!)
+                delete(this, system, member)
             }
         }
     }
@@ -828,15 +838,15 @@ object MemberCommands {
                 runs {
                     val system = getSys()
                     if (!checkSystem(this, system)) return@runs false
-                    delete(this, system!!, null)
+                    delete(this, system, null)
                 }
                 greedy("member") { getMem ->
                     runs {
                         val system = getSys()
                         if (!checkSystem(this, system)) return@runs false
-                        val member = database.findMember(system!!.id, getMem())
+                        val member = database.findMember(system.id, getMem())
                         if (!checkMember(this, member)) return@runs false
-                        delete(this, system, member!!)
+                        delete(this, system, member)
                     }
                 }
             }
@@ -844,13 +854,13 @@ object MemberCommands {
                 runs {
                     val system = getSys()
                     if (!checkSystem(this, system)) return@runs false
-                    create(this, system!!, null)
+                    create(this, system, null)
                 }
                 greedy("member") { getMem ->
                     runs {
                         val system = getSys()
                         if (!checkSystem(this, system)) return@runs false
-                        create(this, system!!, getMem())
+                        create(this, system, getMem())
                     }
                 }
             }

@@ -9,10 +9,12 @@
 package dev.proxyfox.database.records.group
 
 import dev.proxyfox.database.PkId
+import dev.proxyfox.database.etc.ktx.serializaton.InstantLongMillisecondSerializer
 import dev.proxyfox.database.records.MongoRecord
+import kotlinx.datetime.Clock
+import kotlinx.datetime.Instant
+import kotlinx.serialization.Serializable
 import org.bson.types.ObjectId
-import java.time.OffsetDateTime
-import java.time.ZoneOffset
 
 class GroupRecord() : MongoRecord {
     constructor(id: PkId, systemId: PkId, name: String) : this() {
@@ -30,7 +32,9 @@ class GroupRecord() : MongoRecord {
     var description: String? = null
     var color: Int = -1
     var avatarUrl: String? = null
-    var timestamp: OffsetDateTime = OffsetDateTime.now(ZoneOffset.UTC)
+
+    @Serializable(InstantLongMillisecondSerializer::class)
+    var timestamp: Instant = Clock.System.now()
     var tag: String? = null
     var tagMode: TagMode = TagMode.HIDDEN
 }

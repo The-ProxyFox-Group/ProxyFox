@@ -14,9 +14,12 @@ import dev.proxyfox.bot.command.context.InteractionCommandContext
 import dev.proxyfox.command.CommandParser
 import dev.proxyfox.common.printStep
 import dev.proxyfox.database.database
+import dev.proxyfox.database.records.group.GroupRecord
 import dev.proxyfox.database.records.member.MemberRecord
 import dev.proxyfox.database.records.system.SystemRecord
 import dev.proxyfox.database.records.system.SystemSwitchRecord
+import kotlin.contracts.ExperimentalContracts
+import kotlin.contracts.contract
 
 /**
  * General utilities relating to commands
@@ -29,6 +32,7 @@ object Commands {
     suspend fun register() {
         printStep("Registering text commands", 2)
         SystemCommands.register()
+        GroupCommands.register()
         MemberCommands.register()
         SwitchCommands.register()
         MiscCommands.register()
@@ -69,7 +73,11 @@ fun GlobalChatInputCreateBuilder.access(type: String, name: String, builder: Sub
     subCommand(name, "Accesses the $type's $name", builder)
 }
 
+@OptIn(ExperimentalContracts::class)
 suspend fun <T> checkSystem(ctx: DiscordContext<T>, system: SystemRecord?, private: Boolean = false): Boolean {
+    contract {
+        returns(true) implies (system != null)
+    }
     system ?: run {
         ctx.respondFailure("System does not exist. Create one using a slash command or `pf>system new`", private)
         return false
@@ -77,7 +85,24 @@ suspend fun <T> checkSystem(ctx: DiscordContext<T>, system: SystemRecord?, priva
     return true
 }
 
+@OptIn(ExperimentalContracts::class)
+suspend fun <T> checkGroup(ctx: DiscordContext<T>, group: GroupRecord?, private: Boolean = false): Boolean {
+    contract {
+        returns(true) implies (group != null)
+    }
+    group ?: run {
+        ctx.respondFailure("Group does not exist. Create one using a slash command or `pf>group new`", private)
+        return false
+    }
+    return true
+}
+
+@OptIn(ExperimentalContracts::class)
 suspend fun <T> checkMember(ctx: DiscordContext<T>, member: MemberRecord?, private: Boolean = false): Boolean {
+    contract {
+        returns(true) implies (member != null)
+    }
+
     member ?: run {
         ctx.respondFailure("Member does not exist. Create one using a slash command or `pf>member new`", private)
         return false
@@ -85,7 +110,12 @@ suspend fun <T> checkMember(ctx: DiscordContext<T>, member: MemberRecord?, priva
     return true
 }
 
+@OptIn(ExperimentalContracts::class)
 suspend fun <T> checkSwitch(ctx: DiscordContext<T>, switch: SystemSwitchRecord?): Boolean {
+    contract {
+        returns(true) implies (switch != null)
+    }
+
     switch ?: run {
         ctx.respondFailure("Looks like you haven't registered any switches yet. Create one using a slash command or `pf>switch`")
         return false

@@ -463,7 +463,7 @@ abstract class Database : AutoCloseable {
     suspend inline fun fetchTotalMembersFromUser(user: UserBehavior?) = fetchUser(user)?.systemId?.let { fetchTotalMembersFromSystem(it) } ?: -1
 
     /**
-     * Gets the total number of members registered in a system by discord ID.
+     * Gets the total number of members registered in a system.
      *
      * Implementation requirements: return an int with the total members registered
      * */
@@ -483,6 +483,54 @@ abstract class Database : AutoCloseable {
      * Gets the members that are a part of a group
      * */
     abstract suspend fun fetchMembersFromGroup(group: GroupRecord): List<MemberRecord>
+
+    /**
+     * Fetches a group
+     * */
+    abstract suspend fun fetchGroupFromSystem(system: PkId, groupId: PkId): GroupRecord?
+    abstract suspend fun fetchGroupsFromSystem(system: PkId): List<GroupRecord>?
+    abstract suspend fun fetchGroupFromSystemAndName(
+        system: PkId,
+        name: String,
+        caseSensitive: Boolean = false
+    ): GroupRecord?
+
+    /**
+     * Updates a group
+     * */
+    abstract suspend fun updateGroup(group: GroupRecord)
+
+    /**
+     * Creates a group
+     * */
+    suspend fun createGroup(system: PkId, name: String): GroupRecord? {
+        return fetchGroupFromSystemAndName(system, name) ?: createGroup(system, name, null)
+    }
+
+    suspend fun createGroup(group: GroupRecord) = updateGroup(group)
+
+    open suspend fun createGroup(systemId: String, name: String, id: String? = null): GroupRecord? {
+        fetchSystemFromId(systemId) ?: return null
+        val group = GroupRecord(
+            id = firstFreeMemberId(systemId, id),
+            systemId = systemId,
+            name = name,
+        )
+        createGroup(group)
+        return group
+    }
+
+    /**
+     * Gets a group by system ID and either group ID or name.
+     * */
+    suspend fun findGroup(system: PkId, group: String): GroupRecord? =
+        if (group.startsWith("id:"))
+            fetchGroupFromSystem(system, group.substring(3))
+                ?: fetchGroupFromSystemAndName(system, group, false)
+        else
+            fetchGroupFromSystemAndName(system, group, true)
+                ?: fetchGroupFromSystemAndName(system, group, false)
+                ?: fetchGroupFromSystem(system, group)
 
     /**
      * Gets a member by system ID and either member ID or name.
@@ -564,6 +612,22 @@ abstract class Database : AutoCloseable {
     }
 
     open suspend fun firstFreeMemberId(systemId: String, id: String? = null): String {
-        return if (isMemberIdReserved(systemId, id)) fetchMembersFromSystem(systemId)?.map(MemberRecord::id)?.firstFree() ?: "aaaaa" else id
+        return if (isMemberIdReserved(systemId, id)) fetchMembersFromSystem(systemId)?.map(MemberRecord::id)
+            ?.firstFree() ?: "aaaaa" else id
+    }
+
+    open suspend fun containsGroup(systemId: String, groupId: String) = fetchGroupFromSystem(systemId, groupId) != null
+
+    @OptIn(ExperimentalContracts::class)
+    protected suspend fun isGroupIdReserved(systemId: String, groupId: String?): Boolean {
+        contract {
+            returns(false) implies (groupId != null)
+        }
+        return !systemId.isValidPkString() || !groupId.isValidPkString() || containsGroup(systemId, groupId)
+    }
+
+    open suspend fun firstFreeGroupId(systemId: String, id: String? = null): String {
+        return if (isGroupIdReserved(systemId, id)) fetchGroupsFromSystem(systemId)?.map(GroupRecord::id)?.firstFree()
+            ?: "aaaaa" else id
     }
 }
