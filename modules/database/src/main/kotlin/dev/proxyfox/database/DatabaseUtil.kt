@@ -118,8 +118,10 @@ fun databaseFromString(db: String?) =
         else -> throw IllegalArgumentException("Unknown database $db")
     }
 
+@Suppress("NOTHING_TO_INLINE", "UNUSED")
 inline fun unsupported(message: String = "Not implemented"): Nothing = throw UnsupportedOperationException(message)
 
+@Suppress("UNUSED")
 inline fun <T, reified R> Array<out T>.mapArray(action: (T) -> R): Array<R> {
     return Array(size) { action(this[it]) }
 }
@@ -134,7 +136,7 @@ suspend inline fun <reified T : Any> Mongo.getOrCreateCollection(): MongoCollect
 }
 
 fun generateToken(): String {
-    val buffer = ByteArray(24)
+    val buffer = ByteArray(96)
     secureRandom.nextBytes(buffer)
     return Base64.getUrlEncoder().encodeToString(buffer)
 }

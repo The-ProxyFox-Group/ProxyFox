@@ -318,9 +318,21 @@ abstract class Database : AutoCloseable {
     abstract suspend fun fetchMessage(messageId: Snowflake): ProxiedMessageRecord?
     abstract suspend fun fetchLatestMessage(systemId: String, channelId: Snowflake): ProxiedMessageRecord?
 
+    open suspend fun createToken(systemId: String, type: TokenType): TokenRecord {
+        val token = TokenRecord(generateUniqueToken(), systemId, type)
+        updateToken(token)
+        return token
+    }
     abstract suspend fun fetchToken(token: String): TokenRecord?
-
     abstract suspend fun updateToken(token: TokenRecord)
+    open suspend fun containsToken(token: String): Boolean = fetchToken(token) != null
+    open suspend fun generateUniqueToken(): String {
+        var token = generateToken()
+        while (containsToken(token)) {
+            token = generateToken()
+        }
+        return token
+    }
 
     /**
      * Allocates a proxy tag

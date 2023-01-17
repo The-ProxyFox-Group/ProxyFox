@@ -8,6 +8,7 @@
 
 package dev.proxyfox.database.records.misc
 
+import dev.proxyfox.database.PkId
 import dev.proxyfox.database.records.MongoRecord
 import kotlinx.serialization.Contextual
 import kotlinx.serialization.Serializable
@@ -17,11 +18,13 @@ import org.bson.types.ObjectId
 class TokenRecord : MongoRecord {
     @Contextual
     override var _id: ObjectId = ObjectId()
-    var token: String = ""
-    var systemId: String = ""
+    var token: String
+    var systemId: PkId
+    var type: TokenType
 
-    constructor(token: String, systemId: String) {
+    constructor(token: String, systemId: PkId, type: TokenType) {
         this.token = token
         this.systemId = systemId
+        this.type = type
     }
 }

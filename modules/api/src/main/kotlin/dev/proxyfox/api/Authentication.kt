@@ -9,12 +9,37 @@
 package dev.proxyfox.api
 
 import dev.proxyfox.database.database
+import dev.proxyfox.database.records.misc.TokenType
+import io.ktor.http.*
 import io.ktor.server.application.*
 import io.ktor.server.response.*
+import io.ktor.server.routing.*
+import io.ktor.util.*
+import io.ktor.util.pipeline.*
 
-val AuthenticationPlugin = createRouteScopedPlugin(name = "AuthenticationPlugin") {
+@Suppress("FunctionName")
+fun ApiPlugin(name: String, accessFunction: TokenType.() -> Boolean) = createRouteScopedPlugin(name = name) {
     onCall { call ->
-        val token = call.request.headers["Authorization"] ?: return@onCall call.respond("401 Unauthorized")
-        database.fetchToken(token) ?: return@onCall call.respond("401 Unauthorized")
+        val tokenString = call.request.headers["Authorization"] ?: return@onCall call.respond("401 Unauthorized")
+        val token = database.fetchToken(tokenString) ?: return@onCall call.respond("401 Unauthorized")
+        if (token.type.accessFunction()) return@onCall call.respond("401 Unauthorized")
+    }
+}
+
+val AccessPlugin = ApiPlugin("AccessPlugin", TokenType::canViewApi)
+
+val EditPlugin = ApiPlugin("EditPlugin", TokenType::canEditApi)
+
+@KtorDsl
+fun Route.getAccess(body: PipelineInterceptor<Unit, ApplicationCall>) {
+    install(AccessPlugin)
+    get(body)
+}
+
+@KtorDsl
+fun Route.getAccess(path: String, body: PipelineInterceptor<Unit, ApplicationCall>) {
+    route(path, HttpMethod.Get) {
+        install(AccessPlugin)
+        handle(body)
     }
 }

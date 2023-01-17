@@ -266,7 +266,9 @@ class InMemoryDatabase : Database() {
     }
 
     override suspend fun createProxyTag(record: MemberProxyTagRecord): Boolean {
-        memberProxies[record.memberId]?.add(record)
+        systems[record.systemId] ?: return false
+        memberProxies[record.systemId] ?: memberProxies.set(record.systemId, arrayListOf())
+        memberProxies[record.systemId]!!.add(record)
         return true
     }
 

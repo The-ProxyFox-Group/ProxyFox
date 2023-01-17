@@ -8,7 +8,7 @@
 
 package dev.proxyfox.api.routes
 
-import dev.proxyfox.api.AuthenticationPlugin
+import dev.proxyfox.api.getAccess
 import dev.proxyfox.api.models.Member
 import dev.proxyfox.api.models.Switch
 import dev.proxyfox.database.database
@@ -18,17 +18,15 @@ import io.ktor.server.routing.*
 
 fun Route.switchRoutes() {
     route("/systems/{id}/switches") {
-        install(AuthenticationPlugin)
-        get {
-            val id = call.parameters["id"] ?: return@get call.respond("System not found")
+        getAccess {
+            val id = call.parameters["id"] ?: return@getAccess call.respond("System not found")
             call.respond(database.fetchSwitchesFromSystem(id)?.map(Switch.Companion::fromRecord) ?: emptyList())
         }
     }
 
     route("/systems/{id}/fronters") {
-        install(AuthenticationPlugin)
-        get {
-            val id = call.parameters["id"] ?: return@get call.respond("System not found")
+        getAccess {
+            val id = call.parameters["id"] ?: return@getAccess call.respond("System not found")
             call.respond(database.fetchFrontingMembersFromSystem(id)?.map(Member.Companion::fromRecord) ?: emptyList())
         }
     }
