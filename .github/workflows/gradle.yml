@@ -35,7 +35,7 @@ jobs:
           name: Artifacts
           path: |
             build/libs/
-            module/**/build/libs/
+            modules/**/build/libs/
       - name: capture test reports on failure
         uses: actions/upload-artifact@v3
         if: failure()
