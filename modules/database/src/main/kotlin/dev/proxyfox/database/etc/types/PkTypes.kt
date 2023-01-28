@@ -11,14 +11,14 @@ package dev.proxyfox.database.etc.types
 import com.google.gson.annotations.SerializedName
 import dev.proxyfox.common.fromColorForExport
 import dev.proxyfox.database.*
+import dev.proxyfox.database.etc.gson.NullValueProcessor
+import dev.proxyfox.database.etc.gson.UnexpectedValueProcessor
 import dev.proxyfox.database.records.member.MemberProxyTagRecord
 import dev.proxyfox.database.records.member.MemberRecord
 import dev.proxyfox.database.records.misc.AutoProxyMode
 import dev.proxyfox.database.records.misc.TrustLevel
 import dev.proxyfox.database.records.system.SystemRecord
 import dev.proxyfox.database.records.system.SystemSwitchRecord
-import dev.proxyfox.database.etc.gson.NullValueProcessor
-import dev.proxyfox.database.etc.gson.UnexpectedValueProcessor
 import java.time.LocalDate
 import java.time.OffsetDateTime
 import java.time.format.DateTimeFormatter
@@ -218,6 +218,9 @@ data class PkSwitch(
     val timestamp: String?,
     val members: List<String?>?,
 
+    /** Allows for storing missing member data */
+    val proxyfox: PfSwitchExtension? = null,
+
     // Ignored for PFv1 database imports
     @Deprecated("PFv1 database imports only")
     val id: Void? = null,
@@ -327,6 +330,12 @@ data class PfMemberExtension(
     val age: String?,
     val role: String?,
     val autoProxy: Boolean?,
+)
+
+@JvmRecord
+data class PfSwitchExtension(
+    /** Note: It is *not* possible to reimport this. */
+    val allMembers: List<String>?,
 )
 
 @Suppress("EnumEntryName")
