@@ -198,7 +198,9 @@ suspend fun Kord.registerApplicationCommands() {
     // Only send commands when discord hasn't registered yet
     val file = File("./.pf-command-lock")
     if (!file.exists()) {
-        file.
+        withContext(Dispatchers.IO) {
+            file.createNewFile()
+        }
         deferredCommands.forEach {
             scope.launch {
                 rest.interaction.createGlobalApplicationCommand(
