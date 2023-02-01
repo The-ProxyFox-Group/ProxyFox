@@ -245,6 +245,9 @@ data class PkSwitch(
     val timestamp: String? = null,
     val members: List<String?>? = null,
 
+    /** Allows for storing missing member data */
+    val proxyfox: PfSwitchExtension? = null,
+
     // Ignored for PFv1 database imports
     @Deprecated("PFv1 database imports only")
     @Transient
@@ -365,6 +368,13 @@ data class PfMemberExtension(
     val age: String? = null,
     val role: String? = null,
     val autoProxy: Boolean? = null,
+)
+
+@JvmRecord
+@Serializable
+data class PfSwitchExtension(
+    /** Note: It is *not* possible to reimport this. */
+    val allMembers: List<String>? = null,
 )
 
 @Suppress("EnumEntryName")

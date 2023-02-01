@@ -10,10 +10,9 @@ package dev.proxyfox.database.etc.exporter
 
 import dev.proxyfox.database.Database
 import dev.proxyfox.database.database
-import dev.proxyfox.database.etc.types.PkMember
-import dev.proxyfox.database.etc.types.PkProxy
-import dev.proxyfox.database.etc.types.PkSwitch
-import dev.proxyfox.database.etc.types.PkSystem
+import dev.proxyfox.database.etc.types.*
+import dev.proxyfox.database.records.member.MemberRecord
+import dev.proxyfox.database.records.system.SystemSwitchRecord
 import kotlinx.serialization.encodeToString
 import kotlinx.serialization.json.Json
 import org.jetbrains.annotations.TestOnly
@@ -28,13 +27,36 @@ object Exporter {
     @TestOnly
     suspend fun exportToPkObject(database: Database, userId: ULong): PkSystem? {
         val system = database.fetchSystemFromUser(userId) ?: return null
+        val members = database.fetchMembersFromSystem(system.id)
+        val memberIds = members?.mapTo(HashSet(), MemberRecord::id) ?: setOf()
 
-        return PkSystem(
+        // Nested function for mapping switches to PkSwitch exports.
+        fun toPkSwitch(record: SystemSwitchRecord): PkSwitch {
+            // Note, ArrayList is used here to retain order.
+            val existing = ArrayList(record.memberIds)
+
+            // If retainAll modifies the list, take the slow route.
+            if (existing.retainAll(memberIds)) {
+                return PkSwitch(
+                    timestamp = record.timestamp.toString(),
+                    members = existing.toList(),
+
+                    proxyfox = PfSwitchExtension(
+                        allMembers = record.memberIds,
+                    )
+                )
+            }
+
+            return PkSwitch(record)
+        }
+
+        val pkSystem = PkSystem(
             system,
-            members = database.fetchMembersFromSystem(system.id)?.map {
+            members = members?.map {
                 PkMember(it, database.fetchProxiesFromSystemAndMember(system.id, it.id)?.mapTo(HashSet(), ::PkProxy))
             },
-            switches = database.fetchSwitchesFromSystem(system.id)?.map(::PkSwitch),
+            switches = database.fetchSwitchesFromSystem(system.id)?.map(::toPkSwitch),
         )
+        return pkSystem
     }
 }

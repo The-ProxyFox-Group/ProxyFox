@@ -258,8 +258,9 @@ suspend fun handleError(err: Throwable, channel: MessageChannelBehavior) {
     // Let the logger unwind the stacktrace.
     logger.warn(timestamp.toString(), err)
     // Do not leak webhook URL nor token in output.
-    // Note: The token here is a generic regex that only matches by the bot's
-    // ID and will make no attempt to verify it's the real one, purely for guarding the
+    // Note: The token here is a generic regex that only matches with the bot's
+    // ID and will make no attempt to verify it's the real one, purely for guarding
+    // the token from brute forcing of the replace method.
     val reason = err.message?.replace(webhook, "[WEBHOOK]")?.replace(token, "[TOKEN]")
     var cause = ""
     err.stackTrace.forEach {
@@ -269,8 +270,7 @@ suspend fun handleError(err: Throwable, channel: MessageChannelBehavior) {
     channel.createMessage(
         "An unexpected error occurred.\nTimestamp: `$timestamp`\n```\n${err.javaClass.name}: $reason\n$cause```"
     )
-    // Relay to channel
-    // if (err is DebugException) return
+    if (err is DebugException) return
     if (errorChannel == null && errorChannelId != null)
         errorChannel = kord.getChannel(errorChannelId) as TextChannel
     if (errorChannel != null) {
