@@ -65,7 +65,7 @@ data class ProxyContext(
     }
 
     private fun StringBuilder.scanAndSpace(invalid: String) {
-        val stride = invalid.length + 1
+        val stride = invalid.length
         var i = 0
         while (indexOf(invalid, i, ignoreCase = true).also { i = it } >= 0) {
             insert(i + 1, ' ')
