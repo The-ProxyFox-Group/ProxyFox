@@ -49,12 +49,36 @@ data class ProxyContext(
     val resolvedAvatar: String?,
     val moderationDelay: Long,
 ) {
+    private fun buildAndSanitiseName(): String {
+        val builder = StringBuilder(resolvedUsername)
+
+        system.tag?.let { builder.append(' ').append(it) }
+
+        builder.scanAndSpace("clyde")
+        builder.scanAndSpace("discord")
+
+        if (builder.length > 80) {
+            return builder.substring(0, 80)
+        }
+
+        return builder.toString()
+    }
+
+    private fun StringBuilder.scanAndSpace(invalid: String) {
+        val stride = invalid.length + 1
+        var i = 0
+        while (indexOf(invalid, i, ignoreCase = true).also { i = it } >= 0) {
+            insert(i + 1, ' ')
+            i += stride
+        }
+    }
+
     @OptIn(InternalAPI::class)
     suspend fun send(reproxy: Boolean = false) {
         val newMessage = try {
             webhook.execute(threadId) {
                 if (messageContent.isNotBlank()) content = messageContent
-                username = resolvedUsername + " " + (system.tag ?: "")
+                username = buildAndSanitiseName()
                 avatarUrl = resolvedAvatar
                 for (attachment in message.attachments) {
                     val response: HttpResponse = http.get(urlString = attachment.url) {
