@@ -20,6 +20,7 @@ import kotlin.contracts.contract
 
 const val mascot = "https://cdn.discordapp.com/emojis/981031355079065601.png"
 const val invalidAvatar = "https://fakeimg.pl/256x256/000000/?text=Invalid+Avatar"
+const val exampleExport = "https://cdn.discordapp.com/attachments/962064545923354634/1071663479678828634/example-export.json"
 
 val validLinkSchemes = setOf("http", "https")
 
