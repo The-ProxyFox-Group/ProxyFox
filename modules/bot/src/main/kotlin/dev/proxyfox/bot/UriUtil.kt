@@ -98,7 +98,7 @@ val URI.hasValidHost: Boolean
 private fun String?.containsTld() = this != null && lastIndexOf('.', lastIndex - 1) >= 0
 
 fun URI?.isFile(): Boolean {
-    return this != null && (this.scheme == "file" || (this.host == null && this.authority == null))
+    return this != null && (scheme == "file" || (host == null && (scheme == null || scheme.length == 1 && scheme[0].isLetter())))
 }
 
 fun URI?.invalidUrlMessage(commandBase: String, example: String = mascot): String? {
