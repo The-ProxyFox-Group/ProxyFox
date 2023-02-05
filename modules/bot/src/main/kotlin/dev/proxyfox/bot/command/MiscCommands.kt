@@ -210,9 +210,12 @@ object MiscCommands {
 
     private suspend fun import(ctx: MessageHolder): String {
         return try {
-            val attach = URL(ctx.params["url"]!![0])
+            val uri = ctx.params["url"]!![0].uri()
+
+            uri.invalidUrlMessage("import", exampleExport)?.let { return it }
+
             val importer = withContext(Dispatchers.IO) {
-                attach.openStream().reader().use { import(it, ctx.message.author) }
+                uri!!.toURL().openStream().reader().use { import(it, ctx.message.author) }
             }
             "File imported. created ${importer.createdMembers} member(s), updated ${importer.updatedMembers} member(s)"
         } catch (exception: ImporterException) {
