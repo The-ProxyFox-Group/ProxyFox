@@ -236,7 +236,7 @@ suspend fun EmbedBuilder.member(record: MemberRecord, serverId: ULong) {
     color = record.color.kordColor()
     author {
         name = record.serverName(serverId) ?: record.displayName ?: record.name
-        icon = record.avatarUrl
+        icon = record.avatarUrl.httpUri()
     }
 }
 
@@ -248,7 +248,7 @@ suspend fun EmbedBuilder.system(
     color = record.color.kordColor()
     author {
         name = nameTransformer(record.name ?: record.id)
-        icon = record.avatarUrl
+        icon = record.avatarUrl.httpUri()
     }
     footer {
         text = footerTransformer(record.id)

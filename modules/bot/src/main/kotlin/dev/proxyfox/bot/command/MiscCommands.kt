@@ -561,7 +561,7 @@ To get support, head on over to https://discord.gg/q3yF8ay9V7"""
             }
             member.avatarUrl?.let {
                 thumbnail {
-                    url = it
+                    url = it.httpUri()
                 }
             }
             color = member.color.kordColor()
