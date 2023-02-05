@@ -71,9 +71,9 @@ fun String?.uri(): URI? {
 
 @JvmName("uriInternal")
 private fun String.uri(): URI? {
-    return try {
+    return if (isNullOrBlank()) null else try {
         linkWrapper[this[0]]?.let {
-            if (!endsWith(it)) {
+            if (!endsWith(it) || length == 2) {
                 null
             } else {
                 URI(substring(1, length - 1))
