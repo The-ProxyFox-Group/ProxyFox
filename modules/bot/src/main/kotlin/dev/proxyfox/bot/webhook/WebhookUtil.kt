@@ -13,6 +13,8 @@ import dev.kord.core.cache.data.WebhookData
 import dev.kord.core.entity.Webhook
 import dev.kord.core.entity.channel.Channel
 import dev.kord.core.entity.channel.thread.ThreadChannel
+import dev.proxyfox.bot.httpUri
+import dev.proxyfox.bot.httpUriOrNull
 import dev.proxyfox.database.records.member.MemberProxyTagRecord
 import dev.proxyfox.database.records.member.MemberRecord
 import dev.proxyfox.database.records.member.MemberServerSettingsRecord
@@ -48,7 +50,7 @@ object WebhookUtil {
             if (message.channel is ThreadChannelBehavior) message.channel.id else null,
 
             resolvedUsername = serverMember?.nickname ?: member.displayName ?: member.name,
-            resolvedAvatar = serverMember?.avatarUrl ?: member.avatarUrl ?: system.avatarUrl,
+            resolvedAvatar = serverMember?.avatarUrl.httpUriOrNull() ?: member.avatarUrl.httpUriOrNull() ?: system.avatarUrl?.httpUri(),
             moderationDelay = max(moderationDelay, 0L),
         )
     }

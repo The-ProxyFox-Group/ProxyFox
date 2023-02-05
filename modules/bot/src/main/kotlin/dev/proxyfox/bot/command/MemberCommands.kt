@@ -9,8 +9,7 @@
 package dev.proxyfox.bot.command
 
 import dev.kord.common.entity.ButtonStyle
-import dev.proxyfox.bot.kordColor
-import dev.proxyfox.bot.member
+import dev.proxyfox.bot.*
 import dev.proxyfox.bot.prompts.Button
 import dev.proxyfox.bot.prompts.TimedYesNoPrompt
 import dev.proxyfox.bot.string.dsl.greedy
@@ -19,7 +18,6 @@ import dev.proxyfox.bot.string.dsl.string
 import dev.proxyfox.bot.string.dsl.unixLiteral
 import dev.proxyfox.bot.string.parser.MessageHolder
 import dev.proxyfox.bot.string.parser.registerCommand
-import dev.proxyfox.bot.toKtInstant
 import dev.proxyfox.common.*
 import dev.proxyfox.database.database
 import dev.proxyfox.database.displayDate
@@ -121,11 +119,11 @@ object MemberCommands {
             val systemName = system.name ?: system.id
             author {
                 name = member.displayName?.let { "$it (${member.name})\u2007•\u2007$systemName" } ?: "${member.name}\u2007•\u2007$systemName"
-                icon = member.avatarUrl.ifBlankThenNull()
+                icon = member.avatarUrl.ifBlankThenNull().httpUri()
             }
             member.avatarUrl?.let {
                 thumbnail {
-                    url = it
+                    url = it.httpUri()
                 }
             }
             color = member.color.kordColor()
@@ -303,9 +301,15 @@ object MemberCommands {
     private suspend fun avatarLinked(ctx: MessageHolder): String {
         val system = database.fetchSystemFromUser(ctx.message.author)
             ?: return "System does not exist. Create one using `pf>system new`"
-        val member = database.findMember(system.id, ctx.params["member"]!![0])
+        val memberInput = ctx.params["member"]!![0]
+        val member = database.findMember(system.id, memberInput)
             ?: return "Member does not exist. Create one using `pf>member new`"
-        member.avatarUrl = ctx.params["avatar"]!![0]
+
+        val uri = ctx.params["avatar"]!![0].uri()
+
+        uri.invalidUrlMessage("member $memberInput avatar")?.let { return it }
+
+        member.avatarUrl = uri.toString()
         database.updateMember(member)
         return "Member avatar updated!"
     }
@@ -338,11 +342,17 @@ object MemberCommands {
     private suspend fun serverAvatarLinked(ctx: MessageHolder): String {
         val system = database.fetchSystemFromUser(ctx.message.author)
             ?: return "System does not exist. Create one using `pf>system new`"
-        val member = database.findMember(system.id, ctx.params["member"]!![0])
+        val memberInput = ctx.params["member"]!![0]
+        val member = database.findMember(system.id, memberInput)
             ?: return "Member does not exist. Create one using `pf>member new`"
         val serverMember =
             database.fetchMemberServerSettingsFromSystemAndMember(ctx.message.getGuild(), system.id, member.id)!!
-        serverMember.avatarUrl = ctx.params["avatar"]!![0]
+
+        val uri = ctx.params["avatar"]!![0].uri()
+
+        uri.invalidUrlMessage("member $memberInput serveravatar")?.let { return it }
+
+        member.avatarUrl = uri.toString()
         database.updateMemberServerSettings(serverMember)
         return "Member server avatar updated!"
     }

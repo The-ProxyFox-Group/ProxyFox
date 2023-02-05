@@ -245,11 +245,11 @@ suspend fun ReactionAddEvent.onReactionAdd() {
                     val systemName = system.name ?: system.id
                     author {
                         name = member.displayName?.let { "$it (${member.name})\u2007•\u2007$systemName" } ?: "${member.name}\u2007•\u2007$systemName"
-                        icon = member.avatarUrl
+                        icon = member.avatarUrl.httpUri()
                     }
                     member.avatarUrl?.let {
                         thumbnail {
-                            url = it
+                            url = it.httpUri()
                         }
                     }
                     color = member.color.kordColor()

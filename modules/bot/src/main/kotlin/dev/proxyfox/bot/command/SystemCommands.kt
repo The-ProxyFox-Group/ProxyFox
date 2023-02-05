@@ -10,7 +10,7 @@ package dev.proxyfox.bot.command
 
 import dev.kord.common.entity.ButtonStyle
 import dev.kord.rest.NamedFile
-import dev.proxyfox.bot.kordColor
+import dev.proxyfox.bot.*
 import dev.proxyfox.bot.prompts.Button
 import dev.proxyfox.bot.prompts.Pager
 import dev.proxyfox.bot.prompts.TimedYesNoPrompt
@@ -19,8 +19,6 @@ import dev.proxyfox.bot.string.dsl.literal
 import dev.proxyfox.bot.string.dsl.unixLiteral
 import dev.proxyfox.bot.string.parser.MessageHolder
 import dev.proxyfox.bot.string.parser.registerCommand
-import dev.proxyfox.bot.system
-import dev.proxyfox.bot.toKtInstant
 import dev.proxyfox.common.fromColor
 import dev.proxyfox.common.printStep
 import dev.proxyfox.common.toColor
@@ -93,7 +91,7 @@ object SystemCommands {
             title = system.name ?: system.id
             color = system.color.kordColor()
             system.avatarUrl?.let {
-                thumbnail { url = it }
+                thumbnail { url = it.httpUri() }
             }
             system.tag?.let {
                 field {
@@ -259,7 +257,12 @@ object SystemCommands {
     private suspend fun avatar(ctx: MessageHolder): String {
         val system = database.fetchSystemFromUser(ctx.message.author)
             ?: return "System does not exist. Create one using `pf>system new`"
-        system.avatarUrl = ctx.params["avatar"]!![0]
+
+        val uri = ctx.params["avatar"]!![0].uri()
+
+        uri.invalidUrlMessage("system avatar")?.let { return it }
+
+        system.avatarUrl = uri.toString()
         database.updateSystem(system)
         return "System avatar updated!"
     }
