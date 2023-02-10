@@ -90,7 +90,7 @@ fun URI?.isValidHttpUrl(): Boolean {
     contract {
         returns(true) implies (this@isValidHttpUrl != null)
     }
-    return this != null && scheme !in validLinkSchemes && hasValidHost
+    return this != null && scheme in validLinkSchemes && hasValidHost
 }
 
 val URI.hasValidHost: Boolean
