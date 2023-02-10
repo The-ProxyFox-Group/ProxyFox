@@ -8,7 +8,6 @@
 
 plugins {
     alias(libs.plugins.kotlin.jvm)
-    alias(libs.plugins.shadow)
 }
 
 configurations {
@@ -47,7 +46,21 @@ tasks {
             "-Xno-param-assertions"
         )
     }
-    shadowJar {
-        configurations = listOf(project.configurations["include"])
+
+    // Shadow jar isn't sufficient, so, we're making our own JiJ
+    jar {
+        val asm = project.configurations["include"].resolve()
+        inputs.files(asm)
+        from(asm) {
+            rename { "META-INF/patch/$it" }
+        }
+
+        manifest {
+            attributes(
+                "Main-Class" to "org.quiltmc.loader.impl.launch.knot.KnotServer",
+                // This is within the realm of absolutely cursed.
+                "Launcher-Agent-Class" to "dev.proxyfox.patch.PatchAgent"
+            )
+        }
     }
 }
