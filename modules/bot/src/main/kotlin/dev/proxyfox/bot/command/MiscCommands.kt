@@ -723,6 +723,26 @@ object MiscCommands {
                 }
             }
         }
+
+        Commands.parser.literal("pluralkit", "pk") {
+            literal("pull", "get", "download") {
+
+            }
+
+            literal("push", "set", "upload") {
+
+            }
+
+            literal("token") {
+                literal("clear", "reset", "remove") {
+
+                }
+
+                greedy("token") { getToken ->
+
+                }
+            }
+        }
     }
 
     private suspend fun <T> forceTag(ctx: DiscordContext<T>, enabled: Boolean?): Boolean {
