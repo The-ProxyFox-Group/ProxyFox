@@ -25,7 +25,7 @@ mockk = "1.+"
 
 # Plugins
 shadow = "7.1.2"
-licenser = "1.1.2"
+licenser = "1.2.0"
 
 [libraries]
 guava = { module = "com.google.guava:guava", version.ref = "guava" }
