@@ -17,14 +17,14 @@ import dev.kord.rest.builder.message.create.embed
 import dev.kord.rest.request.KtorRequestException
 import dev.proxyfox.bot.http
 import dev.proxyfox.bot.kord
-import dev.proxyfox.bot.md.BaseMarkdown
-import dev.proxyfox.bot.md.MarkdownString
-import dev.proxyfox.bot.md.parseMarkdown
 import dev.proxyfox.common.ellipsis
 import dev.proxyfox.database.database
 import dev.proxyfox.database.records.member.MemberProxyTagRecord
 import dev.proxyfox.database.records.member.MemberRecord
 import dev.proxyfox.database.records.system.SystemRecord
+import dev.proxyfox.markt.MarkdownParser
+import dev.proxyfox.markt.RootNode
+import dev.proxyfox.markt.StringNode
 import io.ktor.client.request.*
 import io.ktor.client.request.forms.*
 import io.ktor.client.statement.*
@@ -89,24 +89,24 @@ data class ProxyContext(
                     }
                 }
             } else message.referencedMessage?.let { ref ->
-                // Kord's official methods don't return a user if it's a webhook
-                val user = User(ref.data.author, kord)
-                val link = "https://discord.com/channels/${ref.getGuild().id}/${ref.channelId}/${ref.id}"
-                embed {
-                    color = Color(member.color)
-                    author {
-                        name = (ref.getAuthorAsMember()?.displayName ?: user.username) + " ↩️"
-                        icon = user.avatar?.url ?: user.defaultAvatar.url
-                        url = link
+                    // Kord's official methods don't return a user if it's a webhook
+                    val user = User(ref.data.author, kord)
+                    val link = "https://discord.com/channels/${ref.getGuild().id}/${ref.channelId}/${ref.id}"
+                    embed {
+                        color = Color(member.color)
+                        author {
+                            name = (ref.getAuthorAsMember()?.displayName ?: user.username) + " ↩️"
+                            icon = user.avatar?.url ?: user.defaultAvatar.url
+                            url = link
+                        }
+                        var msgRef = MarkdownParser.parse(ref.content)
+                        if (msgRef.length > 100) {
+                            // We should be getting a RootNode returned here.
+                            msgRef = msgRef.truncate(100) as RootNode
+                            msgRef.nodes.add(StringNode(ellipsis))
+                        }
+                        description = "[**Reply to:**]($link) $msgRef"
                     }
-                    var msgRef = parseMarkdown(ref.content)
-                    if (msgRef.length > 100) {
-                        // We know it's gonna be a BaseMarkdown so
-                        msgRef = msgRef.substring(100) as BaseMarkdown
-                        msgRef.values.add(MarkdownString(ellipsis))
-                    }
-                    description = "[**Reply to:**]($link) $msgRef"
-                }
                 }
             }
         } catch (e: KtorRequestException) {

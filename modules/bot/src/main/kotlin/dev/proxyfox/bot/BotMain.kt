@@ -12,6 +12,7 @@ import dev.proxyfox.api.ApiMain
 import dev.proxyfox.bot.terminal.TerminalCommands
 import dev.proxyfox.common.printFancy
 import dev.proxyfox.database.DatabaseMain
+import dev.proxyfox.markt.MarkdownParser
 
 suspend fun main(args: Array<String>) = BotMain.main(args)
 
@@ -24,6 +25,8 @@ object BotMain {
         System.setProperty("io.ktor.random.secure.random.provider", "DRBG")
 
         printFancy("Initializing ProxyFox")
+
+        MarkdownParser.addDefaultRules()
 
         // Setup database
         DatabaseMain.main(findUnixValue(args, "--database="))
