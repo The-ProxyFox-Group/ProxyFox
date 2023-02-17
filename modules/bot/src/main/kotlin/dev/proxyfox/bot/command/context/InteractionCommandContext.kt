@@ -13,6 +13,7 @@ import dev.kord.core.behavior.channel.GuildChannelBehavior
 import dev.kord.core.behavior.channel.MessageChannelBehavior
 import dev.kord.core.behavior.interaction.respondEphemeral
 import dev.kord.core.behavior.interaction.respondPublic
+import dev.kord.core.behavior.interaction.response.respond
 import dev.kord.core.entity.*
 import dev.kord.core.event.interaction.ChatInputCommandInteractionCreateEvent
 import dev.kord.rest.builder.message.EmbedBuilder
@@ -29,10 +30,10 @@ class InteractionCommandContext(value: ChatInputCommandInteractionCreateEvent) :
     override val command: String = ""
 
     override suspend fun menu(action: MenuBuilder) {
-        val message = value.interaction.respondEphemeral {
+        val message = value.interaction.deferEphemeralResponse()
+        val menu = InteractionCommandMenu(message.respond {
             content = "Thinking..."
-        }
-        val menu = InteractionCommandMenu(message)
+        })
         menu.action()
         menu.init()
     }

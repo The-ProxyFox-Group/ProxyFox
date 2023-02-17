@@ -254,6 +254,11 @@ object MiscCommands : CommandRegistrar {
                 }
             }
         }
+        deferChatInputCommand("pluralkit", "Commands for PluralKit integration with ProxyFox") {
+            subCommand("token", "Store you PluralKit token!") {
+
+            }
+        }
     }
 
     override suspend fun registerTextCommands() {
@@ -272,7 +277,6 @@ object MiscCommands : CommandRegistrar {
                 }
             }
         }
-        //TODO: export --full
         Commands.parser.literal("export") {
             runs {
                 val system = database.fetchSystemFromUser(getUser())
@@ -497,7 +501,6 @@ object MiscCommands : CommandRegistrar {
                 }
             }
         }
-
         Commands.parser.literal("moddelay") {
             runs {
                 val guild = getGuild() ?: run {
@@ -516,7 +519,6 @@ object MiscCommands : CommandRegistrar {
                 }
             }
         }
-
         Commands.parser.literal("forcetag", "requiretag") {
             runs {
                 forceTag(this, null)
@@ -532,7 +534,6 @@ object MiscCommands : CommandRegistrar {
                 }
             }
         }
-
         Commands.parser.literal("delete", "del") {
             runs {
                 val system = database.fetchSystemFromUser(getUser())
@@ -547,7 +548,6 @@ object MiscCommands : CommandRegistrar {
                 }
             }
         }
-
         Commands.parser.literal("reproxy", "rp") {
             runs {
                 val system = database.fetchSystemFromUser(getUser())
@@ -580,7 +580,6 @@ object MiscCommands : CommandRegistrar {
                 }
             }
         }
-
         Commands.parser.literal("info", "i") {
             runs {
                 fetchMessageInfo(this, null)
@@ -591,7 +590,6 @@ object MiscCommands : CommandRegistrar {
                 }
             }
         }
-
         Commands.parser.literal("ping", "p") {
             runs {
                 pingMessageAuthor(this, null)
@@ -602,7 +600,6 @@ object MiscCommands : CommandRegistrar {
                 }
             }
         }
-
         Commands.parser.literal("edit", "e") {
             runs {
                 val system = database.fetchSystemFromUser(getUser())
@@ -632,7 +629,6 @@ object MiscCommands : CommandRegistrar {
                 }
             }
         }
-
         Commands.parser.literal("channel", "c") {
             responds("Please provide a channel subcommand")
             literal("proxy", "p") {
@@ -656,15 +652,12 @@ object MiscCommands : CommandRegistrar {
                 }
             }
         }
-
         Commands.parser.literal("debug") {
             runs(::debug)
         }
-
         Commands.parser.literal("fox") {
             runs(::getFox)
         }
-
         Commands.parser.literal("token", "t") {
             runs {
                 val system = database.fetchSystemFromUser(getUser())
@@ -672,7 +665,6 @@ object MiscCommands : CommandRegistrar {
                 token(this, system)
             }
         }
-
         Commands.parser.literal("trust") {
             runs {
                 val system = database.fetchSystemFromUser(getUser())
@@ -723,7 +715,6 @@ object MiscCommands : CommandRegistrar {
                 }
             }
         }
-
         Commands.parser.literal("pluralkit", "pk") {
             literal("pull", "get", "download") {
 
@@ -766,6 +757,30 @@ object MiscCommands : CommandRegistrar {
         token: String?,
         clear: Boolean
     ): Boolean {
+        if (clear) {
+            if (system.pkToken == null) {
+                ctx.respondFailure("You don't have a PluralKit token registered.", true)
+                return false
+            }
+
+            system.pkToken = null
+            database.updateSystem(system)
+            ctx.respondSuccess("Cleared your PluralKit token!", true)
+            return true
+        }
+        token ?: run {
+            ctx.respondSuccess("You have a PluralKit token registered.", true)
+            return true
+        }
+
+        if (ctx.getGuild() != null && ctx is DiscordMessageContext) {
+            ctx.respondFailure("Please do not send your PluralKit token in public.\nI advise you reset it immediately and run this command in DMs")
+            return false
+        }
+
+        system.pkToken = token
+        database.updateSystem(system)
+        ctx.respondSuccess("Successfully updated your PluralKit token", true)
 
         return true
     }
