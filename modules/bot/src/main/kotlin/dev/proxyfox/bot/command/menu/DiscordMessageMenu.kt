@@ -11,9 +11,9 @@ package dev.proxyfox.bot.command.menu
 import dev.kord.core.behavior.edit
 import dev.kord.core.entity.Message
 import dev.kord.core.event.interaction.ButtonInteractionCreateEvent
-import dev.kord.core.on
 import dev.kord.rest.builder.message.modify.MessageModifyBuilder
 import dev.proxyfox.bot.kord
+import dev.proxyfox.common.onlyIf
 
 class DiscordMessageMenu(val message: Message) : DiscordMenu() {
     override suspend fun edit(builder: MessageModifyBuilder.() -> Unit) {
@@ -22,7 +22,7 @@ class DiscordMessageMenu(val message: Message) : DiscordMenu() {
 
     override suspend fun init() {
         jobs.add(
-            kord.on<ButtonInteractionCreateEvent> {
+            kord.onlyIf<ButtonInteractionCreateEvent>({ interaction.message.id }, message.id) {
                 interact(this)
             }
         )

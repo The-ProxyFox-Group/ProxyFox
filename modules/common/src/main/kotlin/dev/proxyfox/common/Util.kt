@@ -8,6 +8,9 @@
 
 package dev.proxyfox.common
 
+import dev.kord.core.Kord
+import dev.kord.core.event.Event
+import dev.kord.core.on
 import org.slf4j.Logger
 import org.slf4j.LoggerFactory
 import java.lang.management.*
@@ -96,4 +99,12 @@ fun Array<String>.trimEach() {
 
 fun Throwable?.throwIfPresent() {
     throw this ?: return
+}
+
+inline fun <reified E : Event> Kord.onlyIf(
+    crossinline getter: E.() -> Any?,
+    compare: Any?,
+    crossinline executor: suspend E.() -> Unit
+) = on<E> {
+    if (getter() == compare) executor()
 }

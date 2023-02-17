@@ -11,9 +11,9 @@ package dev.proxyfox.bot.command.menu
 import dev.kord.core.behavior.interaction.response.edit
 import dev.kord.core.entity.interaction.response.EphemeralMessageInteractionResponse
 import dev.kord.core.event.interaction.ButtonInteractionCreateEvent
-import dev.kord.core.on
 import dev.kord.rest.builder.message.modify.MessageModifyBuilder
 import dev.proxyfox.bot.kord
+import dev.proxyfox.common.onlyIf
 
 class InteractionCommandMenu(val interaction: EphemeralMessageInteractionResponse) : DiscordMenu() {
     override suspend fun edit(builder: MessageModifyBuilder.() -> Unit) {
@@ -22,15 +22,15 @@ class InteractionCommandMenu(val interaction: EphemeralMessageInteractionRespons
 
     override suspend fun init() {
         jobs.add(
-            kord.on<ButtonInteractionCreateEvent> {
+            kord.onlyIf<ButtonInteractionCreateEvent>({ interaction.message.id }, interaction.message.id) {
                 interact(this)
             }
         )
         super.init()
     }
 
+
     private suspend fun interact(button: ButtonInteractionCreateEvent) {
-        if (button.interaction.message.id != interaction.message.id) return
         button.interaction.deferEphemeralMessageUpdate()
         active!!.click(button.interaction.componentId)
     }
