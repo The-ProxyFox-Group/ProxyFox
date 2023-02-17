@@ -9,7 +9,6 @@
 package dev.proxyfox.bot.command
 
 import dev.kord.common.entity.ButtonStyle
-import dev.kord.core.Kord
 import dev.kord.rest.NamedFile
 import dev.kord.rest.builder.interaction.SubCommandBuilder
 import dev.kord.rest.builder.interaction.subCommand
@@ -29,7 +28,6 @@ import dev.proxyfox.bot.prompts.TimedYesNoPrompt
 import dev.proxyfox.bot.system
 import dev.proxyfox.command.node.builtin.*
 import dev.proxyfox.common.fromColor
-import dev.proxyfox.common.printStep
 import dev.proxyfox.common.toColor
 import dev.proxyfox.database.database
 import dev.proxyfox.database.etc.exporter.Exporter
@@ -41,15 +39,16 @@ import io.ktor.utils.io.jvm.javaio.*
  * Commands for accessing and changing system settings
  * @author Oliver
  * */
-object SystemCommands {
+object SystemCommands : CommandRegistrar {
     var interactionExecutors: HashMap<String, suspend InteractionCommandContext.() -> Boolean> = hashMapOf()
 
     fun SubCommandBuilder.runs(action: suspend InteractionCommandContext.() -> Boolean) {
         interactionExecutors[name] = action
     }
 
-    suspend fun Kord.registerSystemCommands() {
-        printStep("Registering system commands", 3)
+    override val displayName: String = "System"
+
+    override suspend fun registerSlashCommands() {
         deferChatInputCommand("system", "Manage or create a system!") {
             subCommand("fetch", "Fetch a system card!") {
                 system()
@@ -173,8 +172,7 @@ object SystemCommands {
         }
     }
 
-    suspend fun register() {
-        printStep("Registering system commands", 3)
+    override suspend fun registerTextCommands() {
         Commands.parser.literal("list", "l") {
             runs {
                 val system = database.fetchSystemFromUser(getUser())

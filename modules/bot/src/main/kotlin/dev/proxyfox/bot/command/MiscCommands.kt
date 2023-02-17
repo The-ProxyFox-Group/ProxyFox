@@ -11,7 +11,6 @@ package dev.proxyfox.bot.command
 import dev.kord.common.entity.ButtonStyle
 import dev.kord.common.entity.Permission
 import dev.kord.common.entity.Snowflake
-import dev.kord.core.Kord
 import dev.kord.core.behavior.channel.asChannelOf
 import dev.kord.core.behavior.channel.threads.ThreadChannelBehavior
 import dev.kord.rest.NamedFile
@@ -25,6 +24,7 @@ import dev.proxyfox.bot.webhook.GuildMessage
 import dev.proxyfox.bot.webhook.WebhookUtil
 import dev.proxyfox.command.node.builtin.*
 import dev.proxyfox.common.*
+import dev.proxyfox.common.annotations.DontExpose
 import dev.proxyfox.database.database
 import dev.proxyfox.database.displayDate
 import dev.proxyfox.database.etc.exporter.Exporter
@@ -51,7 +51,7 @@ import kotlin.math.floor
  * Miscellaneous commands
  * @author Oliver
  * */
-object MiscCommands {
+object MiscCommands : CommandRegistrar {
     private val roleMatcher = Regex("\\d+")
     var infoInteractionExecutors: HashMap<String, suspend InteractionCommandContext.() -> Boolean> = hashMapOf()
     var moderationInteractionExecutors: HashMap<String, suspend InteractionCommandContext.() -> Boolean> = hashMapOf()
@@ -66,8 +66,9 @@ object MiscCommands {
         }[name] = action
     }
 
-    suspend fun Kord.registerMiscCommands() {
-        printStep("Registering misc commands", 3)
+    override val displayName: String = "Misc"
+
+    override suspend fun registerSlashCommands() {
         deferChatInputCommand("info", "Fetches info about the bot") {
             subCommand("debug", "Fetch debug information about the bot") {
                 runs("info") {
@@ -255,8 +256,7 @@ object MiscCommands {
         }
     }
 
-    suspend fun register() {
-        printStep("Registering misc commands", 3)
+    override suspend fun registerTextCommands() {
         Commands.parser.literal("import") {
             runs {
                 import(this, null)
@@ -734,15 +734,40 @@ object MiscCommands {
             }
 
             literal("token") {
-                literal("clear", "reset", "remove") {
+                runs {
+                    val system = database.fetchSystemFromUser(getUser())
+                    if (!checkSystem(this, system)) return@runs false
+                    token(this, system, null, false)
+                }
 
+                literal("clear", "reset", "remove") {
+                    runs {
+                        val system = database.fetchSystemFromUser(getUser())
+                        if (!checkSystem(this, system)) return@runs false
+                        token(this, system, null, true)
+                    }
                 }
 
                 greedy("token") { getToken ->
-
+                    runs {
+                        val system = database.fetchSystemFromUser(getUser())
+                        if (!checkSystem(this, system)) return@runs false
+                        token(this, system, getToken(), false)
+                    }
                 }
             }
         }
+    }
+
+    @OptIn(DontExpose::class)
+    private suspend fun <T> token(
+        ctx: DiscordContext<T>,
+        system: SystemRecord,
+        token: String?,
+        clear: Boolean
+    ): Boolean {
+
+        return true
     }
 
     private suspend fun <T> forceTag(ctx: DiscordContext<T>, enabled: Boolean?): Boolean {

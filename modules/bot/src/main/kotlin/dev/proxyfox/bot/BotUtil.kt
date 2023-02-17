@@ -34,12 +34,7 @@ import dev.kord.rest.builder.interaction.GlobalChatInputCreateBuilder
 import dev.kord.rest.builder.message.EmbedBuilder
 import dev.kord.rest.json.request.ApplicationCommandCreateRequest
 import dev.kord.rest.request.KtorRequestException
-import dev.proxyfox.bot.command.Commands
-import dev.proxyfox.bot.command.GroupCommands.registerGroupCommands
-import dev.proxyfox.bot.command.MemberCommands.registerMemberCommands
-import dev.proxyfox.bot.command.MiscCommands.registerMiscCommands
-import dev.proxyfox.bot.command.SwitchCommands.registerSwitchCommands
-import dev.proxyfox.bot.command.SystemCommands.registerSystemCommands
+import dev.proxyfox.bot.command.*
 import dev.proxyfox.bot.command.interaction.ProxyFoxChatInputCreateBuilderImpl
 import dev.proxyfox.common.*
 import dev.proxyfox.database.database
@@ -141,9 +136,7 @@ suspend fun login() {
         handleModal()
     }
 
-    kord.registerApplicationCommands()
-
-    Commands.register()
+    kord.registerCommands()
 
     kord.on<MessageCommandInteractionCreateEvent> {
         onInteract()
@@ -183,17 +176,19 @@ suspend fun login() {
     }
 }
 
-suspend fun Kord.registerApplicationCommands() {
-    printStep("Registering slash commands", 2)
+suspend fun Kord.registerCommands() {
+    printStep("Registering commands", 2)
     createGlobalMessageCommand("Delete Message")
     createGlobalMessageCommand("Fetch Message Info")
     createGlobalMessageCommand("Ping Message Author")
     createGlobalMessageCommand("Edit Message")
-    registerSystemCommands()
-    registerGroupCommands()
-    registerMemberCommands()
-    registerSwitchCommands()
-    registerMiscCommands()
+    Commands {
+        +SystemCommands
+        +MemberCommands
+        +GroupCommands
+        +SwitchCommands
+        +MiscCommands
+    }
 
     scope.launch {
         rest.interaction.createGlobalApplicationCommands(

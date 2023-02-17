@@ -10,7 +10,6 @@ package dev.proxyfox.bot.command
 
 import dev.kord.common.entity.ButtonStyle
 import dev.kord.common.entity.Snowflake
-import dev.kord.core.Kord
 import dev.kord.rest.builder.interaction.SubCommandBuilder
 import dev.kord.rest.builder.interaction.subCommand
 import dev.proxyfox.bot.command.context.DiscordContext
@@ -30,7 +29,10 @@ import dev.proxyfox.command.node.builtin.greedy
 import dev.proxyfox.command.node.builtin.literal
 import dev.proxyfox.command.node.builtin.string
 import dev.proxyfox.command.node.builtin.unixLiteral
-import dev.proxyfox.common.*
+import dev.proxyfox.common.fromColor
+import dev.proxyfox.common.ifBlankThenNull
+import dev.proxyfox.common.notBlank
+import dev.proxyfox.common.toColor
 import dev.proxyfox.database.database
 import dev.proxyfox.database.displayDate
 import dev.proxyfox.database.records.member.MemberProxyTagRecord
@@ -45,15 +47,14 @@ import kotlinx.datetime.toJavaLocalDate
  * Commands for accessing and changing system  settings
  * @author Oliver
  * */
-object MemberCommands {
+object MemberCommands : CommandRegistrar {
     var interactionExecutors: HashMap<String, suspend InteractionCommandContext.() -> Boolean> = hashMapOf()
 
     fun SubCommandBuilder.runs(action: suspend InteractionCommandContext.() -> Boolean) {
         interactionExecutors[name] = action
     }
 
-    suspend fun Kord.registerMemberCommands() {
-        printStep("Registering member commands", 3)
+    override suspend fun registerSlashCommands() {
         deferChatInputCommand("member", "Manage or create a system member!") {
             subCommand("create", "Create a member") {
                 name()
@@ -867,8 +868,9 @@ object MemberCommands {
         }
     }
 
-    suspend fun register() {
-        printStep("Registering member commands", 3)
+    override val displayName: String = "Member"
+
+    override suspend fun registerTextCommands() {
         //TODO: Dedupe code
         Commands.parser.registerBaseMemberCommands {
             database.fetchSystemFromUser(getUser())

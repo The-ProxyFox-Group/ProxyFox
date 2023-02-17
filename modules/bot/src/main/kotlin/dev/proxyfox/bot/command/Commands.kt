@@ -12,6 +12,7 @@ import dev.kord.rest.builder.interaction.*
 import dev.proxyfox.bot.command.context.DiscordContext
 import dev.proxyfox.bot.command.context.InteractionCommandContext
 import dev.proxyfox.command.CommandParser
+import dev.proxyfox.common.applyAsync
 import dev.proxyfox.common.printStep
 import dev.proxyfox.database.database
 import dev.proxyfox.database.records.group.GroupRecord
@@ -29,13 +30,14 @@ import kotlin.contracts.contract
 object Commands {
     val parser = CommandParser<Any, DiscordContext<Any>>()
 
-    suspend fun register() {
-        printStep("Registering text commands", 2)
-        SystemCommands.register()
-        GroupCommands.register()
-        MemberCommands.register()
-        SwitchCommands.register()
-        MiscCommands.register()
+    suspend operator fun invoke(action: suspend Commands.() -> Unit) {
+        applyAsync(action)
+    }
+
+    suspend operator fun CommandRegistrar.unaryPlus() {
+        printStep("Registering $displayName commands", 3)
+        registerTextCommands()
+        registerSlashCommands()
     }
 }
 

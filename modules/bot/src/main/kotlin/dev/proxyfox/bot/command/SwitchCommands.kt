@@ -9,7 +9,6 @@
 package dev.proxyfox.bot.command
 
 import dev.kord.common.entity.ButtonStyle
-import dev.kord.core.Kord
 import dev.kord.rest.builder.interaction.SubCommandBuilder
 import dev.kord.rest.builder.interaction.string
 import dev.kord.rest.builder.interaction.subCommand
@@ -25,7 +24,6 @@ import dev.proxyfox.command.NodeHolder
 import dev.proxyfox.command.node.builtin.greedy
 import dev.proxyfox.command.node.builtin.literal
 import dev.proxyfox.command.node.builtin.stringList
-import dev.proxyfox.common.printStep
 import dev.proxyfox.common.trimEach
 import dev.proxyfox.database.database
 import dev.proxyfox.database.records.system.SystemRecord
@@ -34,15 +32,16 @@ import kotlinx.datetime.Clock
 import kotlinx.datetime.DateTimeUnit
 import kotlinx.datetime.minus
 
-object SwitchCommands {
+object SwitchCommands : CommandRegistrar {
     var interactionExecutors: HashMap<String, suspend InteractionCommandContext.() -> Boolean> = hashMapOf()
 
     fun SubCommandBuilder.runs(action: suspend InteractionCommandContext.() -> Boolean) {
         interactionExecutors[name] = action
     }
 
-    suspend fun Kord.registerSwitchCommands() {
-        printStep("Registering switch commands", 3)
+    override val displayName: String = "Switch"
+
+    override suspend fun registerSlashCommands() {
         deferChatInputCommand("switch", "Create or manage switches!") {
             subCommand("create", "Create a switch") {
                 string("members", "The members to use, comma separated") {
@@ -70,7 +69,7 @@ object SwitchCommands {
                 runs {
                     val system = getSystem()
                     if (!checkSystem(this, system)) return@runs false
-                    val switch = database.fetchLatestSwitch(system!!.id)
+                    val switch = database.fetchLatestSwitch(system.id)
                     if (!checkSwitch(this, switch)) return@runs false
                     val oldSwitch = database.fetchSecondLatestSwitch(system.id)
                     delete(this, system, switch, oldSwitch)
@@ -119,7 +118,7 @@ object SwitchCommands {
                 runs {
                     val system = getSys()
                     if (!checkSystem(this, system)) return@runs false
-                    val switch = database.fetchLatestSwitch(system!!.id)
+                    val switch = database.fetchLatestSwitch(system.id)
                     if (!checkSwitch(this, switch)) return@runs false
                     val oldSwitch = database.fetchSecondLatestSwitch(system.id)
                     delete(this, system, switch, oldSwitch)
@@ -162,8 +161,7 @@ object SwitchCommands {
         }
     }
 
-    suspend fun register() {
-        printStep("Registering switch commands", 3)
+    override suspend fun registerTextCommands() {
         Commands.parser.registerSwitchCommands {
             database.fetchSystemFromUser(getUser())
         }
