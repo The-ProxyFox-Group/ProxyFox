@@ -8,7 +8,7 @@ kotlinx_coroutines = "1.6.4"
 # ProxyFox Libraries
 proxyfox_command = "1.7"
 pluralkt = "1.8"
-markt = "1.0"
+markt = "1.4"
 
 # Database
 postgres = "42.3.3"

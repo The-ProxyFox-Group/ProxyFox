@@ -40,6 +40,7 @@ import dev.proxyfox.common.*
 import dev.proxyfox.database.database
 import dev.proxyfox.database.records.member.MemberRecord
 import dev.proxyfox.database.records.system.SystemRecord
+import dev.proxyfox.markt.MarkdownParser
 import io.ktor.client.*
 import io.ktor.client.engine.cio.*
 import io.ktor.client.request.forms.*
@@ -81,6 +82,8 @@ val errorChannelId = try {
     null
 }
 var errorChannel: TextChannel? = null
+
+val markdownParser = MarkdownParser()
 
 @OptIn(PrivilegedIntent::class)
 suspend fun login() {

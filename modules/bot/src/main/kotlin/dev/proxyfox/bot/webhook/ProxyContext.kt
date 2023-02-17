@@ -17,12 +17,12 @@ import dev.kord.rest.builder.message.create.embed
 import dev.kord.rest.request.KtorRequestException
 import dev.proxyfox.bot.http
 import dev.proxyfox.bot.kord
+import dev.proxyfox.bot.markdownParser
 import dev.proxyfox.common.ellipsis
 import dev.proxyfox.database.database
 import dev.proxyfox.database.records.member.MemberProxyTagRecord
 import dev.proxyfox.database.records.member.MemberRecord
 import dev.proxyfox.database.records.system.SystemRecord
-import dev.proxyfox.markt.MarkdownParser
 import dev.proxyfox.markt.RootNode
 import dev.proxyfox.markt.StringNode
 import io.ktor.client.request.*
@@ -99,7 +99,7 @@ data class ProxyContext(
                             icon = user.avatar?.url ?: user.defaultAvatar.url
                             url = link
                         }
-                        var msgRef = MarkdownParser.parse(ref.content)
+                        var msgRef = markdownParser.parse(ref.content)
                         if (msgRef.length > 100) {
                             // We should be getting a RootNode returned here.
                             msgRef = msgRef.truncate(100) as RootNode
