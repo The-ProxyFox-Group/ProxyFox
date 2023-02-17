@@ -26,6 +26,7 @@ import dev.proxyfox.bot.schedule
 import dev.proxyfox.bot.scheduler
 import dev.proxyfox.command.CommandContext
 import dev.proxyfox.command.NodeActionParam
+import dev.proxyfox.command.menu.CommandMenu
 import dev.proxyfox.command.node.CommandNode
 import dev.proxyfox.command.node.builtin.int
 import dev.proxyfox.command.node.builtin.string
@@ -66,22 +67,27 @@ abstract class DiscordContext<T>(override val value: T) : CommandContext<T>() {
         messageId: Snowflake?
     ): Pair<Message?, ProxiedMessageRecord?>
 
-    suspend fun interactionMenu(action: suspend DiscordMenu.() -> Unit) {
-        menu {
-            this as DiscordMenu
+    override suspend fun menu(action: suspend CommandMenu.() -> Unit) {
+        interactionMenu {
             action()
         }
     }
 
+    abstract suspend fun interactionMenu(private: Boolean = false, action: suspend DiscordMenu.() -> Unit)
+
     suspend fun timedYesNoPrompt(
         message: String,
         yes: Pair<String, suspend MessageModifyBuilder.() -> Unit>,
-        no: Pair<String, suspend MessageModifyBuilder.() -> Unit> = "Cancel" to { content = "Action cancelled." },
+        no: Pair<String, suspend MessageModifyBuilder.() -> Unit> = "Cancel" to {
+            content = "Action cancelled."
+            components = null
+        },
         timeout: Duration = 1.minutes,
         yesEmoji: DiscordPartialEmoji = Emojis.check,
         noEmoji: DiscordPartialEmoji = Emojis.multiply,
         timeoutAction: suspend MessageModifyBuilder.() -> Unit = no.second,
-        danger: Boolean = false
+        danger: Boolean = false,
+        public: Boolean = true
     ) {
         interactionMenu {
             default {

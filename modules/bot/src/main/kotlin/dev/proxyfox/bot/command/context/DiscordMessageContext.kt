@@ -13,8 +13,8 @@ import dev.kord.core.behavior.channel.MessageChannelBehavior
 import dev.kord.core.behavior.channel.createMessage
 import dev.kord.core.entity.*
 import dev.kord.rest.builder.message.EmbedBuilder
+import dev.proxyfox.bot.command.menu.DiscordMenu
 import dev.proxyfox.bot.command.menu.DiscordMessageMenu
-import dev.proxyfox.command.MenuBuilder
 import dev.proxyfox.common.applyAsync
 import dev.proxyfox.database.database
 import dev.proxyfox.database.records.misc.ProxiedMessageRecord
@@ -79,9 +79,9 @@ class DiscordMessageContext(message: Message, override val command: String): Dis
         return message to databaseMessage
     }
 
-    override suspend fun menu(action: MenuBuilder) {
-        val message = getChannel().createMessage("Thinking...")
-        val menu = DiscordMessageMenu(message)
+    override suspend fun interactionMenu(private: Boolean, action: suspend DiscordMenu.() -> Unit) {
+        val message = getChannel(private).createMessage("Thinking...")
+        val menu = DiscordMessageMenu(message, getUser()?.id ?: Snowflake(0))
         menu.action()
         menu.init()
     }
