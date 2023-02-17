@@ -16,8 +16,10 @@ import dev.proxyfox.bot.kord
 import dev.proxyfox.common.onlyIf
 
 class InteractionCommandMenu(val interaction: EphemeralMessageInteractionResponse) : DiscordMenu() {
-    override suspend fun edit(builder: MessageModifyBuilder.() -> Unit) {
-        interaction.edit(builder)
+    override suspend fun edit(builder: suspend MessageModifyBuilder.() -> Unit) {
+        interaction.edit {
+            builder()
+        }
     }
 
     override suspend fun init() {

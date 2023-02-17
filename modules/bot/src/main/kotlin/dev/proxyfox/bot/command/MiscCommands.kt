@@ -8,7 +8,6 @@
 
 package dev.proxyfox.bot.command
 
-import dev.kord.common.entity.ButtonStyle
 import dev.kord.common.entity.Permission
 import dev.kord.common.entity.Snowflake
 import dev.kord.core.behavior.channel.asChannelOf
@@ -18,8 +17,6 @@ import dev.kord.rest.builder.interaction.*
 import dev.proxyfox.bot.*
 import dev.proxyfox.bot.command.context.*
 import dev.proxyfox.bot.command.node.attachment
-import dev.proxyfox.bot.prompts.Button
-import dev.proxyfox.bot.prompts.TimedYesNoPrompt
 import dev.proxyfox.bot.webhook.GuildMessage
 import dev.proxyfox.bot.webhook.WebhookUtil
 import dev.proxyfox.command.CommandParser
@@ -831,11 +828,9 @@ object MiscCommands : CommandRegistrar {
             return true
         }
 
-        TimedYesNoPrompt.build(
-            runner = ctx.getUser()!!.id,
-            channel = ctx.getChannel(),
+        ctx.timedYesNoPrompt(
             message = "Are you sure you want to trust this user with level `${trustLevel.name}`?\nThis can be changed at any time.",
-            yes = Button("Trust user", Button.check, ButtonStyle.Primary) {
+            yes = "Trust user" to {
                 system.trust[user] = trustLevel
                 database.updateSystem(system)
                 content = "User trust updated."

@@ -8,10 +8,10 @@
 
 package dev.proxyfox.bot.command
 
-import dev.kord.common.entity.ButtonStyle
 import dev.kord.rest.NamedFile
 import dev.kord.rest.builder.interaction.SubCommandBuilder
 import dev.kord.rest.builder.interaction.subCommand
+import dev.proxyfox.bot.*
 import dev.proxyfox.bot.command.MemberCommands.registerBaseMemberCommands
 import dev.proxyfox.bot.command.SwitchCommands.registerSwitchCommands
 import dev.proxyfox.bot.command.context.DiscordContext
@@ -19,13 +19,7 @@ import dev.proxyfox.bot.command.context.InteractionCommandContext
 import dev.proxyfox.bot.command.context.runs
 import dev.proxyfox.bot.command.context.system
 import dev.proxyfox.bot.command.node.attachment
-import dev.proxyfox.bot.deferChatInputCommand
-import dev.proxyfox.bot.hasUnixValue
-import dev.proxyfox.bot.kordColor
-import dev.proxyfox.bot.prompts.Button
 import dev.proxyfox.bot.prompts.Pager
-import dev.proxyfox.bot.prompts.TimedYesNoPrompt
-import dev.proxyfox.bot.system
 import dev.proxyfox.command.CommandParser
 import dev.proxyfox.command.node.builtin.*
 import dev.proxyfox.common.fromColor
@@ -696,12 +690,10 @@ object SystemCommands : CommandRegistrar {
     }
 
     private suspend fun <T> delete(ctx: DiscordContext<T>): Boolean {
-        TimedYesNoPrompt.build(
-            runner = ctx.getUser()!!.id,
-            channel = ctx.getChannel(),
+        ctx.timedYesNoPrompt(
             message = "Are you sure you want to delete your system?\n" +
                     "The data will be lost forever (A long time!)",
-            yes = Button("Delete system", Button.wastebasket, ButtonStyle.Danger) {
+            yes = "Delete system" to {
                 val export = Exporter.export(ctx.getUser()!!.id.value)
                 ctx.respondFiles(
                     null,
@@ -710,6 +702,8 @@ object SystemCommands : CommandRegistrar {
                 database.dropSystem(ctx.getUser()!!)
                 content = "System deleted."
             },
+            yesEmoji = Emojis.wastebasket,
+            danger = true
         )
         return true
     }

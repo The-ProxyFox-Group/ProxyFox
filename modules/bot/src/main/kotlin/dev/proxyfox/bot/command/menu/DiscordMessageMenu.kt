@@ -16,8 +16,10 @@ import dev.proxyfox.bot.kord
 import dev.proxyfox.common.onlyIf
 
 class DiscordMessageMenu(val message: Message) : DiscordMenu() {
-    override suspend fun edit(builder: MessageModifyBuilder.() -> Unit) {
-        message.edit(builder)
+    override suspend fun edit(builder: suspend MessageModifyBuilder.() -> Unit) {
+        message.edit {
+            builder()
+        }
     }
 
     override suspend fun init() {

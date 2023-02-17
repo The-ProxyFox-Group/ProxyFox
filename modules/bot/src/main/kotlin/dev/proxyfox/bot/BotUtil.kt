@@ -54,16 +54,27 @@ import kotlinx.datetime.Instant
 import java.lang.Integer.*
 import java.util.*
 import java.util.concurrent.Executors
+import java.util.concurrent.ScheduledExecutorService
+import java.util.concurrent.TimeUnit
 import kotlin.contracts.ExperimentalContracts
 import kotlin.contracts.InvocationKind
 import kotlin.contracts.contract
 import kotlin.time.Duration
 import kotlin.time.Duration.Companion.milliseconds
 import kotlin.time.Duration.Companion.minutes
+import kotlin.time.DurationUnit
 
 const val UPLOAD_LIMIT = 1024 * 1024 * 8
 
 val scheduler = Executors.newScheduledThreadPool(Runtime.getRuntime().availableProcessors())
+
+suspend fun ScheduledExecutorService.schedule(duration: Duration, action: suspend () -> Unit) {
+    schedule({
+        runBlocking {
+            action()
+        }
+    }, duration.toLong(DurationUnit.SECONDS), TimeUnit.SECONDS)
+}
 
 private val idUrl = System.getenv("PROXYFOX_KEY").let { it.substring(0, it.indexOf('.')) }
 

@@ -8,21 +8,15 @@
 
 package dev.proxyfox.bot.command
 
-import dev.kord.common.entity.ButtonStyle
 import dev.kord.common.entity.Snowflake
 import dev.kord.rest.builder.interaction.SubCommandBuilder
 import dev.kord.rest.builder.interaction.subCommand
+import dev.proxyfox.bot.*
 import dev.proxyfox.bot.command.context.DiscordContext
 import dev.proxyfox.bot.command.context.InteractionCommandContext
 import dev.proxyfox.bot.command.context.guild
 import dev.proxyfox.bot.command.context.runs
 import dev.proxyfox.bot.command.node.attachment
-import dev.proxyfox.bot.deferChatInputCommand
-import dev.proxyfox.bot.kord
-import dev.proxyfox.bot.kordColor
-import dev.proxyfox.bot.member
-import dev.proxyfox.bot.prompts.Button
-import dev.proxyfox.bot.prompts.TimedYesNoPrompt
 import dev.proxyfox.command.CommandParser
 import dev.proxyfox.command.NodeHolder
 import dev.proxyfox.command.node.CommandNode
@@ -1421,15 +1415,14 @@ object MemberCommands : CommandRegistrar {
             return false
         }
 
-        TimedYesNoPrompt.build(
-            runner = ctx.getUser()!!.id,
-            channel = ctx.getChannel(),
+        ctx.timedYesNoPrompt(
             message = "Are you sure you want to delete member `${member.asString()}`?\n" +
                     "Their data will be lost forever (A long time!)",
-            yes = Button("Delete Member", Button.wastebasket, ButtonStyle.Danger) {
+            yes = "Delete Member" to {
                 database.dropMember(member.systemId, member.id)
                 content = "Member deleted"
             },
+            yesEmoji = Emojis.wastebasket
         )
 
         return true
@@ -1448,9 +1441,7 @@ object MemberCommands : CommandRegistrar {
 
         val member = database.fetchMemberFromSystemAndName(system.id, name, false)
         if (member != null) {
-            TimedYesNoPrompt.build(
-                runner = ctx.getUser()!!.id,
-                channel = ctx.getChannel(),
+            ctx.timedYesNoPrompt(
                 message = "You already have a member named \"${member.name}\" (`${member.id}`)." +
                         "\nDo you want to create another member with the same name?",
                 yes = "Create $name" to {

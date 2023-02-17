@@ -8,6 +8,8 @@
 
 package dev.proxyfox.bot.command.context
 
+import dev.kord.common.entity.ButtonStyle
+import dev.kord.common.entity.DiscordPartialEmoji
 import dev.kord.common.entity.Permission
 import dev.kord.common.entity.Snowflake
 import dev.kord.core.behavior.channel.MessageChannelBehavior
@@ -15,16 +17,23 @@ import dev.kord.core.behavior.channel.createMessage
 import dev.kord.core.entity.*
 import dev.kord.rest.NamedFile
 import dev.kord.rest.builder.message.EmbedBuilder
+import dev.kord.rest.builder.message.modify.MessageModifyBuilder
+import dev.kord.rest.builder.message.modify.actionRow
+import dev.proxyfox.bot.Emojis
 import dev.proxyfox.bot.command.menu.DiscordMenu
+import dev.proxyfox.bot.command.menu.DiscordScreen
+import dev.proxyfox.bot.schedule
+import dev.proxyfox.bot.scheduler
 import dev.proxyfox.command.CommandContext
 import dev.proxyfox.command.NodeActionParam
-import dev.proxyfox.command.menu.CommandMenu
 import dev.proxyfox.command.node.CommandNode
 import dev.proxyfox.command.node.builtin.int
 import dev.proxyfox.command.node.builtin.string
 import dev.proxyfox.database.database
 import dev.proxyfox.database.records.misc.ProxiedMessageRecord
 import dev.proxyfox.database.records.system.SystemRecord
+import kotlin.time.Duration
+import kotlin.time.Duration.Companion.minutes
 
 abstract class DiscordContext<T>(override val value: T) : CommandContext<T>() {
     abstract fun getAttachment(): Attachment?
@@ -58,8 +67,56 @@ abstract class DiscordContext<T>(override val value: T) : CommandContext<T>() {
     ): Pair<Message?, ProxiedMessageRecord?>
 
     suspend fun interactionMenu(action: suspend DiscordMenu.() -> Unit) {
-        @Suppress("UNCHECKED_CAST")
-        menu(action as CommandMenu.() -> Unit)
+        menu {
+            this as DiscordMenu
+            action()
+        }
+    }
+
+    suspend fun timedYesNoPrompt(
+        message: String,
+        yes: Pair<String, suspend MessageModifyBuilder.() -> Unit>,
+        no: Pair<String, suspend MessageModifyBuilder.() -> Unit> = "Cancel" to { content = "Action cancelled." },
+        timeout: Duration = 1.minutes,
+        yesEmoji: DiscordPartialEmoji = Emojis.check,
+        noEmoji: DiscordPartialEmoji = Emojis.multiply,
+        timeoutAction: suspend MessageModifyBuilder.() -> Unit = no.second,
+        danger: Boolean = false
+    ) {
+        interactionMenu {
+            default {
+                this as DiscordScreen
+                onInit {
+                    edit {
+                        content = message
+                        actionRow {
+                            interactionButton(if (danger) ButtonStyle.Danger else ButtonStyle.Primary, "yes") {
+                                emoji = yesEmoji
+                                label = yes.first
+                            }
+                            interactionButton(ButtonStyle.Secondary, "no") {
+                                emoji = noEmoji
+                                label = no.first
+                            }
+                        }
+                    }
+                    scheduler.schedule(timeout) {
+                        if (!closed) {
+                            edit {
+                                timeoutAction()
+                            }
+                            close()
+                        }
+                    }
+                }
+                button("yes") {
+                    edit(yes.second)
+                }
+                button("no") {
+                    edit(no.second)
+                }
+            }
+        }
     }
 }
 

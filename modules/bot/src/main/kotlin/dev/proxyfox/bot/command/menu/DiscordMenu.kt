@@ -16,15 +16,18 @@ import kotlinx.coroutines.Job
 abstract class DiscordMenu : CommandMenu() {
     internal val jobs = arrayListOf<Job>()
 
+    var closed = false
+
     override suspend fun close() {
         jobs.forEach {
             it.cancel()
         }
+        closed = true
     }
 
     override suspend fun createScreen(name: String): CommandScreen {
         return DiscordScreen(name)
     }
 
-    abstract suspend fun edit(builder: MessageModifyBuilder.() -> Unit)
+    abstract suspend fun edit(builder: suspend MessageModifyBuilder.() -> Unit)
 }

@@ -8,18 +8,16 @@
 
 package dev.proxyfox.bot.command
 
-import dev.kord.common.entity.ButtonStyle
 import dev.kord.rest.builder.interaction.SubCommandBuilder
 import dev.kord.rest.builder.interaction.string
 import dev.kord.rest.builder.interaction.subCommand
+import dev.proxyfox.bot.Emojis
 import dev.proxyfox.bot.command.context.DiscordContext
 import dev.proxyfox.bot.command.context.InteractionCommandContext
 import dev.proxyfox.bot.command.context.runs
 import dev.proxyfox.bot.deferChatInputCommand
 import dev.proxyfox.bot.parseDuration
-import dev.proxyfox.bot.prompts.Button
 import dev.proxyfox.bot.prompts.Pager
-import dev.proxyfox.bot.prompts.TimedYesNoPrompt
 import dev.proxyfox.command.CommandParser
 import dev.proxyfox.command.NodeHolder
 import dev.proxyfox.command.node.builtin.greedy
@@ -207,15 +205,14 @@ object SwitchCommands : CommandRegistrar {
             database.fetchMemberFromSystem(system.id, it)?.showDisplayName() ?: "*Unknown*"
         }.joinToString(", ")
 
-        TimedYesNoPrompt.build(
-            runner = ctx.getUser()!!.id,
-            channel = ctx.getChannel(),
+        ctx.timedYesNoPrompt(
             message = "Are you sure you want to move the switch $members back to <t:${nowMinus.epochSeconds}>?",
-            yes = Button("Move switch", Button.move, ButtonStyle.Primary) {
+            yes = "Move switch" to {
                 switch.timestamp = nowMinus
                 database.updateSwitch(switch)
                 content = "Switch updated."
-            }
+            },
+            yesEmoji = Emojis.move
         )
 
         return true
@@ -229,17 +226,17 @@ object SwitchCommands : CommandRegistrar {
 
         val epoch = switch.timestamp.epochSeconds
 
-        TimedYesNoPrompt.build(
-            runner = ctx.getUser()!!.id,
-            channel = ctx.getChannel(),
+        ctx.timedYesNoPrompt(
             message = """
                 Are you sure you want to delete the latest switch (${switch.membersAsString()}, <t:$epoch:R>)? ${if (oldSwitch != null) "\nThe previous switch would be at <t:${oldSwitch.timestamp.epochSeconds}:R>" else ""}
                 The data will be lost forever (A long time!)
                 """.trimIndent(),
-            yes = Button("Delete switch", Button.wastebasket, ButtonStyle.Danger) {
+            yes = "Delete switch" to {
                 database.dropSwitch(switch)
                 content = "Switch deleted."
             },
+            yesEmoji = Emojis.wastebasket,
+            danger = true
         )
 
         return true
