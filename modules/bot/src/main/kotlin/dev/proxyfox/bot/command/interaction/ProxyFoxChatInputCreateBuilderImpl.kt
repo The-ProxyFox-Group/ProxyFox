@@ -19,7 +19,7 @@ import dev.kord.rest.builder.interaction.OptionsBuilder
 import dev.kord.rest.json.request.ApplicationCommandCreateRequest
 
 /**
- * The needed class is internal, so we're keeping our on impl
+ * The needed class is internal, so we're keeping our own impl
  * */
 class ProxyFoxChatInputCreateBuilderImpl(
     override var name: String,

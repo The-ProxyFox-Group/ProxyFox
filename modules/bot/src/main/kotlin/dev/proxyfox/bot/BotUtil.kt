@@ -55,7 +55,6 @@ import kotlinx.coroutines.flow.count
 import kotlinx.coroutines.flow.fold
 import kotlinx.datetime.Clock
 import kotlinx.datetime.Instant
-import java.io.File
 import java.lang.Integer.*
 import java.util.*
 import java.util.concurrent.Executors
@@ -195,26 +194,18 @@ suspend fun Kord.registerApplicationCommands() {
     registerMemberCommands()
     registerSwitchCommands()
     registerMiscCommands()
-    // Only send commands when discord hasn't registered yet
-    val file = File("./.pf-command-lock")
-    if (!file.exists()) {
-        withContext(Dispatchers.IO) {
-            file.createNewFile()
-        }
-        deferredCommands.forEach {
-            scope.launch {
-                rest.interaction.createGlobalApplicationCommand(
-                    resources.applicationId,
-                    it
-                )
-            }
-        }
+
+    scope.launch {
+        rest.interaction.createGlobalApplicationCommands(
+            resources.applicationId,
+            deferredCommands
+        )
     }
 }
 
 val deferredCommands = arrayListOf<ApplicationCommandCreateRequest>()
 
-fun Kord.deferChatInputCommand(
+fun deferChatInputCommand(
     name: String,
     description: String,
     builder: GlobalChatInputCreateBuilder.() -> Unit = {}
