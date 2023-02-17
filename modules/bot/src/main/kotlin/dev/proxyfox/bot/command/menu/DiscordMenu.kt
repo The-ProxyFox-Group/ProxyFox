@@ -23,7 +23,7 @@ abstract class DiscordMenu : CommandMenu() {
     }
 
     override suspend fun createScreen(name: String): CommandScreen {
-        return DiscordScreen(name, this)
+        return DiscordScreen(name)
     }
 
     abstract suspend fun edit(builder: MessageModifyBuilder.() -> Unit)
