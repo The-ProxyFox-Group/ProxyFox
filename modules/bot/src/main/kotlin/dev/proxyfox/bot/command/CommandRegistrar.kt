@@ -8,9 +8,12 @@
 
 package dev.proxyfox.bot.command
 
+import dev.proxyfox.bot.command.context.DiscordContext
+import dev.proxyfox.command.CommandParser
+
 interface CommandRegistrar {
     val displayName: String
 
-    suspend fun registerTextCommands()
+    suspend fun CommandParser<Any, DiscordContext<Any>>.registerTextCommands()
     suspend fun registerSlashCommands()
 }

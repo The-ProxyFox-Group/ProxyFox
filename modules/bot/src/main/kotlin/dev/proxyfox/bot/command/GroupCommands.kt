@@ -15,6 +15,7 @@ import dev.proxyfox.bot.command.context.InteractionCommandContext
 import dev.proxyfox.bot.command.context.runs
 import dev.proxyfox.bot.deferChatInputCommand
 import dev.proxyfox.bot.kordColor
+import dev.proxyfox.command.CommandParser
 import dev.proxyfox.command.NodeHolder
 import dev.proxyfox.command.node.builtin.literal
 import dev.proxyfox.command.node.builtin.string
@@ -47,8 +48,8 @@ object GroupCommands : CommandRegistrar {
 
     override val displayName: String = "Group"
 
-    override suspend fun registerTextCommands() {
-        Commands.parser.registerGroupCommands {
+    override suspend fun CommandParser<Any, DiscordContext<Any>>.registerTextCommands() {
+        registerGroupCommands {
             database.fetchSystemFromUser(getUser())
         }
     }

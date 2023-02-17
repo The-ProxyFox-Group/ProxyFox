@@ -20,6 +20,7 @@ import dev.proxyfox.bot.parseDuration
 import dev.proxyfox.bot.prompts.Button
 import dev.proxyfox.bot.prompts.Pager
 import dev.proxyfox.bot.prompts.TimedYesNoPrompt
+import dev.proxyfox.command.CommandParser
 import dev.proxyfox.command.NodeHolder
 import dev.proxyfox.command.node.builtin.greedy
 import dev.proxyfox.command.node.builtin.literal
@@ -161,8 +162,8 @@ object SwitchCommands : CommandRegistrar {
         }
     }
 
-    override suspend fun registerTextCommands() {
-        Commands.parser.registerSwitchCommands {
+    override suspend fun CommandParser<Any, DiscordContext<Any>>.registerTextCommands() {
+        registerSwitchCommands {
             database.fetchSystemFromUser(getUser())
         }
     }

@@ -22,6 +22,7 @@ import dev.proxyfox.bot.prompts.Button
 import dev.proxyfox.bot.prompts.TimedYesNoPrompt
 import dev.proxyfox.bot.webhook.GuildMessage
 import dev.proxyfox.bot.webhook.WebhookUtil
+import dev.proxyfox.command.CommandParser
 import dev.proxyfox.command.node.builtin.*
 import dev.proxyfox.common.*
 import dev.proxyfox.common.annotations.DontExpose
@@ -261,8 +262,8 @@ object MiscCommands : CommandRegistrar {
         }
     }
 
-    override suspend fun registerTextCommands() {
-        Commands.parser.literal("import") {
+    override suspend fun CommandParser<Any, DiscordContext<Any>>.registerTextCommands() {
+        literal("import") {
             runs {
                 import(this, null)
             }
@@ -277,29 +278,29 @@ object MiscCommands : CommandRegistrar {
                 }
             }
         }
-        Commands.parser.literal("export") {
+        literal("export") {
             runs {
                 val system = database.fetchSystemFromUser(getUser())
                 if (!checkSystem(this, system)) return@runs false
                 export(this)
             }
         }
-        Commands.parser.literal("time") {
+        literal("time") {
             runs(::time)
         }
-        Commands.parser.literal("help") {
+        literal("help") {
             responds(help)
         }
-        Commands.parser.literal("explain") {
+        literal("explain") {
             responds(explain)
         }
-        Commands.parser.literal("invite") {
+        literal("invite") {
             responds(invite)
         }
-        Commands.parser.literal("source") {
+        literal("source") {
             responds(source)
         }
-        Commands.parser.literal("proxy", "p") {
+        literal("proxy", "p") {
             guild { getGuildId ->
                 runs {
                     val system = database.fetchSystemFromUser(getUser())
@@ -349,7 +350,7 @@ object MiscCommands : CommandRegistrar {
                 }
             }
         }
-        Commands.parser.literal("autoproxy", "ap") {
+        literal("autoproxy", "ap") {
             runs {
                 val system = database.fetchSystemFromUser(getUser())
                 if (!checkSystem(this, system)) return@runs false
@@ -386,7 +387,7 @@ object MiscCommands : CommandRegistrar {
                 }
             }
         }
-        Commands.parser.literal("serverautoproxy", "sap") {
+        literal("serverautoproxy", "sap") {
             guild { getGuildId ->
                 runs {
                     val system = database.fetchSystemFromUser(getUser())
@@ -486,7 +487,7 @@ object MiscCommands : CommandRegistrar {
                 }
             }
         }
-        Commands.parser.literal("role") {
+        literal("role") {
             runs {
                 role(this, null, false)
             }
@@ -501,7 +502,7 @@ object MiscCommands : CommandRegistrar {
                 }
             }
         }
-        Commands.parser.literal("moddelay") {
+        literal("moddelay") {
             runs {
                 val guild = getGuild() ?: run {
                     respondFailure("Command not ran in server.")
@@ -519,7 +520,7 @@ object MiscCommands : CommandRegistrar {
                 }
             }
         }
-        Commands.parser.literal("forcetag", "requiretag") {
+        literal("forcetag", "requiretag") {
             runs {
                 forceTag(this, null)
             }
@@ -534,7 +535,7 @@ object MiscCommands : CommandRegistrar {
                 }
             }
         }
-        Commands.parser.literal("delete", "del") {
+        literal("delete", "del") {
             runs {
                 val system = database.fetchSystemFromUser(getUser())
                 if (!checkSystem(this, system, true)) return@runs false
@@ -548,7 +549,7 @@ object MiscCommands : CommandRegistrar {
                 }
             }
         }
-        Commands.parser.literal("reproxy", "rp") {
+        literal("reproxy", "rp") {
             runs {
                 val system = database.fetchSystemFromUser(getUser())
                 if (!checkSystem(this, system, true)) return@runs false
@@ -580,7 +581,7 @@ object MiscCommands : CommandRegistrar {
                 }
             }
         }
-        Commands.parser.literal("info", "i") {
+        literal("info", "i") {
             runs {
                 fetchMessageInfo(this, null)
             }
@@ -590,7 +591,7 @@ object MiscCommands : CommandRegistrar {
                 }
             }
         }
-        Commands.parser.literal("ping", "p") {
+        literal("ping", "p") {
             runs {
                 pingMessageAuthor(this, null)
             }
@@ -600,7 +601,7 @@ object MiscCommands : CommandRegistrar {
                 }
             }
         }
-        Commands.parser.literal("edit", "e") {
+        literal("edit", "e") {
             runs {
                 val system = database.fetchSystemFromUser(getUser())
                 if (!checkSystem(this, system, true)) return@runs false
@@ -629,7 +630,7 @@ object MiscCommands : CommandRegistrar {
                 }
             }
         }
-        Commands.parser.literal("channel", "c") {
+        literal("channel", "c") {
             responds("Please provide a channel subcommand")
             literal("proxy", "p") {
                 runs {
@@ -652,20 +653,20 @@ object MiscCommands : CommandRegistrar {
                 }
             }
         }
-        Commands.parser.literal("debug") {
+        literal("debug") {
             runs(::debug)
         }
-        Commands.parser.literal("fox") {
+        literal("fox") {
             runs(::getFox)
         }
-        Commands.parser.literal("token", "t") {
+        literal("token", "t") {
             runs {
                 val system = database.fetchSystemFromUser(getUser())
                 if (!checkSystem(this, system)) return@runs false
                 token(this, system)
             }
         }
-        Commands.parser.literal("trust") {
+        literal("trust") {
             runs {
                 val system = database.fetchSystemFromUser(getUser())
                 if (!checkSystem(this, system)) return@runs false
@@ -715,7 +716,7 @@ object MiscCommands : CommandRegistrar {
                 }
             }
         }
-        Commands.parser.literal("pluralkit", "pk") {
+        literal("pluralkit", "pk") {
             literal("pull", "get", "download") {
 
             }

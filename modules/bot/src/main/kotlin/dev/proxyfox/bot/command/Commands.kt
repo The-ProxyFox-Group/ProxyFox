@@ -36,7 +36,7 @@ object Commands {
 
     suspend operator fun CommandRegistrar.unaryPlus() {
         printStep("Registering $displayName commands", 3)
-        registerTextCommands()
+        parser.registerTextCommands()
         registerSlashCommands()
     }
 }

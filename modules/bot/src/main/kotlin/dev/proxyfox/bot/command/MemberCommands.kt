@@ -23,6 +23,7 @@ import dev.proxyfox.bot.kordColor
 import dev.proxyfox.bot.member
 import dev.proxyfox.bot.prompts.Button
 import dev.proxyfox.bot.prompts.TimedYesNoPrompt
+import dev.proxyfox.command.CommandParser
 import dev.proxyfox.command.NodeHolder
 import dev.proxyfox.command.node.CommandNode
 import dev.proxyfox.command.node.builtin.greedy
@@ -870,9 +871,8 @@ object MemberCommands : CommandRegistrar {
 
     override val displayName: String = "Member"
 
-    override suspend fun registerTextCommands() {
-        //TODO: Dedupe code
-        Commands.parser.registerBaseMemberCommands {
+    override suspend fun CommandParser<Any, DiscordContext<Any>>.registerTextCommands() {
+        registerBaseMemberCommands {
             database.fetchSystemFromUser(getUser())
         }
     }

@@ -26,6 +26,7 @@ import dev.proxyfox.bot.prompts.Button
 import dev.proxyfox.bot.prompts.Pager
 import dev.proxyfox.bot.prompts.TimedYesNoPrompt
 import dev.proxyfox.bot.system
+import dev.proxyfox.command.CommandParser
 import dev.proxyfox.command.node.builtin.*
 import dev.proxyfox.common.fromColor
 import dev.proxyfox.common.toColor
@@ -172,8 +173,8 @@ object SystemCommands : CommandRegistrar {
         }
     }
 
-    override suspend fun registerTextCommands() {
-        Commands.parser.literal("list", "l") {
+    override suspend fun CommandParser<Any, DiscordContext<Any>>.registerTextCommands() {
+        literal("list", "l") {
             runs {
                 val system = database.fetchSystemFromUser(getUser())
                 if (!checkSystem(this, system)) return@runs false
@@ -190,7 +191,7 @@ object SystemCommands : CommandRegistrar {
                 }
             }
         }
-        Commands.parser.literal("system", "sys", "s") {
+        literal("system", "sys", "s") {
             literal("new", "n", "create", "add") {
                 runs {
                     create(this, null)
