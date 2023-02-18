@@ -13,6 +13,8 @@ import com.google.gson.JsonParser
 import com.google.gson.reflect.TypeToken
 import dev.kord.common.entity.Snowflake
 import dev.kord.core.behavior.channel.ChannelBehavior
+import dev.kord.core.behavior.channel.asChannelOf
+import dev.kord.core.entity.channel.Channel
 import dev.proxyfox.common.ellipsis
 import dev.proxyfox.common.fromColor
 import dev.proxyfox.common.logger
@@ -425,9 +427,10 @@ class JsonDatabase(val file: File = File("systems.json")) : Database() {
     ) {
         val message = ProxiedMessageRecord()
         message.memberName = memberName
+        message.userId = userId.value
         message.oldMessageId = oldMessageId.value
         message.newMessageId = newMessageId.value
-        val channel = channelBehavior.fetchChannel()
+        val channel = channelBehavior.asChannelOf<Channel>()
         message.channelId = channel.id.value
         message.guildId = channel.data.guildId.value?.value ?: 0UL
         message.memberId = memberId

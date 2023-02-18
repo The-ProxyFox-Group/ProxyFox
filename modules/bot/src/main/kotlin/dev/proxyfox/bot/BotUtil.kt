@@ -20,6 +20,7 @@ import dev.kord.core.behavior.channel.createMessage
 import dev.kord.core.builder.kord.KordBuilder
 import dev.kord.core.entity.Member
 import dev.kord.core.entity.channel.Channel
+import dev.kord.core.entity.channel.GuildChannel
 import dev.kord.core.entity.channel.GuildMessageChannel
 import dev.kord.core.entity.channel.TextChannel
 import dev.kord.core.entity.channel.thread.ThreadChannel
@@ -333,18 +334,26 @@ data class Either<A, B>(
 val GuildMessageChannel.sendPermission
     get() = if (this is ThreadChannel) Permission.SendMessagesInThreads else Permission.SendMessages
 
-suspend fun GuildMessageChannel.permissionHolder() = if (this is ThreadChannel) kord.getChannel(parentId)!! else this
+suspend fun GuildChannel.permissionHolder() = if (this is ThreadChannel) kord.getChannel(parentId)!! else this
 
 suspend fun MessageChannelBehavior.selfCanSend(): Boolean {
     return if (this is GuildMessageChannel) selfHasPermissions(Permissions(sendPermission, Permission.ViewChannel)) else true
 }
 
-suspend fun GuildMessageChannel.selfHasPermissions(permissions: Permissions): Boolean {
-    return permissionHolder().getEffectivePermissions(guild.getMember(kord.selfId)).contains(permissions)
+suspend fun GuildChannel.selfHasPermissions(permissions: Permissions): Boolean {
+    return permissionHolder().getEffectivePermissions(guild.getMember(kord.selfId)).adminOrContains(permissions)
 }
 
-suspend fun GuildMessageChannel.selfHasPermissions(permission: Permission): Boolean {
-    return permissionHolder().getEffectivePermissions(guild.getMember(kord.selfId)).contains(permission)
+suspend fun GuildChannel.selfHasPermissions(permission: Permission): Boolean {
+    return permissionHolder().getEffectivePermissions(guild.getMember(kord.selfId)).adminOrContains(permission)
+}
+
+fun Permissions.adminOrContains(permissions: Permissions): Boolean {
+    return contains(Permission.Administrator) || contains(permissions)
+}
+
+fun Permissions.adminOrContains(permission: Permission): Boolean {
+    return contains(Permission.Administrator) || contains(permission)
 }
 
 suspend fun Channel.getEffectivePermissions(member: Member): Permissions {
