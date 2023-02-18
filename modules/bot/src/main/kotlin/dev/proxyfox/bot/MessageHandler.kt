@@ -12,13 +12,13 @@ import dev.kord.common.entity.MessageType
 import dev.kord.common.entity.Permission
 import dev.kord.common.entity.Permissions
 import dev.kord.common.entity.Snowflake
-import dev.kord.core.behavior.channel.asChannelOf
+import dev.kord.core.behavior.channel.asChannelOfOrNull
 import dev.kord.core.behavior.channel.createMessage
 import dev.kord.core.cache.data.AttachmentData
 import dev.kord.core.cache.data.EmbedData
 import dev.kord.core.entity.Attachment
 import dev.kord.core.entity.Embed
-import dev.kord.core.entity.channel.GuildMessageChannel
+import dev.kord.core.entity.channel.GuildChannel
 import dev.kord.core.event.message.MessageCreateEvent
 import dev.kord.core.event.message.MessageUpdateEvent
 import dev.kord.core.event.message.ReactionAddEvent
@@ -41,7 +41,8 @@ private val logger = LoggerFactory.getLogger("MessageHandler")
 
 suspend fun MessageCreateEvent.onMessageCreate() {
     val user = message.author ?: return
-    val channel = message.getChannel()
+    val channel = message.channel
+    val guildChannel = channel.asChannelOfOrNull<GuildChannel>()
 
     // Return if bot
     if (message.webhookId != null || user.isBot || (message.type != MessageType.Default && message.type != MessageType.Reply)) return
@@ -66,8 +67,8 @@ suspend fun MessageCreateEvent.onMessageCreate() {
             if (output.isNotBlank())
                 channel.createMessage(output)
         }
-    } else if (channel is GuildMessageChannel && channel.selfHasPermissions(Permissions(Permission.ManageWebhooks, Permission.ManageMessages))) {
-        val guild = channel.getGuild()
+    } else if (guildChannel != null && guildChannel.selfHasPermissions(Permissions(Permission.ManageWebhooks, Permission.ManageMessages))) {
+        val guild = guildChannel.getGuild()
         val hasStickers = message.stickers.isNotEmpty()
         // TODO: Boost to upload limit; 8 MiB is default.
         val hasOversizedFiles = message.attachments.fold(0L) { size, attachment -> size + attachment.size } >= UPLOAD_LIMIT
@@ -83,7 +84,6 @@ suspend fun MessageCreateEvent.onMessageCreate() {
 
 suspend fun MessageUpdateEvent.onMessageUpdate() {
     val guild = kord.getGuild(new.guildId.value ?: return) ?: return
-    val channel = channel.asChannelOf<GuildMessageChannel>()
     val content = new.content.value ?: return
     val authorRaw = new.author.value ?: return
     if (authorRaw.bot.discordBoolean) return

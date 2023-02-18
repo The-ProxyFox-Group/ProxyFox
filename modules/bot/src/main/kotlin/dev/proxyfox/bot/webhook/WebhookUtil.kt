@@ -8,6 +8,7 @@
 
 package dev.proxyfox.bot.webhook
 
+import dev.kord.core.behavior.channel.asChannelOf
 import dev.kord.core.behavior.channel.threads.ThreadChannelBehavior
 import dev.kord.core.cache.data.WebhookData
 import dev.kord.core.entity.Webhook
@@ -42,7 +43,7 @@ object WebhookUtil {
 
         return ProxyContext(
             messageContent,
-            createOrFetchWebhookFromCache(message.channel.asChannel()),
+            createOrFetchWebhookFromCache(message.channel.asChannelOf()),
             message,
             system,
             member,
