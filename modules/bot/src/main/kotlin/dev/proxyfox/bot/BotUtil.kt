@@ -15,7 +15,9 @@ import dev.kord.common.entity.Permissions
 import dev.kord.common.entity.Snowflake
 import dev.kord.core.Kord
 import dev.kord.core.behavior.MessageBehavior
+import dev.kord.core.behavior.channel.ChannelBehavior
 import dev.kord.core.behavior.channel.MessageChannelBehavior
+import dev.kord.core.behavior.channel.asChannelOfOrNull
 import dev.kord.core.behavior.channel.createMessage
 import dev.kord.core.builder.kord.KordBuilder
 import dev.kord.core.entity.Member
@@ -333,6 +335,8 @@ data class Either<A, B>(
 
 val GuildMessageChannel.sendPermission
     get() = if (this is ThreadChannel) Permission.SendMessagesInThreads else Permission.SendMessages
+
+suspend inline fun <reified T : Channel> ChannelBehavior.getAs() = if (this is T) this else asChannelOfOrNull()
 
 suspend fun GuildChannel.permissionHolder() = if (this is ThreadChannel) kord.getChannel(parentId)!! else this
 

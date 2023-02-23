@@ -9,11 +9,11 @@
 package dev.proxyfox.bot.webhook
 
 import dev.kord.core.behavior.channel.asChannelOf
-import dev.kord.core.behavior.channel.threads.ThreadChannelBehavior
 import dev.kord.core.cache.data.WebhookData
 import dev.kord.core.entity.Webhook
 import dev.kord.core.entity.channel.Channel
 import dev.kord.core.entity.channel.thread.ThreadChannel
+import dev.proxyfox.bot.getAs
 import dev.proxyfox.bot.httpUri
 import dev.proxyfox.bot.httpUriOrNull
 import dev.proxyfox.database.records.member.MemberProxyTagRecord
@@ -48,7 +48,7 @@ object WebhookUtil {
             system,
             member,
             proxy,
-            if (message.channel is ThreadChannelBehavior) message.channel.id else null,
+            message.channel.getAs<ThreadChannel>()?.id,
 
             resolvedUsername = serverMember?.nickname ?: member.displayName ?: member.name,
             resolvedAvatar = serverMember?.avatarUrl.httpUriOrNull() ?: member.avatarUrl.httpUriOrNull() ?: system.avatarUrl?.httpUri(),
