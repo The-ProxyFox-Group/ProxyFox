@@ -48,6 +48,8 @@ abstract class DiscordContext<T>(override val value: T) : CommandContext<T>() {
         embed: suspend EmbedBuilder.() -> Unit
     ): T
 
+    abstract suspend fun deferResponse(private: Boolean = false)
+
     abstract suspend fun tryDeleteTrigger(reason: String? = null)
 
     abstract suspend fun optionalSuccess(text: String): T

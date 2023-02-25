@@ -13,11 +13,13 @@ import dev.kord.core.behavior.channel.GuildChannelBehavior
 import dev.kord.core.behavior.channel.MessageChannelBehavior
 import dev.kord.core.behavior.interaction.respondEphemeral
 import dev.kord.core.behavior.interaction.respondPublic
+import dev.kord.core.behavior.interaction.response.DeferredMessageInteractionResponseBehavior
 import dev.kord.core.behavior.interaction.response.respond
 import dev.kord.core.entity.*
 import dev.kord.core.event.interaction.ChatInputCommandInteractionCreateEvent
 import dev.kord.rest.builder.message.EmbedBuilder
 import dev.kord.rest.builder.message.create.embed
+import dev.kord.rest.builder.message.modify.embed
 import dev.proxyfox.bot.command.menu.DiscordMenu
 import dev.proxyfox.bot.command.menu.InteractionCommandMenu
 import dev.proxyfox.database.database
@@ -29,24 +31,23 @@ class InteractionCommandContext(value: ChatInputCommandInteractionCreateEvent) :
     DiscordContext<ChatInputCommandInteractionCreateEvent>(value) {
     override val command: String = ""
 
+    var deferred: DeferredMessageInteractionResponseBehavior? = null
+
     @OptIn(ExperimentalStdlibApi::class)
     override fun getAttachment(): Attachment? {
         return value.interaction.command.attachments.values.stream().findFirst().getOrNull()
     }
 
     override suspend fun respondFailure(text: String, private: Boolean): ChatInputCommandInteractionCreateEvent {
-        if (private)
-            value.interaction.respondEphemeral {
-                content = "❌ $text"
-            }
-        else value.interaction.respondPublic {
-            content = "❌️ $text"
-        }
-        return value
+        return respondPlain("❌️ $text", private)
     }
 
     override suspend fun respondPlain(text: String, private: Boolean): ChatInputCommandInteractionCreateEvent {
-        if (private)
+        if (deferred != null)
+            deferred!!.respond {
+                content = text
+            }
+        else if (private)
             value.interaction.respondEphemeral {
                 content = text
             }
@@ -57,25 +58,11 @@ class InteractionCommandContext(value: ChatInputCommandInteractionCreateEvent) :
     }
 
     override suspend fun respondSuccess(text: String, private: Boolean): ChatInputCommandInteractionCreateEvent {
-        if (private)
-            value.interaction.respondEphemeral {
-                content = "✅ $text"
-            }
-        else value.interaction.respondPublic {
-            content = "✅️ $text"
-        }
-        return value
+        return respondPlain("✅️ $text", private)
     }
 
     override suspend fun respondWarning(text: String, private: Boolean): ChatInputCommandInteractionCreateEvent {
-        if (private)
-            value.interaction.respondEphemeral {
-                content = "⚠️ $text"
-            }
-        else value.interaction.respondPublic {
-            content = "⚠️ $text"
-        }
-        return value
+        return respondPlain("⚠️ $text", private)
     }
 
     override suspend fun getChannel(private: Boolean): MessageChannelBehavior {
@@ -102,7 +89,13 @@ class InteractionCommandContext(value: ChatInputCommandInteractionCreateEvent) :
         text: String?,
         embed: suspend EmbedBuilder.() -> Unit
     ): ChatInputCommandInteractionCreateEvent {
-        if (private)
+        if (deferred != null)
+            deferred!!.respond {
+                embed {
+                    embed()
+                }
+            }
+        else if (private)
             value.interaction.respondEphemeral {
                 embed {
                     embed()
@@ -114,6 +107,12 @@ class InteractionCommandContext(value: ChatInputCommandInteractionCreateEvent) :
             }
         }
         return value
+    }
+
+    override suspend fun deferResponse(private: Boolean) {
+        deferred = if (private)
+            value.interaction.deferEphemeralResponse()
+        else value.interaction.deferPublicResponse()
     }
 
     override suspend fun tryDeleteTrigger(reason: String?) {
@@ -140,7 +139,8 @@ class InteractionCommandContext(value: ChatInputCommandInteractionCreateEvent) :
 
     override suspend fun interactionMenu(private: Boolean, action: suspend DiscordMenu.() -> Unit) {
         val message =
-            if (private) value.interaction.deferEphemeralResponse() else value.interaction.deferPublicResponse()
+            deferred
+                ?: if (private) value.interaction.deferEphemeralResponse() else value.interaction.deferPublicResponse()
         val menu = InteractionCommandMenu(message.respond {
             content = "Thinking..."
         })

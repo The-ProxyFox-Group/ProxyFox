@@ -58,6 +58,8 @@ class DiscordMessageContext(message: Message, override val command: String): Dis
         }
     }
 
+    override suspend fun deferResponse(private: Boolean) = Unit
+
     override suspend fun tryDeleteTrigger(reason: String?) {
         if (value.getGuildOrNull() != null) value.delete(reason)
     }
@@ -66,7 +68,10 @@ class DiscordMessageContext(message: Message, override val command: String): Dis
         return value
     }
 
-    override suspend fun getDatabaseMessage(system: SystemRecord?, messageId: Snowflake?): Pair<Message?, ProxiedMessageRecord?> {
+    override suspend fun getDatabaseMessage(
+        system: SystemRecord?,
+        messageId: Snowflake?
+    ): Pair<Message?, ProxiedMessageRecord?> {
         val databaseMessage = if (messageId != null) {
             database.fetchMessage(messageId)
         } else if (value.referencedMessage != null) {

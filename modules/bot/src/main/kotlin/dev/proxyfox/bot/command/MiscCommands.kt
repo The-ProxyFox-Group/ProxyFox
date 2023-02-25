@@ -922,6 +922,8 @@ object MiscCommands : CommandRegistrar {
             return false
         }
 
+        ctx.deferResponse()
+
         return try {
             val importer = withContext(Dispatchers.IO) {
                 uri!!.toURL().openStream().reader().use { import(it, ctx.getUser()) }
