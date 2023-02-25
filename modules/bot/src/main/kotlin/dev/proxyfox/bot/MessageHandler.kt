@@ -19,7 +19,6 @@ import dev.kord.core.cache.data.AttachmentData
 import dev.kord.core.cache.data.EmbedData
 import dev.kord.core.entity.Attachment
 import dev.kord.core.entity.Embed
-import dev.kord.core.entity.channel.GuildMessageChannel
 import dev.kord.core.entity.channel.GuildChannel
 import dev.kord.core.entity.interaction.SubCommand
 import dev.kord.core.event.interaction.ChatInputCommandInteractionCreateEvent
@@ -46,7 +45,9 @@ import dev.proxyfox.database.records.system.SystemServerSettingsRecord
 import kotlinx.datetime.toJavaLocalDate
 import org.slf4j.LoggerFactory
 
-val prefixRegex = Regex("^(?:(<@!?${kord.selfId}>)|pf[>;!:])\\s*", RegexOption.IGNORE_CASE)
+val prefix = System.getenv("PROXYFOX_PREFIX") ?: "pf"
+
+val prefixRegex = Regex("^(?:(<@!?${kord.selfId}>)|$prefix[>;!:])\\s*", RegexOption.IGNORE_CASE)
 
 private val logger = LoggerFactory.getLogger("MessageHandler")
 

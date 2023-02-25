@@ -955,9 +955,9 @@ object MiscCommands : CommandRegistrar {
     private const val help: String =
         """To view commands for ProxyFox, visit <https://github.com/The-ProxyFox-Group/ProxyFox/blob/master/commands.md>
 For quick setup:
-- pf>system new name
-- pf>member new John Doe
-- pf>member "John Doe" proxy j:text"""
+- /system create
+- /member create
+- /member proxy-add"""
 
     private const val explain: String =
         """ProxyFox is modern Discord bot designed to help systems communicate.

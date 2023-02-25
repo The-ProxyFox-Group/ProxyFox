@@ -81,7 +81,7 @@ suspend fun <T> checkSystem(ctx: DiscordContext<T>, system: SystemRecord?, priva
         returns(true) implies (system != null)
     }
     system ?: run {
-        ctx.respondFailure("System does not exist. Create one using a slash command or `pf>system new`", private)
+        ctx.respondFailure(CommonMessages.NOT_FOUND("System"), private)
         return false
     }
     return true
@@ -93,7 +93,7 @@ suspend fun <T> checkGroup(ctx: DiscordContext<T>, group: GroupRecord?, private:
         returns(true) implies (group != null)
     }
     group ?: run {
-        ctx.respondFailure("Group does not exist. Create one using a slash command or `pf>group new`", private)
+        ctx.respondFailure(CommonMessages.NOT_FOUND("Group"), private)
         return false
     }
     return true
@@ -106,7 +106,7 @@ suspend fun <T> checkMember(ctx: DiscordContext<T>, member: MemberRecord?, priva
     }
 
     member ?: run {
-        ctx.respondFailure("Member does not exist. Create one using a slash command or `pf>member new`", private)
+        ctx.respondFailure(CommonMessages.NOT_FOUND("Member"), private)
         return false
     }
     return true
@@ -119,7 +119,13 @@ suspend fun <T> checkSwitch(ctx: DiscordContext<T>, switch: SystemSwitchRecord?)
     }
 
     switch ?: run {
-        ctx.respondFailure("Looks like you haven't registered any switches yet. Create one using a slash command or `pf>switch`")
+        ctx.respondFailure(
+            "Looks like you haven't registered any switches yet. Create one using `/switch create` or ${
+                CommonMessages.TEXT_COMMAND(
+                    "switch"
+                )
+            }"
+        )
         return false
     }
     return true

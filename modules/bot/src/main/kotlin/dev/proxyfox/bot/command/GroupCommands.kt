@@ -86,7 +86,7 @@ object GroupCommands : CommandRegistrar {
             }
             field {
                 name = "Members (`${members}`)"
-                value = "See `pf>group ${group.id} list`"
+                value = "See ${CommonMessages.TEXT_COMMAND("group ${group.id} list")}"
                 inline = true
             }
             group.description?.let {

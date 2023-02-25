@@ -56,8 +56,6 @@ object SystemCommands : CommandRegistrar {
             subCommand("create", "Create a system") {
                 name(required = false)
                 runs {
-                    val system = database.fetchSystemFromUser(getUser())
-                    if (!checkSystem(this, system)) return@runs false
                     val name = value.interaction.command.strings["name"]
                     create(this, name)
                 }
@@ -429,6 +427,11 @@ object SystemCommands : CommandRegistrar {
     }
 
     private suspend fun <T> create(ctx: DiscordContext<T>, name: String?): Boolean {
+        if (database.fetchSystemFromUser(ctx.getUser()) != null) {
+
+            return false
+        }
+
         val system = database.getOrCreateSystem(ctx.getUser()!!)
         system.name = name
         database.updateSystem(system)
