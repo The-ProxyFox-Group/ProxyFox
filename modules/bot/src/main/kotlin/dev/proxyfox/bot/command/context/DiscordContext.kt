@@ -89,7 +89,7 @@ abstract class DiscordContext<T>(override val value: T) : CommandContext<T>() {
         noEmoji: DiscordPartialEmoji = Emojis.multiply,
         timeoutAction: suspend MessageModifyBuilder.() -> Unit = no.second,
         danger: Boolean = false,
-        private: Boolean = true
+        private: Boolean = false
     ) {
         interactionMenu(private) {
             default {
