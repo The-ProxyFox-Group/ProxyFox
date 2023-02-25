@@ -87,9 +87,9 @@ abstract class DiscordContext<T>(override val value: T) : CommandContext<T>() {
         noEmoji: DiscordPartialEmoji = Emojis.multiply,
         timeoutAction: suspend MessageModifyBuilder.() -> Unit = no.second,
         danger: Boolean = false,
-        public: Boolean = true
+        private: Boolean = true
     ) {
-        interactionMenu {
+        interactionMenu(private) {
             default {
                 this as DiscordScreen
                 onInit {
@@ -117,9 +117,11 @@ abstract class DiscordContext<T>(override val value: T) : CommandContext<T>() {
                 }
                 button("yes") {
                     edit(yes.second)
+                    close()
                 }
                 button("no") {
                     edit(no.second)
+                    close()
                 }
             }
         }
@@ -128,14 +130,16 @@ abstract class DiscordContext<T>(override val value: T) : CommandContext<T>() {
 
 // Get a DiscordContext.
 fun <T, C: DiscordContext<T>> CommandNode<T, C>.runs(action: suspend DiscordContext<T>.() -> Boolean) {
-    @Suppress("UNCHECKED_CAST")
-    executes(action as suspend CommandContext<T>.() -> Boolean)
+    executes {
+        if (this !is DiscordContext<T>) return@executes false
+        action()
+    }
 }
 
 suspend fun <T, C : DiscordContext<T>> CommandNode<T, C>.guild(action: NodeActionParam<T, C, Snowflake?>) {
     action {
-        val ctx = this as? DiscordContext<T> ?: return@action null
-        ctx.getGuild()?.id
+        if (this !is DiscordContext<T>) return@action null
+        getGuild()?.id
     }
     int("server") {
         action {
@@ -144,16 +148,10 @@ suspend fun <T, C : DiscordContext<T>> CommandNode<T, C>.guild(action: NodeActio
     }
 }
 
-//suspend fun <T, C: DiscordContext<T>> CommandNode<T, C>.id(name: String, action: NodeActionParam<T, C, Snowflake?>) {
-//    string(name) {
-//
-//    }
-//}
-
 suspend fun <T, C : DiscordContext<T>> CommandNode<T, C>.system(action: NodeActionParam<T, C, SystemRecord?>) {
     action {
-        val ctx = this as? DiscordContext<T> ?: return@action null
-        database.fetchSystemFromUser(ctx.getUser())
+        if (this !is DiscordContext<T>) return@action null
+        database.fetchSystemFromUser(getUser())
     }
     string("sysid") {
         action {

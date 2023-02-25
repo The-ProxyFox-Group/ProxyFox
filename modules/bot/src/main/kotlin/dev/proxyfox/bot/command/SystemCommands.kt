@@ -711,6 +711,7 @@ object SystemCommands : CommandRegistrar {
                 )
                 database.dropSystem(ctx.getUser()!!)
                 content = "System deleted."
+                components = null
             },
             yesEmoji = Emojis.wastebasket,
             danger = true
