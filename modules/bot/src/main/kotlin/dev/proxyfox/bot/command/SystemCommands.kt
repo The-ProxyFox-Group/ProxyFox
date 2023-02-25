@@ -13,6 +13,7 @@ import dev.kord.core.Kord
 import dev.kord.rest.NamedFile
 import dev.kord.rest.builder.interaction.SubCommandBuilder
 import dev.kord.rest.builder.interaction.subCommand
+import dev.proxyfox.bot.*
 import dev.proxyfox.bot.command.MemberCommands.registerBaseMemberCommands
 import dev.proxyfox.bot.command.SwitchCommands.registerSwitchCommands
 import dev.proxyfox.bot.command.context.DiscordContext
@@ -20,13 +21,9 @@ import dev.proxyfox.bot.command.context.InteractionCommandContext
 import dev.proxyfox.bot.command.context.runs
 import dev.proxyfox.bot.command.context.system
 import dev.proxyfox.bot.command.node.attachment
-import dev.proxyfox.bot.deferChatInputCommand
-import dev.proxyfox.bot.hasUnixValue
-import dev.proxyfox.bot.kordColor
 import dev.proxyfox.bot.prompts.Button
 import dev.proxyfox.bot.prompts.Pager
 import dev.proxyfox.bot.prompts.TimedYesNoPrompt
-import dev.proxyfox.bot.system
 import dev.proxyfox.command.node.builtin.*
 import dev.proxyfox.common.fromColor
 import dev.proxyfox.common.printStep
@@ -400,7 +397,7 @@ object SystemCommands {
             title = system.name ?: system.id
             color = system.color.kordColor()
             system.avatarUrl?.let {
-                thumbnail { url = it }
+                thumbnail { url = it.httpUri() }
             }
             system.tag?.let {
                 field {
@@ -650,7 +647,14 @@ object SystemCommands {
             return false
         }
 
-        system.avatarUrl = avatar
+        val uri = avatar.uri()
+
+        uri.invalidUrlMessage("system avatar")?.let {
+            ctx.respondFailure(it)
+            return false
+        }
+
+        system.avatarUrl = uri.toString()
         database.updateSystem(system)
         ctx.respondSuccess("Member's avatar updated!")
 

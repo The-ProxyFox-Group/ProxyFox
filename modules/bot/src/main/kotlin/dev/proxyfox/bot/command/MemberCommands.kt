@@ -13,15 +13,12 @@ import dev.kord.common.entity.Snowflake
 import dev.kord.core.Kord
 import dev.kord.rest.builder.interaction.SubCommandBuilder
 import dev.kord.rest.builder.interaction.subCommand
+import dev.proxyfox.bot.*
 import dev.proxyfox.bot.command.context.DiscordContext
 import dev.proxyfox.bot.command.context.InteractionCommandContext
 import dev.proxyfox.bot.command.context.guild
 import dev.proxyfox.bot.command.context.runs
 import dev.proxyfox.bot.command.node.attachment
-import dev.proxyfox.bot.deferChatInputCommand
-import dev.proxyfox.bot.kord
-import dev.proxyfox.bot.kordColor
-import dev.proxyfox.bot.member
 import dev.proxyfox.bot.prompts.Button
 import dev.proxyfox.bot.prompts.TimedYesNoPrompt
 import dev.proxyfox.command.NodeHolder
@@ -888,11 +885,11 @@ object MemberCommands {
             author {
                 name = member.displayName?.let { "$it (${member.name})\u2007•\u2007$systemName" }
                     ?: "${member.name}\u2007•\u2007$systemName"
-                icon = member.avatarUrl.ifBlankThenNull()
+                icon = member.avatarUrl.ifBlankThenNull().httpUri()
             }
             member.avatarUrl?.let {
                 thumbnail {
-                    url = it
+                    url = it.httpUri()
                 }
             }
             color = member.color.kordColor()
@@ -1152,7 +1149,14 @@ object MemberCommands {
             return false
         }
 
-        member.avatarUrl = avatar
+        val uri = avatar.uri()
+
+        uri.invalidUrlMessage("system avatar")?.let {
+            ctx.respondFailure(it)
+            return false
+        }
+
+        member.avatarUrl = uri.toString()
         database.updateMember(member)
         ctx.respondSuccess("Member's avatar updated!")
 
@@ -1195,7 +1199,14 @@ object MemberCommands {
             return false
         }
 
-        serverMember.avatarUrl = avatar
+        val uri = avatar.uri()
+
+        uri.invalidUrlMessage("system avatar")?.let {
+            ctx.respondFailure(it)
+            return false
+        }
+
+        serverMember.avatarUrl = uri.toString()
         database.updateMemberServerSettings(serverMember)
         ctx.respondSuccess("Member's server avatar updated!")
 

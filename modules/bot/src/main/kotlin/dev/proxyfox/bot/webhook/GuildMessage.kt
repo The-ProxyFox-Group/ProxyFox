@@ -10,7 +10,7 @@ package dev.proxyfox.bot.webhook
 
 import dev.kord.common.entity.Snowflake
 import dev.kord.core.behavior.MessageBehavior
-import dev.kord.core.behavior.channel.GuildMessageChannelBehavior
+import dev.kord.core.behavior.channel.MessageChannelBehavior
 import dev.kord.core.entity.*
 
 // Created 2022-15-10T00:34:30
@@ -24,7 +24,7 @@ data class GuildMessage(
     val id: Snowflake,
     val content: String,
     val author: User,
-    val channel: GuildMessageChannelBehavior,
+    val channel: MessageChannelBehavior,
     val guild: Guild,
     val attachments: Collection<Attachment>,
     val embeds: Collection<Embed>,
@@ -34,7 +34,7 @@ data class GuildMessage(
     constructor(
         message: Message,
         guild: Guild,
-        channel: GuildMessageChannelBehavior,
+        channel: MessageChannelBehavior,
         author: User = message.author!!
     ) : this(
         id = message.id,

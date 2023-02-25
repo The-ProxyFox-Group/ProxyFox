@@ -27,6 +27,8 @@ tasks {
                 from(shadowJar)
             }
         }
+        // Explicitly pull in Patch
+        from(project(":modules:patch").tasks.jar)
         into(project.buildDir.resolve("pool"))
     }
 }

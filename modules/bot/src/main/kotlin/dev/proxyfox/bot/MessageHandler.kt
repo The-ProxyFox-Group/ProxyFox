@@ -9,7 +9,7 @@
 package dev.proxyfox.bot
 
 import dev.kord.common.entity.*
-import dev.kord.core.behavior.channel.asChannelOf
+import dev.kord.core.behavior.channel.asChannelOfOrNull
 import dev.kord.core.behavior.channel.createMessage
 import dev.kord.core.behavior.channel.threads.ThreadChannelBehavior
 import dev.kord.core.behavior.interaction.modal
@@ -20,6 +20,7 @@ import dev.kord.core.cache.data.EmbedData
 import dev.kord.core.entity.Attachment
 import dev.kord.core.entity.Embed
 import dev.kord.core.entity.channel.GuildMessageChannel
+import dev.kord.core.entity.channel.GuildChannel
 import dev.kord.core.entity.interaction.SubCommand
 import dev.kord.core.event.interaction.ChatInputCommandInteractionCreateEvent
 import dev.kord.core.event.interaction.MessageCommandInteractionCreateEvent
@@ -51,7 +52,8 @@ private val logger = LoggerFactory.getLogger("MessageHandler")
 
 suspend fun MessageCreateEvent.onMessageCreate() {
     val user = message.author ?: return
-    val channel = message.getChannel()
+    val channel = message.channel
+    val guildChannel = channel.asChannelOfOrNull<GuildChannel>()
 
     // Return if bot
     if (message.webhookId != null || user.isBot || (message.type != MessageType.Default && message.type != MessageType.Reply)) return
@@ -74,8 +76,8 @@ suspend fun MessageCreateEvent.onMessageCreate() {
             @Suppress("UNCHECKED_CAST")
             Commands.parser.parse(DiscordMessageContext(message, contentWithoutRegex) as DiscordContext<Any>)
         }
-    } else if (channel is GuildMessageChannel && channel.selfHasPermissions(Permissions(Permission.ManageWebhooks, Permission.ManageMessages))) {
-        val guild = channel.getGuild()
+    } else if (guildChannel != null && guildChannel.selfHasPermissions(Permissions(Permission.ManageWebhooks, Permission.ManageMessages))) {
+        val guild = guildChannel.getGuild()
         val hasStickers = message.stickers.isNotEmpty()
         // TODO: Boost to upload limit; 8 MiB is default.
         val hasOversizedFiles = message.attachments.fold(0L) { size, attachment -> size + attachment.size } >= UPLOAD_LIMIT
@@ -91,7 +93,6 @@ suspend fun MessageCreateEvent.onMessageCreate() {
 
 suspend fun MessageUpdateEvent.onMessageUpdate() {
     val guild = kord.getGuildOrNull(new.guildId.value ?: return) ?: return
-    val channel = channel.asChannelOf<GuildMessageChannel>()
     val content = new.content.value ?: return
     val authorRaw = new.author.value ?: return
     if (authorRaw.bot.discordBoolean) return
@@ -271,11 +272,11 @@ suspend fun ReactionAddEvent.onReactionAdd() {
                     val systemName = system.name ?: system.id
                     author {
                         name = member.displayName?.let { "$it (${member.name})\u2007•\u2007$systemName" } ?: "${member.name}\u2007•\u2007$systemName"
-                        icon = member.avatarUrl
+                        icon = member.avatarUrl.httpUri()
                     }
                     member.avatarUrl?.let {
                         thumbnail {
-                            url = it
+                            url = it.httpUri()
                         }
                     }
                     color = member.color.kordColor()

@@ -44,7 +44,6 @@ import kotlinx.coroutines.flow.firstOrNull
 import kotlinx.coroutines.withContext
 import kotlinx.datetime.Clock
 import kotlinx.datetime.toJavaLocalDate
-import java.net.URL
 import kotlin.math.floor
 
 /**
@@ -152,7 +151,7 @@ object MiscCommands {
                     required = true
                 }
                 runs("misc") {
-                    import(this, URL(value.interaction.command.attachments["import"]!!.url))
+                    import(this, value.interaction.command.attachments["import"]!!.url)
                 }
             }
             subCommand("export", "Export your system") {
@@ -263,12 +262,12 @@ object MiscCommands {
             }
             attachment("file") { getFile ->
                 runs {
-                    import(this, URL(getFile().url))
+                    import(this, getFile().url)
                 }
             }
             greedy("file") { getFile ->
                 runs {
-                    import(this, URL(getFile()))
+                    import(this, getFile())
                 }
             }
         }
@@ -860,15 +859,16 @@ object MiscCommands {
         throw DebugException()
     }
 
-    private suspend fun <T> import(ctx: DiscordContext<T>, url: URL?): Boolean {
-        url ?: run {
-            ctx.respondFailure("Please provide a file to import")
+    private suspend fun <T> import(ctx: DiscordContext<T>, url: String?): Boolean {
+        val uri = url.uri()
+        uri.invalidUrlMessage("import", exampleExport)?.let {
+            ctx.respondFailure(it)
             return false
         }
 
         return try {
             val importer = withContext(Dispatchers.IO) {
-                url.openStream().reader().use { import(it, ctx.getUser()) }
+                uri!!.toURL().openStream().reader().use { import(it, ctx.getUser()) }
             }
             ctx.respondSuccess("File imported. created ${importer.createdMembers} member(s), updated ${importer.updatedMembers} member(s)")
             true
@@ -1134,7 +1134,7 @@ To get support, head on over to https://discord.gg/q3yF8ay9V7"""
             }
             member.avatarUrl?.let {
                 thumbnail {
-                    url = it
+                    url = it.httpUri()
                 }
             }
             color = member.color.kordColor()
