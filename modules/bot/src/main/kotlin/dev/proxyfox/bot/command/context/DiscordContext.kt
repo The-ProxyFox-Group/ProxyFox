@@ -82,7 +82,6 @@ abstract class DiscordContext<T>(override val value: T) : CommandContext<T>() {
         yes: Pair<String, suspend MessageModifyBuilder.() -> Unit>,
         no: Pair<String, suspend MessageModifyBuilder.() -> Unit> = "Cancel" to {
             content = "Action cancelled."
-            components = null
         },
         timeout: Duration = 1.minutes,
         yesEmoji: DiscordPartialEmoji = Emojis.check,
@@ -111,6 +110,7 @@ abstract class DiscordContext<T>(override val value: T) : CommandContext<T>() {
                     scheduler.schedule(timeout) {
                         if (!closed) {
                             edit {
+                                components = arrayListOf()
                                 timeoutAction()
                             }
                             close()
@@ -118,11 +118,17 @@ abstract class DiscordContext<T>(override val value: T) : CommandContext<T>() {
                     }
                 }
                 button("yes") {
-                    edit(yes.second)
+                    edit {
+                        components = arrayListOf()
+                        yes.second(this)
+                    }
                     close()
                 }
                 button("no") {
-                    edit(no.second)
+                    edit {
+                        components = arrayListOf()
+                        no.second(this)
+                    }
                     close()
                 }
             }
