@@ -25,6 +25,8 @@ object BotMain {
 
         printFancy("Initializing ProxyFox")
 
+        markdownParser.addDefaultRules()
+
         // Setup database
         DatabaseMain.main(findUnixValue(args, "--database="))
 

@@ -8,10 +8,8 @@
 
 package dev.proxyfox.bot.command
 
-import dev.kord.common.entity.ButtonStyle
 import dev.kord.common.entity.Permission
 import dev.kord.common.entity.Snowflake
-import dev.kord.core.Kord
 import dev.kord.core.behavior.channel.asChannelOf
 import dev.kord.core.behavior.channel.threads.ThreadChannelBehavior
 import dev.kord.rest.NamedFile
@@ -19,12 +17,12 @@ import dev.kord.rest.builder.interaction.*
 import dev.proxyfox.bot.*
 import dev.proxyfox.bot.command.context.*
 import dev.proxyfox.bot.command.node.attachment
-import dev.proxyfox.bot.prompts.Button
-import dev.proxyfox.bot.prompts.TimedYesNoPrompt
 import dev.proxyfox.bot.webhook.GuildMessage
 import dev.proxyfox.bot.webhook.WebhookUtil
+import dev.proxyfox.command.CommandParser
 import dev.proxyfox.command.node.builtin.*
 import dev.proxyfox.common.*
+import dev.proxyfox.common.annotations.DontExpose
 import dev.proxyfox.database.database
 import dev.proxyfox.database.displayDate
 import dev.proxyfox.database.etc.exporter.Exporter
@@ -50,7 +48,7 @@ import kotlin.math.floor
  * Miscellaneous commands
  * @author Oliver
  * */
-object MiscCommands {
+object MiscCommands : CommandRegistrar {
     private val roleMatcher = Regex("\\d+")
     var infoInteractionExecutors: HashMap<String, suspend InteractionCommandContext.() -> Boolean> = hashMapOf()
     var moderationInteractionExecutors: HashMap<String, suspend InteractionCommandContext.() -> Boolean> = hashMapOf()
@@ -65,8 +63,9 @@ object MiscCommands {
         }[name] = action
     }
 
-    suspend fun Kord.registerMiscCommands() {
-        printStep("Registering misc commands", 3)
+    override val displayName: String = "Misc"
+
+    override suspend fun registerSlashCommands() {
         deferChatInputCommand("info", "Fetches info about the bot") {
             subCommand("debug", "Fetch debug information about the bot") {
                 runs("info") {
@@ -252,11 +251,15 @@ object MiscCommands {
                 }
             }
         }
+        deferChatInputCommand("pluralkit", "Commands for PluralKit integration with ProxyFox") {
+            subCommand("token", "Store you PluralKit token!") {
+
+            }
+        }
     }
 
-    suspend fun register() {
-        printStep("Registering misc commands", 3)
-        Commands.parser.literal("import") {
+    override suspend fun CommandParser<Any, DiscordContext<Any>>.registerTextCommands() {
+        literal("import") {
             runs {
                 import(this, null)
             }
@@ -271,30 +274,29 @@ object MiscCommands {
                 }
             }
         }
-        //TODO: export --full
-        Commands.parser.literal("export") {
+        literal("export") {
             runs {
                 val system = database.fetchSystemFromUser(getUser())
                 if (!checkSystem(this, system)) return@runs false
                 export(this)
             }
         }
-        Commands.parser.literal("time") {
+        literal("time") {
             runs(::time)
         }
-        Commands.parser.literal("help") {
+        literal("help") {
             responds(help)
         }
-        Commands.parser.literal("explain") {
+        literal("explain") {
             responds(explain)
         }
-        Commands.parser.literal("invite") {
+        literal("invite") {
             responds(invite)
         }
-        Commands.parser.literal("source") {
+        literal("source") {
             responds(source)
         }
-        Commands.parser.literal("proxy", "p") {
+        literal("proxy", "p") {
             guild { getGuildId ->
                 runs {
                     val system = database.fetchSystemFromUser(getUser())
@@ -344,7 +346,7 @@ object MiscCommands {
                 }
             }
         }
-        Commands.parser.literal("autoproxy", "ap") {
+        literal("autoproxy", "ap") {
             runs {
                 val system = database.fetchSystemFromUser(getUser())
                 if (!checkSystem(this, system)) return@runs false
@@ -381,7 +383,7 @@ object MiscCommands {
                 }
             }
         }
-        Commands.parser.literal("serverautoproxy", "sap") {
+        literal("serverautoproxy", "sap") {
             guild { getGuildId ->
                 runs {
                     val system = database.fetchSystemFromUser(getUser())
@@ -481,7 +483,7 @@ object MiscCommands {
                 }
             }
         }
-        Commands.parser.literal("role") {
+        literal("role") {
             runs {
                 role(this, null, false)
             }
@@ -496,8 +498,7 @@ object MiscCommands {
                 }
             }
         }
-
-        Commands.parser.literal("moddelay") {
+        literal("moddelay") {
             runs {
                 val guild = getGuild() ?: run {
                     respondFailure("Command not ran in server.")
@@ -515,8 +516,7 @@ object MiscCommands {
                 }
             }
         }
-
-        Commands.parser.literal("forcetag", "requiretag") {
+        literal("forcetag", "requiretag") {
             runs {
                 forceTag(this, null)
             }
@@ -531,8 +531,7 @@ object MiscCommands {
                 }
             }
         }
-
-        Commands.parser.literal("delete", "del") {
+        literal("delete", "del") {
             runs {
                 val system = database.fetchSystemFromUser(getUser())
                 if (!checkSystem(this, system, true)) return@runs false
@@ -546,8 +545,7 @@ object MiscCommands {
                 }
             }
         }
-
-        Commands.parser.literal("reproxy", "rp") {
+        literal("reproxy", "rp") {
             runs {
                 val system = database.fetchSystemFromUser(getUser())
                 if (!checkSystem(this, system, true)) return@runs false
@@ -579,8 +577,7 @@ object MiscCommands {
                 }
             }
         }
-
-        Commands.parser.literal("info", "i") {
+        literal("info", "i") {
             runs {
                 fetchMessageInfo(this, null)
             }
@@ -590,8 +587,7 @@ object MiscCommands {
                 }
             }
         }
-
-        Commands.parser.literal("ping", "p") {
+        literal("ping", "p") {
             runs {
                 pingMessageAuthor(this, null)
             }
@@ -601,8 +597,7 @@ object MiscCommands {
                 }
             }
         }
-
-        Commands.parser.literal("edit", "e") {
+        literal("edit", "e") {
             runs {
                 val system = database.fetchSystemFromUser(getUser())
                 if (!checkSystem(this, system, true)) return@runs false
@@ -631,8 +626,7 @@ object MiscCommands {
                 }
             }
         }
-
-        Commands.parser.literal("channel", "c") {
+        literal("channel", "c") {
             responds("Please provide a channel subcommand")
             literal("proxy", "p") {
                 runs {
@@ -655,24 +649,20 @@ object MiscCommands {
                 }
             }
         }
-
-        Commands.parser.literal("debug") {
+        literal("debug") {
             runs(::debug)
         }
-
-        Commands.parser.literal("fox") {
+        literal("fox") {
             runs(::getFox)
         }
-
-        Commands.parser.literal("token", "t") {
+        literal("token", "t") {
             runs {
                 val system = database.fetchSystemFromUser(getUser())
                 if (!checkSystem(this, system)) return@runs false
                 token(this, system)
             }
         }
-
-        Commands.parser.literal("trust") {
+        literal("trust") {
             runs {
                 val system = database.fetchSystemFromUser(getUser())
                 if (!checkSystem(this, system)) return@runs false
@@ -722,6 +712,74 @@ object MiscCommands {
                 }
             }
         }
+        literal("pluralkit", "pk") {
+            literal("pull", "get", "download") {
+
+            }
+
+            literal("push", "set", "upload") {
+
+            }
+
+            literal("token") {
+                runs {
+                    val system = database.fetchSystemFromUser(getUser())
+                    if (!checkSystem(this, system)) return@runs false
+                    token(this, system, null, false)
+                }
+
+                literal("clear", "reset", "remove") {
+                    runs {
+                        val system = database.fetchSystemFromUser(getUser())
+                        if (!checkSystem(this, system)) return@runs false
+                        token(this, system, null, true)
+                    }
+                }
+
+                greedy("token") { getToken ->
+                    runs {
+                        val system = database.fetchSystemFromUser(getUser())
+                        if (!checkSystem(this, system)) return@runs false
+                        token(this, system, getToken(), false)
+                    }
+                }
+            }
+        }
+    }
+
+    @OptIn(DontExpose::class)
+    private suspend fun <T> token(
+        ctx: DiscordContext<T>,
+        system: SystemRecord,
+        token: String?,
+        clear: Boolean
+    ): Boolean {
+        if (clear) {
+            if (system.pkToken == null) {
+                ctx.respondFailure("You don't have a PluralKit token registered.", true)
+                return false
+            }
+
+            system.pkToken = null
+            database.updateSystem(system)
+            ctx.respondSuccess("Cleared your PluralKit token!", true)
+            return true
+        }
+        token ?: run {
+            ctx.respondSuccess("You have a PluralKit token registered.", true)
+            return true
+        }
+
+        if (ctx.getGuild() != null && ctx is DiscordMessageContext) {
+            ctx.respondFailure("Please do not send your PluralKit token in public.\nI advise you reset it immediately and run this command in DMs")
+            return false
+        }
+
+        system.pkToken = token
+        database.updateSystem(system)
+        ctx.respondSuccess("Successfully updated your PluralKit token", true)
+
+        return true
     }
 
     private suspend fun <T> forceTag(ctx: DiscordContext<T>, enabled: Boolean?): Boolean {
@@ -769,11 +827,9 @@ object MiscCommands {
             return true
         }
 
-        TimedYesNoPrompt.build(
-            runner = ctx.getUser()!!.id,
-            channel = ctx.getChannel(),
+        ctx.timedYesNoPrompt(
             message = "Are you sure you want to trust this user with level `${trustLevel.name}`?\nThis can be changed at any time.",
-            yes = Button("Trust user", Button.check, ButtonStyle.Primary) {
+            yes = "Trust user" to {
                 system.trust[user] = trustLevel
                 database.updateSystem(system)
                 content = "User trust updated."

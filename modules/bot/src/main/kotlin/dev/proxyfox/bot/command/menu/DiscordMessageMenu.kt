@@ -8,21 +8,24 @@
 
 package dev.proxyfox.bot.command.menu
 
+import dev.kord.common.entity.Snowflake
 import dev.kord.core.behavior.edit
 import dev.kord.core.entity.Message
 import dev.kord.core.event.interaction.ButtonInteractionCreateEvent
-import dev.kord.core.on
 import dev.kord.rest.builder.message.modify.MessageModifyBuilder
 import dev.proxyfox.bot.kord
+import dev.proxyfox.common.onlyIf
 
-class DiscordMessageMenu(val message: Message) : DiscordMenu() {
-    override suspend fun edit(builder: MessageModifyBuilder.() -> Unit) {
-        message.edit(builder)
+class DiscordMessageMenu(val message: Message, val userId: Snowflake) : DiscordMenu() {
+    override suspend fun edit(builder: suspend MessageModifyBuilder.() -> Unit) {
+        message.edit {
+            builder()
+        }
     }
 
     override suspend fun init() {
         jobs.add(
-            kord.on<ButtonInteractionCreateEvent> {
+            kord.onlyIf<ButtonInteractionCreateEvent>({ interaction.message.id }, message.id) {
                 interact(this)
             }
         )
@@ -30,7 +33,7 @@ class DiscordMessageMenu(val message: Message) : DiscordMenu() {
     }
 
     private suspend fun interact(button: ButtonInteractionCreateEvent) {
-        if (button.interaction.message.id != message.id) return
+        if (button.interaction.user.id != userId) return
         active!!.click(button.interaction.componentId)
     }
 }

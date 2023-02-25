@@ -37,17 +37,13 @@ import dev.kord.rest.builder.interaction.GlobalChatInputCreateBuilder
 import dev.kord.rest.builder.message.EmbedBuilder
 import dev.kord.rest.json.request.ApplicationCommandCreateRequest
 import dev.kord.rest.request.KtorRequestException
-import dev.proxyfox.bot.command.Commands
-import dev.proxyfox.bot.command.GroupCommands.registerGroupCommands
-import dev.proxyfox.bot.command.MemberCommands.registerMemberCommands
-import dev.proxyfox.bot.command.MiscCommands.registerMiscCommands
-import dev.proxyfox.bot.command.SwitchCommands.registerSwitchCommands
-import dev.proxyfox.bot.command.SystemCommands.registerSystemCommands
+import dev.proxyfox.bot.command.*
 import dev.proxyfox.bot.command.interaction.ProxyFoxChatInputCreateBuilderImpl
 import dev.proxyfox.common.*
 import dev.proxyfox.database.database
 import dev.proxyfox.database.records.member.MemberRecord
 import dev.proxyfox.database.records.system.SystemRecord
+import dev.proxyfox.markt.MarkdownParser
 import io.ktor.client.*
 import io.ktor.client.engine.cio.*
 import io.ktor.client.request.forms.*
@@ -58,20 +54,30 @@ import kotlinx.coroutines.flow.count
 import kotlinx.coroutines.flow.fold
 import kotlinx.datetime.Clock
 import kotlinx.datetime.Instant
-import java.io.File
 import java.lang.Integer.*
 import java.util.*
 import java.util.concurrent.Executors
+import java.util.concurrent.ScheduledExecutorService
+import java.util.concurrent.TimeUnit
 import kotlin.contracts.ExperimentalContracts
 import kotlin.contracts.InvocationKind
 import kotlin.contracts.contract
 import kotlin.time.Duration
 import kotlin.time.Duration.Companion.milliseconds
 import kotlin.time.Duration.Companion.minutes
+import kotlin.time.DurationUnit
 
 const val UPLOAD_LIMIT = 1024 * 1024 * 8
 
 val scheduler = Executors.newScheduledThreadPool(Runtime.getRuntime().availableProcessors())
+
+suspend fun ScheduledExecutorService.schedule(duration: Duration, action: suspend () -> Unit) {
+    schedule({
+        runBlocking {
+            action()
+        }
+    }, duration.toLong(DurationUnit.SECONDS), TimeUnit.SECONDS)
+}
 
 private val idUrl = System.getenv("PROXYFOX_KEY").let { it.substring(0, it.indexOf('.')) }
 
@@ -90,6 +96,8 @@ val errorChannelId = try {
     null
 }
 var errorChannel: TextChannel? = null
+
+val markdownParser = MarkdownParser()
 
 @OptIn(PrivilegedIntent::class)
 suspend fun login() {
@@ -145,9 +153,7 @@ suspend fun login() {
         handleModal()
     }
 
-    kord.registerApplicationCommands()
-
-    Commands.register()
+    kord.registerCommands()
 
     kord.on<MessageCommandInteractionCreateEvent> {
         onInteract()
@@ -187,37 +193,31 @@ suspend fun login() {
     }
 }
 
-suspend fun Kord.registerApplicationCommands() {
-    printStep("Registering slash commands", 2)
+suspend fun Kord.registerCommands() {
+    printStep("Registering commands", 2)
     createGlobalMessageCommand("Delete Message")
     createGlobalMessageCommand("Fetch Message Info")
     createGlobalMessageCommand("Ping Message Author")
     createGlobalMessageCommand("Edit Message")
-    registerSystemCommands()
-    registerGroupCommands()
-    registerMemberCommands()
-    registerSwitchCommands()
-    registerMiscCommands()
-    // Only send commands when discord hasn't registered yet
-    val file = File("./.pf-command-lock")
-    if (!file.exists()) {
-        withContext(Dispatchers.IO) {
-            file.createNewFile()
-        }
-        deferredCommands.forEach {
-            scope.launch {
-                rest.interaction.createGlobalApplicationCommand(
-                    resources.applicationId,
-                    it
-                )
-            }
-        }
+    Commands {
+        +SystemCommands
+        +MemberCommands
+        +GroupCommands
+        +SwitchCommands
+        +MiscCommands
+    }
+
+    scope.launch {
+        rest.interaction.createGlobalApplicationCommands(
+            resources.applicationId,
+            deferredCommands
+        )
     }
 }
 
 val deferredCommands = arrayListOf<ApplicationCommandCreateRequest>()
 
-fun Kord.deferChatInputCommand(
+fun deferChatInputCommand(
     name: String,
     description: String,
     builder: GlobalChatInputCreateBuilder.() -> Unit = {}

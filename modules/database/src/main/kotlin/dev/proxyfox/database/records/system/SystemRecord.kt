@@ -8,6 +8,7 @@
 
 package dev.proxyfox.database.records.system
 
+import dev.proxyfox.common.annotations.DontExpose
 import dev.proxyfox.database.PkId
 import dev.proxyfox.database.etc.ktx.serializaton.InstantLongMillisecondSerializer
 import dev.proxyfox.database.records.MongoRecord
@@ -47,6 +48,9 @@ open class SystemRecord : MongoRecord {
     var autoProxy: PkId? = null
     var autoType: AutoProxyMode = AutoProxyMode.OFF
     var trust: HashMap<ULong, TrustLevel> = HashMap()
+
+    @DontExpose("PluralKit Tokens grant access to edit systems in PK's API!")
+    var pkToken: String? = null
 
     val showName get() = name?.let { "$it [`$id`]" } ?: "`$id`"
 

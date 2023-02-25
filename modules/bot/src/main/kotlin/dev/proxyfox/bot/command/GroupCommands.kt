@@ -8,7 +8,6 @@
 
 package dev.proxyfox.bot.command
 
-import dev.kord.core.Kord
 import dev.kord.rest.builder.interaction.SubCommandBuilder
 import dev.kord.rest.builder.interaction.subCommand
 import dev.proxyfox.bot.command.context.DiscordContext
@@ -16,23 +15,22 @@ import dev.proxyfox.bot.command.context.InteractionCommandContext
 import dev.proxyfox.bot.command.context.runs
 import dev.proxyfox.bot.deferChatInputCommand
 import dev.proxyfox.bot.kordColor
+import dev.proxyfox.command.CommandParser
 import dev.proxyfox.command.NodeHolder
 import dev.proxyfox.command.node.builtin.literal
 import dev.proxyfox.command.node.builtin.string
-import dev.proxyfox.common.printStep
 import dev.proxyfox.database.database
 import dev.proxyfox.database.records.group.GroupRecord
 import dev.proxyfox.database.records.system.SystemRecord
 
-object GroupCommands {
+object GroupCommands : CommandRegistrar {
     var interactionExecutors: HashMap<String, suspend InteractionCommandContext.() -> Boolean> = hashMapOf()
 
     fun SubCommandBuilder.runs(action: suspend InteractionCommandContext.() -> Boolean) {
         interactionExecutors[name] = action
     }
 
-    suspend fun Kord.registerGroupCommands() {
-        printStep("Registering group commands", 3)
+    override suspend fun registerSlashCommands() {
         deferChatInputCommand("group", "Manage a group") {
             subCommand("access", "View the group") {
                 name()
@@ -48,9 +46,10 @@ object GroupCommands {
         }
     }
 
-    suspend fun register() {
-        printStep("Registering system commands", 3)
-        Commands.parser.registerGroupCommands {
+    override val displayName: String = "Group"
+
+    override suspend fun CommandParser<Any, DiscordContext<Any>>.registerTextCommands() {
+        registerGroupCommands {
             database.fetchSystemFromUser(getUser())
         }
     }

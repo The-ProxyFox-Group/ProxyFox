@@ -10,7 +10,7 @@ package dev.proxyfox.bot.command.menu
 
 import dev.proxyfox.command.menu.CommandScreen
 
-class DiscordScreen(name: String, private val menu: DiscordMenu) : CommandScreen(name) {
+class DiscordScreen(name: String) : CommandScreen(name) {
     private var initializer: suspend () -> Unit = {}
 
     fun onInit(action: suspend () -> Unit) {

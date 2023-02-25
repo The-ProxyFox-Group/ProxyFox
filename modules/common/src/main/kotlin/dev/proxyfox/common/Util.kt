@@ -8,6 +8,10 @@
 
 package dev.proxyfox.common
 
+import dev.kord.core.Kord
+import dev.kord.core.event.Event
+import dev.kord.core.on
+import org.slf4j.Logger
 import org.slf4j.LoggerFactory
 import java.lang.management.*
 import java.nio.charset.Charset
@@ -27,15 +31,19 @@ const val ellipsis = "…"
 
 fun printFancy(input: String) {
     val edges = "*".repeat(input.length + 4)
-    logger.info(edges)
-    logger.info("* $input *")
-    logger.info(edges)
+    logger..edges.."* $input *"..edges
 }
 
 fun printStep(input: String, step: Int) {
-    val add = "  ".repeat(step)
-    logger.info(step.toString() + add + input)
+    logger.."  " * step + input
 }
+
+operator fun Logger.rangeTo(string: String): Logger {
+    info(string)
+    return this
+}
+
+operator fun String.times(n: Int) = repeat(n)
 
 fun String?.toColor(): Int {
     return if (this == null || this == "") -1 else (toUIntOrNull(16)?.toInt() ?: Integer.decode(this)) and 0xFFFFFF
@@ -87,4 +95,16 @@ fun Array<String>.trimEach() {
     forEachIndexed { i, s ->
         this[i] = s.trim()
     }
+}
+
+fun Throwable?.throwIfPresent() {
+    throw this ?: return
+}
+
+inline fun <reified E : Event> Kord.onlyIf(
+    crossinline getter: E.() -> Any?,
+    compare: Any?,
+    crossinline executor: suspend E.() -> Unit
+) = on<E> {
+    if (getter() == compare) executor()
 }

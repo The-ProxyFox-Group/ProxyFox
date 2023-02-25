@@ -8,8 +8,6 @@
 
 package dev.proxyfox.bot.command
 
-import dev.kord.common.entity.ButtonStyle
-import dev.kord.core.Kord
 import dev.kord.rest.NamedFile
 import dev.kord.rest.builder.interaction.SubCommandBuilder
 import dev.kord.rest.builder.interaction.subCommand
@@ -21,12 +19,10 @@ import dev.proxyfox.bot.command.context.InteractionCommandContext
 import dev.proxyfox.bot.command.context.runs
 import dev.proxyfox.bot.command.context.system
 import dev.proxyfox.bot.command.node.attachment
-import dev.proxyfox.bot.prompts.Button
 import dev.proxyfox.bot.prompts.Pager
-import dev.proxyfox.bot.prompts.TimedYesNoPrompt
+import dev.proxyfox.command.CommandParser
 import dev.proxyfox.command.node.builtin.*
 import dev.proxyfox.common.fromColor
-import dev.proxyfox.common.printStep
 import dev.proxyfox.common.toColor
 import dev.proxyfox.database.database
 import dev.proxyfox.database.etc.exporter.Exporter
@@ -38,15 +34,16 @@ import io.ktor.utils.io.jvm.javaio.*
  * Commands for accessing and changing system settings
  * @author Oliver
  * */
-object SystemCommands {
+object SystemCommands : CommandRegistrar {
     var interactionExecutors: HashMap<String, suspend InteractionCommandContext.() -> Boolean> = hashMapOf()
 
     fun SubCommandBuilder.runs(action: suspend InteractionCommandContext.() -> Boolean) {
         interactionExecutors[name] = action
     }
 
-    suspend fun Kord.registerSystemCommands() {
-        printStep("Registering system commands", 3)
+    override val displayName: String = "System"
+
+    override suspend fun registerSlashCommands() {
         deferChatInputCommand("system", "Manage or create a system!") {
             subCommand("fetch", "Fetch a system card!") {
                 system()
@@ -170,9 +167,8 @@ object SystemCommands {
         }
     }
 
-    suspend fun register() {
-        printStep("Registering system commands", 3)
-        Commands.parser.literal("list", "l") {
+    override suspend fun CommandParser<Any, DiscordContext<Any>>.registerTextCommands() {
+        literal("list", "l") {
             runs {
                 val system = database.fetchSystemFromUser(getUser())
                 if (!checkSystem(this, system)) return@runs false
@@ -189,7 +185,7 @@ object SystemCommands {
                 }
             }
         }
-        Commands.parser.literal("system", "sys", "s") {
+        literal("system", "sys", "s") {
             literal("new", "n", "create", "add") {
                 runs {
                     create(this, null)
@@ -701,12 +697,10 @@ object SystemCommands {
     }
 
     private suspend fun <T> delete(ctx: DiscordContext<T>): Boolean {
-        TimedYesNoPrompt.build(
-            runner = ctx.getUser()!!.id,
-            channel = ctx.getChannel(),
+        ctx.timedYesNoPrompt(
             message = "Are you sure you want to delete your system?\n" +
                     "The data will be lost forever (A long time!)",
-            yes = Button("Delete system", Button.wastebasket, ButtonStyle.Danger) {
+            yes = "Delete system" to {
                 val export = Exporter.export(ctx.getUser()!!.id.value)
                 ctx.respondFiles(
                     null,
@@ -715,6 +709,8 @@ object SystemCommands {
                 database.dropSystem(ctx.getUser()!!)
                 content = "System deleted."
             },
+            yesEmoji = Emojis.wastebasket,
+            danger = true
         )
         return true
     }

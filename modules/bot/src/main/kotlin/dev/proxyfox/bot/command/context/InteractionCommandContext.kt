@@ -13,12 +13,13 @@ import dev.kord.core.behavior.channel.GuildChannelBehavior
 import dev.kord.core.behavior.channel.MessageChannelBehavior
 import dev.kord.core.behavior.interaction.respondEphemeral
 import dev.kord.core.behavior.interaction.respondPublic
+import dev.kord.core.behavior.interaction.response.respond
 import dev.kord.core.entity.*
 import dev.kord.core.event.interaction.ChatInputCommandInteractionCreateEvent
 import dev.kord.rest.builder.message.EmbedBuilder
 import dev.kord.rest.builder.message.create.embed
+import dev.proxyfox.bot.command.menu.DiscordMenu
 import dev.proxyfox.bot.command.menu.InteractionCommandMenu
-import dev.proxyfox.command.MenuBuilder
 import dev.proxyfox.database.database
 import dev.proxyfox.database.records.misc.ProxiedMessageRecord
 import dev.proxyfox.database.records.system.SystemRecord
@@ -27,15 +28,6 @@ import kotlin.jvm.optionals.getOrNull
 class InteractionCommandContext(value: ChatInputCommandInteractionCreateEvent) :
     DiscordContext<ChatInputCommandInteractionCreateEvent>(value) {
     override val command: String = ""
-
-    override suspend fun menu(action: MenuBuilder) {
-        val message = value.interaction.respondEphemeral {
-            content = "Thinking..."
-        }
-        val menu = InteractionCommandMenu(message)
-        menu.action()
-        menu.init()
-    }
 
     @OptIn(ExperimentalStdlibApi::class)
     override fun getAttachment(): Attachment? {
@@ -144,5 +136,15 @@ class InteractionCommandContext(value: ChatInputCommandInteractionCreateEvent) :
         databaseMessage ?: return null to null
         val message = getChannel().getMessageOrNull(Snowflake(databaseMessage.newMessageId))
         return message to databaseMessage
+    }
+
+    override suspend fun interactionMenu(private: Boolean, action: suspend DiscordMenu.() -> Unit) {
+        val message =
+            if (private) value.interaction.deferEphemeralResponse() else value.interaction.deferPublicResponse()
+        val menu = InteractionCommandMenu(message.respond {
+            content = "Thinking..."
+        })
+        menu.action()
+        menu.init()
     }
 }
