@@ -6,3 +6,5 @@ mods/
 proxyfox.db.properties
 .env
 .pf-command-lock
+.quilt/
+config/
