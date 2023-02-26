@@ -96,6 +96,16 @@ object MiscCommands : CommandRegistrar {
                     true
                 }
             }
+            subCommand("fox", "Gets a random fox picture") {
+                runs("info") {
+                    getFox(this)
+                }
+            }
+            subCommand("time", "Displays the current time") {
+                runs("info") {
+                    time(this)
+                }
+            }
         }
         deferChatInputCommand("moderation", "Moderator-only commands") {
             subCommand("role", "Access the role required for proxying") {
@@ -139,42 +149,38 @@ object MiscCommands : CommandRegistrar {
                 }
             }
         }
-        deferChatInputCommand("misc", "Other commands that don't fit in a category") {
-            subCommand("fox", "Gets a random fox picture") {
-                runs("misc") {
-                    getFox(this)
-                }
-            }
-            subCommand("import", "Import a system") {
+        deferChatInputCommand("management", "Other management commands that don't fit in a category") {
+            subCommand("import-file", "Import a system") {
                 attachment("import", "The file to import") {
                     required = true
                 }
-                runs("misc") {
+                runs("management") {
                     import(this, value.interaction.command.attachments["import"]!!.url)
                 }
             }
+            subCommand("import-url", "Import a system") {
+                name("file")
+                runs("management") {
+                    import(this, value.interaction.command.strings["file"]!!)
+                }
+            }
             subCommand("export", "Export your system") {
-                runs("misc") {
+                runs("management") {
                     val system = database.fetchSystemFromUser(getUser())
                     if (!checkSystem(this, system)) return@runs false
                     export(this)
                 }
             }
-            subCommand("time", "Displays the current time") {
-                runs("misc") {
-                    time(this)
-                }
-            }
             subCommand("autoproxy", "Changes the autoproxy type") {
-                name("value")
-                runs("misc") {
+                enum("value", enum = arrayListOf("off", "latch", "front"))
+                runs("management") {
                     val system = database.fetchSystemFromUser(getUser())
                     if (!checkSystem(this, system)) return@runs false
-                    val type: AutoProxyMode? = when(value.interaction.command.strings["value"]) {
+                    val type: AutoProxyMode? = when (value.interaction.command.strings["value"]) {
                         null -> null
-                        "off", "disable" -> AutoProxyMode.OFF
-                        "latch", "l" -> AutoProxyMode.LATCH
-                        "front", "f" -> AutoProxyMode.FRONT
+                        "off" -> AutoProxyMode.OFF
+                        "latch" -> AutoProxyMode.LATCH
+                        "front" -> AutoProxyMode.FRONT
                         else -> AutoProxyMode.MEMBER
                     }
                     val member = if (type == AutoProxyMode.MEMBER) {
@@ -188,11 +194,12 @@ object MiscCommands : CommandRegistrar {
             subCommand("proxy", "Toggles proxying for this server") {
                 bool("value", "the value to set")
                 guild()
-                runs("misc") {
+                runs("management") {
                     val system = database.fetchSystemFromUser(getUser())
                     if (!checkSystem(this, system)) return@runs false
                     val enabled = value.interaction.command.booleans["value"]
-                    val guildId = value.interaction.command.integers["server"]?.toULong()?.let { Snowflake(it) } ?: getGuild()?.id
+                    val guildId =
+                        value.interaction.command.integers["server"]?.toULong()?.let { Snowflake(it) } ?: getGuild()?.id
                     guildId ?: run {
                         respondFailure("Command not ran in server.")
                         return@runs false
@@ -206,16 +213,17 @@ object MiscCommands : CommandRegistrar {
                 }
             }
             subCommand("serverautoproxy", "Changes the autoproxy type for the server") {
-                name("value")
+                enum("value", enum = arrayListOf("off", "latch", "front", "on"))
                 guild()
-                runs("misc") {
+                runs("management") {
                     val system = database.fetchSystemFromUser(getUser())
                     if (!checkSystem(this, system)) return@runs false
-                    val type: AutoProxyMode? = when(value.interaction.command.strings["value"]) {
+                    val type: AutoProxyMode? = when (value.interaction.command.strings["value"]) {
                         null -> null
-                        "off", "disable" -> AutoProxyMode.OFF
-                        "latch", "l" -> AutoProxyMode.LATCH
-                        "front", "f" -> AutoProxyMode.FRONT
+                        "off" -> AutoProxyMode.OFF
+                        "latch" -> AutoProxyMode.LATCH
+                        "front" -> AutoProxyMode.FRONT
+                        "on" -> AutoProxyMode.FALLBACK
                         else -> AutoProxyMode.MEMBER
                     }
                     val member = if (type == AutoProxyMode.MEMBER) {
@@ -243,7 +251,7 @@ object MiscCommands : CommandRegistrar {
                 int("message", "The message ID to edit") {
                     required = false
                 }
-                runs("misc") {
+                runs("management") {
                     val system = database.fetchSystemFromUser(getUser())
                     if (!checkSystem(this, system, true)) return@runs false
                     val message = value.interaction.command.integers["message"]?.toULong()?.let { Snowflake(it) }

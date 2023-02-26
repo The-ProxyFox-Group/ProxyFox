@@ -279,7 +279,7 @@ suspend fun handleError(err: Throwable, channel: MessageChannelBehavior) {
             if (it.className.startsWith("dev.proxyfox"))
                 supCause += "    at $it\n"
         }
-        cause += "  Caused by ${suppressed.javaClass.name}: $supReason\n$supCause"
+        cause += "  Suppressed: ${suppressed.javaClass.name}: $supReason\n$supCause"
     }
     channel.createMessage(
         "An unexpected error occurred.\nTimestamp: `$timestamp`\n```\n${err.javaClass.name}: $reason\n$cause```"

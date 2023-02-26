@@ -46,9 +46,19 @@ fun SubCommandBuilder.guild() {
         required = false
     }
 }
+
 fun SubCommandBuilder.name(name: String = "name", required: Boolean = true) {
     string(name, "The $name to use") {
         this.required = required
+    }
+}
+
+fun SubCommandBuilder.enum(name: String, required: Boolean = true, enum: ArrayList<String>) {
+    string(name, "The $name to use") {
+        this.required = required
+        for (value in enum) {
+            choice(value, value)
+        }
     }
 }
 
