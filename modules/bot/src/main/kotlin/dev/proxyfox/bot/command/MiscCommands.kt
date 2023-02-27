@@ -52,13 +52,15 @@ object MiscCommands : CommandRegistrar {
     private val roleMatcher = Regex("\\d+")
     var infoInteractionExecutors: HashMap<String, suspend InteractionCommandContext.() -> Boolean> = hashMapOf()
     var moderationInteractionExecutors: HashMap<String, suspend InteractionCommandContext.() -> Boolean> = hashMapOf()
-    var miscInteractionExecutors: HashMap<String, suspend InteractionCommandContext.() -> Boolean> = hashMapOf()
+    var managementInteractionExecutors: HashMap<String, suspend InteractionCommandContext.() -> Boolean> = hashMapOf()
+    var pluralkitInteractionExecutors: HashMap<String, suspend InteractionCommandContext.() -> Boolean> = hashMapOf()
 
     fun SubCommandBuilder.runs(rootName: String, action: suspend InteractionCommandContext.() -> Boolean) {
         when (rootName) {
             "info" -> infoInteractionExecutors
             "moderation" -> moderationInteractionExecutors
-            "misc" -> miscInteractionExecutors
+            "management" -> managementInteractionExecutors
+            "pluralkit" -> pluralkitInteractionExecutors
             else -> return
         }[name] = action
     }
@@ -159,9 +161,9 @@ object MiscCommands : CommandRegistrar {
                 }
             }
             subCommand("import-url", "Import a system") {
-                name("file")
+                name("import")
                 runs("management") {
-                    import(this, value.interaction.command.strings["file"]!!)
+                    import(this, value.interaction.command.strings["import"]!!)
                 }
             }
             subCommand("export", "Export your system") {
@@ -938,12 +940,13 @@ object MiscCommands : CommandRegistrar {
 
     private suspend fun <T> import(ctx: DiscordContext<T>, url: String?): Boolean {
         val uri = url.uri()
+
+        ctx.deferResponse()
+
         uri.invalidUrlMessage("import", exampleExport)?.let {
             ctx.respondFailure(it)
             return false
         }
-
-        ctx.deferResponse()
 
         return try {
             val importer = withContext(Dispatchers.IO) {

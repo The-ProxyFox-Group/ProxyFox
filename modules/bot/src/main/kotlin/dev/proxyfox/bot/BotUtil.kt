@@ -39,6 +39,7 @@ import dev.kord.rest.json.request.ApplicationCommandCreateRequest
 import dev.kord.rest.request.KtorRequestException
 import dev.proxyfox.bot.command.*
 import dev.proxyfox.bot.command.interaction.ProxyFoxChatInputCreateBuilderImpl
+import dev.proxyfox.bot.command.interaction.ProxyFoxMessageCommandCreateBuilderImpl
 import dev.proxyfox.common.*
 import dev.proxyfox.database.database
 import dev.proxyfox.database.records.member.MemberRecord
@@ -195,10 +196,14 @@ suspend fun login() {
 
 suspend fun Kord.registerCommands() {
     printStep("Registering commands", 2)
-    createGlobalMessageCommand("Delete Message")
-    createGlobalMessageCommand("Fetch Message Info")
-    createGlobalMessageCommand("Ping Message Author")
-    createGlobalMessageCommand("Edit Message")
+    deferredCommands.addAll(
+        listOf(
+            ProxyFoxMessageCommandCreateBuilderImpl("Delete Message").toRequest(),
+            ProxyFoxMessageCommandCreateBuilderImpl("Fetch Message Info").toRequest(),
+            ProxyFoxMessageCommandCreateBuilderImpl("Ping Message Author").toRequest(),
+            ProxyFoxMessageCommandCreateBuilderImpl("Edit Message").toRequest()
+        )
+    )
     Commands {
         +SystemCommands
         +MemberCommands
@@ -207,12 +212,10 @@ suspend fun Kord.registerCommands() {
         +MiscCommands
     }
 
-    scope.launch {
-        rest.interaction.createGlobalApplicationCommands(
-            resources.applicationId,
-            deferredCommands
-        )
-    }
+    rest.interaction.createGlobalApplicationCommands(
+        resources.applicationId,
+        deferredCommands
+    )
 }
 
 val deferredCommands = arrayListOf<ApplicationCommandCreateRequest>()

@@ -471,7 +471,8 @@ suspend fun ChatInputCommandInteractionCreateEvent.onInteract() {
                 when (command.rootName) {
                     "info" -> MiscCommands.infoInteractionExecutors
                     "moderation" -> MiscCommands.moderationInteractionExecutors
-                    "misc" -> MiscCommands.miscInteractionExecutors
+                    "management" -> MiscCommands.managementInteractionExecutors
+                    "pluralkit" -> MiscCommands.pluralkitInteractionExecutors
                     else -> return
                 }[command.name]?.let { it(InteractionCommandContext(this)) }
             }
