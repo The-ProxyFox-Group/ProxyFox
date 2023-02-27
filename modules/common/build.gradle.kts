@@ -20,9 +20,16 @@ dependencies {
 
 tasks.withType<ProcessResources> {
     val hash = getCommitHash()
+    val branch = getBranch()
     inputs.property("hash", hash)
-    filesMatching("commit_hash.txt") {
-        expand("hash" to hash)
+    inputs.property("branch", branch)
+    inputs.property("version", rootProject.version)
+    filesMatching("git.properties") {
+        expand(
+            "hash" to hash,
+            "branch" to branch,
+            "version" to rootProject.version
+        )
     }
 }
 
@@ -34,4 +41,13 @@ fun getCommitHash(): String {
     }
     val str = stdout.toString(Charset.defaultCharset())
     return str.substring(1, str.length - 1)
+}
+
+fun getBranch(): String {
+    val stdout = ByteArrayOutputStream()
+    exec {
+        commandLine("git", "rev-parse", "--abbrev-ref", "HEAD")
+        standardOutput = stdout
+    }
+    return stdout.toString(Charset.defaultCharset())
 }

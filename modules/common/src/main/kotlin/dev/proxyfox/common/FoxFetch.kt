@@ -8,17 +8,35 @@
 
 package dev.proxyfox.common
 
-import kotlinx.coroutines.*
+import io.ktor.client.*
+import io.ktor.client.call.*
+import io.ktor.client.plugins.*
+import io.ktor.client.plugins.contentnegotiation.*
+import io.ktor.client.request.*
+import io.ktor.serialization.kotlinx.json.*
+import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.withContext
 import kotlinx.serialization.json.Json
-import kotlinx.serialization.json.jsonObject
-import kotlinx.serialization.json.jsonPrimitive
-import java.net.*
 
 object FoxFetch {
     private val baseUrl = "https://api.tinyfox.dev"
-    private val url = URL("https://api.tinyfox.dev/img?animal=fox&json")
-
-    suspend fun fetch()  = withContext(Dispatchers.IO) {
-        baseUrl + Json.parseToJsonElement(url.readText()).jsonObject["loc"]!!.jsonPrimitive.content
+    private val requestUrl = "https://api.tinyfox.dev/img?animal=fox&json"
+    private val json = Json {
+        ignoreUnknownKeys = true
+        isLenient = true
     }
+    private val client = HttpClient {
+        install(UserAgent) {
+            agent = useragent
+        }
+        install(ContentNegotiation) {
+            json(json)
+        }
+    }
+
+    suspend fun fetch() = withContext(Dispatchers.IO) {
+        baseUrl + client.get(requestUrl).body<Response>().loc
+    }
+
+    data class Response(val loc: String)
 }

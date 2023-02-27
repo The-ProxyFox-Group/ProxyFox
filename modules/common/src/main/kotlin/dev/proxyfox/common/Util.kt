@@ -13,8 +13,10 @@ import dev.kord.core.event.Event
 import dev.kord.core.on
 import org.slf4j.Logger
 import org.slf4j.LoggerFactory
+import java.io.StringReader
 import java.lang.management.*
 import java.nio.charset.Charset
+import java.util.*
 import kotlin.contracts.ExperimentalContracts
 import kotlin.contracts.InvocationKind
 import kotlin.contracts.contract
@@ -74,10 +76,25 @@ suspend inline fun <T> T.applyAsync(block: suspend T.() -> Unit): T {
     return this
 }
 
-//We just need a classloader to get a resource
-val hash = object {}.javaClass.getResource("/commit_hash.txt")?.readText(Charset.defaultCharset()) ?: "Unknown Hash"
+fun getGit(): Properties {
+    val input = logger.javaClass.getResource("/git.properties")?.readText(Charset.defaultCharset())!!
+    val properties = Properties()
+    properties.load(StringReader(input))
+    return properties
+}
 
-class DebugException: Exception("Debug Exception - Do Not Report")
+val gitProperties = getGit()
+
+val hash = gitProperties["hash"] as String
+
+val branch = gitProperties["branch"] as String
+
+val version = gitProperties["version"] as String
+
+val useragent =
+    "ProxyFox/$version@$branch#$hash (+https://github.com/The-ProxyFox-Group/ProxyFox/; +https://proxyfox.dev/)"
+
+class DebugException : Exception("Debug Exception - Do Not Report")
 
 val threadMXBean = ManagementFactory.getThreadMXBean()
 

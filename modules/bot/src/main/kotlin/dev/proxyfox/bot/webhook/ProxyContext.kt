@@ -19,6 +19,7 @@ import dev.proxyfox.bot.http
 import dev.proxyfox.bot.kord
 import dev.proxyfox.bot.markdownParser
 import dev.proxyfox.common.ellipsis
+import dev.proxyfox.common.useragent
 import dev.proxyfox.database.database
 import dev.proxyfox.database.records.member.MemberProxyTagRecord
 import dev.proxyfox.database.records.member.MemberRecord
@@ -89,7 +90,7 @@ data class ProxyContext(
                         headers {
                             append(
                                 HttpHeaders.UserAgent,
-                                "ProxyFox/2.1 (+https://github.com/The-ProxyFox-Group/ProxyFox/; +https://proxyfox.dev/)"
+                                useragent
                             )
                         }
                     }

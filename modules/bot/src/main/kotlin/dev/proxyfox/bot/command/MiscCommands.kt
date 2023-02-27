@@ -857,12 +857,19 @@ object MiscCommands : CommandRegistrar {
         val shardid = ctx.getGuild()?.id?.value?.toShard() ?: 0
         ctx.respondEmbed {
             title = "ProxyFox Debug"
+            field {
+                inline = true
+                name = "Version"
+                value = version
+            }
+
             val gatewayPing = kord.gateway.gateways[shardid]!!.ping.value!!
             field {
                 inline = true
                 name = "Shard ID"
                 value = "$shardid"
             }
+
             field {
                 inline = true
                 name = "Gateway Ping"
@@ -891,7 +898,7 @@ object MiscCommands : CommandRegistrar {
 
             field {
                 inline = true
-                name = "Database Implementation"
+                name = "Database"
                 value = database.getDatabaseName()
             }
 
@@ -899,6 +906,12 @@ object MiscCommands : CommandRegistrar {
                 inline = true
                 name = "Commit Hash"
                 value = hash
+            }
+
+            field {
+                inline = true
+                name = "Git Branch"
+                value = branch
             }
 
             field {
