@@ -875,6 +875,12 @@ object MiscCommands : CommandRegistrar {
                 value = hash
             }
 
+            field {
+                inline = true
+                name = "Uptime"
+                value = "${(Clock.System.now() - startTime).inWholeHours} hours"
+            }
+
             val gatewayPing = kord.gateway.gateways[shardid]!!.ping.value!!
             field {
                 inline = true
@@ -886,12 +892,6 @@ object MiscCommands : CommandRegistrar {
                 inline = true
                 name = "Gateway Ping"
                 value = "$gatewayPing"
-            }
-
-            field {
-                inline = true
-                name = "Uptime"
-                value = "${(Clock.System.now() - startTime).inWholeHours} hours"
             }
 
             val databasePing = database.ping()
