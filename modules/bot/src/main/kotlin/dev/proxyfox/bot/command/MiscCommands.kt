@@ -863,6 +863,18 @@ object MiscCommands : CommandRegistrar {
                 value = version
             }
 
+            field {
+                inline = true
+                name = "Git Branch"
+                value = branch
+            }
+
+            field {
+                inline = true
+                name = "Commit Hash"
+                value = hash
+            }
+
             val gatewayPing = kord.gateway.gateways[shardid]!!.ping.value!!
             field {
                 inline = true
@@ -874,6 +886,12 @@ object MiscCommands : CommandRegistrar {
                 inline = true
                 name = "Gateway Ping"
                 value = "$gatewayPing"
+            }
+
+            field {
+                inline = true
+                name = "Uptime"
+                value = "${(Clock.System.now() - startTime).inWholeHours} hours"
             }
 
             val databasePing = database.ping()
@@ -892,26 +910,8 @@ object MiscCommands : CommandRegistrar {
 
             field {
                 inline = true
-                name = "Uptime"
-                value = "${(Clock.System.now() - startTime).inWholeHours} hours"
-            }
-
-            field {
-                inline = true
                 name = "Database"
                 value = database.getDatabaseName()
-            }
-
-            field {
-                inline = true
-                name = "Commit Hash"
-                value = hash
-            }
-
-            field {
-                inline = true
-                name = "Git Branch"
-                value = branch
             }
 
             field {
