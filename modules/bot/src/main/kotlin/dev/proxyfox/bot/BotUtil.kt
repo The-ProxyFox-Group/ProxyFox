@@ -282,7 +282,7 @@ suspend fun handleError(err: Throwable, channel: MessageChannelBehavior) {
         cause += "  Suppressed: ${suppressed.javaClass.name}: $supReason\n$supCause"
     }
     channel.createMessage(
-        "An unexpected error occurred.\nTimestamp: `$timestamp`\n```\n${err.javaClass.name}: $reason\n$cause```"
+        "An unexpected error occurred. Report this to us at https://discord.gg/q3yF8ay9V7\nTimestamp: `$timestamp`\n```\n${err.javaClass.name}: $reason\n$cause```"
     )
     if (err is DebugException) return
     if (errorChannel == null && errorChannelId != null)
