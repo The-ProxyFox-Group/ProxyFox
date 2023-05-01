@@ -9,10 +9,11 @@
 package dev.proxyfox.bot.webhook
 
 import dev.kord.common.Color
+import dev.kord.common.entity.MessageFlag
+import dev.kord.common.entity.MessageFlags
 import dev.kord.common.entity.Snowflake
 import dev.kord.core.behavior.channel.threads.ThreadChannelBehavior
 import dev.kord.core.entity.User
-import dev.kord.rest.NamedFile
 import dev.kord.rest.builder.message.create.embed
 import dev.kord.rest.request.KtorRequestException
 import dev.proxyfox.bot.http
@@ -31,7 +32,6 @@ import io.ktor.client.request.forms.*
 import io.ktor.client.statement.*
 import io.ktor.http.*
 import io.ktor.util.*
-import io.ktor.utils.io.jvm.javaio.*
 import kotlinx.coroutines.delay
 
 /**
@@ -85,6 +85,11 @@ data class ProxyContext(
                 if (messageContent.isNotBlank()) content = messageContent
                 username = buildAndSanitiseName()
                 avatarUrl = resolvedAvatar
+
+                if (message.flags?.contains(MessageFlag.IsVoiceMessage) == true) {
+                    flags = MessageFlags(MessageFlag.IsVoiceMessage)
+                }
+
                 for (attachment in message.attachments) {
                     val response: HttpResponse = http.get(urlString = attachment.url) {
                         headers {
@@ -94,35 +99,33 @@ data class ProxyContext(
                             )
                         }
                     }
-                    files.add(
-                        NamedFile(
-                            attachment.filename,
-                            ChannelProvider { response.content.toInputStream().toByteReadChannel() }
-                        )
+                    addFile(
+                        attachment.filename,
+                        ChannelProvider { response.content }
                     )
                 }
                 if (reproxy) {
-                message.embeds.forEach {
-                    if (it.author?.name?.endsWith(" ↩️") == true) {
-                        embed {
-                            color = Color(member.color)
-                            author {
-                                name = it.author?.name
-                                icon = it.author?.iconUrl
+                    message.embeds.forEach {
+                        if (it.author?.name?.endsWith(" ↩️") == true) {
+                            embed {
+                                color = Color(member.color)
+                                author {
+                                    name = it.author?.name
+                                    icon = it.author?.iconUrl
+                                }
+                                description = it.description
                             }
-                            description = it.description
                         }
                     }
-                }
-            } else message.referencedMessage?.let { ref ->
+                } else message.referencedMessage?.let { ref ->
                     // Kord's official methods don't return a user if it's a webhook
                     val user = User(ref.data.author, kord)
                     val link = "https://discord.com/channels/${ref.getGuild().id}/${ref.channelId}/${ref.id}"
                     embed {
                         color = Color(member.color)
                         author {
-                            name = (ref.getAuthorAsMember()?.displayName ?: user.username) + " ↩️"
-                            icon = user.avatar?.url ?: user.defaultAvatar.url
+                            name = (ref.getAuthorAsMemberOrNull()?.displayName ?: user.username) + " ↩️"
+                            icon = (user.avatar?.cdnUrl ?: user.defaultAvatar.cdnUrl).toUrl()
                             url = link
                         }
                         var msgRef = markdownParser.parse(ref.content)

@@ -23,8 +23,9 @@ import dev.kord.rest.json.request.ApplicationCommandCreateRequest
  * */
 class ProxyFoxChatInputCreateBuilderImpl(
     override var name: String,
-    override var description: String,
+    override var description: String
 ) : GlobalChatInputCreateBuilder {
+    override var nsfw: Boolean? = false
     private val state = ProxyFoxApplicationCommandModifyStateHolder()
 
     override var nameLocalizations: MutableMap<Locale, String>? by state::nameLocalizations.delegate()

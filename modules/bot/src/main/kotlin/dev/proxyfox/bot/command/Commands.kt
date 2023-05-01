@@ -42,7 +42,7 @@ object Commands {
 }
 
 fun SubCommandBuilder.guild() {
-    int("server-id", "The ID for the server") {
+    integer("server-id", "The ID for the server") {
         required = false
     }
 }

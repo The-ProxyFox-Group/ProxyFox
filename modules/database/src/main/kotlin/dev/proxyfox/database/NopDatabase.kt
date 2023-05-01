@@ -98,7 +98,8 @@ class NopDatabase : Database() {
         memberId: String,
         systemId: String,
         memberName: String
-    ) {}
+    ) {
+    }
 
     override suspend fun updateMessage(message: ProxiedMessageRecord) {}
 
@@ -109,13 +110,20 @@ class NopDatabase : Database() {
         channelId: Snowflake
     ): ProxiedMessageRecord? = null
 
+    override suspend fun dropMessage(messageId: Snowflake) {}
+
     override suspend fun fetchToken(token: String): TokenRecord? = null
 
     override suspend fun updateToken(token: TokenRecord) = fail("Cannot store token for ${token.systemId}.")
 
     override suspend fun createProxyTag(record: MemberProxyTagRecord): Boolean = false
 
-    override suspend fun createSwitch(systemId: String, memberId: List<String>, timestamp: Instant?): SystemSwitchRecord? = null
+    override suspend fun createSwitch(
+        systemId: String,
+        memberId: List<String>,
+        timestamp: Instant?
+    ): SystemSwitchRecord? = null
+
     override suspend fun dropSwitch(switch: SystemSwitchRecord) {}
     override suspend fun updateSwitch(switch: SystemSwitchRecord) {}
 

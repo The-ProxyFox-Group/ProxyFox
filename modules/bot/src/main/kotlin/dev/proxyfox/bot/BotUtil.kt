@@ -10,7 +10,9 @@ package dev.proxyfox.bot
 
 import dev.kord.common.Color
 import dev.kord.common.EmptyBitSet
-import dev.kord.common.entity.*
+import dev.kord.common.entity.Permission
+import dev.kord.common.entity.Permissions
+import dev.kord.common.entity.Snowflake
 import dev.kord.core.Kord
 import dev.kord.core.behavior.MessageBehavior
 import dev.kord.core.behavior.channel.ChannelBehavior
@@ -25,8 +27,12 @@ import dev.kord.core.entity.channel.GuildMessageChannel
 import dev.kord.core.entity.channel.TextChannel
 import dev.kord.core.entity.channel.thread.ThreadChannel
 import dev.kord.core.event.gateway.ReadyEvent
-import dev.kord.core.event.interaction.*
+import dev.kord.core.event.interaction.ButtonInteractionCreateEvent
+import dev.kord.core.event.interaction.ChatInputCommandInteractionCreateEvent
+import dev.kord.core.event.interaction.MessageCommandInteractionCreateEvent
+import dev.kord.core.event.interaction.ModalSubmitInteractionCreateEvent
 import dev.kord.core.event.message.MessageCreateEvent
+import dev.kord.core.event.message.MessageDeleteEvent
 import dev.kord.core.event.message.MessageUpdateEvent
 import dev.kord.core.event.message.ReactionAddEvent
 import dev.kord.core.on
@@ -50,13 +56,15 @@ import io.ktor.client.engine.cio.*
 import io.ktor.client.request.forms.*
 import io.ktor.http.*
 import io.ktor.utils.io.jvm.javaio.*
-import kotlinx.coroutines.*
+import kotlinx.coroutines.CoroutineScope
+import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.flow.count
 import kotlinx.coroutines.flow.fold
+import kotlinx.coroutines.launch
+import kotlinx.coroutines.runBlocking
 import kotlinx.datetime.Clock
 import kotlinx.datetime.Instant
-import java.lang.Integer.*
-import java.util.*
+import java.lang.Integer.min
 import java.util.concurrent.Executors
 import java.util.concurrent.ScheduledExecutorService
 import java.util.concurrent.TimeUnit
@@ -130,6 +138,10 @@ suspend fun login() {
         } catch (err: Throwable) {
             handleError(err, message)
         }
+    }
+
+    kord.on<MessageDeleteEvent> {
+        onMessageDelete()
     }
 
     kord.on<MessageUpdateEvent> {

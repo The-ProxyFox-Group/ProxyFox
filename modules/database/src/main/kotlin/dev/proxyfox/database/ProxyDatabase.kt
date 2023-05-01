@@ -150,6 +150,10 @@ open class ProxyDatabase<T : Database>(protected val proxy: T) : Database() {
         return proxy.fetchLatestMessage(systemId, channelId)
     }
 
+    override suspend fun dropMessage(messageId: Snowflake) {
+        proxy.dropMessage(messageId)
+    }
+
     override suspend fun fetchToken(token: String): TokenRecord? {
         return proxy.fetchToken(token)
     }

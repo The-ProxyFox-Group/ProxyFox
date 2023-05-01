@@ -25,6 +25,7 @@ import dev.kord.core.event.interaction.ChatInputCommandInteractionCreateEvent
 import dev.kord.core.event.interaction.MessageCommandInteractionCreateEvent
 import dev.kord.core.event.interaction.ModalSubmitInteractionCreateEvent
 import dev.kord.core.event.message.MessageCreateEvent
+import dev.kord.core.event.message.MessageDeleteEvent
 import dev.kord.core.event.message.MessageUpdateEvent
 import dev.kord.core.event.message.ReactionAddEvent
 import dev.kord.rest.builder.component.ActionRowBuilder
@@ -81,15 +82,26 @@ suspend fun MessageCreateEvent.onMessageCreate() {
         val guild = guildChannel.getGuild()
         val hasStickers = message.stickers.isNotEmpty()
         // TODO: Boost to upload limit; 8 MiB is default.
-        val hasOversizedFiles = message.attachments.fold(0L) { size, attachment -> size + attachment.size } >= UPLOAD_LIMIT
+        val hasOversizedFiles =
+            message.attachments.fold(0L) { size, attachment -> size + attachment.size } >= UPLOAD_LIMIT
         val isOversizedMessage = content.length > 2000
         if (hasStickers || hasOversizedFiles || isOversizedMessage) {
-            logger.trace("Denying proxying {} ({}) in {} ({}) due to Discord bot constraints", user.tag, user.id, guild.name, guild.id)
+            logger.trace(
+                "Denying proxying {} ({}) in {} ({}) due to Discord bot constraints",
+                user.tag,
+                user.id,
+                guild.name,
+                guild.id
+            )
             return
         }
 
         handleProxying(GuildMessage(message, guild, channel), isEdit = false)
     }
+}
+
+suspend fun MessageDeleteEvent.onMessageDelete() {
+    database.dropMessage(messageId)
 }
 
 suspend fun MessageUpdateEvent.onMessageUpdate() {
@@ -122,6 +134,7 @@ suspend fun MessageUpdateEvent.onMessageUpdate() {
         new.embeds.value?.map { Embed(EmbedData.from(it), kord) } ?: emptyList(),
         new.messageReference.value?.id?.value?.let { channel.getMessage(it) },
         message,
+        message.asMessage().flags
     )
 
     handleProxying(
@@ -262,7 +275,7 @@ suspend fun ReactionAddEvent.onReactionAdd() {
             val member = database.fetchMemberFromSystem(databaseMessage.systemId, databaseMessage.memberId)
                 ?: return
 
-            val guild = getGuild()
+            val guild = getGuildOrNull()
             val settings = database.fetchMemberServerSettingsFromSystemAndMember(guild, system.id, member.id)
 
             val user = kord.getUser(Snowflake(databaseMessage.userId))
@@ -397,7 +410,7 @@ suspend fun MessageCommandInteractionCreateEvent.onInteract() {
                     settings?.nickname?.let {
                         field {
                             name = "Server Name"
-                            value = "> $it\n*For ${guild?.name}*"
+                            value = "> $it\n*For ${guild.name}*"
                             inline = true
                         }
                     }

@@ -317,6 +317,7 @@ abstract class Database : AutoCloseable {
     open suspend fun createMessage(message: ProxiedMessageRecord) = updateMessage(message)
     abstract suspend fun fetchMessage(messageId: Snowflake): ProxiedMessageRecord?
     abstract suspend fun fetchLatestMessage(systemId: String, channelId: Snowflake): ProxiedMessageRecord?
+    abstract suspend fun dropMessage(messageId: Snowflake)
 
     open suspend fun createToken(systemId: String, type: TokenType): TokenRecord {
         val token = TokenRecord(generateUniqueToken(), systemId, type)

@@ -21,7 +21,10 @@ import dev.proxyfox.database.records.member.MemberProxyTagRecord
 import dev.proxyfox.database.records.member.MemberRecord
 import dev.proxyfox.database.records.member.MemberServerSettingsRecord
 import dev.proxyfox.database.records.misc.*
-import dev.proxyfox.database.records.system.*
+import dev.proxyfox.database.records.system.SystemChannelSettingsRecord
+import dev.proxyfox.database.records.system.SystemRecord
+import dev.proxyfox.database.records.system.SystemServerSettingsRecord
+import dev.proxyfox.database.records.system.SystemSwitchRecord
 import kotlinx.coroutines.reactive.awaitFirst
 import kotlinx.coroutines.reactive.awaitFirstOrElse
 import kotlinx.coroutines.reactive.awaitFirstOrNull
@@ -277,6 +280,10 @@ class MongoDatabase(private val dbName: String = "ProxyFox") : Database() {
         messages.find("systemId" eq systemId, "channelId" eq channelId).sort("{'creationDate':-1}").limit(1)
             .awaitFirstOrNull()
 
+    override suspend fun dropMessage(messageId: Snowflake) {
+        messages.deleteOne("oldMessageId" eq messageId.value)
+    }
+
     override suspend fun fetchToken(token: String): TokenRecord? =
         systemTokens.findFirstOrNull("token" eq token)
 
@@ -507,6 +514,10 @@ class MongoDatabase(private val dbName: String = "ProxyFox") : Database() {
 
         override suspend fun createUser(user: UserRecord) {
             if (witness.add(user)) userQueue += user.create()
+        }
+
+        override suspend fun dropMessage(messageId: Snowflake) {
+            TODO("Not yet implemented")
         }
 
         override suspend fun createMessage(message: ProxiedMessageRecord) {

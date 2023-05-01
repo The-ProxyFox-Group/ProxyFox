@@ -256,6 +256,12 @@ class InMemoryDatabase : Database() {
         return messages.findLast { it.systemId == systemId && it.channelId == channelId.value }
     }
 
+    override suspend fun dropMessage(messageId: Snowflake) {
+        messages.removeIf {
+            it.newMessageId == messageId.value
+        }
+    }
+
     override suspend fun fetchToken(token: String): TokenRecord? {
         if (!systemTokens.containsKey(token)) return null
         return systemTokens[token]

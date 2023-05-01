@@ -43,7 +43,7 @@ class DiscordMessageContext(message: Message, override val command: String): Dis
     }
 
     override suspend fun getMember(): Member? {
-        return value.getAuthorAsMember()
+        return value.getAuthorAsMemberOrNull()
     }
 
     override suspend fun respondEmbed(

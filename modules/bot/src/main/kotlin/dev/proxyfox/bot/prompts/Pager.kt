@@ -30,6 +30,7 @@ import dev.kord.core.event.message.ReactionAddEvent
 import dev.kord.core.on
 import dev.kord.rest.builder.component.ActionRowBuilder
 import dev.kord.rest.builder.component.SelectOptionBuilder
+import dev.kord.rest.builder.component.options
 import dev.kord.rest.builder.message.EmbedBuilder
 import dev.kord.rest.builder.message.create.embed
 import dev.kord.rest.builder.message.modify.embed
@@ -84,10 +85,11 @@ class Pager<T>(
                     selector = EphemeralSelector(this@Pager, interaction.respondEphemeral {
                         content = "Which page would you like to go to?"
                         components += ActionRowBuilder().apply {
-                            selectMenu(uuid) {
+                            stringSelect(uuid) {
                                 val opts = pages / 25
                                 options += if (opts != 0) {
-                                    (0..24).asSequence().map { (it * opts).toString() }.map { SelectOptionBuilder(it, it) }
+                                    (0..24).asSequence().map { (it * opts).toString() }
+                                        .map { SelectOptionBuilder(it, it) }
                                 } else {
                                     (1..pages).asSequence().map(Int::toString).map { SelectOptionBuilder(it, it) }
                                 }
@@ -119,10 +121,11 @@ class Pager<T>(
                     selector = LegacySelector(this@Pager, reference.reply {
                         content = "Which page would you like to go to?"
                         components += ActionRowBuilder().apply {
-                            selectMenu("menu") {
+                            stringSelect("menu") {
                                 val opts = pages / 25
                                 options += if (opts != 0) {
-                                    (0..24).asSequence().map { (it * opts + 1).toString() }.map { SelectOptionBuilder(it, it) }
+                                    (0..24).asSequence().map { (it * opts + 1).toString() }
+                                        .map { SelectOptionBuilder(it, it) }
                                 } else {
                                     (1..pages).asSequence().map(Int::toString).map { SelectOptionBuilder(it, it) }
                                 }

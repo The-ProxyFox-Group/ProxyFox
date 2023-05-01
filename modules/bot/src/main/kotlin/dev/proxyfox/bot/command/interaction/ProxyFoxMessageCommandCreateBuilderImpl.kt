@@ -19,6 +19,8 @@ class ProxyFoxMessageCommandCreateBuilderImpl(override var name: String) : Globa
     override val type: ApplicationCommandType
         get() = ApplicationCommandType.Message
 
+    override var nsfw: Boolean? = false
+
 
     private val state = ProxyFoxApplicationCommandModifyStateHolder()
 

@@ -250,7 +250,7 @@ object MiscCommands : CommandRegistrar {
                 string("content", "The content to replace with") {
                     required = true
                 }
-                int("message", "The message ID to edit") {
+                integer("message", "The message ID to edit") {
                     required = false
                 }
                 runs("management") {
