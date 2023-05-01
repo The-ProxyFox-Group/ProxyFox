@@ -34,6 +34,7 @@ import dev.proxyfox.database.records.misc.ServerSettingsRecord
 import dev.proxyfox.database.records.misc.TrustLevel
 import dev.proxyfox.database.records.system.SystemRecord
 import dev.proxyfox.database.records.system.SystemServerSettingsRecord
+import dev.proxyfox.sync.PkSync
 import io.ktor.client.request.forms.*
 import io.ktor.utils.io.jvm.javaio.*
 import kotlinx.coroutines.Dispatchers
@@ -262,8 +263,34 @@ object MiscCommands : CommandRegistrar {
             }
         }
         deferChatInputCommand("pluralkit", "Commands for PluralKit integration with ProxyFox") {
-            subCommand("token", "Store you PluralKit token!") {
-
+            subCommand("set-token", "Store your PluralKit token") {
+                name("token", required = true)
+                runs("pluralkit") {
+                    val system = database.fetchSystemFromUser(getUser())
+                    if (!checkSystem(this, system)) return@runs false
+                    pkToken(this, system, value.interaction.command.strings["token"]!!, false)
+                }
+            }
+            subCommand("clear-token", "Removes your PluralKit token") {
+                runs("pluralkit") {
+                    val system = database.fetchSystemFromUser(getUser())
+                    if (!checkSystem(this, system)) return@runs false
+                    pkToken(this, system, null, true)
+                }
+            }
+            subCommand("import", "Imports your system from PluralKit's API") {
+                runs("pluralkit") {
+                    val system = database.fetchSystemFromUser(getUser())
+                    if (!checkSystem(this, system)) return@runs false
+                    syncPk(this, system, false)
+                }
+            }
+            subCommand("export", "Exports your system to PluralKit's API") {
+                runs("pluralkit") {
+                    val system = database.fetchSystemFromUser(getUser())
+                    if (!checkSystem(this, system)) return@runs false
+                    syncPk(this, system, true)
+                }
             }
         }
     }
@@ -723,11 +750,11 @@ object MiscCommands : CommandRegistrar {
             }
         }
         literal("pluralkit", "pk") {
-            literal("pull", "get", "download") {
+            literal("pull", "get", "download", "import") {
 
             }
 
-            literal("push", "set", "upload") {
+            literal("push", "set", "upload", "export") {
 
             }
 
@@ -735,14 +762,14 @@ object MiscCommands : CommandRegistrar {
                 runs {
                     val system = database.fetchSystemFromUser(getUser())
                     if (!checkSystem(this, system)) return@runs false
-                    token(this, system, null, false)
+                    pkToken(this, system, null, false)
                 }
 
                 literal("clear", "reset", "remove") {
                     runs {
                         val system = database.fetchSystemFromUser(getUser())
                         if (!checkSystem(this, system)) return@runs false
-                        token(this, system, null, true)
+                        pkToken(this, system, null, true)
                     }
                 }
 
@@ -750,7 +777,7 @@ object MiscCommands : CommandRegistrar {
                     runs {
                         val system = database.fetchSystemFromUser(getUser())
                         if (!checkSystem(this, system)) return@runs false
-                        token(this, system, getToken(), false)
+                        pkToken(this, system, getToken(), false)
                     }
                 }
             }
@@ -758,11 +785,41 @@ object MiscCommands : CommandRegistrar {
     }
 
     @OptIn(DontExpose::class)
-    private suspend fun <T> token(
-        ctx: DiscordContext<T>,
-        system: SystemRecord,
-        token: String?,
-        clear: Boolean
+    private suspend fun <T> syncPk(ctx: DiscordContext<T>, system: SystemRecord, upload: Boolean): Boolean {
+        val res = if (upload) {
+            PkSync.push(system)
+        } else {
+            PkSync.pull(system)
+        }
+
+        if (res.getA() == false) {
+            ctx.respondFailure("You don't have a PluralKit token registered.")
+            return false
+        }
+
+        if (res.getB() != null) {
+            val b = res.getB()!!
+            val message = b.message.replace(system.pkToken!!, "[pktoken]")
+            ctx.respondFailure("""
+                PluralKit returned an error:
+                `$message`
+            """.trimIndent())
+            return false
+        }
+
+        val message = if (upload) "exported" to "to" else "imported" to "from"
+
+        ctx.respondSuccess("Successfully ${message.first} system data ${message.second} PluralKit")
+
+        return true
+    }
+
+    @OptIn(DontExpose::class)
+    private suspend fun <T> pkToken(
+            ctx: DiscordContext<T>,
+            system: SystemRecord,
+            token: String?,
+            clear: Boolean
     ): Boolean {
         if (clear) {
             if (system.pkToken == null) {

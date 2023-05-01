@@ -17,7 +17,7 @@ object Emojis {
     val check = "✅".partial
     val multiply = "✖".partial
     val wastebasket = "🗑".partial
-    val move = "\uD83D\uDD00".partial
+    val move = "🔀".partial
 
     val ReactionEmoji.Unicode.partial get() = name.partial
 
