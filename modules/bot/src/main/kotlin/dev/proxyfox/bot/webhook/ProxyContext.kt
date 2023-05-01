@@ -116,7 +116,7 @@ data class ProxyContext(
                         msgRef = msgRef.substring(100) as BaseMarkdown
                         msgRef.values.add(MarkdownString(ellipsis))
                     }
-                    description = "[**Reply to:**]($link) $msgRef"
+                    description = "**[Reply to:]($link)** $msgRef"
                 }
                 }
             }
