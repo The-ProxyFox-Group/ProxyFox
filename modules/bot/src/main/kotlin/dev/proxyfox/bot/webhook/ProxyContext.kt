@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2022-2023, The ProxyFox Group
+ * Copyright (c) 2022, The ProxyFox Group
  *
  * This Source Code is subject to the terms of the Mozilla Public
  * License, v. 2.0. If a copy of the MPL was not distributed with this
@@ -131,7 +131,7 @@ data class ProxyContext(
                             msgRef = msgRef.truncate(100) as RootNode
                             msgRef.nodes.add(StringNode(ellipsis))
                         }
-                        description = "[**Reply to:**]($link) $msgRef"
+                        description = "**[Reply to:]($link)** $msgRef"
                     }
                 }
             }
