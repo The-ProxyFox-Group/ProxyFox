@@ -38,10 +38,6 @@ class InteractionCommandContext(value: ChatInputCommandInteractionCreateEvent) :
         return value.interaction.command.attachments.values.stream().findFirst().getOrNull()
     }
 
-    override suspend fun respondFailure(text: String, private: Boolean): ChatInputCommandInteractionCreateEvent {
-        return respondPlain("❌️ $text", private)
-    }
-
     override suspend fun respondPlain(text: String, private: Boolean): ChatInputCommandInteractionCreateEvent {
         if (deferred != null)
             deferred!!.respond {
@@ -55,14 +51,6 @@ class InteractionCommandContext(value: ChatInputCommandInteractionCreateEvent) :
             content = text
         }
         return value
-    }
-
-    override suspend fun respondSuccess(text: String, private: Boolean): ChatInputCommandInteractionCreateEvent {
-        return respondPlain("✅️ $text", private)
-    }
-
-    override suspend fun respondWarning(text: String, private: Boolean): ChatInputCommandInteractionCreateEvent {
-        return respondPlain("⚠️ $text", private)
     }
 
     override suspend fun getChannel(private: Boolean): MessageChannelBehavior {

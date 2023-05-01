@@ -37,15 +37,19 @@ import kotlin.time.Duration
 import kotlin.time.Duration.Companion.minutes
 
 abstract class DiscordContext<T>(override val value: T) : CommandContext<T>() {
+    override suspend fun respondFailure(text: String, private: Boolean): T = respondPlain("❌ $text", private)
+    override suspend fun respondSuccess(text: String, private: Boolean): T = respondPlain("✅️ $text", private)
+    override suspend fun respondWarning(text: String, private: Boolean): T = respondPlain("⚠️ $text", private)
+
     abstract fun getAttachment(): Attachment?
     abstract suspend fun getChannel(private: Boolean = false): MessageChannelBehavior
     abstract suspend fun getGuild(): Guild?
     abstract suspend fun getUser(): User?
     abstract suspend fun getMember(): Member?
     abstract suspend fun respondEmbed(
-        private: Boolean = false,
-        text: String? = null,
-        embed: suspend EmbedBuilder.() -> Unit
+            private: Boolean = false,
+            text: String? = null,
+            embed: suspend EmbedBuilder.() -> Unit
     ): T
 
     abstract suspend fun deferResponse(private: Boolean = false)
