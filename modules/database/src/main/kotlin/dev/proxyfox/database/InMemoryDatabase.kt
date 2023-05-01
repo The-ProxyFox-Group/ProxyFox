@@ -246,14 +246,14 @@ class InMemoryDatabase : Database() {
     }
 
     override suspend fun fetchMessage(messageId: Snowflake): ProxiedMessageRecord? {
-        return messages.find { it.oldMessageId == messageId.value || it.newMessageId == messageId.value }
+        return messages.find { (it.oldMessageId == messageId.value || it.newMessageId == messageId.value) && !it.deleted }
     }
 
     override suspend fun fetchLatestMessage(
         systemId: String,
         channelId: Snowflake
     ): ProxiedMessageRecord? {
-        return messages.findLast { it.systemId == systemId && it.channelId == channelId.value }
+        return messages.findLast { it.systemId == systemId && it.channelId == channelId.value && !it.deleted }
     }
 
     override suspend fun dropMessage(messageId: Snowflake) {
