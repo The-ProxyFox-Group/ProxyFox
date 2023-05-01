@@ -8,6 +8,7 @@
 
 package dev.proxyfox.api
 
+import dev.proxyfox.api.models.ApiError
 import dev.proxyfox.database.database
 import dev.proxyfox.database.records.misc.TokenType
 import io.ktor.http.*
@@ -20,9 +21,10 @@ import io.ktor.util.pipeline.*
 @Suppress("FunctionName")
 fun ApiPlugin(name: String, accessFunction: TokenType.() -> Boolean) = createRouteScopedPlugin(name = name) {
     onCall { call ->
-        val tokenString = call.request.headers["Authorization"] ?: return@onCall call.respond("401 Unauthorized")
-        val token = database.fetchToken(tokenString) ?: return@onCall call.respond("401 Unauthorized")
-        if (token.type.accessFunction()) return@onCall call.respond("401 Unauthorized")
+        val tokenString = call.request.headers["Authorization"]
+                ?: return@onCall call.respond(ApiError(401, "Unauthorized"))
+        val token = database.fetchToken(tokenString) ?: return@onCall call.respond(ApiError(401, "Unauthorized"))
+        if (token.type.accessFunction()) return@onCall call.respond(ApiError(401, "Unauthorized"))
     }
 }
 

@@ -9,6 +9,7 @@
 package dev.proxyfox.api.routes
 
 import dev.kord.common.entity.Snowflake
+import dev.proxyfox.api.models.ApiError
 import dev.proxyfox.api.models.Message
 import dev.proxyfox.database.database
 import io.ktor.server.application.*
@@ -17,7 +18,8 @@ import io.ktor.server.routing.*
 
 fun Route.messageRoutes() {
     get("/messages/{id}") {
-        val message = database.fetchMessage(Snowflake(call.parameters["id"]!!)) ?: return@get call.respond("Message not found")
+        val message = database.fetchMessage(Snowflake(call.parameters["id"]!!))
+                ?: return@get call.respond(ApiError(404, "Message Not Found"))
         call.respond(Message.fromRecord(message))
     }
 }

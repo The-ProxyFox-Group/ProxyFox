@@ -17,7 +17,6 @@ import io.ktor.server.plugins.contentnegotiation.*
 import io.ktor.server.routing.*
 
 object ApiMain {
-    private const val version = "1"
     fun main() = embeddedServer(Netty, port = System.getenv("PORT")?.toIntOrNull() ?: 8080) {
         configureRouting()
         configurePlugins()
@@ -31,7 +30,7 @@ object ApiMain {
 
     private fun Application.configureRouting() {
         routing {
-            route("/v${version}") {
+            route("/v1") {
                 systemRoutes()
                 memberRoutes()
                 switchRoutes()

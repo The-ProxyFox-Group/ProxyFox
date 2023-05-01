@@ -13,16 +13,15 @@ import kotlinx.serialization.Serializable
 
 @Serializable
 data class Message(
-    val timestamp: String,
-    val sender: String,
-    val original: String,
-    val proxied: String,
-    val channel: String,
-    val guild: String,
-    val thread: String?,
-    val system: String,
-    val member: String,
-    val deleted: Boolean
+        val timestamp: String,
+        val sender: String,
+        val original: String,
+        val proxied: String,
+        val channel: String,
+        val guild: String,
+        val thread: String?,
+        val system: String,
+        val member: String
 ) {
     companion object {
         fun fromRecord(record: ProxiedMessageRecord) = Message(
@@ -34,8 +33,7 @@ data class Message(
             guild = record.guildId.toString(),
             thread = record.threadId.toString(),
             system = record.systemId,
-            member = record.memberId,
-            deleted = record.deleted
+                member = record.memberId
         )
     }
 }
