@@ -33,7 +33,7 @@ data class Message(
             guild = record.guildId.toString(),
             thread = record.threadId.toString(),
             system = record.systemId,
-                member = record.memberId
+            member = record.memberId
         )
     }
 }
