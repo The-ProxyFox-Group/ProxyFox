@@ -271,14 +271,22 @@ class MongoDatabase(private val dbName: String = "ProxyFox") : Database() {
     }
 
     override suspend fun fetchMessage(messageId: Snowflake): ProxiedMessageRecord? =
-        messages.findFirstOrNull(or("newMessageId" eq messageId, "oldMessageId" eq messageId))
+            messages.findFirstOrNull(or(
+                    "newMessageId" eq messageId,
+                    "oldMessageId" eq messageId,
+                    "deleted" eq false
+            ))
 
     override suspend fun fetchLatestMessage(
-        systemId: String,
-        channelId: Snowflake
+            systemId: String,
+            channelId: Snowflake
     ): ProxiedMessageRecord? =
-        messages.find("systemId" eq systemId, "channelId" eq channelId).sort("{'creationDate':-1}").limit(1)
-            .awaitFirstOrNull()
+            messages.find(
+                    "systemId" eq systemId,
+                    "channelId" eq channelId,
+                    "deleted" eq false
+            ).sort("{'creationDate':-1}").limit(1)
+                    .awaitFirstOrNull()
 
     override suspend fun dropMessage(messageId: Snowflake) {
         messages.deleteOne("oldMessageId" eq messageId.value)

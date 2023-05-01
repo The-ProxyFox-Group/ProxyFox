@@ -101,7 +101,9 @@ suspend fun MessageCreateEvent.onMessageCreate() {
 }
 
 suspend fun MessageDeleteEvent.onMessageDelete() {
-    database.dropMessage(messageId)
+    val message = database.fetchMessage(messageId) ?: return
+    message.deleted = true
+    database.updateMessage(message)
 }
 
 suspend fun MessageUpdateEvent.onMessageUpdate() {
