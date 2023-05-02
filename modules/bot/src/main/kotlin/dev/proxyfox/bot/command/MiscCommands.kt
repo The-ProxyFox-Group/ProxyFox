@@ -786,6 +786,8 @@ object MiscCommands : CommandRegistrar {
 
     @OptIn(DontExpose::class)
     private suspend fun <T> syncPk(ctx: DiscordContext<T>, system: SystemRecord, upload: Boolean): Boolean {
+        ctx.deferResponse()
+
         val res = if (upload) {
             PkSync.push(system)
         } else {

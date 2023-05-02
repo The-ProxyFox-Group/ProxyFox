@@ -97,6 +97,13 @@ object PkSync {
         return Either.EitherA(true)
     }
 
+    fun Array<PkMember>.getOrNull(id: String, name: String): PkMember? {
+        for (member in this)
+            if (member.id == id) return member
+        for (member in this)
+            if (member.name == name) return member
+        return null
+    }
 
     suspend fun push(system: SystemRecord): Either<Boolean, PkError> {
         val token = system.pkToken ?: return Either.EitherA(false)
@@ -105,6 +112,10 @@ object PkSync {
         systemResp.getException().throwIfPresent()
         val pkSystem = systemResp.getSuccessOrNull() ?: return Either.EitherB(systemResp.getError())
 
+        val memberResp = PluralKt.Member.getMembers(pkSystem.id, token).await()
+        memberResp.getException().throwIfPresent()
+        val pkMembers = memberResp.getSuccessOrNull() ?: return Either.EitherB(memberResp.getError())
+
         pkSystem.name = system.name
         pkSystem.description = system.description ?: pkSystem.description
         pkSystem.tag = system.tag ?: pkSystem.tag
@@ -112,6 +123,7 @@ object PkSync {
         pkSystem.pronouns = system.pronouns ?: pkSystem.pronouns
 
         val systemPushResp = PluralKt.System.updateSystem(pkSystem, token).await()
+        systemPushResp.getException().throwIfPresent()
         if (systemPushResp.isError()) return Either.EitherB(systemPushResp.getError())
 
         val members = database.fetchMembersFromSystem(system.id)!!
@@ -119,14 +131,34 @@ object PkSync {
         val memberToIdLookup = HashBiMap.create<PkMember, String>()
         val idToIdLookup = HashBiMap.create<String, String>()
 
+        val newMems = ArrayList<PkMember>()
+
         for (member in members) {
             var new = false
-            val pkMember = PluralKt.Member.getMember(member.id).await().getSuccessOrNull()
-                    ?: PluralKt.Member.getMember(member.name).await().getSuccessOrNull()
-                    ?: let {
-                        new = true
-                        PkMember()
-                    }
+            val pkMember = pkMembers.getOrNull(member.id, member.name) ?: let {
+                new = true
+                PkMember()
+            }
+            val proxies = database.fetchProxiesFromSystemAndMember(system.id, member.id)!!
+            val pkProxies = ArrayList<PkProxyTag>()
+            for (proxy in proxies) {
+                val pkProxy = PkProxyTag()
+                pkProxy.prefix = proxy.prefix
+                pkProxy.suffix = proxy.suffix
+                pkProxies.add(pkProxy)
+            }
+
+            if (
+                pkMember.name == member.name &&
+                pkMember.pronouns == member.pronouns &&
+                pkMember.avatarUrl == member.avatarUrl &&
+                pkMember.color == PkColor(member.color) &&
+                pkMember.description == member.description &&
+                pkMember.displayName == member.displayName &&
+                pkMember.keepProxy == member.keepProxy &&
+                pkMember.proxyTags == pkProxies
+            ) continue
+
             pkMember.name = member.name
             pkMember.pronouns = member.pronouns ?: pkMember.pronouns
             pkMember.avatarUrl = member.avatarUrl ?: pkMember.avatarUrl
@@ -134,23 +166,15 @@ object PkSync {
             pkMember.description = member.description ?: pkMember.description
             pkMember.displayName = member.displayName ?: pkMember.displayName
             pkMember.keepProxy = member.keepProxy
-
-            val proxies = database.fetchProxiesFromSystemAndMember(system.id, member.id)!!
-
-            pkMember.proxyTags.clear()
-
-            for (proxy in proxies) {
-                val pkProxy = PkProxyTag()
-                pkProxy.prefix = proxy.prefix
-                pkProxy.suffix = proxy.suffix
-                pkMember.proxyTags.add(pkProxy)
-            }
+            pkMember.proxyTags = pkProxies
 
             val newMem = if (new) {
                 PluralKt.Member.createMember(pkMember, token)
             } else {
                 PluralKt.Member.updateMember(pkMember.id, pkMember, token)
             }.await().getSuccessOrNull() ?: continue
+
+            newMems.add(newMem)
             memberToIdLookup[newMem] = member.id
             idToIdLookup[newMem.id] = member.id
         }
