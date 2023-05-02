@@ -72,20 +72,12 @@ object PkSync {
                     system.id,
                     pkMember.name
             )!!
-            updater.update("Member", pkMember.id, member.id)
+
             memberToIdLookup[pkMember] = member.id
             idToIdLookup[pkMember.id] = member.id
 
-            member.name = pkMember.name
-            member.pronouns = pkMember.pronouns
-            member.avatarUrl = pkMember.avatarUrl
-            member.color = pkMember.color?.color ?: member.color
-            member.description = pkMember.description
-            member.displayName = pkMember.displayName
-            member.keepProxy = pkMember.keepProxy
-            database.updateMember(member)
-
             val proxies = database.fetchProxiesFromSystemAndMember(system.id, member.id)!!
+            var updatedProxies = false
 
             for (pkProxy in pkMember.proxyTags) {
                 var hasProxy = false
@@ -95,8 +87,31 @@ object PkSync {
                     }
                 }
                 if (!hasProxy) {
+                    updatedProxies = true
                     database.createProxyTag(system.id, member.id, pkProxy.prefix, pkProxy.suffix)
                 }
+            }
+
+            if (
+                pkMember.name != member.name ||
+                pkMember.pronouns != member.pronouns ||
+                pkMember.avatarUrl != member.avatarUrl ||
+                (pkMember.color?.color ?: -1) != member.color ||
+                pkMember.description != member.description ||
+                pkMember.displayName != member.displayName ||
+                pkMember.keepProxy != member.keepProxy
+            ) {
+                member.name = pkMember.name
+                member.pronouns = pkMember.pronouns
+                member.avatarUrl = pkMember.avatarUrl
+                member.color = pkMember.color?.color ?: member.color
+                member.description = pkMember.description
+                member.displayName = pkMember.displayName
+                member.keepProxy = pkMember.keepProxy
+                database.updateMember(member)
+                updater.update("Member", pkMember.id, member.id)
+            } else if (updatedProxies) {
+                updater.update("Member", pkMember.id, member.id)
             }
         }
 
