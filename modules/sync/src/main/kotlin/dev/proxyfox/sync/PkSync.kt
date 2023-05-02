@@ -37,14 +37,21 @@ object PkSync {
         }
     }
 
+    interface ProgressUpdater {
+        suspend fun update(type: String, from: String, to: String)
+    }
+
     private fun <T> Response<T>.getSuccessOrNull() = if (isSuccess()) getSuccess() else null
 
-    suspend fun pull(system: SystemRecord): Either<Boolean, PkError> {
+    suspend fun pull(system: SystemRecord, updater: ProgressUpdater): Either<Boolean, PkError> {
         val token = system.pkToken ?: return Either.EitherA(false)
+
+        updater.update("Start", "pk", "pf")
 
         val systemResp = PluralKt.System.getMe(token).await()
         systemResp.getException().throwIfPresent()
         val pkSystem = systemResp.getSuccessOrNull() ?: return Either.EitherB(systemResp.getError())
+        updater.update("System", pkSystem.id, system.id)
 
         system.name = pkSystem.name ?: system.name
         system.description = pkSystem.description ?: system.description
@@ -65,6 +72,7 @@ object PkSync {
                     system.id,
                     pkMember.name
             )!!
+            updater.update("Member", pkMember.id, member.id)
             memberToIdLookup[pkMember] = member.id
             idToIdLookup[pkMember.id] = member.id
 
@@ -105,16 +113,16 @@ object PkSync {
         return null
     }
 
-    suspend fun push(system: SystemRecord): Either<Boolean, PkError> {
+    suspend fun push(system: SystemRecord, updater: ProgressUpdater): Either<Boolean, PkError> {
         val token = system.pkToken ?: return Either.EitherA(false)
+
+        updater.update("Start", "pf", "pk")
 
         val systemResp = PluralKt.System.getMe(token).await()
         systemResp.getException().throwIfPresent()
         val pkSystem = systemResp.getSuccessOrNull() ?: return Either.EitherB(systemResp.getError())
 
-        val memberResp = PluralKt.Member.getMembers(pkSystem.id, token).await()
-        memberResp.getException().throwIfPresent()
-        val pkMembers = memberResp.getSuccessOrNull() ?: return Either.EitherB(memberResp.getError())
+        updater.update("System", system.id, pkSystem.id)
 
         pkSystem.name = system.name
         pkSystem.description = system.description ?: pkSystem.description
@@ -125,6 +133,10 @@ object PkSync {
         val systemPushResp = PluralKt.System.updateSystem(pkSystem, token).await()
         systemPushResp.getException().throwIfPresent()
         if (systemPushResp.isError()) return Either.EitherB(systemPushResp.getError())
+
+        val memberResp = PluralKt.Member.getMembers(pkSystem.id, token).await()
+        memberResp.getException().throwIfPresent()
+        val pkMembers = memberResp.getSuccessOrNull() ?: return Either.EitherB(memberResp.getError())
 
         val members = database.fetchMembersFromSystem(system.id)!!
 
@@ -140,39 +152,49 @@ object PkSync {
                 PkMember()
             }
             val proxies = database.fetchProxiesFromSystemAndMember(system.id, member.id)!!
-            val pkProxies = ArrayList<PkProxyTag>()
+            val proxyList = ArrayList<Pair<String?, String?>>()
+            var proxySame = true
+            for (proxy in pkMember.proxyTags) {
+                proxyList.add(Pair(proxy.prefix, proxy.suffix))
+            }
+
             for (proxy in proxies) {
-                val pkProxy = PkProxyTag()
-                pkProxy.prefix = proxy.prefix
-                pkProxy.suffix = proxy.suffix
-                pkProxies.add(pkProxy)
+                if (!proxyList.contains(Pair(proxy.prefix, proxy.suffix))) {
+                    val pkProxy = PkProxyTag()
+                    pkProxy.prefix = proxy.prefix
+                    pkProxy.suffix = proxy.suffix
+                    pkMember.proxyTags.add(pkProxy)
+                    proxySame = false
+                }
             }
 
             if (
                 pkMember.name == member.name &&
                 pkMember.pronouns == member.pronouns &&
                 pkMember.avatarUrl == member.avatarUrl &&
-                pkMember.color == PkColor(member.color) &&
+                (pkMember.color?.color ?: -1) == member.color &&
                 pkMember.description == member.description &&
                 pkMember.displayName == member.displayName &&
                 pkMember.keepProxy == member.keepProxy &&
-                pkMember.proxyTags == pkProxies
+                proxySame
             ) continue
 
             pkMember.name = member.name
             pkMember.pronouns = member.pronouns ?: pkMember.pronouns
             pkMember.avatarUrl = member.avatarUrl ?: pkMember.avatarUrl
-            pkMember.color = PkColor(member.color)
+            if (member.color != -1)
+                pkMember.color = PkColor(member.color)
             pkMember.description = member.description ?: pkMember.description
             pkMember.displayName = member.displayName ?: pkMember.displayName
             pkMember.keepProxy = member.keepProxy
-            pkMember.proxyTags = pkProxies
 
             val newMem = if (new) {
                 PluralKt.Member.createMember(pkMember, token)
             } else {
                 PluralKt.Member.updateMember(pkMember.id, pkMember, token)
             }.await().getSuccessOrNull() ?: continue
+
+            updater.update("Member", member.id, newMem.id)
 
             newMems.add(newMem)
             memberToIdLookup[newMem] = member.id

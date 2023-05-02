@@ -10,8 +10,11 @@ package dev.proxyfox.bot.command
 
 import dev.kord.common.entity.Permission
 import dev.kord.common.entity.Snowflake
+import dev.kord.core.behavior.channel.MessageChannelBehavior
 import dev.kord.core.behavior.channel.asChannelOf
 import dev.kord.core.behavior.channel.threads.ThreadChannelBehavior
+import dev.kord.core.behavior.edit
+import dev.kord.core.entity.Message
 import dev.kord.rest.NamedFile
 import dev.kord.rest.builder.interaction.*
 import dev.proxyfox.bot.*
@@ -784,14 +787,23 @@ object MiscCommands : CommandRegistrar {
         }
     }
 
+    class CommUpdater(val channel: MessageChannelBehavior) : PkSync.ProgressUpdater {
+        override suspend fun update(type: String, from: String, to: String) {
+            channel.createMessage("$type: $from -> $to")
+        }
+    }
+
     @OptIn(DontExpose::class)
     private suspend fun <T> syncPk(ctx: DiscordContext<T>, system: SystemRecord, upload: Boolean): Boolean {
         ctx.deferResponse()
 
+        val updater = CommUpdater(ctx.getChannel(true))
+        updater.channel.createMessage("Pk sync progress:")
+
         val res = if (upload) {
-            PkSync.push(system)
+            PkSync.push(system, updater)
         } else {
-            PkSync.pull(system)
+            PkSync.pull(system, updater)
         }
 
         if (res.getA() == false) {
