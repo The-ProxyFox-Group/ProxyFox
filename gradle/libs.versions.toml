@@ -1,6 +1,6 @@
 [versions]
 guava = "31.1-jre"
-logback = "1.2.11"
+logback = "1.4.7"
 kord = "0.9.x-SNAPSHOT"
 kotlin = "1.7.21"
 kotlinx_coroutines = "1.6.4"
