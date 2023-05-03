@@ -318,7 +318,7 @@ data class PkConfig(
     val group_limit: Int? = 250,
     val description_templates: List<String>? = null,
     val case_sensitive_proxy_tags: Boolean? = true,
-    val proxy_error_message_enabled: Boolean = true,
+    val proxy_error_message_enabled: Boolean? = true,
 )
 
 @JvmRecord
