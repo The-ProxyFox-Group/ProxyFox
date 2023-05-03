@@ -11,6 +11,8 @@ package dev.proxyfox.database.etc.importer
 import com.google.gson.JsonObject
 import dev.proxyfox.common.toColor
 import dev.proxyfox.database.*
+import dev.proxyfox.database.etc.types.PkMember
+import dev.proxyfox.database.etc.types.PkSystem
 import dev.proxyfox.database.records.member.MemberProxyTagRecord
 import dev.proxyfox.database.records.member.MemberRecord
 import dev.proxyfox.database.records.member.MemberServerSettingsRecord
@@ -18,8 +20,6 @@ import dev.proxyfox.database.records.misc.AutoProxyMode
 import dev.proxyfox.database.records.system.SystemRecord
 import dev.proxyfox.database.records.system.SystemServerSettingsRecord
 import dev.proxyfox.database.records.system.SystemSwitchRecord
-import dev.proxyfox.database.etc.types.PkMember
-import dev.proxyfox.database.etc.types.PkSystem
 import java.time.Instant
 import java.time.LocalDate
 import java.time.format.DateTimeFormatter
@@ -163,7 +163,9 @@ open class PluralKitImporter protected constructor(
                 pkMember.proxyfox?.let { proxyfox ->
                     proxyfox.age?.let { member.age = it }
                     proxyfox.role?.let { member.role = it }
-                    proxyfox.autoProxy?.let { member.autoProxy = it }
+                    (proxyfox.autoProxy ?: pkMember.autoproxy_enabled)?.let { member.autoProxy = it }
+                } ?: run {
+                    pkMember.autoproxy_enabled?.let { member.autoProxy = it }
                 }
 
                 pkMember.proxy_tags?.apply {
