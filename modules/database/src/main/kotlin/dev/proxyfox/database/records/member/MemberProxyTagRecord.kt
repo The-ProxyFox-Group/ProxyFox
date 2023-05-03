@@ -10,7 +10,7 @@ package dev.proxyfox.database.records.member
 
 import com.google.gson.annotations.Expose
 import com.google.gson.annotations.SerializedName
-import dev.proxyfox.database.*
+import dev.proxyfox.database.PkId
 import dev.proxyfox.database.records.MongoRecord
 import org.bson.types.ObjectId
 
@@ -52,14 +52,17 @@ class MemberProxyTagRecord : MongoRecord {
     }
 
     fun test(message: String): Boolean {
-        val pre = prefix == null || message.startsWith(prefix!!)
-        val suf = suffix == null || message.endsWith(suffix!!)
+        val pre = prefix == null || message.startsWith(prefix!!) || (suffix.isNullOrEmpty() && message == prefix!!.trimEnd())
+        val suf = suffix == null || message.endsWith(suffix!!) || (prefix.isNullOrEmpty() && message == suffix!!.trimStart())
         return pre && suf
     }
 
     fun trim(message: String): String {
         val pLength = prefix?.length ?: 0
         val slength = suffix?.length ?: 0
+        if (message.length < pLength + slength) {
+            return ""
+        }
         return message.substring(pLength, message.length - slength)
     }
 
