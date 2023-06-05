@@ -1203,7 +1203,7 @@ object MiscCommands : CommandRegistrar {
             null,
             NamedFile("system.json", ChannelProvider { export.byteInputStream().toByteReadChannel() })
         )
-        message.channel.createMessage(message.attachments.elementAt(0).url)
+        message.channel.createMessage(message.attachments.first().url)
         ctx.respondSuccess("Check your DMs~")
         return true
     }

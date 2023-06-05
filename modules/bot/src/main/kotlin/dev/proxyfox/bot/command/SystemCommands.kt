@@ -704,10 +704,11 @@ object SystemCommands : CommandRegistrar {
                     "The data will be lost forever (A long time!)",
             yes = "Delete system" to {
                 val export = Exporter.export(ctx.getUser()!!.id.value)
-                ctx.respondFiles(
+                val message = ctx.respondFiles(
                     null,
                     NamedFile("system.json", ChannelProvider { export.byteInputStream().toByteReadChannel() })
                 )
+                ctx.getChannel(true).createMessage(message.attachments.first().url)
                 database.dropSystem(ctx.getUser()!!)
                 content = "System deleted."
             },
