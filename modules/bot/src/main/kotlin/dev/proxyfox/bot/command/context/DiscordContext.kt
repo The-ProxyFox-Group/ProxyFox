@@ -16,9 +16,11 @@ import dev.kord.core.behavior.channel.MessageChannelBehavior
 import dev.kord.core.behavior.channel.createMessage
 import dev.kord.core.entity.*
 import dev.kord.rest.NamedFile
+import dev.kord.rest.builder.component.option
 import dev.kord.rest.builder.message.EmbedBuilder
 import dev.kord.rest.builder.message.modify.MessageModifyBuilder
 import dev.kord.rest.builder.message.modify.actionRow
+import dev.kord.rest.builder.message.modify.embed
 import dev.proxyfox.bot.Emojis
 import dev.proxyfox.bot.command.menu.DiscordMenu
 import dev.proxyfox.bot.command.menu.DiscordScreen
@@ -27,12 +29,15 @@ import dev.proxyfox.bot.scheduler
 import dev.proxyfox.command.CommandContext
 import dev.proxyfox.command.NodeActionParam
 import dev.proxyfox.command.menu.CommandMenu
+import dev.proxyfox.command.menu.CommandScreen
 import dev.proxyfox.command.node.CommandNode
 import dev.proxyfox.command.node.builtin.int
 import dev.proxyfox.command.node.builtin.string
+import dev.proxyfox.common.ceilDiv
 import dev.proxyfox.database.database
 import dev.proxyfox.database.records.misc.ProxiedMessageRecord
 import dev.proxyfox.database.records.system.SystemRecord
+import kotlin.math.min
 import kotlin.time.Duration
 import kotlin.time.Duration.Companion.minutes
 
@@ -135,6 +140,115 @@ abstract class DiscordContext<T>(override val value: T) : CommandContext<T>() {
                     }
                     close()
                 }
+            }
+        }
+    }
+
+    suspend fun <T> pager(
+        values: List<T>,
+        pageSize: Int,
+        embedBuilder: suspend EmbedBuilder.(String) -> Unit,
+        getString: suspend T.() -> String,
+        private: Boolean
+    ) {
+        val pages = ceilDiv(values.size, pageSize)
+        var page = 0
+
+        interactionMenu(private) {
+            lateinit var default: CommandScreen
+            val select = "select" {
+                this as DiscordScreen
+                select("page") {
+                    page = it[0].toInt()
+                    setScreen(default)
+                }
+
+                onInit {
+                    edit {
+                        content = "Select a page"
+                        embeds = mutableListOf()
+                        actionRow {
+                            stringSelect("page") {
+                                for (i in 0 until pages) {
+                                    option("${i+1}", "$i")
+                                }
+                            }
+                        }
+                    }
+                }
+            }
+            default = default {
+                this as DiscordScreen
+                val update: suspend () -> Unit = {
+                    edit {
+                        content = null
+                        embeds = mutableListOf()
+                        embed {
+                            embedBuilder("${page+1} / $pages")
+                            var str = ""
+                            for (i in page * pageSize until min(page * pageSize + pageSize, values.size)) {
+                                str += values[i]!!.getString()
+                            }
+                            description = str
+                        }
+                        actionRow {
+                            interactionButton(ButtonStyle.Primary, "skipToFirst") {
+                                emoji = Emojis.rewind
+                            }
+                            interactionButton(ButtonStyle.Primary, "back") {
+                                emoji = Emojis.last
+                            }
+                            interactionButton(ButtonStyle.Primary, "next") {
+                                emoji = Emojis.next
+                            }
+                            interactionButton(ButtonStyle.Primary, "skipToLast") {
+                                emoji = Emojis.fastforward
+                            }
+                        }
+                        actionRow {
+                            interactionButton(ButtonStyle.Secondary, "select") {
+                                emoji = Emojis.numbers
+                                label = "Select Page"
+                            }
+                            interactionButton(ButtonStyle.Danger, "close") {
+                                emoji = Emojis.multiply
+                                label = "Close"
+                            }
+                        }
+                    }
+                }
+
+                button("skipToFirst") {
+                    page = 0
+                    update()
+                }
+                button("back") {
+                    page--
+                    if (page < 0) page = 0
+                    update()
+                }
+                button("next") {
+                    page++
+                    if (page >= pages) page = pages-1
+                    update()
+                }
+                button("skipToLast") {
+                    page = pages-1
+                    update()
+                }
+                button("select") {
+                    setScreen(select)
+                }
+                button("close") {
+                    edit {
+                        content = "Pager closed."
+                        embeds = mutableListOf()
+                        components = mutableListOf()
+                    }
+                    close()
+                }
+
+                onInit(update)
             }
         }
     }

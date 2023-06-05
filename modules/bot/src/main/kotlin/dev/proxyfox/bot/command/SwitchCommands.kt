@@ -17,7 +17,6 @@ import dev.proxyfox.bot.command.context.InteractionCommandContext
 import dev.proxyfox.bot.command.context.runs
 import dev.proxyfox.bot.deferChatInputCommand
 import dev.proxyfox.bot.parseDuration
-import dev.proxyfox.bot.prompts.Pager
 import dev.proxyfox.command.CommandParser
 import dev.proxyfox.command.NodeHolder
 import dev.proxyfox.command.node.builtin.greedy
@@ -251,9 +250,13 @@ object SwitchCommands : CommandRegistrar {
         // We know the system exists here, will be non-null
         val switches = database.fetchSortedSwitchesFromSystem(system.id)!!
 
-        Pager.build(ctx.getUser()!!.id, ctx.getChannel(), switches, 20, {
-            title = "[$it] Front history of ${system.showName}"
-        }, { it.membersAsString("**", "**") + " (<t:${it.timestamp.epochSeconds}:R>)\n" })
+        ctx.pager(
+            switches,
+            20,
+            { title = "[$it] Front history of ${system.showName}" },
+            { membersAsString("**", "**") + " (<t:${timestamp.epochSeconds}:R>)\n" },
+            false
+        )
 
         return true
     }

@@ -18,6 +18,11 @@ object Emojis {
     val multiply = "✖".partial
     val wastebasket = "🗑".partial
     val move = "🔀".partial
+    val rewind = "⏪".partial
+    val fastforward = "⏩".partial
+    val last = "⬅".partial
+    val next = "➡".partial
+    val numbers = "\uD83D\uDD22".partial
 
     val ReactionEmoji.Unicode.partial get() = name.partial
 

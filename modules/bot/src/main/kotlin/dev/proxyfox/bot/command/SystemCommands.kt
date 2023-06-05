@@ -19,7 +19,6 @@ import dev.proxyfox.bot.command.context.InteractionCommandContext
 import dev.proxyfox.bot.command.context.runs
 import dev.proxyfox.bot.command.context.system
 import dev.proxyfox.bot.command.node.attachment
-import dev.proxyfox.bot.prompts.Pager
 import dev.proxyfox.command.CommandParser
 import dev.proxyfox.command.node.builtin.*
 import dev.proxyfox.common.fromColor
@@ -500,23 +499,23 @@ object SystemCommands : CommandRegistrar {
         }
 
         val proxies = database.fetchProxiesFromSystem(system.id)!!
-        Pager.build(
-            ctx.getUser()!!.id,
-            ctx.getChannel(),
+
+        ctx.pager(
             database.fetchMembersFromSystem(system.id)!!.sortedBy {
                 if (byMessage) it.messageCount
                 it.name
             }.map { m -> m to proxies.filter { it.memberId == m.id } },
             20,
-            { page -> system(system, nameTransformer = { "[$page] Members of $it" }) },
+            { page -> system(system, nameTransformer = { "[$page] Members of $this" }) },
             {
-                val str = if (it.second.isNotEmpty()) it.second.joinToString(
+                val str = if (second.isNotEmpty()) second.joinToString(
                     "\uFEFF``, ``\uFEFF",
                     " (``\uFEFF",
                     "\uFEFF``)"
                 ) else ""
-                "`${it.first.id}`\u2007•\u2007**${it.first.name}**${str}\n"
+                "`${first.id}`\u2007•\u2007**${first.name}**${str}\n"
             },
+            false
         )
         return true
     }

@@ -31,7 +31,7 @@ class DiscordMessageMenu(val message: Message, val userId: Snowflake) : DiscordM
                     buttonInteract(this)
                 },
                 kord.onlyIf<SelectMenuInteractionCreateEvent>({ interaction.message.id }, message.id) {
-
+                    selectInteract(this)
                 }
             )
         )
