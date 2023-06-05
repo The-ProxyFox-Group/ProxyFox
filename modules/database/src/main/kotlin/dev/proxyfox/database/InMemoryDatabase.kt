@@ -267,8 +267,42 @@ class InMemoryDatabase : Database() {
         return systemTokens[token]
     }
 
+    override suspend fun fetchTokenFromId(systemId: String, id: String): TokenRecord? {
+        return systemTokens.values.firstNotNullOfOrNull {
+            if (it.systemId == systemId && it.id == id)
+                it
+            null
+        }
+    }
+
+    override suspend fun fetchTokens(systemId: String): List<TokenRecord> {
+        val out = ArrayList<TokenRecord>()
+        for (token in systemTokens.values) {
+            if (token.systemId == systemId) {
+                out.add(token)
+            }
+        }
+        return out
+    }
+
     override suspend fun updateToken(token: TokenRecord) {
         systemTokens[token.token] = token
+    }
+
+    override suspend fun dropToken(token: String) {
+        systemTokens.remove(token)
+    }
+
+    override suspend fun dropTokenById(systemId: String, id: String) {
+        dropToken(fetchTokenFromId(systemId, id)?.token ?: return)
+    }
+
+    override suspend fun dropTokens(systemId: String) {
+        for (token in systemTokens.values) {
+            if (token.systemId == systemId) {
+                systemTokens.remove(token.token)
+            }
+        }
     }
 
     override suspend fun createProxyTag(record: MemberProxyTagRecord): Boolean {

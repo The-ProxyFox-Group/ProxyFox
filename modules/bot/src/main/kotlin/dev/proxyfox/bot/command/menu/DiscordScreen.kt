@@ -10,11 +10,19 @@ package dev.proxyfox.bot.command.menu
 
 import dev.proxyfox.command.menu.CommandScreen
 
+typealias SelectAction = suspend (List<String>) -> Unit
+
 class DiscordScreen(name: String) : CommandScreen(name) {
     private var initializer: suspend () -> Unit = {}
 
+    var selects = HashMap<String, SelectAction>()
+
     fun onInit(action: suspend () -> Unit) {
         initializer = action
+    }
+
+    fun select(name: String, action: SelectAction) {
+        selects[name] = action
     }
 
     override suspend fun init() {

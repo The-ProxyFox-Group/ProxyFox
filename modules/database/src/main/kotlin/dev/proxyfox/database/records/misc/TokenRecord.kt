@@ -18,12 +18,14 @@ import org.bson.types.ObjectId
 class TokenRecord : MongoRecord {
     @Contextual
     override var _id: ObjectId = ObjectId()
+    var id: PkId
     var token: String
     var systemId: PkId
     var type: TokenType
 
-    constructor(token: String, systemId: PkId, type: TokenType) {
+    constructor(token: String, id: PkId, systemId: PkId, type: TokenType) {
         this.token = token
+        this.id = id
         this.systemId = systemId
         this.type = type
     }

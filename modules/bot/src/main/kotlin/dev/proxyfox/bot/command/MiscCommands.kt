@@ -8,17 +8,19 @@
 
 package dev.proxyfox.bot.command
 
+import dev.kord.common.entity.ButtonStyle
 import dev.kord.common.entity.Permission
 import dev.kord.common.entity.Snowflake
 import dev.kord.core.behavior.channel.MessageChannelBehavior
 import dev.kord.core.behavior.channel.asChannelOf
 import dev.kord.core.behavior.channel.threads.ThreadChannelBehavior
-import dev.kord.core.behavior.edit
-import dev.kord.core.entity.Message
 import dev.kord.rest.NamedFile
+import dev.kord.rest.builder.component.option
 import dev.kord.rest.builder.interaction.*
+import dev.kord.rest.builder.message.modify.actionRow
 import dev.proxyfox.bot.*
 import dev.proxyfox.bot.command.context.*
+import dev.proxyfox.bot.command.menu.DiscordScreen
 import dev.proxyfox.bot.command.node.attachment
 import dev.proxyfox.bot.webhook.GuildMessage
 import dev.proxyfox.bot.webhook.WebhookUtil
@@ -34,6 +36,7 @@ import dev.proxyfox.database.etc.importer.import
 import dev.proxyfox.database.records.member.MemberRecord
 import dev.proxyfox.database.records.misc.AutoProxyMode
 import dev.proxyfox.database.records.misc.ServerSettingsRecord
+import dev.proxyfox.database.records.misc.TokenType
 import dev.proxyfox.database.records.misc.TrustLevel
 import dev.proxyfox.database.records.system.SystemRecord
 import dev.proxyfox.database.records.system.SystemServerSettingsRecord
@@ -262,6 +265,13 @@ object MiscCommands : CommandRegistrar {
                     if (!checkSystem(this, system, true)) return@runs false
                     val message = value.interaction.command.integers["message"]?.toULong()?.let { Snowflake(it) }
                     editMessage(this, system, message, value.interaction.command.strings["content"]!!)
+                }
+            }
+            subCommand("token", "Manage tokens for your system!") {
+                runs("management") {
+                    val system = database.fetchSystemFromUser(getUser())
+                    if (!checkSystem(this, system, true)) return@runs false
+                    token(this, system)
                 }
             }
         }
@@ -754,11 +764,19 @@ object MiscCommands : CommandRegistrar {
         }
         literal("pluralkit", "pk") {
             literal("pull", "get", "download", "import") {
-
+                runs {
+                    val system = database.fetchSystemFromUser(getUser())
+                    if (!checkSystem(this, system)) return@runs false
+                    syncPk(this, system, false)
+                }
             }
 
             literal("push", "set", "upload", "export") {
-
+                runs {
+                    val system = database.fetchSystemFromUser(getUser())
+                    if (!checkSystem(this, system)) return@runs false
+                    syncPk(this, system, true)
+                }
             }
 
             literal("token") {
@@ -813,7 +831,7 @@ object MiscCommands : CommandRegistrar {
 
         if (res.getB() != null) {
             val b = res.getB()!!
-            val message = b.message.replace(system.pkToken!!, "[pktoken]")
+            val message = b.message.replace(system.pkToken!!, "[pktoken]", true)
             ctx.respondFailure("""
                 PluralKit returned an error:
                 `$message`
@@ -920,9 +938,120 @@ object MiscCommands : CommandRegistrar {
         return true
     }
 
-    @Suppress("UNUSED_PARAMETER")
     private suspend fun <T> token(ctx: DiscordContext<T>, system: SystemRecord): Boolean {
-        ctx.respondWarning("Not yet implemented")
+        ctx.interactionMenu(true) {
+            val create = "create" {
+                this as DiscordScreen
+                button("api:access") {
+                    val token = database.createToken(system.id, TokenType.API_ACCESS)
+                    edit {
+                        content = "Token created!\nID: ${token.id}\n${token.token}"
+                        components = mutableListOf()
+                    }
+                    close()
+                }
+
+                button("api:edit") {
+                    val token = database.createToken(system.id, TokenType.API_EDIT)
+                    edit {
+                        content = "Token created!\nID: ${token.id}\n${token.token}"
+                        components = mutableListOf()
+                    }
+                    close()
+                }
+
+                button("system:transfer") {
+                    val token = database.createToken(system.id, TokenType.SYSTEM_TRANSFER)
+                    edit {
+                        content = "Token created!\nID: ${token.id}\n${token.token}"
+                        components = mutableListOf()
+                    }
+                    close()
+                }
+
+                onInit {
+                    edit {
+                        content = "What type of token do you want to create?"
+                        components = null
+                        actionRow {
+                            interactionButton(ButtonStyle.Secondary, "api:access") {
+                                label = "API Access"
+                            }
+                            interactionButton(ButtonStyle.Secondary, "api:edit") {
+                                label = "API Edit"
+                            }
+                            interactionButton(ButtonStyle.Secondary, "system:transfer") {
+                                label = "System Transfer"
+                            }
+                        }
+                    }
+                }
+            }
+            val delete = "delete" {
+                this as DiscordScreen
+                select("token") {
+                    it.forEach { token ->
+                        database.dropTokenById(system.id, token)
+                    }
+                    edit {
+                        content = "Deleted tokens."
+                        components = mutableListOf()
+                    }
+                    close()
+                }
+                button("all") {
+                    database.dropTokens(system.id)
+                    edit {
+                        content = "Deleted all tokens."
+                        components = mutableListOf()
+                    }
+                    close()
+                }
+
+                onInit {
+                    edit {
+                        content = "Which tokens do you want to delete?"
+                        components = null
+                        actionRow {
+                            stringSelect("token") {
+                                placeholder = "Select tokens to delete"
+                                database.fetchTokens(system.id).forEach {
+                                    option("${it.type} - ${it.id}", it.id)
+                                }
+                            }
+                        }
+                    }
+                }
+            }
+            default {
+                this as DiscordScreen
+
+                button("create") {
+                    setScreen(create)
+                }
+
+                button("delete") {
+                    setScreen(delete)
+                }
+
+                onInit {
+                    edit {
+                        content = "What do you want to do?"
+                        components = null
+                        actionRow {
+                            interactionButton(ButtonStyle.Primary, "create") {
+                                emoji = Emojis.check
+                                label = "Create a token"
+                            }
+                            interactionButton(ButtonStyle.Danger, "delete") {
+                                emoji = Emojis.wastebasket
+                                label = "Delete tokens"
+                            }
+                        }
+                    }
+                }
+            }
+        }
         return true
     }
 

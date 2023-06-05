@@ -295,8 +295,26 @@ class MongoDatabase(private val dbName: String = "ProxyFox") : Database() {
     override suspend fun fetchToken(token: String): TokenRecord? =
         systemTokens.findFirstOrNull("token" eq token)
 
+    override suspend fun fetchTokenFromId(systemId: String, id: String): TokenRecord? =
+        systemTokens.findFirstOrNull("systemId" eq systemId, "id" eq id)
+
+    override suspend fun fetchTokens(systemId: String): List<TokenRecord> =
+        systemTokens.find("systemId" eq systemId).toList()
+
     override suspend fun updateToken(token: TokenRecord) {
         systemTokens.replaceOneById(token._id, token, upsert()).awaitFirst()
+    }
+
+    override suspend fun dropToken(token: String) {
+        systemTokens.deleteOne("token" eq token).awaitFirst()
+    }
+
+    override suspend fun dropTokenById(systemId: String, id: String) {
+        systemTokens.deleteOne("systemId" eq systemId, "id" eq id).awaitFirst()
+    }
+
+    override suspend fun dropTokens(systemId: String) {
+        systemTokens.deleteMany("systemId" eq systemId)
     }
 
     override suspend fun createProxyTag(record: MemberProxyTagRecord): Boolean {
@@ -522,10 +540,6 @@ class MongoDatabase(private val dbName: String = "ProxyFox") : Database() {
 
         override suspend fun createUser(user: UserRecord) {
             if (witness.add(user)) userQueue += user.create()
-        }
-
-        override suspend fun dropMessage(messageId: Snowflake) {
-            TODO("Not yet implemented")
         }
 
         override suspend fun createMessage(message: ProxiedMessageRecord) {

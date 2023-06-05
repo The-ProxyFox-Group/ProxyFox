@@ -320,12 +320,19 @@ abstract class Database : AutoCloseable {
     abstract suspend fun dropMessage(messageId: Snowflake)
 
     open suspend fun createToken(systemId: String, type: TokenType): TokenRecord {
-        val token = TokenRecord(generateUniqueToken(), systemId, type)
+        val token = TokenRecord(generateUniqueToken(), firstFreeTokenId(systemId), systemId, type)
         updateToken(token)
         return token
     }
+    private suspend fun firstFreeTokenId(systemId: String): String =
+        fetchTokens(systemId).map(TokenRecord::id).firstFree()
     abstract suspend fun fetchToken(token: String): TokenRecord?
+    abstract suspend fun fetchTokenFromId(systemId: String, id: String): TokenRecord?
+    abstract suspend fun fetchTokens(systemId: String): List<TokenRecord>
     abstract suspend fun updateToken(token: TokenRecord)
+    abstract suspend fun dropToken(token: String)
+    abstract suspend fun dropTokenById(systemId: String, id: String)
+    abstract suspend fun dropTokens(systemId: String)
     open suspend fun containsToken(token: String): Boolean = fetchToken(token) != null
     open suspend fun generateUniqueToken(): String {
         var token = generateToken()

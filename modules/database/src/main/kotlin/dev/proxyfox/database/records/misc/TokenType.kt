@@ -19,8 +19,7 @@ import kotlinx.serialization.encoding.Encoder
 enum class TokenType(private val actualName: String) {
     SYSTEM_TRANSFER("system:transfer"),
     API_ACCESS("api:access"),
-    API_EDIT("api:edit")
-    ;
+    API_EDIT("api:edit");
 
     override fun toString(): String {
         return actualName

@@ -113,8 +113,15 @@ class NopDatabase : Database() {
     override suspend fun dropMessage(messageId: Snowflake) {}
 
     override suspend fun fetchToken(token: String): TokenRecord? = null
+    override suspend fun fetchTokenFromId(systemId: String, id: String): TokenRecord? = null
+
+    override suspend fun fetchTokens(systemId: String): List<TokenRecord> = listOf()
 
     override suspend fun updateToken(token: TokenRecord) = fail("Cannot store token for ${token.systemId}.")
+    override suspend fun dropToken(token: String) {}
+    override suspend fun dropTokenById(systemId: String, id: String) {}
+
+    override suspend fun dropTokens(systemId: String) {}
 
     override suspend fun createProxyTag(record: MemberProxyTagRecord): Boolean = false
 

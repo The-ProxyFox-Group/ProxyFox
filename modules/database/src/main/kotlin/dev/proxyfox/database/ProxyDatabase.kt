@@ -158,8 +158,28 @@ open class ProxyDatabase<T : Database>(protected val proxy: T) : Database() {
         return proxy.fetchToken(token)
     }
 
+    override suspend fun fetchTokenFromId(systemId: String, id: String): TokenRecord? {
+        return proxy.fetchTokenFromId(systemId, id)
+    }
+
+    override suspend fun fetchTokens(systemId: String): List<TokenRecord> {
+        return proxy.fetchTokens(systemId)
+    }
+
     override suspend fun updateToken(token: TokenRecord) {
         return proxy.updateToken(token)
+    }
+
+    override suspend fun dropToken(token: String) {
+        proxy.dropToken(token)
+    }
+
+    override suspend fun dropTokenById(systemId: String, id: String) {
+        proxy.dropTokenById(systemId, id)
+    }
+
+    override suspend fun dropTokens(systemId: String) {
+        proxy.dropTokens(systemId)
     }
 
     override suspend fun createProxyTag(record: MemberProxyTagRecord): Boolean {

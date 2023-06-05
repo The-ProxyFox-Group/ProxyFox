@@ -126,12 +126,13 @@ class InteractionCommandContext(value: ChatInputCommandInteractionCreateEvent) :
     }
 
     override suspend fun interactionMenu(private: Boolean, action: suspend DiscordMenu.() -> Unit) {
+
         val message =
             deferred
                 ?: if (private) value.interaction.deferEphemeralResponse() else value.interaction.deferPublicResponse()
         val menu = InteractionCommandMenu(message.respond {
             content = "Thinking..."
-        })
+        }, value.interaction.user.id)
         menu.action()
         menu.init()
     }
