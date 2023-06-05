@@ -34,10 +34,7 @@ import dev.proxyfox.database.etc.exporter.Exporter
 import dev.proxyfox.database.etc.importer.ImporterException
 import dev.proxyfox.database.etc.importer.import
 import dev.proxyfox.database.records.member.MemberRecord
-import dev.proxyfox.database.records.misc.AutoProxyMode
-import dev.proxyfox.database.records.misc.ServerSettingsRecord
-import dev.proxyfox.database.records.misc.TokenType
-import dev.proxyfox.database.records.misc.TrustLevel
+import dev.proxyfox.database.records.misc.*
 import dev.proxyfox.database.records.system.SystemRecord
 import dev.proxyfox.database.records.system.SystemServerSettingsRecord
 import dev.proxyfox.sync.PkSync
@@ -712,6 +709,29 @@ object MiscCommands : CommandRegistrar {
                 token(this, system)
             }
         }
+        literal("transfer") {
+            responds("Please provide a token to transfer from")
+            greedy("transfer") {
+                runs {
+                    val system = database.fetchSystemFromUser(getUser())
+                    if (system != null) {
+                        respondFailure("You can only run this command when you have no system registered.")
+                        return@runs false
+                    }
+                    val token = database.fetchToken(it())
+                    if (token == null) {
+                        respondFailure("Token not found.")
+                        return@runs false
+                    }
+                    if (token.type != TokenType.SYSTEM_TRANSFER) {
+                        respondFailure("Token isn't a transfer token.")
+                        return@runs false
+                    }
+
+                    transfer(this, token)
+                }
+            }
+        }
         literal("trust") {
             runs {
                 val system = database.fetchSystemFromUser(getUser())
@@ -805,6 +825,24 @@ object MiscCommands : CommandRegistrar {
         }
     }
 
+    private suspend fun <T> transfer(ctx: DiscordContext<T>, token: TokenRecord): Boolean {
+        val system = database.fetchSystemFromId(token.systemId)!!
+        system.users.forEach {
+            val user = database.getOrCreateUser(it)
+            user.systemId = null
+            database.updateUser(user)
+        }
+        val id = ctx.getUser()!!.id.value
+        system.users = arrayListOf(id)
+        database.updateSystem(system)
+        val user = database.getOrCreateUser(id)
+        user.systemId = system.id
+        database.updateUser(user)
+        database.dropToken(token.token)
+        ctx.respondSuccess("System successfully transferred!")
+        return true
+    }
+
     class CommUpdater(val channel: MessageChannelBehavior) : PkSync.ProgressUpdater {
         override suspend fun update(type: String, from: String, to: String) {
             channel.createMessage("$type: $from -> $to")
@@ -813,10 +851,9 @@ object MiscCommands : CommandRegistrar {
 
     @OptIn(DontExpose::class)
     private suspend fun <T> syncPk(ctx: DiscordContext<T>, system: SystemRecord, upload: Boolean): Boolean {
-        ctx.deferResponse()
+        ctx.respondPlain("Pk sync progress:", true)
 
         val updater = CommUpdater(ctx.getChannel(true))
-        updater.channel.createMessage("Pk sync progress:")
 
         val res = if (upload) {
             PkSync.push(system, updater)
@@ -825,14 +862,14 @@ object MiscCommands : CommandRegistrar {
         }
 
         if (res.getA() == false) {
-            ctx.respondFailure("You don't have a PluralKit token registered.")
+            updater.channel.createMessage("You don't have a PluralKit token registered.")
             return false
         }
 
         if (res.getB() != null) {
             val b = res.getB()!!
             val message = b.message.replace(system.pkToken!!, "[pktoken]", true)
-            ctx.respondFailure("""
+            updater.channel.createMessage("""
                 PluralKit returned an error:
                 `$message`
             """.trimIndent())
@@ -841,7 +878,7 @@ object MiscCommands : CommandRegistrar {
 
         val message = if (upload) "exported" to "to" else "imported" to "from"
 
-        ctx.respondSuccess("Successfully ${message.first} system data ${message.second} PluralKit")
+        updater.channel.createMessage("Successfully ${message.first} system data ${message.second} PluralKit")
 
         return true
     }

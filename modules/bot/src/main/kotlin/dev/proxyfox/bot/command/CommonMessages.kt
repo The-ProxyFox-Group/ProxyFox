@@ -10,7 +10,7 @@ package dev.proxyfox.bot.command
 
 enum class CommonMessages(val builder: (Array<out String>) -> String) {
     TEXT_COMMAND({
-        "`${dev.proxyfox.bot.prefix}>${it[0]}"
+        "`${dev.proxyfox.bot.prefix}>${it[0]}`"
     }),
     NOT_FOUND({
         "${it[0]} not found. Create one using `/system create` or ${TEXT_COMMAND("system new")}"

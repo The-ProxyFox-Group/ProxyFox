@@ -206,6 +206,7 @@ class MongoDatabase(private val dbName: String = "ProxyFox") : Database() {
         memberProxies.deleteMany(filter).awaitFirst()
         memberServers.deleteMany(filter).awaitFirst()
         members.deleteMany(filter).awaitFirst()
+        dropTokens(system.id)
         systems.deleteOneById(system._id).awaitFirst()
         users.deleteMany(filter).awaitFirst()
         return true
@@ -314,7 +315,7 @@ class MongoDatabase(private val dbName: String = "ProxyFox") : Database() {
     }
 
     override suspend fun dropTokens(systemId: String) {
-        systemTokens.deleteMany("systemId" eq systemId)
+        systemTokens.deleteMany("systemId" eq systemId).awaitFirst()
     }
 
     override suspend fun createProxyTag(record: MemberProxyTagRecord): Boolean {
@@ -599,6 +600,7 @@ class MongoDatabase(private val dbName: String = "ProxyFox") : Database() {
             memberQueue += DeleteManyModel(filter)
             systemQueue += system.delete()
             userQueue += DeleteManyModel(filter)
+            dropTokens(system.id)
             return true
         }
 

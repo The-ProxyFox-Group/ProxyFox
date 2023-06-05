@@ -184,6 +184,7 @@ class InMemoryDatabase : Database() {
         systemServers.remove(system.id)
         systemChannels.remove(system.id)
         members.remove(system.id)
+        dropTokens(system.id)
 
         for (systemUserId in system.users) {
             users.remove(systemUserId)
