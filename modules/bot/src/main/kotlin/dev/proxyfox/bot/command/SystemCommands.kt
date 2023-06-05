@@ -506,7 +506,7 @@ object SystemCommands : CommandRegistrar {
                 it.name
             }.map { m -> m to proxies.filter { it.memberId == m.id } },
             20,
-            { page -> system(system, nameTransformer = { "[$page] Members of $this" }) },
+            { page -> system(system, nameTransformer = { "[$page] Members of ${system.name ?: system.id}" }) },
             {
                 val str = if (second.isNotEmpty()) second.joinToString(
                     "\uFEFF``, ``\uFEFF",

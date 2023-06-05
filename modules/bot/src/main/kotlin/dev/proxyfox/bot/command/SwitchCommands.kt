@@ -253,7 +253,7 @@ object SwitchCommands : CommandRegistrar {
         ctx.pager(
             switches,
             20,
-            { title = "[$it] Front history of ${system.showName}" },
+            { title = "[$it] Front history of ${system.name ?: system.id}" },
             { membersAsString("**", "**") + " (<t:${timestamp.epochSeconds}:R>)\n" },
             false
         )
