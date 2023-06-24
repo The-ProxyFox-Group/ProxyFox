@@ -49,6 +49,7 @@ import kotlinx.coroutines.flow.count
 import kotlinx.coroutines.flow.fold
 import kotlinx.datetime.Clock
 import kotlinx.datetime.Instant
+import kotlinx.serialization.SerializationException
 import java.lang.Integer.min
 import java.time.OffsetDateTime
 import java.util.*
@@ -60,7 +61,7 @@ import kotlin.time.Duration
 import kotlin.time.Duration.Companion.milliseconds
 import kotlin.time.Duration.Companion.minutes
 
-const val UPLOAD_LIMIT = 1024 * 1024 * 8
+const val UPLOAD_LIMIT = 1024 * 1024 * 25
 
 val scheduler = Executors.newScheduledThreadPool(Runtime.getRuntime().availableProcessors())
 
@@ -205,9 +206,10 @@ suspend fun handleError(err: Throwable, message: MessageBehavior) {
         if (it.className.startsWith("dev.proxyfox"))
             cause += "  at $it\n"
     }
-    message.channel.createMessage(
-        "An unexpected error occurred.\nTimestamp: `$timestamp`\n```\n${err.javaClass.name}: $reason\n$cause```"
-    )
+    if (err !is SerializationException)
+        message.channel.createMessage(
+            "An unexpected error occurred.\nTimestamp: `$timestamp`\n```\n${err.javaClass.name}: $reason\n$cause```"
+        )
     if (err is DebugException) return
     if (errorChannel == null && errorChannelId != null)
         errorChannel = kord.getChannel(errorChannelId) as TextChannel
