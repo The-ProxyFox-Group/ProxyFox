@@ -122,7 +122,7 @@ object MemberCommands : CommandRegistrar {
             }
             access("member", "servernick") {
                 member()
-                name()
+                name(required = false)
                 guild()
                 raw()
                 clear()
