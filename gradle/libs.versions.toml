@@ -1,9 +1,9 @@
 [versions]
-guava = "31.1-jre"
-logback = "1.4.7"
-kord = "0.9.x-SNAPSHOT"
-kotlin = "1.7.21"
-kotlinx_coroutines = "1.6.4"
+guava = "32.1.1-jre"
+logback = "1.4.8"
+kord = "0.10.0"
+kotlin = "1.9.0"
+kotlinx_coroutines = "1.7.2"
 
 # ProxyFox Libraries
 proxyfox_command = "1.7"
