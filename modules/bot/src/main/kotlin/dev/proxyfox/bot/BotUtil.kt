@@ -284,21 +284,31 @@ suspend fun handleError(err: Throwable, channel: MessageChannelBehavior) {
     val reason = err.message?.replace(webhook, "[WEBHOOK]")?.replace(token, "[TOKEN]")
     var cause = ""
     err.stackTrace.forEach {
-        if (it.className.startsWith("dev.proxyfox"))
-            cause += "  at $it\n"
+        if (it.className.startsWith("dev.proxyfox."))
+            cause += "  at ${it.pfString()}\n"
     }
     for (suppressed in err.suppressed) {
         var supCause = ""
         val supReason = suppressed.message?.replace(webhook, "[WEBHOOK]")?.replace(token, "[TOKEN]")
         suppressed.stackTrace.forEach {
-            if (it.className.startsWith("dev.proxyfox"))
-                supCause += "    at $it\n"
+            if (it.className.startsWith("dev.proxyfox."))
+                supCause += "    at ${it.pfString()}\n"
         }
         cause += "  Suppressed: ${suppressed.javaClass.name}: $supReason\n$supCause"
     }
-    channel.createMessage(
-        "An unexpected error occurred. Report this to us at https://discord.gg/q3yF8ay9V7\nTimestamp: `$timestamp`\n```\n${err.javaClass.name}: $reason\n$cause```"
-    )
+    try {
+        channel.createMessage(
+            "An unexpected error occurred. Report this to us at https://discord.gg/q3yF8ay9V7\nTimestamp: `$timestamp`\n```\n${err.javaClass.name}: $reason\n$cause".let {
+                if (it.length > 1997) {
+                    it.substring(0, it.lastIndexOf('\n', 1997)) + "```"
+                } else {
+                    "$it```"
+                }
+            }
+        )
+    } catch (any: Exception) {
+        logger.warn("Cannot send the error message to sender", any)
+    }
     if (err is DebugException) return
     if (errorChannel == null && errorChannelId != null)
         errorChannel = kord.getChannel(errorChannelId) as TextChannel
@@ -313,6 +323,16 @@ suspend fun handleError(err: Throwable, channel: MessageChannelBehavior) {
     }
 }
 
+fun StackTraceElement.pfString(): String {
+    val names = className.split('.')
+    val clazz = names.last()
+    var path = ""
+
+    names.dropLast(1).forEach { path += it[0] + "." }
+
+    return "$path.$clazz($fileName:$lineNumber)"
+}
+
 fun findUnixValue(args: Array<String>, key: String): String? {
     for (i in args.indices) {
         if (args[i].startsWith(key)) {
@@ -321,6 +341,7 @@ fun findUnixValue(args: Array<String>, key: String): String? {
     }
     return null
 }
+
 fun hasUnixValue(args: Array<String>, key: String): Boolean {
     for (i in args.indices) {
         if (args[i].startsWith(key)) {
