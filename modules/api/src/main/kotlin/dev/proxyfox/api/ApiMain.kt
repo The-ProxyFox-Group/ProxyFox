@@ -36,6 +36,7 @@ object ApiMain {
                 switchRoutes()
                 messageRoutes()
                 tokenRoutes()
+                coffeeRoutes()
             }
         }
     }
