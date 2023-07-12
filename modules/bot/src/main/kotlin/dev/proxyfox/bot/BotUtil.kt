@@ -64,6 +64,7 @@ import kotlinx.coroutines.launch
 import kotlinx.coroutines.runBlocking
 import kotlinx.datetime.Clock
 import kotlinx.datetime.Instant
+import kotlinx.serialization.SerializationException
 import java.lang.Integer.min
 import java.util.concurrent.Executors
 import java.util.concurrent.ScheduledExecutorService
@@ -76,7 +77,7 @@ import kotlin.time.Duration.Companion.milliseconds
 import kotlin.time.Duration.Companion.minutes
 import kotlin.time.DurationUnit
 
-const val UPLOAD_LIMIT = 1024 * 1024 * 8
+const val UPLOAD_LIMIT = 1024 * 1024 * 25
 
 val scheduler = Executors.newScheduledThreadPool(Runtime.getRuntime().availableProcessors())
 
@@ -287,27 +288,29 @@ suspend fun handleError(err: Throwable, channel: MessageChannelBehavior) {
         if (it.className.startsWith("dev.proxyfox."))
             cause += "  at ${it.pfString()}\n"
     }
-    for (suppressed in err.suppressed) {
-        var supCause = ""
-        val supReason = suppressed.message?.replace(webhook, "[WEBHOOK]")?.replace(token, "[TOKEN]")
-        suppressed.stackTrace.forEach {
-            if (it.className.startsWith("dev.proxyfox."))
-                supCause += "    at ${it.pfString()}\n"
-        }
-        cause += "  Suppressed: ${suppressed.javaClass.name}: $supReason\n$supCause"
-    }
-    try {
-        channel.createMessage(
-            "An unexpected error occurred. Report this to us at https://discord.gg/q3yF8ay9V7\nTimestamp: `$timestamp`\n```\n${err.javaClass.name}: $reason\n$cause".let {
-                if (it.length > 1997) {
-                    it.substring(0, it.lastIndexOf('\n', 1997)) + "```"
-                } else {
-                    "$it```"
-                }
+    if(err !is SerializationException) {
+        for (suppressed in err.suppressed) {
+            var supCause = ""
+            val supReason = suppressed.message?.replace(webhook, "[WEBHOOK]")?.replace(token, "[TOKEN]")
+            suppressed.stackTrace.forEach {
+                if (it.className.startsWith("dev.proxyfox."))
+                    supCause += "    at ${it.pfString()}\n"
             }
-        )
-    } catch (any: Exception) {
-        logger.warn("Cannot send the error message to sender", any)
+            cause += "  Suppressed: ${suppressed.javaClass.name}: $supReason\n$supCause"
+        }
+        try {
+            channel.createMessage(
+                "An unexpected error occurred. Report this to us at https://discord.gg/q3yF8ay9V7\nTimestamp: `$timestamp`\n```\n${err.javaClass.name}: $reason\n$cause".let {
+                    if (it.length > 1997) {
+                        it.substring(0, it.lastIndexOf('\n', 1997)) + "```"
+                    } else {
+                        "$it```"
+                    }
+                }
+            )
+        } catch (any: Exception) {
+            logger.warn("Cannot send the error message to sender", any)
+        }
     }
     if (err is DebugException) return
     if (errorChannel == null && errorChannelId != null)

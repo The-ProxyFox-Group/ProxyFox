@@ -136,6 +136,7 @@ data class PkMember(
     val pronouns: String? = null,
     val color: String? = null,
     val keep_proxy: Boolean? = false,
+    val autoproxy_enabled: Boolean? = true,
     val message_count: Long? = 0L,
 
     // Note: Exporting is *strictly* ISO_LOCAL_DATE.
@@ -186,6 +187,8 @@ data class PkMember(
     val avatar_privacy: Unit? = null,
     @Transient
     val metadata_privacy: Unit? = null,
+    @Transient
+    val last_message_timestamp: Unit? = null,
 
     // The following are ignored. We don't use these.
     @Transient
@@ -199,6 +202,7 @@ data class PkMember(
         pronouns = record.pronouns,
         color = record.color.fromColorForExport(),
         keep_proxy = record.keepProxy,
+        autoproxy_enabled = record.autoProxy,
         message_count = record.messageCount.toLong(),
         birthday = record.birthday?.run { if (pkValid()) toString() else "0004-${monthNumber.paddedString(2)}-${dayOfMonth.paddedString(2)}" },
         created = record.timestamp.toString(),
@@ -207,8 +211,7 @@ data class PkMember(
         proxyfox = PfMemberExtension(
             birthday = record.birthday.run { if (!pkValid()) toString() else null },
             age = record.age,
-            role = record.role,
-            autoProxy = record.autoProxy,
+            role = record.role
         )
     )
 
@@ -351,6 +354,8 @@ data class PkConfig(
     val member_limit: Int? = 1000,
     val group_limit: Int? = 250,
     val description_templates: List<String>? = null,
+    val case_sensitive_proxy_tags: Boolean? = true,
+    val proxy_error_message_enabled: Boolean? = true,
 )
 
 @JvmRecord

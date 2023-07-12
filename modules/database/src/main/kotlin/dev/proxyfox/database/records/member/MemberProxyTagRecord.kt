@@ -47,14 +47,17 @@ class MemberProxyTagRecord(): MongoRecord {
     }
 
     fun test(message: String): Boolean {
-        val pre = prefix == null || message.startsWith(prefix!!)
-        val suf = suffix == null || message.endsWith(suffix!!)
+        val pre = prefix == null || message.startsWith(prefix!!) || (suffix.isNullOrEmpty() && message == prefix!!.trimEnd())
+        val suf = suffix == null || message.endsWith(suffix!!) || (prefix.isNullOrEmpty() && message == suffix!!.trimStart())
         return pre && suf
     }
 
     fun trim(message: String): String {
         val pLength = prefix?.length ?: 0
         val slength = suffix?.length ?: 0
+        if (message.length < pLength + slength) {
+            return ""
+        }
         return message.substring(pLength, message.length - slength)
     }
 
