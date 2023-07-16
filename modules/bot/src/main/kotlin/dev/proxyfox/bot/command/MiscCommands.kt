@@ -21,11 +21,12 @@ import dev.kord.rest.builder.message.modify.actionRow
 import dev.proxyfox.bot.*
 import dev.proxyfox.bot.command.context.*
 import dev.proxyfox.bot.command.menu.DiscordScreen
-import dev.proxyfox.bot.command.node.attachment
+import dev.proxyfox.bot.command.text.MiscTextCommands
+import dev.proxyfox.bot.command.text.PkCommands
+import dev.proxyfox.bot.command.text.TrustCommands
 import dev.proxyfox.bot.webhook.GuildMessage
 import dev.proxyfox.bot.webhook.WebhookUtil
 import dev.proxyfox.command.CommandParser
-import dev.proxyfox.command.node.builtin.*
 import dev.proxyfox.common.*
 import dev.proxyfox.common.annotations.DontExpose
 import dev.proxyfox.database.database
@@ -53,7 +54,7 @@ import kotlin.math.floor
  * @author Oliver
  * */
 object MiscCommands : CommandRegistrar {
-    private val roleMatcher = Regex("\\d+")
+    val roleMatcher = Regex("\\d+")
     var infoInteractionExecutors: HashMap<String, suspend InteractionCommandContext.() -> Boolean> = hashMapOf()
     var moderationInteractionExecutors: HashMap<String, suspend InteractionCommandContext.() -> Boolean> = hashMapOf()
     var managementInteractionExecutors: HashMap<String, suspend InteractionCommandContext.() -> Boolean> = hashMapOf()
@@ -306,526 +307,12 @@ object MiscCommands : CommandRegistrar {
     }
 
     override suspend fun CommandParser<Any, DiscordContext<Any>>.registerTextCommands() {
-        literal("import") {
-            runs {
-                import(this, null)
-            }
-            attachment("file") { getFile ->
-                runs {
-                    import(this, getFile().url)
-                }
-            }
-            greedy("file") { getFile ->
-                runs {
-                    import(this, getFile())
-                }
-            }
-        }
-        literal("export") {
-            runs {
-                val system = database.fetchSystemFromUser(getUser())
-                if (!checkSystem(this, system)) return@runs false
-                export(this)
-            }
-        }
-        literal("time") {
-            runs(::time)
-        }
-        literal("help") {
-            responds(help)
-        }
-        literal("explain") {
-            responds(explain)
-        }
-        literal("invite") {
-            responds(invite)
-        }
-        literal("source") {
-            responds(source)
-        }
-        literal("proxy", "p") {
-            guild { getGuildId ->
-                runs {
-                    val system = database.fetchSystemFromUser(getUser())
-                    if (!checkSystem(this, system)) return@runs false
-                    val guildId = getGuildId() ?: run {
-                        respondFailure("Command not ran in server.")
-                        return@runs false
-                    }
-                    val guild = kord.getGuildOrNull(guildId) ?: run {
-                        respondFailure("Cannot find server. Am I in it?")
-                        return@runs false
-                    }
-                    val serverSystem = database.getOrCreateServerSettingsFromSystem(guild, system.id)
-                    serverProxy(this, serverSystem, null)
-                }
-                literal("on", "enable") {
-                    runs {
-                        val system = database.fetchSystemFromUser(getUser())
-                        if (!checkSystem(this, system)) return@runs false
-                        val guildId = getGuildId() ?: run {
-                            respondFailure("Command not ran in server.")
-                            return@runs false
-                        }
-                        val guild = kord.getGuildOrNull(guildId) ?: run {
-                            respondFailure("Cannot find server. Am I in it?")
-                            return@runs false
-                        }
-                        val serverSystem = database.getOrCreateServerSettingsFromSystem(guild, system.id)
-                        serverProxy(this, serverSystem, true)
-                    }
-                }
-                literal("off", "disable") {
-                    runs {
-                        val system = database.fetchSystemFromUser(getUser())
-                        if (!checkSystem(this, system)) return@runs false
-                        val guildId = getGuildId() ?: run {
-                            respondFailure("Command not ran in server.")
-                            return@runs false
-                        }
-                        val guild = kord.getGuildOrNull(guildId) ?: run {
-                            respondFailure("Cannot find server. Am I in it?")
-                            return@runs false
-                        }
-                        val serverSystem = database.getOrCreateServerSettingsFromSystem(guild, system.id)
-                        serverProxy(this, serverSystem, false)
-                    }
-                }
-            }
-        }
-        literal("autoproxy", "ap") {
-            runs {
-                val system = database.fetchSystemFromUser(getUser())
-                if (!checkSystem(this, system)) return@runs false
-                proxy(this, system, null, null)
-            }
-            literal("off", "disable", "o") {
-                runs {
-                    val system = database.fetchSystemFromUser(getUser())
-                    if (!checkSystem(this, system)) return@runs false
-                    proxy(this, system, AutoProxyMode.OFF, null)
-                }
-            }
-            literal("latch", "l") {
-                runs {
-                    val system = database.fetchSystemFromUser(getUser())
-                    if (!checkSystem(this, system)) return@runs false
-                    proxy(this, system, AutoProxyMode.LATCH, null)
-                }
-            }
-            literal("front", "f") {
-                runs {
-                    val system = database.fetchSystemFromUser(getUser())
-                    if (!checkSystem(this, system)) return@runs false
-                    proxy(this, system, AutoProxyMode.FRONT, null)
-                }
-            }
-            greedy("member") { getMem ->
-                runs {
-                    val system = database.fetchSystemFromUser(getUser())
-                    if (!checkSystem(this, system)) return@runs false
-                    val member = database.findMember(system.id, getMem())
-                    if (!checkMember(this, member)) return@runs false
-                    proxy(this, system, AutoProxyMode.MEMBER, member)
-                }
-            }
-        }
-        literal("serverautoproxy", "sap") {
-            guild { getGuildId ->
-                runs {
-                    val system = database.fetchSystemFromUser(getUser())
-                    if (!checkSystem(this, system)) return@runs false
-                    val guildId = getGuildId() ?: run {
-                        respondFailure("Command not ran in server.")
-                        return@runs false
-                    }
-                    val guild = kord.getGuildOrNull(guildId) ?: run {
-                        respondFailure("Cannot find server. Am I in it?")
-                        return@runs false
-                    }
-                    val serverSystem = database.getOrCreateServerSettingsFromSystem(guild, system.id)
-                    serverAutoProxy(this, serverSystem, null, null)
-                }
-                literal("off", "disable", "o") {
-                    runs {
-                        val system = database.fetchSystemFromUser(getUser())
-                        if (!checkSystem(this, system)) return@runs false
-                        val guildId = getGuildId() ?: run {
-                            respondFailure("Command not ran in server.")
-                            return@runs false
-                        }
-                        val guild = kord.getGuildOrNull(guildId) ?: run {
-                            respondFailure("Cannot find server. Am I in it?")
-                            return@runs false
-                        }
-                        val serverSystem = database.getOrCreateServerSettingsFromSystem(guild, system.id)
-                        serverAutoProxy(this, serverSystem, AutoProxyMode.OFF, null)
-                    }
-                }
-                literal("on", "enable", "fallback", "fb") {
-                    runs {
-                        val system = database.fetchSystemFromUser(getUser())
-                        if (!checkSystem(this, system)) return@runs false
-                        val guildId = getGuildId() ?: run {
-                            respondFailure("Command not ran in server.")
-                            return@runs false
-                        }
-                        val guild = kord.getGuildOrNull(guildId) ?: run {
-                            respondFailure("Cannot find server. Am I in it?")
-                            return@runs false
-                        }
-                        val serverSystem = database.getOrCreateServerSettingsFromSystem(guild, system.id)
-                        serverAutoProxy(this, serverSystem, AutoProxyMode.FALLBACK, null)
-                    }
-                }
-                literal("latch", "l") {
-                    runs {
-                        val system = database.fetchSystemFromUser(getUser())
-                        if (!checkSystem(this, system)) return@runs false
-                        val guildId = getGuildId() ?: run {
-                            respondFailure("Command not ran in server.")
-                            return@runs false
-                        }
-                        val guild = kord.getGuildOrNull(guildId) ?: run {
-                            respondFailure("Cannot find server. Am I in it?")
-                            return@runs false
-                        }
-                        val serverSystem = database.getOrCreateServerSettingsFromSystem(guild, system.id)
-                        serverAutoProxy(this, serverSystem, AutoProxyMode.LATCH, null)
-                    }
-                }
-                literal("front", "f") {
-                    runs {
-                        val system = database.fetchSystemFromUser(getUser())
-                        if (!checkSystem(this, system)) return@runs false
-                        val guildId = getGuildId() ?: run {
-                            respondFailure("Command not ran in server.")
-                            return@runs false
-                        }
-                        val guild = kord.getGuildOrNull(guildId) ?: run {
-                            respondFailure("Cannot find server. Am I in it?")
-                            return@runs false
-                        }
-                        val serverSystem = database.getOrCreateServerSettingsFromSystem(guild, system.id)
-                        serverAutoProxy(this, serverSystem, AutoProxyMode.FRONT, null)
-                    }
-                }
-                greedy("member") { getMem ->
-                    runs {
-                        val system = database.fetchSystemFromUser(getUser())
-                        if (!checkSystem(this, system)) return@runs false
-                        val member = database.findMember(system.id, getMem())
-                        if (!checkMember(this, member)) return@runs false
-                        val guildId = getGuildId() ?: run {
-                            respondFailure("Command not ran in server.")
-                            return@runs false
-                        }
-                        val guild = kord.getGuildOrNull(guildId) ?: run {
-                            respondFailure("Cannot find server. Am I in it?")
-                            return@runs false
-                        }
-                        val serverSystem = database.getOrCreateServerSettingsFromSystem(guild, system.id)
-                        serverAutoProxy(this, serverSystem, AutoProxyMode.MEMBER, member)
-                    }
-                }
-            }
-        }
-        literal("role") {
-            runs {
-                role(this, null, false)
-            }
-            unixLiteral("clear", "remove") {
-                runs {
-                    role(this, null, true)
-                }
-            }
-            greedy("role") { getRole ->
-                runs {
-                    role(this, getRole(), false)
-                }
-            }
-        }
-        literal("moddelay") {
-            runs {
-                val guild = getGuild() ?: run {
-                    respondFailure("Command not ran in server.")
-                    return@runs false
-                }
-                delay(this, database.getOrCreateServerSettings(guild), null)
-            }
-            greedy("delay") { getDelay ->
-                runs {
-                    val guild = getGuild() ?: run {
-                        respondFailure("Command not ran in server.")
-                        return@runs false
-                    }
-                    delay(this, database.getOrCreateServerSettings(guild), getDelay())
-                }
-            }
-        }
-        literal("forcetag", "requiretag") {
-            runs {
-                forceTag(this, null)
-            }
-            literal("on", "true", "enable", "1") {
-                runs {
-                    forceTag(this, true)
-                }
-            }
-            literal("off", "false", "disable", "0") {
-                runs {
-                    forceTag(this, false)
-                }
-            }
-        }
-        literal("delete", "del") {
-            runs {
-                val system = database.fetchSystemFromUser(getUser())
-                if (!checkSystem(this, system, true)) return@runs false
-                deleteMessage(this, system, null)
-            }
-            int("message") { getMessage ->
-                runs {
-                    val system = database.fetchSystemFromUser(getUser())
-                    if (!checkSystem(this, system, true)) return@runs false
-                    deleteMessage(this, system, Snowflake(getMessage()))
-                }
-            }
-        }
-        literal("reproxy", "rp") {
-            runs {
-                val system = database.fetchSystemFromUser(getUser())
-                if (!checkSystem(this, system, true)) return@runs false
-                reproxyMessage(this, system, null, null)
-            }
-            int("message") { getMessage ->
-                runs {
-                    val system = database.fetchSystemFromUser(getUser())
-                    if (!checkSystem(this, system, true)) return@runs false
-                    reproxyMessage(this, system, Snowflake(getMessage()), null)
-                }
-                greedy("member") { getMem ->
-                    runs {
-                        val system = database.fetchSystemFromUser(getUser())
-                        if (!checkSystem(this, system, true)) return@runs false
-                        val member = database.findMember(system.id, getMem())
-                        if (!checkMember(this, member, true)) return@runs false
-                        reproxyMessage(this, system, Snowflake(getMessage()), member)
-                    }
-                }
-            }
-            greedy("member") { getMem ->
-                runs {
-                    val system = database.fetchSystemFromUser(getUser())
-                    if (!checkSystem(this, system, true)) return@runs false
-                    val member = database.findMember(system.id, getMem())
-                    if (!checkMember(this, member, true)) return@runs false
-                    reproxyMessage(this, system, null, member)
-                }
-            }
-        }
-        literal("info", "i") {
-            runs {
-                fetchMessageInfo(this, null)
-            }
-            int("message") { getMessage ->
-                runs {
-                    fetchMessageInfo(this, Snowflake(getMessage()))
-                }
-            }
-        }
-        literal("ping", "p") {
-            runs {
-                pingMessageAuthor(this, null)
-            }
-            int("message") { getMessage ->
-                runs {
-                    pingMessageAuthor(this, Snowflake(getMessage()))
-                }
-            }
-        }
-        literal("edit", "e") {
-            runs {
-                val system = database.fetchSystemFromUser(getUser())
-                if (!checkSystem(this, system, true)) return@runs false
-                editMessage(this, system, null, null)
-            }
-            int("message") { getMessage ->
-                runs {
-                    val system = database.fetchSystemFromUser(getUser())
-                    if (!checkSystem(this, system, true)) return@runs false
-                    editMessage(this, system, Snowflake(getMessage()), null)
-                }
-
-                greedy("content") { getContent ->
-                    runs {
-                        val system = database.fetchSystemFromUser(getUser())
-                        if (!checkSystem(this, system, true)) return@runs false
-                        editMessage(this, system, Snowflake(getMessage()), getContent())
-                    }
-                }
-            }
-            greedy("content") { getContent ->
-                runs {
-                    val system = database.fetchSystemFromUser(getUser())
-                    if (!checkSystem(this, system, true)) return@runs false
-                    editMessage(this, system, null, getContent())
-                }
-            }
-        }
-        literal("channel", "c") {
-            responds("Please provide a channel subcommand")
-            literal("proxy", "p") {
-                runs {
-                    channelProxy(this, null, null)
-                }
-                string("channel") { getChannelMention ->
-                    runs {
-                        channelProxy(this, getChannelMention(), null)
-                    }
-                    literal("on", "true", "enable", "1") {
-                        runs {
-                            channelProxy(this, getChannelMention(), true)
-                        }
-                    }
-                    literal("off", "false", "disable", "0") {
-                        runs {
-                            channelProxy(this, getChannelMention(), false)
-                        }
-                    }
-                }
-            }
-        }
-        literal("debug") {
-            runs(::debug)
-        }
-        literal("fox") {
-            runs(::getFox)
-        }
-        literal("token", "t") {
-            runs {
-                val system = database.fetchSystemFromUser(getUser())
-                if (!checkSystem(this, system)) return@runs false
-                token(this, system)
-            }
-        }
-        literal("transfer") {
-            responds("Please provide a token to transfer from")
-            greedy("transfer") {
-                runs {
-                    val system = database.fetchSystemFromUser(getUser())
-                    if (system != null) {
-                        respondFailure("You can only run this command when you have no system registered.")
-                        return@runs false
-                    }
-                    val token = database.fetchToken(it())
-                    if (token == null) {
-                        respondFailure("Token not found.")
-                        return@runs false
-                    }
-                    if (token.type != TokenType.SYSTEM_TRANSFER) {
-                        respondFailure("Token isn't a transfer token.")
-                        return@runs false
-                    }
-
-                    transfer(this, token)
-                }
-            }
-        }
-        literal("trust") {
-            runs {
-                val system = database.fetchSystemFromUser(getUser())
-                if (!checkSystem(this, system)) return@runs false
-                respondFailure("Please provide a user to perform this action on")
-                false
-            }
-            int("user") { getId ->
-                runs {
-                    val system = database.fetchSystemFromUser(getUser())
-                    if (!checkSystem(this, system)) return@runs false
-                    trust(this, system, getId(), null)
-                }
-                literal("none", "remove", "clear") {
-                    runs {
-                        val system = database.fetchSystemFromUser(getUser())
-                        if (!checkSystem(this, system)) return@runs false
-                        trust(this, system, getId(), TrustLevel.NONE)
-                    }
-                }
-                literal("access", "see", "view") {
-                    runs {
-                        val system = database.fetchSystemFromUser(getUser())
-                        if (!checkSystem(this, system)) return@runs false
-                        trust(this, system, getId(), TrustLevel.ACCESS)
-                    }
-                }
-                literal("member", "m") {
-                    runs {
-                        val system = database.fetchSystemFromUser(getUser())
-                        if (!checkSystem(this, system)) return@runs false
-                        trust(this, system, getId(), TrustLevel.MEMBER)
-                    }
-                }
-                literal("switch", "sw") {
-                    runs {
-                        val system = database.fetchSystemFromUser(getUser())
-                        if (!checkSystem(this, system)) return@runs false
-                        trust(this, system, getId(), TrustLevel.SWITCH)
-                    }
-                }
-                literal("full", "all", "everything") {
-                    runs {
-                        val system = database.fetchSystemFromUser(getUser())
-                        if (!checkSystem(this, system)) return@runs false
-                        trust(this, system, getId(), TrustLevel.FULL)
-                    }
-                }
-            }
-        }
-        literal("pluralkit", "pk") {
-            literal("pull", "get", "download", "import") {
-                runs {
-                    val system = database.fetchSystemFromUser(getUser())
-                    if (!checkSystem(this, system)) return@runs false
-                    syncPk(this, system, false)
-                }
-            }
-
-            literal("push", "set", "upload", "export") {
-                runs {
-                    val system = database.fetchSystemFromUser(getUser())
-                    if (!checkSystem(this, system)) return@runs false
-                    syncPk(this, system, true)
-                }
-            }
-
-            literal("token") {
-                runs {
-                    val system = database.fetchSystemFromUser(getUser())
-                    if (!checkSystem(this, system)) return@runs false
-                    pkToken(this, system, null, false)
-                }
-
-                literal("clear", "reset", "remove") {
-                    runs {
-                        val system = database.fetchSystemFromUser(getUser())
-                        if (!checkSystem(this, system)) return@runs false
-                        pkToken(this, system, null, true)
-                    }
-                }
-
-                greedy("token") { getToken ->
-                    runs {
-                        val system = database.fetchSystemFromUser(getUser())
-                        if (!checkSystem(this, system)) return@runs false
-                        pkToken(this, system, getToken(), false)
-                    }
-                }
-            }
-        }
+        this += MiscTextCommands
+        this += TrustCommands
+        this += PkCommands
     }
 
-    private suspend fun <T> transfer(ctx: DiscordContext<T>, token: TokenRecord): Boolean {
+    suspend fun <T> transfer(ctx: DiscordContext<T>, token: TokenRecord): Boolean {
         val system = database.fetchSystemFromId(token.systemId)!!
         system.users.forEach {
             val user = database.getOrCreateUser(it)
@@ -850,7 +337,7 @@ object MiscCommands : CommandRegistrar {
     }
 
     @OptIn(DontExpose::class)
-    private suspend fun <T> syncPk(ctx: DiscordContext<T>, system: SystemRecord, upload: Boolean): Boolean {
+    suspend fun <T> syncPk(ctx: DiscordContext<T>, system: SystemRecord, upload: Boolean): Boolean {
         ctx.respondPlain("Pk sync progress:", true)
 
         val updater = CommUpdater(ctx.getChannel(true))
@@ -884,7 +371,7 @@ object MiscCommands : CommandRegistrar {
     }
 
     @OptIn(DontExpose::class)
-    private suspend fun <T> pkToken(
+    suspend fun <T> pkToken(
             ctx: DiscordContext<T>,
             system: SystemRecord,
             token: String?,
@@ -918,7 +405,8 @@ object MiscCommands : CommandRegistrar {
         return true
     }
 
-    private suspend fun <T> forceTag(ctx: DiscordContext<T>, enabled: Boolean?): Boolean {
+    // TODO: Allow user to specify guild
+    suspend fun <T> forceTag(ctx: DiscordContext<T>, enabled: Boolean?): Boolean {
         val server = database.getOrCreateServerSettings(ctx.getGuild() ?: run {
             ctx.respondFailure("You are not in a server.")
             return false
@@ -941,7 +429,7 @@ object MiscCommands : CommandRegistrar {
         return true
     }
 
-    private suspend fun <T> getFox(ctx: DiscordContext<T>): Boolean {
+    suspend fun <T> getFox(ctx: DiscordContext<T>): Boolean {
         ctx.respondEmbed {
             val fox = FoxFetch.fetch()
             title = "**Link**"
@@ -951,7 +439,7 @@ object MiscCommands : CommandRegistrar {
         return true
     }
 
-    private suspend fun <T> trust(
+    suspend fun <T> trust(
         ctx: DiscordContext<T>,
         system: SystemRecord,
         user: ULong,
@@ -975,7 +463,7 @@ object MiscCommands : CommandRegistrar {
         return true
     }
 
-    private suspend fun <T> token(ctx: DiscordContext<T>, system: SystemRecord): Boolean {
+    suspend fun <T> token(ctx: DiscordContext<T>, system: SystemRecord): Boolean {
         ctx.interactionMenu(true) {
             val create = "create" {
                 this as DiscordScreen
@@ -1092,7 +580,7 @@ object MiscCommands : CommandRegistrar {
         return true
     }
 
-    private suspend fun <T> debug(ctx: DiscordContext<T>): Boolean {
+    suspend fun <T> debug(ctx: DiscordContext<T>): Boolean {
         val shardid = ctx.getGuild()?.id?.value?.toShard() ?: 0
         ctx.respondEmbed {
             title = "ProxyFox Debug"
@@ -1175,7 +663,7 @@ object MiscCommands : CommandRegistrar {
         throw DebugException()
     }
 
-    private suspend fun <T> import(ctx: DiscordContext<T>, url: String?): Boolean {
+    suspend fun <T> import(ctx: DiscordContext<T>, url: String?): Boolean {
         val uri = url.uri()
 
         ctx.deferResponse()
@@ -1197,7 +685,7 @@ object MiscCommands : CommandRegistrar {
         }
     }
 
-    private suspend fun <T> export(ctx: DiscordContext<T>): Boolean {
+    suspend fun <T> export(ctx: DiscordContext<T>): Boolean {
         val export = Exporter.export(ctx.getUser()!!.id.value)
         val message = ctx.respondFiles(
             null,
@@ -1208,32 +696,32 @@ object MiscCommands : CommandRegistrar {
         return true
     }
 
-    private suspend fun <T> time(ctx: DiscordContext<T>): Boolean {
+    suspend fun <T> time(ctx: DiscordContext<T>): Boolean {
         val date = System.currentTimeMillis() / 1000
         ctx.respondSuccess("It is currently <t:$date:f>")
         return true
     }
 
     // TODO: Provide better help
-    private const val help: String =
+    const val help: String =
         """To view commands for ProxyFox, visit <https://github.com/The-ProxyFox-Group/ProxyFox/blob/master/commands.md>
 For quick setup:
 - /system create
 - /member create
 - /member proxy-add"""
 
-    private const val explain: String =
+    const val explain: String =
         """ProxyFox is modern Discord bot designed to help systems communicate.
 It uses discord's webhooks to generate "pseudo-users" which different members of the system can use. Someone will likely be willing to explain further if need be."""
 
-    private val invite: String =
+    val invite: String =
         """Use <https://discord.com/api/oauth2/authorize?client_id=${kord.selfId}&permissions=277696539728&scope=applications.commands+bot> to invite ProxyFox to your server!
 To get support, head on over to https://discord.gg/q3yF8ay9V7"""
 
-    private const val source: String =
-        "Source code for ProxyFox is available at https://github.com/The-ProxyFox-Group/ProxyFox!"
+    const val source: String =
+        "Source code for ProxyFox is available at <https://github.com/The-ProxyFox-Group/ProxyFox>!"
 
-    private suspend fun <T> proxy(ctx: DiscordContext<T>, system: SystemRecord, mode: AutoProxyMode?, member: MemberRecord?): Boolean {
+    suspend fun <T> proxy(ctx: DiscordContext<T>, system: SystemRecord, mode: AutoProxyMode?, member: MemberRecord?): Boolean {
         mode ?: run {
             val currMember = system.autoProxy?.let { database.fetchMemberFromSystem(system.id, it) }
             ctx.respondSuccess("Autoproxy is set to ${currMember?.showDisplayName() ?: system.autoType.name}")
@@ -1247,7 +735,7 @@ To get support, head on over to https://discord.gg/q3yF8ay9V7"""
         return true
     }
 
-    private suspend fun <T> serverAutoProxy(ctx: DiscordContext<T>, systemServer: SystemServerSettingsRecord, mode: AutoProxyMode?, member: MemberRecord?): Boolean {
+    suspend fun <T> serverAutoProxy(ctx: DiscordContext<T>, systemServer: SystemServerSettingsRecord, mode: AutoProxyMode?, member: MemberRecord?): Boolean {
         mode ?: run {
             val currMember = systemServer.autoProxy?.let { database.fetchMemberFromSystem(systemServer.systemId, it) }
             ctx.respondSuccess("Autoproxy is set to ${currMember?.showDisplayName() ?: systemServer.autoProxyMode.name}")
@@ -1261,7 +749,7 @@ To get support, head on over to https://discord.gg/q3yF8ay9V7"""
         return true
     }
 
-    private suspend fun <T> serverProxy(ctx: DiscordContext<T>, systemServer: SystemServerSettingsRecord, enabled: Boolean?): Boolean {
+    suspend fun <T> serverProxy(ctx: DiscordContext<T>, systemServer: SystemServerSettingsRecord, enabled: Boolean?): Boolean {
         enabled ?: run {
             ctx.respondSuccess("Proxy for this server is currently ${if (systemServer.proxyEnabled) "enabled" else "disabled"}.")
             return false
@@ -1273,7 +761,8 @@ To get support, head on over to https://discord.gg/q3yF8ay9V7"""
         return true
     }
 
-    private suspend fun <T> role(ctx: DiscordContext<T>, roleRaw: String?, clear: Boolean): Boolean {
+    // TODO: Allow user to specify guild
+    suspend fun <T> role(ctx: DiscordContext<T>, roleRaw: String?, clear: Boolean): Boolean {
         val server = database.getOrCreateServerSettings(ctx.getGuild() ?: run {
             ctx.respondFailure("You are not in a server.")
             return false
@@ -1307,7 +796,7 @@ To get support, head on over to https://discord.gg/q3yF8ay9V7"""
         return true
     }
 
-    private suspend fun <T> delay(ctx: DiscordContext<T>, server: ServerSettingsRecord, delayStr: String?): Boolean {
+    suspend fun <T> delay(ctx: DiscordContext<T>, server: ServerSettingsRecord, delayStr: String?): Boolean {
         if (!ctx.hasRequired(Permission.ManageGuild)) {
             ctx.respondFailure("You do not have the proper permissions to run this command")
             return false
@@ -1335,7 +824,7 @@ To get support, head on over to https://discord.gg/q3yF8ay9V7"""
         return true
     }
 
-    private suspend fun <T> deleteMessage(ctx: DiscordContext<T>, system: SystemRecord, message: Snowflake?): Boolean {
+    suspend fun <T> deleteMessage(ctx: DiscordContext<T>, system: SystemRecord, message: Snowflake?): Boolean {
         val messages = ctx.getDatabaseMessage(system, message)
         val discordMessage = messages.first
         discordMessage ?: run {
@@ -1359,7 +848,7 @@ To get support, head on over to https://discord.gg/q3yF8ay9V7"""
         return true
     }
 
-    private suspend fun <T> reproxyMessage(ctx: DiscordContext<T>, system: SystemRecord, message: Snowflake?, member: MemberRecord?): Boolean {
+    suspend fun <T> reproxyMessage(ctx: DiscordContext<T>, system: SystemRecord, message: Snowflake?, member: MemberRecord?): Boolean {
         member ?: run {
             ctx.respondFailure("Please provide the member to reproxy as.")
             return false
@@ -1417,7 +906,7 @@ To get support, head on over to https://discord.gg/q3yF8ay9V7"""
         return true
     }
 
-    private suspend fun <T> fetchMessageInfo(ctx: DiscordContext<T>, message: Snowflake?): Boolean {
+    suspend fun <T> fetchMessageInfo(ctx: DiscordContext<T>, message: Snowflake?): Boolean {
         val messages = ctx.getDatabaseMessage(null, message)
         val discordMessage = messages.first
         discordMessage ?: run {
@@ -1490,7 +979,7 @@ To get support, head on over to https://discord.gg/q3yF8ay9V7"""
         return true
     }
 
-    private suspend fun <T> editMessage(ctx: DiscordContext<T>, system: SystemRecord, message: Snowflake?, content: String?): Boolean {
+    suspend fun <T> editMessage(ctx: DiscordContext<T>, system: SystemRecord, message: Snowflake?, content: String?): Boolean {
         val messages = ctx.getDatabaseMessage(system, message)
         val discordMessage = messages.first
         discordMessage ?: run {
@@ -1521,7 +1010,7 @@ To get support, head on over to https://discord.gg/q3yF8ay9V7"""
         return true
     }
 
-    private suspend fun <T> pingMessageAuthor(ctx: DiscordContext<T>, message: Snowflake?): Boolean {
+    suspend fun <T> pingMessageAuthor(ctx: DiscordContext<T>, message: Snowflake?): Boolean {
         val messages = ctx.getDatabaseMessage(null, message)
         val discordMessage = messages.first
         if (discordMessage == null) {
@@ -1540,7 +1029,7 @@ To get support, head on over to https://discord.gg/q3yF8ay9V7"""
         return true
     }
 
-    private suspend fun <T> channelProxy(ctx: DiscordContext<T>, channel: String?, value: Boolean?): Boolean {
+    suspend fun <T> channelProxy(ctx: DiscordContext<T>, channel: String?, value: Boolean?): Boolean {
         if (!ctx.hasRequired(Permission.ManageChannels)) {
             ctx.respondFailure("You do not have the proper permissions to run this command")
             return false

@@ -6,7 +6,7 @@ kotlin = "1.9.0"
 kotlinx_coroutines = "1.7.2"
 
 # ProxyFox Libraries
-proxyfox_command = "1.7"
+proxyfox_command = "2.0"
 pluralkt = "1.8"
 markt = "1.4"
 

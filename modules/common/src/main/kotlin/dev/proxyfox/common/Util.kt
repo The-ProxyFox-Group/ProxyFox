@@ -11,6 +11,7 @@ package dev.proxyfox.common
 import dev.kord.core.Kord
 import dev.kord.core.event.Event
 import dev.kord.core.on
+import dev.proxyfox.command.types.UnixList
 import org.slf4j.Logger
 import org.slf4j.LoggerFactory
 import java.io.StringReader
@@ -125,3 +126,6 @@ inline fun <reified E : Event> Kord.onlyIf(
 ) = on<E> {
     if (getter() == compare) executor()
 }
+
+fun UnixList?.find(value: String) =
+    this?.list?.contains(value) ?: false

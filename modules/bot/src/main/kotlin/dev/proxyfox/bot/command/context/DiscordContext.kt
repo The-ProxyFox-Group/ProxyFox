@@ -86,6 +86,10 @@ abstract class DiscordContext<T>(override val value: T) : CommandContext<T>() {
 
     abstract suspend fun interactionMenu(private: Boolean = false, action: suspend DiscordMenu.() -> Unit)
 
+    suspend fun getSys(system: String? = null): SystemRecord? =
+        if (system == null)
+            database.fetchSystemFromUser(getUser()!!.id)
+        else database.fetchSystemFromId(system)
     suspend fun timedYesNoPrompt(
         message: String,
         yes: Pair<String, suspend MessageModifyBuilder.() -> Unit>,

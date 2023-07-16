@@ -8,6 +8,8 @@
 
 package dev.proxyfox.database.records.misc
 
+import kotlinx.serialization.Serializable
+
 // Created 2022-11-04T12:10:37
 
 /**
@@ -15,6 +17,7 @@ package dev.proxyfox.database.records.misc
  *
  * @author Ampflower
  **/
+@Serializable
 enum class AutoProxyMode {
     /** AutoProxy is disabled; it will not automatically switch via use of tags or switch. */
     OFF,

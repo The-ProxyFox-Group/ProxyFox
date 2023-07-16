@@ -18,7 +18,7 @@ import dev.proxyfox.bot.command.context.DiscordContext
 import dev.proxyfox.bot.command.context.InteractionCommandContext
 import dev.proxyfox.bot.command.context.runs
 import dev.proxyfox.bot.command.context.system
-import dev.proxyfox.bot.command.node.attachment
+import dev.proxyfox.bot.command.types.attachment
 import dev.proxyfox.command.CommandParser
 import dev.proxyfox.command.node.builtin.*
 import dev.proxyfox.common.fromColor

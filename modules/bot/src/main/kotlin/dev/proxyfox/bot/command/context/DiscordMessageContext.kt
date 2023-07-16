@@ -22,7 +22,6 @@ import dev.proxyfox.database.records.system.SystemRecord
 import kotlin.jvm.optionals.getOrNull
 
 class DiscordMessageContext(message: Message, override val command: String): DiscordContext<Message>(message) {
-    @OptIn(ExperimentalStdlibApi::class)
     override fun getAttachment(): Attachment? {
         return value.attachments.stream().findFirst().getOrNull()
     }

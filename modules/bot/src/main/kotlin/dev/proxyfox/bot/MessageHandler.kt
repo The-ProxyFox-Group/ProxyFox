@@ -88,7 +88,7 @@ suspend fun MessageCreateEvent.onMessageCreate() {
         if (hasStickers || hasOversizedFiles || isOversizedMessage) {
             logger.trace(
                 "Denying proxying {} ({}) in {} ({}) due to Discord bot constraints",
-                user.tag,
+                user.username,
                 user.id,
                 guild.name,
                 guild.id
@@ -118,8 +118,8 @@ suspend fun MessageUpdateEvent.onMessageUpdate() {
 
     if (hasStickers || hasOversizedFiles || isOversizedMessage) {
         logger.trace(
-            "Denying proxying {}#{} ({}) in {} ({}) due to Discord bot constraints",
-            authorRaw.username, authorRaw.discriminator, authorRaw.id, guild.name, guild.id
+            "Denying proxying {} ({}) in {} ({}) due to Discord bot constraints",
+            authorRaw.username, authorRaw.id, guild.name, guild.id
         )
         return
     }
@@ -158,7 +158,7 @@ private suspend fun handleProxying(
     val server = database.getOrCreateServerSettings(guild)
     server.proxyRole.let {
         if (it != 0UL && !user.asMember(guild.id).roleIds.contains(Snowflake(it))) {
-            logger.trace("Denying proxying {} ({}) in {} ({}) due to missing role {}", user.tag, user.id, guild.name, guild.id, it)
+            logger.trace("Denying proxying {} ({}) in {} ({}) due to missing role {}", user.username, user.id, guild.name, guild.id, it)
             return
         }
     }
@@ -283,7 +283,7 @@ suspend fun ReactionAddEvent.onReactionAdd() {
             val user = kord.getUser(Snowflake(databaseMessage.userId))
 
             getUser().getDmChannel().createMessage {
-                content = "Message by ${member.showDisplayName()} was sent by <@${databaseMessage.userId}> (${user?.tag ?: "Unknown user"})"
+                content = "Message by ${member.showDisplayName()} was sent by <@${databaseMessage.userId}> (${user?.username ?: "Unknown user"})"
                 embed {
                     val systemName = system.name ?: system.id
                     author {
@@ -394,7 +394,7 @@ suspend fun MessageCommandInteractionCreateEvent.onInteract() {
 
             interaction.respondEphemeral {
                 content =
-                    "Message by ${member.showDisplayName()} was sent by <@${databaseMessage.userId}> (${user?.tag ?: "Unknown user"})"
+                    "Message by ${member.showDisplayName()} was sent by <@${databaseMessage.userId}> (${user?.username ?: "Unknown user"})"
                 embed {
                     val systemName = system.name ?: system.id
                     author {
