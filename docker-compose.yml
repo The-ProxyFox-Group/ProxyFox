@@ -1,0 +1,35 @@
+version: "3"
+
+networks:
+  proxyfox:
+    external: false
+
+services:
+  proxyfox:
+    image: ghcr.io/the-proxyfox-group/proxyfox:latest
+    container_name: proxyfox
+    restart: always
+    environment:
+      - PROXYFOX_KEY=<token>
+      - PROXYFOX_MONGO=mongodb://<username>:<password>@mongo
+    networks:
+      - proxyfox
+    depends_on:
+      - mongo
+
+  mongo:
+    image: mongo:latest
+    container_name: proxyfox_mongo
+    restart: always
+    environment:
+      - MONGO_INITDB_ROOT_USERNAME=<username>
+      - MONGO_INITDB_ROOT_PASSWORD=<password>
+    networks:
+      - proxyfox
+    volumes:
+      - proxyfox-mongo:/data/db
+    ports:
+      - 27017:27017
+
+volumes:
+  proxyfox-mongo:

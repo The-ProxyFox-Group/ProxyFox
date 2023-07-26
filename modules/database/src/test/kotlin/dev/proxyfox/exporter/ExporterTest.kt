@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2022, The ProxyFox Group
+ * Copyright (c) 2022-2023, The ProxyFox Group
  *
  * This Source Code is subject to the terms of the Mozilla Public
  * License, v. 2.0. If a copy of the MPL was not distributed with this
@@ -9,14 +9,17 @@
 package dev.proxyfox.exporter
 
 import dev.proxyfox.database.DatabaseTestUtil.instantEpoch
-import dev.proxyfox.database.DatabaseTestUtil.offsetDateTimeEpoch
-import dev.proxyfox.database.DatabaseTestUtil.offsetDateTimeEpochString
-import dev.proxyfox.database.records.member.MemberRecord
-import dev.proxyfox.database.records.system.SystemRecord
-import dev.proxyfox.database.records.system.SystemSwitchRecord
+import dev.proxyfox.database.DatabaseTestUtil.instantLastMicroOfEpochDay
+import dev.proxyfox.database.DatabaseTestUtil.instantLastNanoOfEpochDay
+import dev.proxyfox.database.DatabaseTestUtil.stringEpoch
+import dev.proxyfox.database.DatabaseTestUtil.stringLastMicroOfEpochDay
+import dev.proxyfox.database.DatabaseTestUtil.stringLastNanoOfEpochDay
 import dev.proxyfox.database.etc.types.PkMember
 import dev.proxyfox.database.etc.types.PkSwitch
 import dev.proxyfox.database.etc.types.PkSystem
+import dev.proxyfox.database.records.member.MemberRecord
+import dev.proxyfox.database.records.system.SystemRecord
+import dev.proxyfox.database.records.system.SystemSwitchRecord
 import org.testng.Assert
 import org.testng.annotations.Test
 
@@ -30,17 +33,50 @@ class ExporterTest {
     @Test
     fun `Exporter(System) - retain seconds`() {
         val system = PkSystem(SystemRecord().apply {
-            timestamp = offsetDateTimeEpoch
+            timestamp = instantEpoch
         })
-        Assert.assertEquals(system.created, offsetDateTimeEpochString)
+        Assert.assertEquals(system.created, stringEpoch)
+    }
+
+
+    @Test
+    fun `Exporter(System) - retain microseconds`() {
+        val system = PkSystem(SystemRecord().apply {
+            timestamp = instantLastMicroOfEpochDay
+        }, null)
+        Assert.assertEquals(system.created, stringLastMicroOfEpochDay)
+    }
+
+    @Test
+    fun `Exporter(System) - retain nanoseconds`() {
+        val system = PkSystem(SystemRecord().apply {
+            timestamp = instantLastNanoOfEpochDay
+        }, null)
+        Assert.assertEquals(system.created, stringLastNanoOfEpochDay)
     }
 
     @Test
     fun `Exporter(Member) - retain seconds`() {
         val member = PkMember(MemberRecord().apply {
-            timestamp = offsetDateTimeEpoch
+            timestamp = instantEpoch
         }, null)
-        Assert.assertEquals(member.created, offsetDateTimeEpochString)
+        Assert.assertEquals(member.created, stringEpoch)
+    }
+
+    @Test
+    fun `Exporter(Member) - retain microseconds`() {
+        val member = PkMember(MemberRecord().apply {
+            timestamp = instantLastMicroOfEpochDay
+        }, null)
+        Assert.assertEquals(member.created, stringLastMicroOfEpochDay)
+    }
+
+    @Test
+    fun `Exporter(Member) - retain nanoseconds`() {
+        val member = PkMember(MemberRecord().apply {
+            timestamp = instantLastNanoOfEpochDay
+        }, null)
+        Assert.assertEquals(member.created, stringLastNanoOfEpochDay)
     }
 
     @Test
@@ -48,6 +84,22 @@ class ExporterTest {
         val switch = PkSwitch(SystemSwitchRecord().apply {
             timestamp = instantEpoch
         })
-        Assert.assertEquals(switch.timestamp, offsetDateTimeEpochString)
+        Assert.assertEquals(switch.timestamp, stringEpoch)
+    }
+
+    @Test
+    fun `Exporter(Switch) - retain microseconds`() {
+        val switch = PkSwitch(SystemSwitchRecord().apply {
+            timestamp = instantLastMicroOfEpochDay
+        })
+        Assert.assertEquals(switch.timestamp, stringLastMicroOfEpochDay)
+    }
+
+    @Test
+    fun `Exporter(Switch) - truncate nanoseconds to microseconds`() {
+        val switch = PkSwitch(SystemSwitchRecord().apply {
+            timestamp = instantLastNanoOfEpochDay
+        })
+        Assert.assertEquals(switch.timestamp, stringLastMicroOfEpochDay)
     }
 }

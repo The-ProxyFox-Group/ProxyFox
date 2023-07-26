@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2022, The ProxyFox Group
+ * Copyright (c) 2022-2023, The ProxyFox Group
  *
  * This Source Code is subject to the terms of the Mozilla Public
  * License, v. 2.0. If a copy of the MPL was not distributed with this
@@ -13,6 +13,7 @@ import dev.kord.core.behavior.GuildBehavior
 import dev.kord.core.behavior.UserBehavior
 import dev.kord.core.behavior.channel.ChannelBehavior
 import dev.proxyfox.database.records.DatabaseException
+import dev.proxyfox.database.records.group.GroupRecord
 import dev.proxyfox.database.records.member.MemberProxyTagRecord
 import dev.proxyfox.database.records.member.MemberRecord
 import dev.proxyfox.database.records.member.MemberServerSettingsRecord
@@ -21,8 +22,8 @@ import dev.proxyfox.database.records.system.SystemChannelSettingsRecord
 import dev.proxyfox.database.records.system.SystemRecord
 import dev.proxyfox.database.records.system.SystemServerSettingsRecord
 import dev.proxyfox.database.records.system.SystemSwitchRecord
+import kotlinx.datetime.Instant
 import org.jetbrains.annotations.TestOnly
-import java.time.Instant
 import kotlin.contracts.ExperimentalContracts
 import kotlin.contracts.contract
 import kotlin.time.Duration
@@ -35,6 +36,10 @@ import kotlin.time.Duration
  * @author Ampflower
  **/
 // Suppression since unused warnings aren't useful for an API.
+/*
+* TODO: Move methods that require an id for an object in the database to use that object.
+*  ex: systemId: String, memberName: String -> system: SystemRecord, memberName: String
+* */
 @Suppress("unused")
 abstract class Database : AutoCloseable {
     abstract suspend fun setup(): Database
@@ -312,6 +317,30 @@ abstract class Database : AutoCloseable {
     open suspend fun createMessage(message: ProxiedMessageRecord) = updateMessage(message)
     abstract suspend fun fetchMessage(messageId: Snowflake): ProxiedMessageRecord?
     abstract suspend fun fetchLatestMessage(systemId: String, channelId: Snowflake): ProxiedMessageRecord?
+    abstract suspend fun dropMessage(messageId: Snowflake)
+
+    open suspend fun createToken(systemId: String, type: TokenType): TokenRecord {
+        val token = TokenRecord(generateUniqueToken(), firstFreeTokenId(systemId), systemId, type)
+        updateToken(token)
+        return token
+    }
+    private suspend fun firstFreeTokenId(systemId: String): String =
+        fetchTokens(systemId).map(TokenRecord::id).firstFree()
+    abstract suspend fun fetchToken(token: String): TokenRecord?
+    abstract suspend fun fetchTokenFromId(systemId: String, id: String): TokenRecord?
+    abstract suspend fun fetchTokens(systemId: String): List<TokenRecord>
+    abstract suspend fun updateToken(token: TokenRecord)
+    abstract suspend fun dropToken(token: String)
+    abstract suspend fun dropTokenById(systemId: String, id: String)
+    abstract suspend fun dropTokens(systemId: String)
+    open suspend fun containsToken(token: String): Boolean = fetchToken(token) != null
+    open suspend fun generateUniqueToken(): String {
+        var token = generateToken()
+        while (containsToken(token)) {
+            token = generateToken()
+        }
+        return token
+    }
 
     /**
      * Allocates a proxy tag
@@ -454,7 +483,7 @@ abstract class Database : AutoCloseable {
     suspend inline fun fetchTotalMembersFromUser(user: UserBehavior?) = fetchUser(user)?.systemId?.let { fetchTotalMembersFromSystem(it) } ?: -1
 
     /**
-     * Gets the total number of members registered in a system by discord ID.
+     * Gets the total number of members registered in a system.
      *
      * Implementation requirements: return an int with the total members registered
      * */
@@ -464,6 +493,64 @@ abstract class Database : AutoCloseable {
      * Gets a member by system ID and member name
      * */
     abstract suspend fun fetchMemberFromSystemAndName(systemId: String, memberName: String, caseSensitive: Boolean = true): MemberRecord?
+
+    /**
+     * Gets the groups a member is a part of
+     * */
+    abstract suspend fun fetchGroupsFromMember(member: MemberRecord): List<GroupRecord>
+
+    /**
+     * Gets the members that are a part of a group
+     * */
+    abstract suspend fun fetchMembersFromGroup(group: GroupRecord): List<MemberRecord>
+
+    /**
+     * Fetches a group
+     * */
+    abstract suspend fun fetchGroupFromSystem(system: PkId, groupId: PkId): GroupRecord?
+    abstract suspend fun fetchGroupsFromSystem(system: PkId): List<GroupRecord>?
+    abstract suspend fun fetchGroupFromSystemAndName(
+        system: PkId,
+        name: String,
+        caseSensitive: Boolean = false
+    ): GroupRecord?
+
+    /**
+     * Updates a group
+     * */
+    abstract suspend fun updateGroup(group: GroupRecord)
+
+    /**
+     * Creates a group
+     * */
+    suspend fun createGroup(system: PkId, name: String): GroupRecord? {
+        return fetchGroupFromSystemAndName(system, name) ?: createGroup(system, name, null)
+    }
+
+    suspend fun createGroup(group: GroupRecord) = updateGroup(group)
+
+    open suspend fun createGroup(systemId: String, name: String, id: String? = null): GroupRecord? {
+        fetchSystemFromId(systemId) ?: return null
+        val group = GroupRecord(
+            id = firstFreeMemberId(systemId, id),
+            systemId = systemId,
+            name = name,
+        )
+        createGroup(group)
+        return group
+    }
+
+    /**
+     * Gets a group by system ID and either group ID or name.
+     * */
+    suspend fun findGroup(system: PkId, group: String): GroupRecord? =
+        if (group.startsWith("id:"))
+            fetchGroupFromSystem(system, group.substring(3))
+                ?: fetchGroupFromSystemAndName(system, group, false)
+        else
+            fetchGroupFromSystemAndName(system, group, true)
+                ?: fetchGroupFromSystemAndName(system, group, false)
+                ?: fetchGroupFromSystem(system, group)
 
     /**
      * Gets a member by system ID and either member ID or name.
@@ -545,6 +632,22 @@ abstract class Database : AutoCloseable {
     }
 
     open suspend fun firstFreeMemberId(systemId: String, id: String? = null): String {
-        return if (isMemberIdReserved(systemId, id)) fetchMembersFromSystem(systemId)?.map(MemberRecord::id)?.firstFree() ?: "aaaaa" else id
+        return if (isMemberIdReserved(systemId, id)) fetchMembersFromSystem(systemId)?.map(MemberRecord::id)
+            ?.firstFree() ?: "aaaaa" else id
+    }
+
+    open suspend fun containsGroup(systemId: String, groupId: String) = fetchGroupFromSystem(systemId, groupId) != null
+
+    @OptIn(ExperimentalContracts::class)
+    protected suspend fun isGroupIdReserved(systemId: String, groupId: String?): Boolean {
+        contract {
+            returns(false) implies (groupId != null)
+        }
+        return !systemId.isValidPkString() || !groupId.isValidPkString() || containsGroup(systemId, groupId)
+    }
+
+    open suspend fun firstFreeGroupId(systemId: String, id: String? = null): String {
+        return if (isGroupIdReserved(systemId, id)) fetchGroupsFromSystem(systemId)?.map(GroupRecord::id)?.firstFree()
+            ?: "aaaaa" else id
     }
 }

@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2022, The ProxyFox Group
+ * Copyright (c) 2022-2023, The ProxyFox Group
  *
  * This Source Code is subject to the terms of the Mozilla Public
  * License, v. 2.0. If a copy of the MPL was not distributed with this
@@ -8,6 +8,7 @@
 
 package dev.proxyfox.bot.webhook
 
+import dev.kord.common.entity.MessageFlags
 import dev.kord.common.entity.Snowflake
 import dev.kord.core.behavior.MessageBehavior
 import dev.kord.core.behavior.channel.MessageChannelBehavior
@@ -30,6 +31,7 @@ data class GuildMessage(
     val embeds: Collection<Embed>,
     val referencedMessage: Message?,
     val rawBehaviour: MessageBehavior,
+    val flags: MessageFlags?
 ) {
     constructor(
         message: Message,
@@ -46,5 +48,6 @@ data class GuildMessage(
         embeds = message.embeds,
         referencedMessage = message.referencedMessage,
         rawBehaviour = message,
+        flags = message.flags
     )
 }

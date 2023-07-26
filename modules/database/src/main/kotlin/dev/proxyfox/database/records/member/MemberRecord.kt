@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2022, The ProxyFox Group
+ * Copyright (c) 2022-2023, The ProxyFox Group
  *
  * This Source Code is subject to the terms of the Mozilla Public
  * License, v. 2.0. If a copy of the MPL was not distributed with this
@@ -8,12 +8,17 @@
 
 package dev.proxyfox.database.records.member
 
-import dev.proxyfox.database.*
+import dev.proxyfox.database.PkId
+import dev.proxyfox.database.database
+import dev.proxyfox.database.etc.ktx.serializaton.InstantLongMillisecondSerializer
+import dev.proxyfox.database.etc.ktx.serializaton.LocalDateLongMillisecondSerializer
 import dev.proxyfox.database.records.MongoRecord
+import kotlinx.datetime.Clock
+import kotlinx.datetime.Instant
+import kotlinx.datetime.LocalDate
+import kotlinx.serialization.Contextual
+import kotlinx.serialization.Serializable
 import org.bson.types.ObjectId
-import java.time.LocalDate
-import java.time.OffsetDateTime
-import java.time.ZoneOffset
 
 // Created 2022-09-04T14:12:07
 
@@ -22,6 +27,7 @@ import java.time.ZoneOffset
  *
  * @author Ampflower
  **/
+@Serializable
 class MemberRecord() : MongoRecord {
     constructor(id: PkId, systemId: PkId, name: String) : this() {
         this.id = id
@@ -29,6 +35,7 @@ class MemberRecord() : MongoRecord {
         this.name = name
     }
 
+    @Contextual
     override var _id: ObjectId = ObjectId()
 
     var id: PkId = ""
@@ -44,7 +51,11 @@ class MemberRecord() : MongoRecord {
     var keepProxy: Boolean = false
     var autoProxy: Boolean = true
     var messageCount: ULong = 0UL
-    var timestamp: OffsetDateTime = OffsetDateTime.now(ZoneOffset.UTC)
+
+    @Serializable(InstantLongMillisecondSerializer::class)
+    var timestamp: Instant = Clock.System.now()
+
+    @Serializable(LocalDateLongMillisecondSerializer::class)
     var birthday: LocalDate? = null
     var age: String? = null
     var role: String? = null

@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2022, The ProxyFox Group
+ * Copyright (c) 2022-2023, The ProxyFox Group
  *
  * This Source Code is subject to the terms of the Mozilla Public
  * License, v. 2.0. If a copy of the MPL was not distributed with this
@@ -8,18 +8,14 @@
 
 package dev.proxyfox.database
 
-import com.google.gson.*
 import com.mongodb.reactivestreams.client.MongoCollection
-import dev.proxyfox.database.etc.gson.*
 import dev.proxyfox.database.etc.importer.ImporterException
 import kotlinx.coroutines.reactive.awaitFirst
-import org.bson.types.ObjectId
 import org.litote.kmongo.coroutine.toList
 import org.litote.kmongo.reactivestreams.getCollection
 import org.litote.kmongo.util.KMongoUtil
-import java.time.Instant
-import java.time.LocalDate
-import java.time.OffsetDateTime
+import java.security.SecureRandom
+import java.util.*
 import kotlin.contracts.ExperimentalContracts
 import kotlin.contracts.contract
 
@@ -27,17 +23,8 @@ import kotlin.contracts.contract
 
 typealias PkId = String
 
+private val secureRandom = SecureRandom()
 const val pkIdBound = 11881376
-
-val gson = GsonBuilder()
-    .registerTypeAdapter(OffsetDateTime::class.java, OffsetDateTimeAdaptor)
-    .registerTypeAdapter(LocalDate::class.java, LocalDateAdaptor)
-    .registerTypeAdapter(ObjectId::class.java, ObjectIdNullifier)
-    .registerTypeAdapter(Instant::class.java, InstantAdaptor)
-    .registerTypeAdapter(ULong::class.java, ULongAdaptor)
-    .registerTypeAdapter(Void::class.java, VoidAdaptor)
-    .registerTypeAdapterFactory(RecordAdapterFactory)
-    .create()!!
 
 fun String.sanitise(): String {
     return replace("\u0000", "").trim()
@@ -126,14 +113,15 @@ fun Collection<String>.firstFree(): String {
 fun databaseFromString(db: String?) =
     when (db) {
         "nop" -> NopDatabase()
-        "json" -> JsonDatabase()
-        "postgres" -> TODO("Postgres db isn't implemented yet!")
+        "in-memory" -> InMemoryDatabase()
         "mongo", null -> MongoDatabase()
         else -> throw IllegalArgumentException("Unknown database $db")
     }
 
+@Suppress("NOTHING_TO_INLINE", "UNUSED")
 inline fun unsupported(message: String = "Not implemented"): Nothing = throw UnsupportedOperationException(message)
 
+@Suppress("UNUSED")
 inline fun <T, reified R> Array<out T>.mapArray(action: (T) -> R): Array<R> {
     return Array(size) { action(this[it]) }
 }
@@ -145,4 +133,10 @@ suspend inline fun <reified T : Any> Mongo.getOrCreateCollection(): MongoCollect
         } catch (ignored: Throwable) {
         }
     return getCollection()
+}
+
+fun generateToken(): String {
+    val buffer = ByteArray(96)
+    secureRandom.nextBytes(buffer)
+    return Base64.getUrlEncoder().encodeToString(buffer)
 }

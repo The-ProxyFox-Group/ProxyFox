@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2022, The ProxyFox Group
+ * Copyright (c) 2022-2023, The ProxyFox Group
  *
  * This Source Code is subject to the terms of the Mozilla Public
  * License, v. 2.0. If a copy of the MPL was not distributed with this
@@ -10,6 +10,7 @@ package dev.proxyfox.database
 
 import dev.kord.common.entity.Snowflake
 import dev.kord.core.behavior.channel.ChannelBehavior
+import dev.proxyfox.database.records.group.GroupRecord
 import dev.proxyfox.database.records.member.MemberProxyTagRecord
 import dev.proxyfox.database.records.member.MemberRecord
 import dev.proxyfox.database.records.member.MemberServerSettingsRecord
@@ -18,7 +19,7 @@ import dev.proxyfox.database.records.system.SystemChannelSettingsRecord
 import dev.proxyfox.database.records.system.SystemRecord
 import dev.proxyfox.database.records.system.SystemServerSettingsRecord
 import dev.proxyfox.database.records.system.SystemSwitchRecord
-import java.time.Instant
+import kotlinx.datetime.Instant
 import kotlin.time.Duration
 
 // Created 2022-07-10T23:56:55
@@ -149,6 +150,38 @@ open class ProxyDatabase<T : Database>(protected val proxy: T) : Database() {
         return proxy.fetchLatestMessage(systemId, channelId)
     }
 
+    override suspend fun dropMessage(messageId: Snowflake) {
+        proxy.dropMessage(messageId)
+    }
+
+    override suspend fun fetchToken(token: String): TokenRecord? {
+        return proxy.fetchToken(token)
+    }
+
+    override suspend fun fetchTokenFromId(systemId: String, id: String): TokenRecord? {
+        return proxy.fetchTokenFromId(systemId, id)
+    }
+
+    override suspend fun fetchTokens(systemId: String): List<TokenRecord> {
+        return proxy.fetchTokens(systemId)
+    }
+
+    override suspend fun updateToken(token: TokenRecord) {
+        return proxy.updateToken(token)
+    }
+
+    override suspend fun dropToken(token: String) {
+        proxy.dropToken(token)
+    }
+
+    override suspend fun dropTokenById(systemId: String, id: String) {
+        proxy.dropTokenById(systemId, id)
+    }
+
+    override suspend fun dropTokens(systemId: String) {
+        proxy.dropTokens(systemId)
+    }
+
     override suspend fun createProxyTag(record: MemberProxyTagRecord): Boolean {
         return proxy.createProxyTag(record)
     }
@@ -191,6 +224,34 @@ open class ProxyDatabase<T : Database>(protected val proxy: T) : Database() {
 
     override suspend fun fetchMemberFromSystemAndName(systemId: String, memberName: String, caseSensitive: Boolean): MemberRecord? {
         return proxy.fetchMemberFromSystemAndName(systemId, memberName)
+    }
+
+    override suspend fun fetchGroupsFromMember(member: MemberRecord): List<GroupRecord> {
+        return proxy.fetchGroupsFromMember(member)
+    }
+
+    override suspend fun fetchMembersFromGroup(group: GroupRecord): List<MemberRecord> {
+        return proxy.fetchMembersFromGroup(group)
+    }
+
+    override suspend fun fetchGroupFromSystem(system: PkId, groupId: String): GroupRecord? {
+        return proxy.fetchGroupFromSystem(system, groupId)
+    }
+
+    override suspend fun fetchGroupsFromSystem(system: PkId): List<GroupRecord>? {
+        TODO("Not yet implemented")
+    }
+
+    override suspend fun fetchGroupFromSystemAndName(
+        system: PkId,
+        name: String,
+        caseSensitive: Boolean
+    ): GroupRecord? {
+        return proxy.fetchGroupFromSystemAndName(system, name, caseSensitive)
+    }
+
+    override suspend fun updateGroup(group: GroupRecord) {
+        proxy.updateGroup(group)
     }
 
     override suspend fun export(other: Database) {

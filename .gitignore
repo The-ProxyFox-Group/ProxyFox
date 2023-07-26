@@ -4,5 +4,7 @@ build/
 out/
 mods/
 proxyfox.db.properties
-systems.json
 .env
+.pf-command-lock
+.quilt/
+config/

@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2022, The ProxyFox Group
+ * Copyright (c) 2022-2023, The ProxyFox Group
  *
  * This Source Code is subject to the terms of the Mozilla Public
  * License, v. 2.0. If a copy of the MPL was not distributed with this
@@ -8,22 +8,23 @@
 
 package dev.proxyfox.database.etc.types
 
-import com.google.gson.annotations.SerializedName
 import dev.proxyfox.common.fromColorForExport
 import dev.proxyfox.database.*
-import dev.proxyfox.database.etc.gson.NullValueProcessor
-import dev.proxyfox.database.etc.gson.UnexpectedValueProcessor
+import dev.proxyfox.database.etc.ktx.serializaton.PolyIgnorePrimitive
 import dev.proxyfox.database.records.member.MemberProxyTagRecord
 import dev.proxyfox.database.records.member.MemberRecord
 import dev.proxyfox.database.records.misc.AutoProxyMode
 import dev.proxyfox.database.records.misc.TrustLevel
 import dev.proxyfox.database.records.system.SystemRecord
 import dev.proxyfox.database.records.system.SystemSwitchRecord
-import java.time.LocalDate
-import java.time.OffsetDateTime
+import kotlinx.datetime.LocalDate
+import kotlinx.serialization.SerialName
+import kotlinx.serialization.Serializable
+import kotlinx.serialization.Transient
 import java.time.format.DateTimeFormatter
 
 @JvmRecord
+@Serializable
 data class PkSystem(
     val id: String? = null,
     val name: String? = null,
@@ -36,6 +37,7 @@ data class PkSystem(
     val created: String? = null,
     val webhook_url: String? = null,
 
+    @Serializable(PkSystemPrivacyIgnorePrimitive::class)
     val privacy: PkSystemPrivacy? = null,
     val config: PkConfig? = null,
 
@@ -49,19 +51,20 @@ data class PkSystem(
 
     // Required for PFv1 database imports
     @Deprecated("PFv1 database imports only")
-    @SerializedName("auto_bool")
+    @SerialName("auto_bool")
     val autoBool: Boolean? = null,
 
     @Deprecated("PFv1 database imports only")
     val auto: String? = null,
 
     @Deprecated("PFv1 database imports only")
-    @SerializedName("server_proxy")
+    @SerialName("server_proxy")
     val serverProxyEnabled: Map<ULong, Boolean>? = null,
 
     // Ignored
     @Deprecated("PFv1 database imports only")
-    val subsystems: Void? = null,
+    @Transient
+    val subsystems: Unit? = null,
 
     // Required for PK to accept the export.
     // ProxyFox however will accept any export that vaguely matches PK's.
@@ -69,19 +72,29 @@ data class PkSystem(
 
     // The following are ignored for as we don't support these yet,
     // at least at this location.
-    val tz: Void? = null,
-    val timezone: Void? = null,
+    @Transient
+    val tz: Unit? = null,
+    @Transient
+    val timezone: Unit? = null,
 
-    val description_privacy: Void? = null,
-    val pronoun_privacy: Void? = null,
-    val member_list_privacy: Void? = null,
-    val group_list_privacy: Void? = null,
-    val front_privacy: Void? = null,
-    val front_history_privacy: Void? = null,
+    @Transient
+    val description_privacy: Unit? = null,
+    @Transient
+    val pronoun_privacy: Unit? = null,
+    @Transient
+    val member_list_privacy: Unit? = null,
+    @Transient
+    val group_list_privacy: Unit? = null,
+    @Transient
+    val front_privacy: Unit? = null,
+    @Transient
+    val front_history_privacy: Unit? = null,
 
     // The following are ignored entirely. We don't use these.
-    val uuid: Void? = null,
-    val version: Void? = null,
+    @Transient
+    val uuid: Unit? = null,
+    @Transient
+    val version: Unit? = null,
 ) {
     constructor(
         record: SystemRecord,
@@ -97,7 +110,7 @@ data class PkSystem(
         pronouns = record.pronouns,
         color = record.color.fromColorForExport(),
         avatar_url = record.avatarUrl,
-        created = record.timestamp.pkCompatibleIso8601(),
+        created = record.timestamp.toString(),
         config = PkConfig(
             timezone = record.timezone,
         ),
@@ -114,6 +127,7 @@ data class PkSystem(
 }
 
 @JvmRecord
+@Serializable
 data class PkMember(
     val id: String? = null,
     val name: String? = null,
@@ -141,6 +155,7 @@ data class PkMember(
     val proxy_tags: Set<PkProxy>? = emptySet(),
 
     // Some data structures from here will need to be flattened in.
+    @Serializable(PkMemberPrivacyIgnorePrimitive::class)
     val privacy: PkMemberPrivacy? = null,
 
     // ProxyFox-specific extensions.
@@ -149,26 +164,35 @@ data class PkMember(
 
     // Required for PFv1 database imports
     @Deprecated("PFv1 database imports only")
-    @SerializedName("server_nick")
+    @SerialName("server_nick")
     val serverNicknames: Map<ULong, String?>? = null,
 
     @Deprecated("PFv1 database imports only")
-    @SerializedName("server_avatar")
+    @SerialName("server_avatar")
     val serverAvatars: Map<ULong, String?>? = null,
 
     // The following are ignored for as we don't support these yet,
     // at least at this location.
-    val visibility: Void? = null,
-    val name_privacy: Void? = null,
-    val description_privacy: Void? = null,
-    val birthday_privacy: Void? = null,
-    val pronoun_privacy: Void? = null,
-    val avatar_privacy: Void? = null,
-    val metadata_privacy: Void? = null,
-    val last_message_timestamp: Void? = null,
+    @Transient
+    val visibility: Unit? = null,
+    @Transient
+    val name_privacy: Unit? = null,
+    @Transient
+    val description_privacy: Unit? = null,
+    @Transient
+    val birthday_privacy: Unit? = null,
+    @Transient
+    val pronoun_privacy: Unit? = null,
+    @Transient
+    val avatar_privacy: Unit? = null,
+    @Transient
+    val metadata_privacy: Unit? = null,
+    @Transient
+    val last_message_timestamp: Unit? = null,
 
     // The following are ignored. We don't use these.
-    val uuid: Void? = null,
+    @Transient
+    val uuid: Unit? = null,
 ) {
     constructor(record: MemberRecord, proxyTags: Set<PkProxy>?) : this(
         id = record.id,
@@ -180,12 +204,12 @@ data class PkMember(
         keep_proxy = record.keepProxy,
         autoproxy_enabled = record.autoProxy,
         message_count = record.messageCount.toLong(),
-        birthday = record.birthday?.run { if (pkValid()) toString() else "0004-${monthValue.paddedString(2)}-${dayOfMonth.paddedString(2)}" },
-        created = record.timestamp.pkCompatibleIso8601(),
+        birthday = record.birthday?.run { if (pkValid()) toString() else "0004-${monthNumber.paddedString(2)}-${dayOfMonth.paddedString(2)}" },
+        created = record.timestamp.toString(),
         proxy_tags = proxyTags,
         avatar_url = record.avatarUrl,
         proxyfox = PfMemberExtension(
-            birthday = record.birthday.run { if (pkInvalid()) toString() else null },
+            birthday = record.birthday.run { if (!pkValid()) toString() else null },
             age = record.age,
             role = record.role
         )
@@ -198,6 +222,7 @@ data class PkMember(
 }
 
 @JvmRecord
+@Serializable
 data class PkGroup(
     val id: String? = null,
     val name: String? = null,
@@ -206,37 +231,42 @@ data class PkGroup(
     val icon: String? = null,
     val banner: String? = null,
     val color: String? = null,
-    val created: OffsetDateTime? = null,
+    val created: String? = null,
     val members: List<String>? = null,
 
+    @Serializable(PkGroupPrivacyIgnorePrimitive::class)
     val privacy: PkGroupPrivacy? = null,
 
     // The following are ignored. We don't use these.
-    val uuid: Void? = null,
+    @Transient
+    val uuid: Unit? = null,
 )
 
 @JvmRecord
+@Serializable
 data class PkSwitch(
-    val timestamp: String?,
-    val members: List<String?>?,
+    val timestamp: String? = null,
+    val members: List<String?>? = null,
 
     /** Allows for storing missing member data */
     val proxyfox: PfSwitchExtension? = null,
 
     // Ignored for PFv1 database imports
     @Deprecated("PFv1 database imports only")
-    val id: Void? = null,
+    @Transient
+    val id: Unit? = null,
 ) {
     constructor(record: SystemSwitchRecord) : this(
-        timestamp = record.timestamp.pkCompatibleIso8601(),
+        timestamp = record.timestamp.toString(),
         members = record.memberIds,
     )
 }
 
 @JvmRecord
+@Serializable
 data class PkProxy(
-    val prefix: String?,
-    val suffix: String?
+    val prefix: String? = null,
+    val suffix: String? = null
 ) {
     constructor(record: MemberProxyTagRecord) : this(
         prefix = record.prefix,
@@ -244,15 +274,15 @@ data class PkProxy(
     )
 }
 
-@UnexpectedValueProcessor<Any?>(NullValueProcessor::class)
 @JvmRecord
+@Serializable
 data class PkSystemPrivacy(
-    val description_privacy: PkPrivacyEnum?,
-    val pronoun_privacy: PkPrivacyEnum?,
-    val member_list_privacy: PkPrivacyEnum?,
-    val group_list_privacy: PkPrivacyEnum?,
-    val front_privacy: PkPrivacyEnum?,
-    val front_history_privacy: PkPrivacyEnum?,
+    val description_privacy: PkPrivacyEnum? = null,
+    val pronoun_privacy: PkPrivacyEnum? = null,
+    val member_list_privacy: PkPrivacyEnum? = null,
+    val group_list_privacy: PkPrivacyEnum? = null,
+    val front_privacy: PkPrivacyEnum? = null,
+    val front_history_privacy: PkPrivacyEnum? = null,
 ) {
     constructor(privacy: PkPrivacyEnum) : this(
         description_privacy = privacy,
@@ -264,16 +294,18 @@ data class PkSystemPrivacy(
     )
 }
 
-@UnexpectedValueProcessor<Any?>(NullValueProcessor::class)
+object PkSystemPrivacyIgnorePrimitive : PolyIgnorePrimitive<PkSystemPrivacy>(PkSystemPrivacy.serializer())
+
 @JvmRecord
+@Serializable
 data class PkMemberPrivacy(
-    val visibility: PkPrivacyEnum?,
-    val name_privacy: PkPrivacyEnum?,
-    val description_privacy: PkPrivacyEnum?,
-    val birthday_privacy: PkPrivacyEnum?,
-    val pronoun_privacy: PkPrivacyEnum?,
-    val avatar_privacy: PkPrivacyEnum?,
-    val metadata_privacy: PkPrivacyEnum?,
+    val visibility: PkPrivacyEnum? = null,
+    val name_privacy: PkPrivacyEnum? = null,
+    val description_privacy: PkPrivacyEnum? = null,
+    val birthday_privacy: PkPrivacyEnum? = null,
+    val pronoun_privacy: PkPrivacyEnum? = null,
+    val avatar_privacy: PkPrivacyEnum? = null,
+    val metadata_privacy: PkPrivacyEnum? = null,
 ) {
     constructor(privacy: PkPrivacyEnum) : this(
         visibility = privacy,
@@ -286,15 +318,17 @@ data class PkMemberPrivacy(
     )
 }
 
-@UnexpectedValueProcessor<Any?>(NullValueProcessor::class)
+object PkMemberPrivacyIgnorePrimitive : PolyIgnorePrimitive<PkMemberPrivacy>(PkMemberPrivacy.serializer())
+
 @JvmRecord
+@Serializable
 data class PkGroupPrivacy(
-    val name_privacy: PkPrivacyEnum?,
-    val description_privacy: PkPrivacyEnum?,
-    val icon_privacy: PkPrivacyEnum?,
-    val list_privacy: PkPrivacyEnum?,
-    val metadata_privacy: PkPrivacyEnum?,
-    val visibility: PkPrivacyEnum?,
+    val name_privacy: PkPrivacyEnum? = null,
+    val description_privacy: PkPrivacyEnum? = null,
+    val icon_privacy: PkPrivacyEnum? = null,
+    val list_privacy: PkPrivacyEnum? = null,
+    val metadata_privacy: PkPrivacyEnum? = null,
+    val visibility: PkPrivacyEnum? = null,
 ) {
     constructor(privacy: PkPrivacyEnum) : this(
         name_privacy = privacy,
@@ -306,7 +340,10 @@ data class PkGroupPrivacy(
     )
 }
 
+object PkGroupPrivacyIgnorePrimitive : PolyIgnorePrimitive<PkGroupPrivacy>(PkGroupPrivacy.serializer())
+
 @JvmRecord
+@Serializable
 data class PkConfig(
     val timezone: String? = null,
     val pings_enabled: Boolean? = true,
@@ -322,24 +359,27 @@ data class PkConfig(
 )
 
 @JvmRecord
+@Serializable
 data class PfSystemExtension(
-    val trust: Map<ULong, TrustLevel>?,
-    val autoType: AutoProxyMode?,
-    val autoProxy: String?,
+    val trust: Map<ULong, TrustLevel>? = null,
+    val autoType: AutoProxyMode? = null,
+    val autoProxy: String? = null,
 )
 
 @JvmRecord
+@Serializable
 data class PfMemberExtension(
-    val birthday: String?,
-    val age: String?,
-    val role: String?,
+    val birthday: String? = null,
+    val age: String? = null,
+    val role: String? = null,
     val autoProxy: Boolean? = null,
 )
 
 @JvmRecord
+@Serializable
 data class PfSwitchExtension(
     /** Note: It is *not* possible to reimport this. */
-    val allMembers: List<String>?,
+    val allMembers: List<String>? = null,
 )
 
 @Suppress("EnumEntryName")

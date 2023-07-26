@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2022, The ProxyFox Group
+ * Copyright (c) 2022-2023, The ProxyFox Group
  *
  * This Source Code is subject to the terms of the Mozilla Public
  * License, v. 2.0. If a copy of the MPL was not distributed with this
@@ -10,6 +10,7 @@ package dev.proxyfox.database
 
 import dev.kord.common.entity.Snowflake
 import dev.kord.core.behavior.channel.ChannelBehavior
+import dev.proxyfox.database.records.group.GroupRecord
 import dev.proxyfox.database.records.member.MemberProxyTagRecord
 import dev.proxyfox.database.records.member.MemberRecord
 import dev.proxyfox.database.records.member.MemberServerSettingsRecord
@@ -18,7 +19,7 @@ import dev.proxyfox.database.records.system.SystemChannelSettingsRecord
 import dev.proxyfox.database.records.system.SystemRecord
 import dev.proxyfox.database.records.system.SystemServerSettingsRecord
 import dev.proxyfox.database.records.system.SystemSwitchRecord
-import java.time.Instant
+import kotlinx.datetime.Instant
 import kotlin.time.Duration
 
 class NopDatabase : Database() {
@@ -97,7 +98,8 @@ class NopDatabase : Database() {
         memberId: String,
         systemId: String,
         memberName: String
-    ) {}
+    ) {
+    }
 
     override suspend fun updateMessage(message: ProxiedMessageRecord) {}
 
@@ -108,9 +110,27 @@ class NopDatabase : Database() {
         channelId: Snowflake
     ): ProxiedMessageRecord? = null
 
+    override suspend fun dropMessage(messageId: Snowflake) {}
+
+    override suspend fun fetchToken(token: String): TokenRecord? = null
+    override suspend fun fetchTokenFromId(systemId: String, id: String): TokenRecord? = null
+
+    override suspend fun fetchTokens(systemId: String): List<TokenRecord> = listOf()
+
+    override suspend fun updateToken(token: TokenRecord) = fail("Cannot store token for ${token.systemId}.")
+    override suspend fun dropToken(token: String) {}
+    override suspend fun dropTokenById(systemId: String, id: String) {}
+
+    override suspend fun dropTokens(systemId: String) {}
+
     override suspend fun createProxyTag(record: MemberProxyTagRecord): Boolean = false
 
-    override suspend fun createSwitch(systemId: String, memberId: List<String>, timestamp: Instant?): SystemSwitchRecord? = null
+    override suspend fun createSwitch(
+        systemId: String,
+        memberId: List<String>,
+        timestamp: Instant?
+    ): SystemSwitchRecord? = null
+
     override suspend fun dropSwitch(switch: SystemSwitchRecord) {}
     override suspend fun updateSwitch(switch: SystemSwitchRecord) {}
 
@@ -126,7 +146,39 @@ class NopDatabase : Database() {
 
     override suspend fun fetchTotalMembersFromSystem(systemId: String): Int? = null
 
-    override suspend fun fetchMemberFromSystemAndName(systemId: String, memberName: String, caseSensitive: Boolean): MemberRecord? = null
+    override suspend fun fetchMemberFromSystemAndName(
+        systemId: String,
+        memberName: String,
+        caseSensitive: Boolean
+    ): MemberRecord? = null
+
+    override suspend fun fetchGroupsFromMember(member: MemberRecord): List<GroupRecord> {
+        return emptyList()
+    }
+
+    override suspend fun fetchMembersFromGroup(group: GroupRecord): List<MemberRecord> {
+        return emptyList()
+    }
+
+    override suspend fun fetchGroupFromSystem(system: PkId, groupId: String): GroupRecord? {
+        return null
+    }
+
+    override suspend fun fetchGroupsFromSystem(system: PkId): List<GroupRecord>? {
+        return null
+    }
+
+    override suspend fun fetchGroupFromSystemAndName(
+        system: PkId,
+        name: String,
+        caseSensitive: Boolean
+    ): GroupRecord? {
+        return null
+    }
+
+    override suspend fun updateGroup(group: GroupRecord) {
+
+    }
 
     override suspend fun export(other: Database) {}
 

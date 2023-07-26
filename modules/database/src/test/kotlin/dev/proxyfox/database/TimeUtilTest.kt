@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2022, The ProxyFox Group
+ * Copyright (c) 2022-2023, The ProxyFox Group
  *
  * This Source Code is subject to the terms of the Mozilla Public
  * License, v. 2.0. If a copy of the MPL was not distributed with this
@@ -8,10 +8,10 @@
 
 package dev.proxyfox.database
 
+import kotlinx.datetime.LocalDate
 import org.testng.Assert.assertEquals
 import org.testng.annotations.DataProvider
 import org.testng.annotations.Test
-import java.time.LocalDate
 
 // Created 2022-02-10T23:23:07
 
@@ -37,9 +37,9 @@ class TimeUtilTest {
     }
 
     companion object {
-        val dec25 = LocalDate.of(1, 12, 25)!!
-        val jan01 = LocalDate.of(65535, 1, 1)!!
-        val jan01neg = LocalDate.of(-65536, 1, 1)!!
+        val dec25 = LocalDate(1, 12, 25)
+        val jan01 = LocalDate(65535, 1, 1)
+        val jan01neg = LocalDate(-65536, 1, 1)
 
         @JvmStatic
         @DataProvider

@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2022, The ProxyFox Group
+ * Copyright (c) 2022-2023, The ProxyFox Group
  *
  * This Source Code is subject to the terms of the Mozilla Public
  * License, v. 2.0. If a copy of the MPL was not distributed with this
@@ -8,6 +8,8 @@
 
 package dev.proxyfox.database.records.misc
 
+import kotlinx.serialization.Serializable
+
 // Created 2022-11-04T12:10:37
 
 /**
@@ -15,6 +17,7 @@ package dev.proxyfox.database.records.misc
  *
  * @author Ampflower
  **/
+@Serializable
 enum class AutoProxyMode {
     /** AutoProxy is disabled; it will not automatically switch via use of tags or switch. */
     OFF,

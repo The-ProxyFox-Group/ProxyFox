@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2022, The ProxyFox Group
+ * Copyright (c) 2022-2023, The ProxyFox Group
  *
  * This Source Code is subject to the terms of the Mozilla Public
  * License, v. 2.0. If a copy of the MPL was not distributed with this
@@ -8,8 +8,7 @@
 
 package dev.proxyfox.bot
 
-import dev.proxyfox.bot.command.Commands
-import dev.proxyfox.bot.md.parseMarkdown
+import dev.proxyfox.api.ApiMain
 import dev.proxyfox.bot.terminal.TerminalCommands
 import dev.proxyfox.common.printFancy
 import dev.proxyfox.database.DatabaseMain
@@ -26,11 +25,13 @@ object BotMain {
 
         printFancy("Initializing ProxyFox")
 
-        // Register commands
-        Commands.register()
+        markdownParser.addDefaultRules()
 
         // Setup database
         DatabaseMain.main(findUnixValue(args, "--database="))
+
+        // Start API
+        ApiMain.main()
 
         // Start reading console input
         TerminalCommands.start()

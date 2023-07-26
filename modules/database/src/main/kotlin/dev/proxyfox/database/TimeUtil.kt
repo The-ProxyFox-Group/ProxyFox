@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2022, The ProxyFox Group
+ * Copyright (c) 2022-2023, The ProxyFox Group
  *
  * This Source Code is subject to the terms of the Mozilla Public
  * License, v. 2.0. If a copy of the MPL was not distributed with this
@@ -8,11 +8,13 @@
 
 package dev.proxyfox.database
 
+import kotlinx.datetime.Instant
+import kotlinx.datetime.LocalDate
 import java.text.ParsePosition
-import java.time.Instant
-import java.time.LocalDate
-import java.time.OffsetDateTime
-import java.time.format.*
+import java.time.format.DateTimeFormatter
+import java.time.format.DateTimeFormatterBuilder
+import java.time.format.SignStyle
+import java.time.format.TextStyle
 import java.time.temporal.ChronoField
 import java.time.temporal.TemporalAccessor
 import java.util.*
@@ -263,7 +265,9 @@ fun tryParseLocalDate(str: String?, preferMonthDay: Boolean = true): Pair<LocalD
         ?: DDMMMMuuuu.parseUnresolved(str, ParsePosition(0))?.also { parser = DDMMMMuuuu }
         ?: DDMMMuuuu.parseUnresolved(str, ParsePosition(0))?.also { parser = DDMMMuuuu }
         ?: uuuuMMDD.parseUnresolved(str, ParsePosition(0)).validate()?.also { parser = uuuuMMDD }
-        ?: (if (preferMonthDay) MMDDuuuu else DDMMuuuu).run { parseUnresolved(str, ParsePosition(0))?.validate()?.also { parser = this } }
+        ?: (if (preferMonthDay) MMDDuuuu else DDMMuuuu).run {
+            parseUnresolved(str, ParsePosition(0))?.validate()?.also { parser = this }
+        }
         ?: return null // Failed to parse
     // Fetch fields to manually construct LocalDate
     val year = if (parsed.isSupported(ChronoField.YEAR)) parsed[ChronoField.YEAR] else 1
@@ -271,21 +275,21 @@ fun tryParseLocalDate(str: String?, preferMonthDay: Boolean = true): Pair<LocalD
     val day = parsed.getLong(ChronoField.DAY_OF_MONTH).toInt()
     // Construct local date
     return if (month > 12)
-        LocalDate.of(year, day, month) to if (preferMonthDay) DDMMuuuu else MMDDuuuu
+        LocalDate(year, day, month) to if (preferMonthDay) DDMMuuuu else MMDDuuuu
     else
-        LocalDate.of(year, month, day) to parser
+        LocalDate(year, month, day) to parser
 }
 
-fun String?.tryParseOffsetTimestamp(): OffsetDateTime? = if (this == null) null else try {
-    OffsetDateTime.parse(this)
-} catch (ignored: DateTimeParseException) {
-    null
+/**
+ * Helper method to try to parse an instant if the string is not blank.
+ * */
+fun String?.tryParseInstant() = sanitise()?.run {
+    if (isNullOrBlank()) {
+        null
+    } else {
+        Instant.parse(this)
+    }
 }
-
-// This redirects to tryParseOffsetTimestamp as for some reason,
-// it's perfectly valid for OffsetDateTime to omit seconds, but it's
-// not fine for Instant to parse an ISO8601 timestamp with missing seconds
-fun String?.tryParseInstant(): Instant? = if (this == null) null else tryParseOffsetTimestamp()?.toInstant()
 
 fun shouldPreferMonthDay(timezone: String?) =
     timezone != null && (mmddTimezones.contains(timezone) || mmddTimezonesStartOf.any(timezone::startsWith))
@@ -297,22 +301,12 @@ fun TemporalAccessor.displayDate(): String = if (get(ChronoField.YEAR) == 1 || g
 }
 
 @OptIn(ExperimentalContracts::class)
-fun TemporalAccessor?.pkValid(): Boolean {
+fun LocalDate?.pkValid(): Boolean {
     contract {
         returns(true) implies (this@pkValid != null)
     }
-    return this != null && get(ChronoField.YEAR) in 1..9999
+    return this != null && this.year in 1..9999
 }
-
-@OptIn(ExperimentalContracts::class)
-fun TemporalAccessor?.pkInvalid(): Boolean {
-    contract {
-        returns(true) implies (this@pkInvalid != null)
-    }
-    return this != null && get(ChronoField.YEAR) !in 1..9999
-}
-
-fun TemporalAccessor.pkCompatibleIso8601() = if (this is Instant) toString() else DateTimeFormatter.ISO_OFFSET_DATE_TIME.format(this)
 
 private fun TemporalAccessor?.validate(): TemporalAccessor? {
     if (this == null) return null

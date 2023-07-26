@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2022, The ProxyFox Group
+ * Copyright (c) 2022-2023, The ProxyFox Group
  *
  * This Source Code is subject to the terms of the Mozilla Public
  * License, v. 2.0. If a copy of the MPL was not distributed with this
@@ -8,139 +8,280 @@
 
 package dev.proxyfox.bot.command
 
-import dev.kord.common.entity.ButtonStyle
+import dev.kord.rest.builder.interaction.SubCommandBuilder
+import dev.kord.rest.builder.interaction.string
+import dev.kord.rest.builder.interaction.subCommand
+import dev.proxyfox.bot.Emojis
+import dev.proxyfox.bot.command.context.DiscordContext
+import dev.proxyfox.bot.command.context.InteractionCommandContext
+import dev.proxyfox.bot.command.context.runs
+import dev.proxyfox.bot.deferChatInputCommand
 import dev.proxyfox.bot.parseDuration
-import dev.proxyfox.bot.prompts.Button
-import dev.proxyfox.bot.prompts.Pager
-import dev.proxyfox.bot.prompts.TimedYesNoPrompt
-import dev.proxyfox.bot.string.dsl.greedy
-import dev.proxyfox.bot.string.dsl.literal
-import dev.proxyfox.bot.string.dsl.stringList
-import dev.proxyfox.bot.string.parser.MessageHolder
-import dev.proxyfox.bot.string.parser.registerCommand
-import dev.proxyfox.common.printStep
+import dev.proxyfox.command.CommandParser
+import dev.proxyfox.command.NodeHolder
+import dev.proxyfox.command.node.builtin.greedy
+import dev.proxyfox.command.node.builtin.literal
+import dev.proxyfox.command.node.builtin.stringList
+import dev.proxyfox.common.trimEach
 import dev.proxyfox.database.database
+import dev.proxyfox.database.records.system.SystemRecord
 import dev.proxyfox.database.records.system.SystemSwitchRecord
-import java.time.Instant
+import kotlinx.datetime.Clock
+import kotlinx.datetime.DateTimeUnit
+import kotlinx.datetime.minus
 
-object SwitchCommands {
-    suspend fun register() {
-        printStep("Registering switch commands", 2)
-        registerCommand(literal(arrayOf("switch", "sw"), ::empty) {
-            literal(arrayOf("out", "o"), ::out)
-            literal(arrayOf("move", "mv", "m"), ::moveEmpty) {
-                greedy("time", ::move)
+object SwitchCommands : CommandRegistrar {
+    var interactionExecutors: HashMap<String, suspend InteractionCommandContext.() -> Boolean> = hashMapOf()
+
+    fun SubCommandBuilder.runs(action: suspend InteractionCommandContext.() -> Boolean) {
+        interactionExecutors[name] = action
+    }
+
+    override val displayName: String = "Switch"
+
+    override suspend fun registerSlashCommands() {
+        deferChatInputCommand("switch", "Create or manage switches!") {
+            subCommand("create", "Create a switch") {
+                string("members", "The members to use, comma separated") {
+                    required = true
+                }
+                system()
+                runs {
+                    val system = getSystem()
+                    if (!checkSystem(this, system)) return@runs false
+                    val members = value.interaction.command.strings["members"]!!.split(",").toTypedArray()
+                    members.trimEach()
+                    switch(this, system, members)
+                }
             }
-            literal(arrayOf("delete", "del", "remove"), ::delete)
-            literal(arrayOf("list", "l"), ::list)
-            stringList("members", ::switch)
-        })
+            subCommand("out", "Marks that no-one's fronting") {
+                system()
+                runs {
+                    val system = getSystem()
+                    if (!checkSystem(this, system)) return@runs false
+                    out(this, system)
+                }
+            }
+            subCommand("delete", "Deletes the latest switch") {
+                system()
+                runs {
+                    val system = getSystem()
+                    if (!checkSystem(this, system)) return@runs false
+                    val switch = database.fetchLatestSwitch(system.id)
+                    if (!checkSwitch(this, switch)) return@runs false
+                    val oldSwitch = database.fetchSecondLatestSwitch(system.id)
+                    delete(this, system, switch, oldSwitch)
+                }
+            }
+            subCommand("move", "Moves the latest switch") {
+                name("time")
+                system()
+                runs {
+                    val system = getSystem()
+                    if (!checkSystem(this, system)) return@runs false
+                    val switch = database.fetchLatestSwitch(system.id)
+                    if (!checkSwitch(this, switch)) return@runs false
+                    val oldSwitch = database.fetchSecondLatestSwitch(system.id)
+                    val time = value.interaction.command.strings["time"]!!
+                    move(this, system, switch, oldSwitch, time)
+                }
+            }
+            subCommand("list", "Lists your switches") {
+                system()
+                runs {
+                    val system = getSystem()
+                    if (!checkSystem(this, system)) return@runs false
+                    list(this, system)
+                }
+            }
+        }
     }
 
-    private suspend fun empty(ctx: MessageHolder): String = "Make sure to provide a switch command!"
-
-    private suspend fun out(ctx: MessageHolder): String {
-        val system = database.fetchSystemFromUser(ctx.message.author)
-            ?: return "System does not exist. Create one using `pf>system new`"
-        database.createSwitch(system.id, listOf())
-        return "Switch registered."
+    suspend fun <T, C : DiscordContext<T>> NodeHolder<T, C>.registerSwitchCommands(getSys: suspend DiscordContext<T>.() -> SystemRecord?) {
+        literal("switch", "sw") {
+            runs {
+                val system = getSys()
+                if (!checkSystem(this, system)) return@runs false
+                respondFailure("Please provide a switch subcommand.")
+                false
+            }
+            literal("out", "o") {
+                runs {
+                    val system = getSys()
+                    if (!checkSystem(this, system)) return@runs false
+                    out(this, system)
+                }
+            }
+            literal("delete", "del", "remove", "rem") {
+                runs {
+                    val system = getSys()
+                    if (!checkSystem(this, system)) return@runs false
+                    val switch = database.fetchLatestSwitch(system.id)
+                    if (!checkSwitch(this, switch)) return@runs false
+                    val oldSwitch = database.fetchSecondLatestSwitch(system.id)
+                    delete(this, system, switch, oldSwitch)
+                }
+            }
+            literal("move","mv","m") {
+                runs {
+                    val system = getSys()
+                    if (!checkSystem(this, system)) return@runs false
+                    val switch = database.fetchLatestSwitch(system.id)
+                    if (!checkSwitch(this, switch)) return@runs false
+                    val oldSwitch = database.fetchSecondLatestSwitch(system.id)
+                    move(this, system, switch, oldSwitch, null)
+                }
+                greedy("time") { getTime ->
+                    runs {
+                        val system = getSys()
+                        if (!checkSystem(this, system)) return@runs false
+                        val switch = database.fetchLatestSwitch(system.id)
+                        if (!checkSwitch(this, switch)) return@runs false
+                        val oldSwitch = database.fetchSecondLatestSwitch(system.id)
+                        move(this, system, switch, oldSwitch, getTime())
+                    }
+                }
+            }
+            literal("list", "l") {
+                runs {
+                    val system = getSys()
+                    if (!checkSystem(this, system)) return@runs false
+                    list(this, system)
+                }
+            }
+            stringList("members") { getMembers ->
+                runs {
+                    val system = getSys()
+                    if (!checkSystem(this, system)) return@runs false
+                    switch(this, system, getMembers().toTypedArray())
+                }
+            }
+        }
     }
 
-    private suspend fun moveEmpty(ctx: MessageHolder): String = "Please provide a time to move the switch back"
-    private suspend fun move(ctx: MessageHolder): String {
-        val author = ctx.message.author!!
-        val system = database.fetchSystemFromUser(author)
-            ?: return "System does not exist. Create one using `pf>system new`"
-        val switch = database.fetchLatestSwitch(system.id)
-            ?: return "It looks like you haven't registered any switches yet"
-        val oldSwitch = database.fetchSecondLatestSwitch(system.id)
+    override suspend fun CommandParser<Any, DiscordContext<Any>>.registerTextCommands() {
+        registerSwitchCommands {
+            database.fetchSystemFromUser(getUser())
+        }
+    }
 
-        val either = ctx.params["time"]!![0].parseDuration()
-        either.right?.let {
-            return it
+    private suspend fun <T> out(ctx: DiscordContext<T>, system: SystemRecord): Boolean {
+        if (!system.canEditSwitches(ctx.getUser()!!.id.value)) {
+            ctx.respondFailure("You don't have access to edit this information.")
+            return false
         }
 
-        val nowMinus = Instant.now().minusMillis(either.left!!.inWholeMilliseconds)
+        database.createSwitch(system.id, listOf())
+        ctx.respondSuccess("Switch registered. Take care!")
+        return true
+    }
+
+    private suspend fun <T> move(ctx: DiscordContext<T>, system: SystemRecord, switch: SystemSwitchRecord, oldSwitch: SystemSwitchRecord?, time: String?): Boolean {
+        if (!system.canEditSwitches(ctx.getUser()!!.id.value)) {
+            ctx.respondFailure("You don't have access to edit this information.")
+            return false
+        }
+
+        time ?: run {
+            ctx.respondFailure("Please provide a time to move the switch back")
+            return false
+        }
+
+        val either = time.parseDuration()
+        either.right?.let {
+            ctx.respondFailure(it)
+            return false
+        }
+
+        val nowMinus = Clock.System.now().minus(either.left!!.inWholeMilliseconds, DateTimeUnit.MILLISECOND)
         if (oldSwitch != null && oldSwitch.timestamp > nowMinus) {
-            return "It looks like you're trying to break the space-time continuum..\n" +
-                    "The provided time is set before the previous switch"
+            ctx.respondFailure("It looks like you're trying to break the space-time continuum..\n" +
+                    "The provided time is set before the previous switch")
+            return false
         }
 
         val members = switch.memberIds.map {
             database.fetchMemberFromSystem(system.id, it)?.showDisplayName() ?: "*Unknown*"
         }.joinToString(", ")
 
-        TimedYesNoPrompt.build(
-            runner = author.id,
-            channel = ctx.message.channel,
-            message = "Are you sure you want to move the switch $members back to <t:${nowMinus.epochSecond}>?",
-            yes = Button("Move switch", Button.move, ButtonStyle.Primary) {
+        ctx.timedYesNoPrompt(
+            message = "Are you sure you want to move the switch $members back to <t:${nowMinus.epochSeconds}>?",
+            yes = "Move switch" to {
                 switch.timestamp = nowMinus
                 database.updateSwitch(switch)
                 content = "Switch updated."
-            }
+            },
+            yesEmoji = Emojis.move
         )
 
-        return ""
+        return true
     }
 
-    private suspend fun delete(ctx: MessageHolder): String {
-        val system = database.fetchSystemFromUser(ctx.message.author)
-            ?: return "System does not exist. Create one using `pf>system new`"
-        val switch = database.fetchLatestSwitch(system.id)
-            ?: return "No switches registered"
+    private suspend fun <T> delete(ctx: DiscordContext<T>, system: SystemRecord, switch: SystemSwitchRecord, oldSwitch: SystemSwitchRecord?): Boolean {
+        if (!system.canEditSwitches(ctx.getUser()!!.id.value)) {
+            ctx.respondFailure("You don't have access to edit this information.")
+            return false
+        }
 
-        val switchBefore = database.fetchSecondLatestSwitch(system.id)?.let {
-            "The next latest switch is ${it.membersAsString()} (<t:${it.timestamp.epochSecond}:R>)."
-        } ?: "There is no previous switch."
+        val epoch = switch.timestamp.epochSeconds
 
-        val epoch = switch.timestamp.epochSecond
-
-        TimedYesNoPrompt.build(
-            runner = ctx.message.author!!.id,
-            channel = ctx.message.channel,
+        ctx.timedYesNoPrompt(
             message = """
-                Are you sure you want to delete the latest switch (${switch.membersAsString()}, <t:$epoch:R>)?
-                $switchBefore
+                Are you sure you want to delete the latest switch (${switch.membersAsString()}, <t:$epoch:R>)? ${if (oldSwitch != null) "\nThe previous switch would be at <t:${oldSwitch.timestamp.epochSeconds}:R>" else ""}
                 The data will be lost forever (A long time!)
                 """.trimIndent(),
-            yes = Button("Delete switch", Button.wastebasket, ButtonStyle.Danger) {
+            yes = "Delete switch" to {
                 database.dropSwitch(switch)
                 content = "Switch deleted."
             },
+            yesEmoji = Emojis.wastebasket,
+            danger = true
         )
 
-        return ""
+        return true
     }
 
-    private suspend fun list(ctx: MessageHolder): String {
-        val system = database.fetchSystemFromUser(ctx.message.author)
-            ?: return "System does not exist. Create one using `pf>system new`"
+    private suspend fun <T> list(ctx: DiscordContext<T>, system: SystemRecord): Boolean {
+        if (!system.canAccess(ctx.getUser()!!.id.value)) {
+            // Force the bot to treat the system as nonexistent
+            return checkSystem(ctx, null)
+        }
+
         // We know the system exists here, will be non-null
         val switches = database.fetchSortedSwitchesFromSystem(system.id)!!
 
-        Pager.build(ctx.message.author!!.id, ctx.message.channel, switches, 20, {
-            title = "[$it] Front history of ${system.showName}"
-        }, { it.membersAsString("**", "**") + " (<t:${it.timestamp.epochSecond}:R>)\n" })
+        ctx.pager(
+            switches,
+            20,
+            { title = "[$it] Front history of ${system.name ?: system.id}" },
+            { membersAsString("**", "**") + " (<t:${timestamp.epochSeconds}:R>)\n" },
+            false
+        )
 
-        return ""
+        return true
     }
 
-    private suspend fun switch(ctx: MessageHolder): String {
-        val system = database.fetchSystemFromUser(ctx.message.author)
-            ?: return "System does not exist. Create one using `pf>system new`"
-        val members = ArrayList<String>()
+    private suspend fun <T> switch(ctx: DiscordContext<T>, system: SystemRecord, members: Array<String>): Boolean {
+        if (!system.canEditSwitches(ctx.getUser()!!.id.value)) {
+            ctx.respondFailure("You don't have access to edit this information.")
+            return false
+        }
+
+        val membersOut = ArrayList<String>()
         var memberString = ""
-        ctx.params["members"]!!.forEach {
-            val member = database.findMember(system.id, it) ?: return "Couldn't find member `$it`, do they exist?"
-            members += member.id
+        members.forEach {
+            val member = database.findMember(system.id, it) ?: run {
+                ctx.respondFailure("Couldn't find member `$it`, do they exist?")
+                return false
+            }
+            membersOut += member.id
             memberString += "`${member.showDisplayName()}`, "
         }
         memberString = memberString.substring(0, memberString.length - 2)
-        database.createSwitch(system.id, members)
+        database.createSwitch(system.id, membersOut)
 
-
-        return "Switch registered, current fronters: $memberString"
+        ctx.respondSuccess("Switch registered! Current fronters: $memberString")
+        return true
     }
 
     private suspend fun SystemSwitchRecord.membersAsString(prefix: String = "", postfix: String = ""): String {

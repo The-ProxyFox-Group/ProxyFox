@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2022, The ProxyFox Group
+ * Copyright (c) 2022-2023, The ProxyFox Group
  *
  * This Source Code is subject to the terms of the Mozilla Public
  * License, v. 2.0. If a copy of the MPL was not distributed with this
@@ -8,10 +8,10 @@
 
 package dev.proxyfox.database.records.member
 
-import com.google.gson.annotations.Expose
-import com.google.gson.annotations.SerializedName
 import dev.proxyfox.database.PkId
 import dev.proxyfox.database.records.MongoRecord
+import kotlinx.serialization.Contextual
+import kotlinx.serialization.Serializable
 import org.bson.types.ObjectId
 
 // Created 2022-09-04T15:17:43
@@ -21,23 +21,18 @@ import org.bson.types.ObjectId
  *
  * @author Ampflower
  **/
-class MemberProxyTagRecord : MongoRecord {
+@Serializable
+class MemberProxyTagRecord(): MongoRecord {
+    @Contextual
     override var _id: ObjectId = ObjectId()
 
-    // GSON-specific annotation for JSON database
-    @Expose(serialize = false, deserialize = false)
     var systemId: PkId = ""
-
-    // GSON-specific annotation for JSON database
-    @SerializedName(value = "memberId", alternate = ["member"])
     var memberId: PkId = ""
 
     var prefix: String? = null
     var suffix: String? = null
 
-    constructor()
-
-    constructor(systemId: PkId, memberId: PkId, prefix: String?, suffix: String?) {
+    constructor(systemId: PkId, memberId: PkId, prefix: String?, suffix: String?): this() {
         this.systemId = systemId
         this.memberId = memberId
         this.prefix = if (prefix == "") null else prefix

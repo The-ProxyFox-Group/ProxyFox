@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2022, The ProxyFox Group
+ * Copyright (c) 2022-2023, The ProxyFox Group
  *
  * This Source Code is subject to the terms of the Mozilla Public
  * License, v. 2.0. If a copy of the MPL was not distributed with this
@@ -16,6 +16,7 @@ import dev.kord.core.behavior.channel.ChannelBehavior
 import dev.kord.core.behavior.channel.asChannelOf
 import dev.kord.core.entity.channel.Channel
 import dev.proxyfox.database.records.MongoRecord
+import dev.proxyfox.database.records.group.GroupRecord
 import dev.proxyfox.database.records.member.MemberProxyTagRecord
 import dev.proxyfox.database.records.member.MemberRecord
 import dev.proxyfox.database.records.member.MemberServerSettingsRecord
@@ -27,6 +28,8 @@ import dev.proxyfox.database.records.system.SystemSwitchRecord
 import kotlinx.coroutines.reactive.awaitFirst
 import kotlinx.coroutines.reactive.awaitFirstOrElse
 import kotlinx.coroutines.reactive.awaitFirstOrNull
+import kotlinx.datetime.Instant
+import kotlinx.serialization.json.JsonObject
 import org.bson.conversions.Bson
 import org.litote.kmongo.and
 import org.litote.kmongo.coroutine.toList
@@ -35,7 +38,6 @@ import org.litote.kmongo.path
 import org.litote.kmongo.reactivestreams.*
 import org.litote.kmongo.util.KMongoUtil
 import org.slf4j.LoggerFactory
-import java.time.Instant
 import java.util.concurrent.ConcurrentLinkedQueue
 import java.util.concurrent.TimeUnit
 import kotlin.reflect.KProperty0
@@ -66,6 +68,7 @@ class MongoDatabase(private val dbName: String = "ProxyFox") : Database() {
 
     private lateinit var systems: KCollection<SystemRecord>
     private lateinit var systemSwitches: KCollection<SystemSwitchRecord>
+    private lateinit var systemTokens: KCollection<TokenRecord>
 
     private lateinit var systemServers: KCollection<SystemServerSettingsRecord>
     private lateinit var systemChannels: KCollection<SystemChannelSettingsRecord>
@@ -74,6 +77,8 @@ class MongoDatabase(private val dbName: String = "ProxyFox") : Database() {
     private lateinit var memberProxies: KCollection<MemberProxyTagRecord>
 
     private lateinit var memberServers: KCollection<MemberServerSettingsRecord>
+
+    private lateinit var groups: KCollection<GroupRecord>
 
     override suspend fun setup(): MongoDatabase {
         val connectionString = System.getenv("PROXYFOX_MONGO")
@@ -96,6 +101,7 @@ class MongoDatabase(private val dbName: String = "ProxyFox") : Database() {
         channels = db.getOrCreateCollection()
 
         systems = db.getOrCreateCollection()
+        systemTokens = db.getOrCreateCollection()
         systemSwitches = db.getOrCreateCollection()
 
         systemServers = db.getOrCreateCollection()
@@ -106,13 +112,17 @@ class MongoDatabase(private val dbName: String = "ProxyFox") : Database() {
 
         memberServers = db.getOrCreateCollection()
 
+        groups = db.getOrCreateCollection()
+
+        ping()
+
         return this
     }
 
     @OptIn(ExperimentalTime::class)
     override suspend fun ping(): Duration {
         return measureTime {
-            db.runCommand<Any>("{ping: 1}").awaitFirst()
+            db.runCommand<JsonObject>("{ping: 1}").awaitFirst()
         }
     }
 
@@ -196,6 +206,7 @@ class MongoDatabase(private val dbName: String = "ProxyFox") : Database() {
         memberProxies.deleteMany(filter).awaitFirst()
         memberServers.deleteMany(filter).awaitFirst()
         members.deleteMany(filter).awaitFirst()
+        dropTokens(system.id)
         systems.deleteOneById(system._id).awaitFirst()
         users.deleteMany(filter).awaitFirst()
         return true
@@ -261,13 +272,51 @@ class MongoDatabase(private val dbName: String = "ProxyFox") : Database() {
     }
 
     override suspend fun fetchMessage(messageId: Snowflake): ProxiedMessageRecord? =
-        messages.findFirstOrNull(or("newMessageId" eq messageId, "oldMessageId" eq messageId))
+            messages.findFirstOrNull(or(
+                    "newMessageId" eq messageId,
+                    "oldMessageId" eq messageId,
+                    "deleted" eq false
+            ))
 
     override suspend fun fetchLatestMessage(
-        systemId: String,
-        channelId: Snowflake
+            systemId: String,
+            channelId: Snowflake
     ): ProxiedMessageRecord? =
-        messages.find("systemId" eq systemId, "channelId" eq channelId).sort("{'creationDate':-1}").limit(1).awaitFirstOrNull()
+            messages.find(
+                    "systemId" eq systemId,
+                    "channelId" eq channelId,
+                    "deleted" eq false
+            ).sort("{'creationDate':-1}").limit(1)
+                    .awaitFirstOrNull()
+
+    override suspend fun dropMessage(messageId: Snowflake) {
+        messages.deleteOne("oldMessageId" eq messageId.value)
+    }
+
+    override suspend fun fetchToken(token: String): TokenRecord? =
+        systemTokens.findFirstOrNull("token" eq token)
+
+    override suspend fun fetchTokenFromId(systemId: String, id: String): TokenRecord? =
+        systemTokens.findFirstOrNull("systemId" eq systemId, "id" eq id)
+
+    override suspend fun fetchTokens(systemId: String): List<TokenRecord> =
+        systemTokens.find("systemId" eq systemId).toList()
+
+    override suspend fun updateToken(token: TokenRecord) {
+        systemTokens.replaceOneById(token._id, token, upsert()).awaitFirst()
+    }
+
+    override suspend fun dropToken(token: String) {
+        systemTokens.deleteOne("token" eq token).awaitFirst()
+    }
+
+    override suspend fun dropTokenById(systemId: String, id: String) {
+        systemTokens.deleteOne("systemId" eq systemId, "id" eq id).awaitFirst()
+    }
+
+    override suspend fun dropTokens(systemId: String) {
+        systemTokens.deleteMany("systemId" eq systemId).awaitFirst()
+    }
 
     override suspend fun createProxyTag(record: MemberProxyTagRecord): Boolean {
         memberProxies.insertOne(record).awaitFirst()
@@ -334,6 +383,56 @@ class MongoDatabase(private val dbName: String = "ProxyFox") : Database() {
         return search.awaitFirstOrNull()
     }
 
+    override suspend fun fetchGroupsFromMember(member: MemberRecord): List<GroupRecord> {
+        return groups.find(
+            "systemId" eq member.systemId,
+            "members" eq member.id
+        ).toList()
+    }
+
+    override suspend fun fetchMembersFromGroup(group: GroupRecord): List<MemberRecord> {
+        val out = arrayListOf<MemberRecord>()
+        group.members.forEach {
+            out.add(fetchMemberFromSystem(group.systemId, it) ?: return@forEach)
+        }
+        return out
+    }
+
+    override suspend fun fetchGroupFromSystem(system: PkId, groupId: String): GroupRecord? {
+        return groups.find(
+            "systemId" eq system,
+            "id" eq groupId
+        ).awaitFirstOrNull()
+    }
+
+    override suspend fun fetchGroupsFromSystem(system: PkId): List<GroupRecord>? {
+        if (!containsSystem(system)) return null
+        return groups.find(
+            "systemId" eq system,
+        ).toList()
+    }
+
+    override suspend fun fetchGroupFromSystemAndName(
+        system: PkId,
+        name: String,
+        caseSensitive: Boolean
+    ): GroupRecord? {
+        var search = groups.find(
+            "systemId" eq system,
+            "name" eq name
+        )
+        if (!caseSensitive) search = search.collation(Collation.builder().apply {
+            collationStrength(CollationStrength.SECONDARY)
+            caseLevel(false)
+            locale("en_US")
+        }.build())
+        return search.awaitFirstOrNull()
+    }
+
+    override suspend fun updateGroup(group: GroupRecord) {
+        groups.replaceOneById(group._id, group, upsert()).awaitFirst()
+    }
+
     override suspend fun export(other: Database) {
         TODO("Not yet implemented")
     }
@@ -393,9 +492,7 @@ class MongoDatabase(private val dbName: String = "ProxyFox") : Database() {
         }
 
         override suspend fun updateSystem(system: SystemRecord) {
-            if (witness.add(system)) {
-                systemQueue += system.replace()
-            }
+            if (witness.add(system)) systemQueue += system.replace()
         }
 
         override suspend fun updateSystemServerSettings(serverSettings: SystemServerSettingsRecord) {
@@ -503,6 +600,7 @@ class MongoDatabase(private val dbName: String = "ProxyFox") : Database() {
             memberQueue += DeleteManyModel(filter)
             systemQueue += system.delete()
             userQueue += DeleteManyModel(filter)
+            dropTokens(system.id)
             return true
         }
 

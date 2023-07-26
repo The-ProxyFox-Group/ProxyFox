@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2022, The ProxyFox Group
+ * Copyright (c) 2022-2023, The ProxyFox Group
  *
  * This Source Code is subject to the terms of the Mozilla Public
  * License, v. 2.0. If a copy of the MPL was not distributed with this
@@ -8,7 +8,6 @@
 
 package dev.proxyfox.database
 
-import com.google.gson.reflect.TypeToken
 import dev.proxyfox.database.DatabaseTestUtil.pkIdStream
 import org.testng.Assert.*
 import org.testng.annotations.DataProvider
@@ -59,66 +58,6 @@ class DatabaseUtilTest {
         assertEquals(list.firstFree(), expected)
     }
 
-    @Test
-    fun `RecordAdapter(GenericStore) - expect list`() {
-        val record = readJson<GenericStore<List<Any?>>>("""{"value":["a","b","c"]}""")
-        assertEquals(record.value, listOf("a", "b", "c"))
-    }
-
-    @Test
-    fun `RecordAdapter(GenericStore) - expect array`() {
-        val record = readJson<GenericStore<Array<Any?>>>("""{"value":["a","b","c"]}""")
-        assertEquals(record.value, arrayOf("a", "b", "c"))
-    }
-
-    @Test
-    fun `RecordAdapter(GenericStore) - expect map A`() {
-        val record = readJson<GenericStore<Map<*, *>>>("""{"value":{"integer":123,"string":"Hi!","integerMap":{"a":1,"b":2,"c":3}}}""")
-        assertEquals(
-            record.value, mapOf(
-                "integer" to 123.0,
-                "string" to "Hi!",
-                "integerMap" to mapOf("a" to 1.0, "b" to 2.0, "c" to 3.0)
-            )
-        )
-    }
-
-    @Test
-    fun `RecordAdapter(GenericStore) - expect map B`() {
-        val record = readJson<GenericStore<Map<*, *>>>("""{"value":{"integer":123,"string":"Hi!","integerMap":{"1":"a","2":"b","3":"c"}}}""")
-        assertEquals(
-            record.value, mapOf(
-                "integer" to 123.0,
-                "string" to "Hi!",
-                "integerMap" to mapOf("1" to "a", "2" to "b", "3" to "c")
-            )
-        )
-    }
-
-    @Test
-    fun `RecordAdapter(GenericStore) - expect ComplexStore`() {
-        val record = readJson<GenericStore<ComplexStore>>("""{"value":{"integer":123,"string":"Hi!","integerMap":{"1":"a","2":"b","3":"c"}}}""")
-        assertEquals(
-            record.value, ComplexStore(
-                integer = 123,
-                string = "Hi!",
-                integerMap = mapOf(1 to "a", 2 to "b", 3 to "c")
-            )
-        )
-    }
-
-    @Test
-    fun `RecordAdapter(ComplexStore) - expect working`() {
-        val record = readJson<ComplexStore>("""{"integer":123,"string":"Hi!","integerMap":{"1":"a","2":"b","3":"c"}}""")
-        assertEquals(
-            record, ComplexStore(
-                integer = 123,
-                string = "Hi!",
-                integerMap = mapOf(1 to "a", 2 to "b", 3 to "c")
-            )
-        )
-    }
-
     @DataProvider
     fun knownFirstFrees() = arrayOf<Array<Any>>(
         arrayOf(listOf("aaaaa", "aaaab", "aaaac"), "aaaad"),
@@ -141,18 +80,4 @@ class DatabaseUtilTest {
 
     @DataProvider
     fun randomIds(): Iterator<Array<Any>> = pkIdStream(100).mapToObj { arrayOf<Any>(it.toPkString(), it) }.iterator()
-
-    private inline fun <reified T> readJson(str: String): T {
-        return gson.fromJson(str, object : TypeToken<T>() {}.type)
-    }
-
-    @JvmRecord
-    data class GenericStore<T>(val value: T)
-
-    @JvmRecord
-    data class ComplexStore(
-        val integer: Int,
-        val string: String,
-        val integerMap: Map<Int, String>
-    )
 }

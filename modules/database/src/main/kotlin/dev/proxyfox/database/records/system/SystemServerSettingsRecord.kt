@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2022, The ProxyFox Group
+ * Copyright (c) 2022-2023, The ProxyFox Group
  *
  * This Source Code is subject to the terms of the Mozilla Public
  * License, v. 2.0. If a copy of the MPL was not distributed with this
@@ -8,9 +8,11 @@
 
 package dev.proxyfox.database.records.system
 
-import dev.proxyfox.database.*
+import dev.proxyfox.database.PkId
 import dev.proxyfox.database.records.MongoRecord
 import dev.proxyfox.database.records.misc.AutoProxyMode
+import kotlinx.serialization.Contextual
+import kotlinx.serialization.Serializable
 import org.bson.types.ObjectId
 
 // Created 2022-09-04T15:13:09
@@ -21,7 +23,9 @@ import org.bson.types.ObjectId
  * @author Ampflower
  * @since ${version}
  **/
-class SystemServerSettingsRecord : MongoRecord {
+@Serializable
+class SystemServerSettingsRecord() : MongoRecord {
+    @Contextual
     override var _id: ObjectId = ObjectId()
     var serverId: ULong = 0UL
     var systemId: PkId = ""
@@ -31,9 +35,7 @@ class SystemServerSettingsRecord : MongoRecord {
     var autoProxy: PkId? = null
     var autoProxyMode: AutoProxyMode = AutoProxyMode.FALLBACK
 
-    constructor()
-
-    constructor(serverId: ULong, systemId: PkId) {
+    constructor(serverId: ULong, systemId: PkId) : this() {
         this.serverId = serverId
         this.systemId = systemId
     }

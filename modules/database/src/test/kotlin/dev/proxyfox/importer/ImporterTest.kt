@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2022, The ProxyFox Group
+ * Copyright (c) 2022-2023, The ProxyFox Group
  *
  * This Source Code is subject to the terms of the Mozilla Public
  * License, v. 2.0. If a copy of the MPL was not distributed with this
@@ -15,18 +15,22 @@ import dev.proxyfox.database.DatabaseTestUtil.entity
 import dev.proxyfox.database.DatabaseTestUtil.instantEpoch
 import dev.proxyfox.database.DatabaseTestUtil.instantLastMicroOfEpochDay
 import dev.proxyfox.database.DatabaseTestUtil.seeded
-import dev.proxyfox.database.JsonDatabase
+import dev.proxyfox.database.DatabaseTestUtil.stringEpoch
+import dev.proxyfox.database.DatabaseTestUtil.stringLastMicroOfEpochDay
+import dev.proxyfox.database.InMemoryDatabase
 import dev.proxyfox.database.MongoDatabase
+import dev.proxyfox.database.etc.exporter.Exporter
 import dev.proxyfox.database.etc.importer.*
+import dev.proxyfox.database.isValidPkString
 import kotlinx.coroutines.ExperimentalCoroutinesApi
 import kotlinx.coroutines.test.runTest
+import kotlinx.datetime.LocalDate
 import org.slf4j.LoggerFactory
 import org.testng.Assert.*
 import org.testng.annotations.*
 import java.io.Reader
 import java.net.URL
 import java.nio.file.Files
-import java.time.LocalDate
 
 // Created 2022-29-09T22:17:51
 
@@ -55,41 +59,67 @@ constructor(private val name: String, databaseFactory: () -> Database) {
     @Test(dataProvider = "passImporters")
     fun `Importer - expect pass`(url: URL) = runTest {
         val user = entity<UserBehavior>(prng.nextLong().toULong())
-        assertNull(database.fetchSystemFromUser(user), "$user already has system bound?")
+        try {
+            database.fetchSystemFromUser(user).let {
+                assertNull(it, "${user.id} already has system bound at `${it?.id}`?")
+            }
 
-        val importer1 = import(database, url.readText(), user)
-        assertEquals(importer1.updatedMembers, 0, "Somehow updated existing member")
+            val importer1 = import(database, url.readText(), user)
+            assertEquals(importer1.updatedMembers, 0, "Somehow updated existing member")
 
-        assertNotNull(database.fetchMemberFromUserAndName(user, "Azalea"), "No such Azalea for $user")
+            val system = importer1.system
 
-        if (!url.file.contains("Tupperbox")) {
-            assertEquals("| flwr", database.fetchSystemFromUser(user)?.tag, "Tag didn't get imported correctly.")
+            assertTrue(system.users.contains(user.id.value), "System not owned by ${user.id} despite being allocated")
+            assertTrue(system.id.isValidPkString(), "`${system.id}` is not a valid PK ID")
+
+            database.fetchMemberFromUserAndName(user, "Azalea").let {
+                assertNotNull(it, "No such Azalea for $user")
+                assertTrue(it!!.id.isValidPkString(), "`${it.id}` is not a valid PK ID")
+            }
+
+            if (!url.file.contains("Tupperbox")) {
+                assertEquals("| flwr", database.fetchSystemFromUser(user)?.tag, "Tag didn't get imported correctly.")
+            }
+
+            extraResource("PluralKit-v1-Case-Sensitivity-Test.json") {
+                val pkImporter = import(database, it, user)
+                assertEquals(pkImporter.createdMembers, 1, "`azalea` was not counted.")
+            }
+
+            assertEquals(database.fetchMemberFromUserAndName(user, "azalea")?.name, "azalea")
+
+            database.dropSystem(user)
+            database.fetchSystemFromUser(user).let {
+                assertNull(it, "${user.id} still has system bound at `${it?.id}` after explicit drop")
+            }
+
+            database.getOrCreateSystem(user)
+
+            val importer2 = import(database, url.readText(), user)
+            assertEquals(importer2.updatedMembers, 0, "Somehow updated existing member")
+            assertEquals(importer2.createdMembers, importer1.createdMembers, "Unexpected behaviour change")
+
+            database.dropSystem(user)
+            database.fetchSystemFromUser(user).let {
+                assertNull(it, "${user.id} still has system bound at `${it?.id}` after explicit drop")
+            }
+
+            val id = database.getOrCreateSystem(user).id
+            assertTrue(id.isValidPkString(), "`$id` is not a valid PK ID")
+
+            database.getOrCreateMember(id, "Azalea")
+
+            val importer3 = import(database, url.readText(), user)
+            assertEquals(importer3.updatedMembers, 1, "Updated more than Azalea")
+            assertEquals(importer3.createdMembers, importer1.createdMembers - 1, "Unexpected behaviour change")
+
+        } finally {
+            // Somehow the ID manages to get reused in some implementations
+            database.dropSystem(user)
+            database.fetchSystemFromUser(user).let {
+                assertNull(it, "${user.id} still has system bound at `${it?.id}` after explicit drop")
+            }
         }
-
-        extraResource("PluralKit-v1-Case-Sensitivity-Test.json") {
-            val pkImporter = import(database, it, user)
-            assertEquals(pkImporter.createdMembers, 1, "`azalea` was not counted.")
-        }
-
-        assertEquals(database.fetchMemberFromUserAndName(user, "azalea")?.name, "azalea")
-
-        database.dropSystem(user)
-        database.getOrCreateSystem(user)
-
-        val importer2 = import(database, url.readText(), user)
-        assertEquals(importer2.updatedMembers, 0, "Somehow updated existing member")
-        assertEquals(importer2.createdMembers, importer1.createdMembers, "Unexpected behaviour change")
-
-        database.dropSystem(user)
-        val id = database.getOrCreateSystem(user).id
-        database.getOrCreateMember(id, "Azalea")
-
-        val importer3 = import(database, url.readText(), user)
-        assertEquals(importer3.updatedMembers, 1, "Updated more than Azalea")
-        assertEquals(importer3.createdMembers, importer1.createdMembers - 1, "Unexpected behaviour change")
-
-        // Somehow the ID manages to get reused in some implementations
-        database.dropSystem(user)
     }
 
     @Test
@@ -99,12 +129,12 @@ constructor(private val name: String, databaseFactory: () -> Database) {
             import(database, it, user)
         }
 
-        assertEquals(database.fetchMemberFromUserAndName(user, "Azalea")!!.birthday, LocalDate.of(1, 12, 25))
-        assertEquals(database.fetchMemberFromUserAndName(user, "Berry")!!.birthday, LocalDate.of(1, 1, 2))
-        assertEquals(database.fetchMemberFromUserAndName(user, "Cherry")!!.birthday, LocalDate.of(1, 4, 10))
-        assertEquals(database.fetchMemberFromUserAndName(user, "Hibiscus")!!.birthday, LocalDate.of(1990, 7, 4))
-        assertEquals(database.fetchMemberFromUserAndName(user, "Zinnia")!!.birthday, LocalDate.of(2000, 2, 4))
-        assertEquals(database.fetchMemberFromUserAndName(user, "Ivy")!!.birthday, LocalDate.of(1995, 8, 24))
+        assertEquals(database.fetchMemberFromUserAndName(user, "Azalea")!!.birthday, LocalDate(1, 12, 25))
+        assertEquals(database.fetchMemberFromUserAndName(user, "Berry")!!.birthday, LocalDate(1, 1, 2))
+        assertEquals(database.fetchMemberFromUserAndName(user, "Cherry")!!.birthday, LocalDate(1, 4, 10))
+        assertEquals(database.fetchMemberFromUserAndName(user, "Hibiscus")!!.birthday, LocalDate(1990, 7, 4))
+        assertEquals(database.fetchMemberFromUserAndName(user, "Zinnia")!!.birthday, LocalDate(2000, 2, 4))
+        assertEquals(database.fetchMemberFromUserAndName(user, "Ivy")!!.birthday, LocalDate(1995, 8, 24))
     }
 
     @Test
@@ -114,12 +144,12 @@ constructor(private val name: String, databaseFactory: () -> Database) {
             import(database, it, user)
         }
 
-        assertEquals(database.fetchMemberFromUserAndName(user, "Azalea")!!.birthday, LocalDate.of(1, 12, 25))
-        assertEquals(database.fetchMemberFromUserAndName(user, "Berry")!!.birthday, LocalDate.of(1, 2, 1))
-        assertEquals(database.fetchMemberFromUserAndName(user, "Cherry")!!.birthday, LocalDate.of(1, 10, 4))
-        assertEquals(database.fetchMemberFromUserAndName(user, "Hibiscus")!!.birthday, LocalDate.of(1990, 4, 7))
-        assertEquals(database.fetchMemberFromUserAndName(user, "Zinnia")!!.birthday, LocalDate.of(2000, 2, 4))
-        assertEquals(database.fetchMemberFromUserAndName(user, "Ivy")!!.birthday, LocalDate.of(1995, 8, 24))
+        assertEquals(database.fetchMemberFromUserAndName(user, "Azalea")!!.birthday, LocalDate(1, 12, 25))
+        assertEquals(database.fetchMemberFromUserAndName(user, "Berry")!!.birthday, LocalDate(1, 2, 1))
+        assertEquals(database.fetchMemberFromUserAndName(user, "Cherry")!!.birthday, LocalDate(1, 10, 4))
+        assertEquals(database.fetchMemberFromUserAndName(user, "Hibiscus")!!.birthday, LocalDate(1990, 4, 7))
+        assertEquals(database.fetchMemberFromUserAndName(user, "Zinnia")!!.birthday, LocalDate(2000, 2, 4))
+        assertEquals(database.fetchMemberFromUserAndName(user, "Ivy")!!.birthday, LocalDate(1995, 8, 24))
     }
 
     @Test
@@ -134,6 +164,13 @@ constructor(private val name: String, databaseFactory: () -> Database) {
         val sorted = switches!!.sortedBy { it.timestamp }
         assertEquals(sorted[0].timestamp, instantEpoch)
         assertEquals(sorted[1].timestamp, instantLastMicroOfEpochDay)
+
+        val system = Exporter.exportToPkObject(database, user.id.value)!!
+
+        val sortedExport = system.switches!!.sortedBy { it.timestamp }
+
+        assertEquals(sortedExport[0].timestamp, stringEpoch)
+        assertEquals(sortedExport[1].timestamp, stringLastMicroOfEpochDay)
     }
 
     @Test
@@ -189,7 +226,7 @@ constructor(private val name: String, databaseFactory: () -> Database) {
         @DataProvider
         @JvmStatic
         fun constructorParameters() = arrayOf(
-            arrayOf("JSON", { JsonDatabase(test.resolve("systems-${System.nanoTime()}.json").toFile()) }),
+            arrayOf("InMemory", { InMemoryDatabase() }),
             arrayOf("MongoDB", { MongoDatabase("TestFoxy-" + System.nanoTime()) }),
         )
 

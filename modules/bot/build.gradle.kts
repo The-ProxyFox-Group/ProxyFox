@@ -9,12 +9,15 @@
 plugins {
     application
     alias(libs.plugins.kotlin.jvm)
+    alias(libs.plugins.serialization)
     alias(libs.plugins.shadow)
 }
 
 dependencies {
     implementation(project(":modules:common"))
     implementation(project(":modules:database"))
+    implementation(project(":modules:api"))
+    implementation(project(":modules:sync"))
 }
 
 application.mainClass.set("dev.proxyfox.bot.BotMainKt")

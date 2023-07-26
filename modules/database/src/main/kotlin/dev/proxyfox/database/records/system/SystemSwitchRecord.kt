@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2022, The ProxyFox Group
+ * Copyright (c) 2022-2023, The ProxyFox Group
  *
  * This Source Code is subject to the terms of the Mozilla Public
  * License, v. 2.0. If a copy of the MPL was not distributed with this
@@ -8,14 +8,16 @@
 
 package dev.proxyfox.database.records.system
 
-import com.fasterxml.jackson.databind.annotation.JsonDeserialize
-import com.fasterxml.jackson.databind.annotation.JsonSerialize
-import dev.proxyfox.database.*
+import dev.proxyfox.database.PkId
+import dev.proxyfox.database.etc.ktx.serializaton.InstantLongMicrosecondSerializer
 import dev.proxyfox.database.records.MongoRecord
-import dev.proxyfox.database.etc.jackson.InstantDeserializer
-import dev.proxyfox.database.etc.jackson.InstantSerializer
+import kotlinx.datetime.Clock
+import kotlinx.datetime.DateTimeUnit
+import kotlinx.datetime.Instant
+import kotlinx.datetime.minus
+import kotlinx.serialization.Contextual
+import kotlinx.serialization.Serializable
 import org.bson.types.ObjectId
-import java.time.Instant
 
 // Created 2022-09-04T15:18:49
 
@@ -24,25 +26,25 @@ import java.time.Instant
  *
  * @author Ampflower
  **/
+@Serializable
 class SystemSwitchRecord : MongoRecord {
+    @Contextual
     override var _id: ObjectId = ObjectId()
     var systemId: PkId
     var id: PkId
     var memberIds: List<PkId>
 
-    @JsonDeserialize(using = InstantDeserializer::class)
-    @JsonSerialize(using = InstantSerializer::class)
+    @Serializable(InstantLongMicrosecondSerializer::class)
     var timestamp: Instant
         set(inst) {
-            field = inst.minusNanos(inst.nano.mod(1000).toLong())
+            field = inst.minus(inst.nanosecondsOfSecond % 1000, DateTimeUnit.NANOSECOND)
         }
 
-    @Suppress("ConvertSecondaryConstructorToPrimary")
     constructor(systemId: PkId = "", id: PkId = "", memberIds: List<PkId> = ArrayList(), timestamp: Instant? = null) {
         this.systemId = systemId
         this.id = id
         this.memberIds = memberIds
-        this.timestamp = timestamp ?: Instant.now()
+        this.timestamp = timestamp ?: Clock.System.now()
     }
 
     override fun equals(other: Any?): Boolean {

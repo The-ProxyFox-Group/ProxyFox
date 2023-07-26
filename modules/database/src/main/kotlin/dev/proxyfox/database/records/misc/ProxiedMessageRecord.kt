@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2022, The ProxyFox Group
+ * Copyright (c) 2022-2023, The ProxyFox Group
  *
  * This Source Code is subject to the terms of the Mozilla Public
  * License, v. 2.0. If a copy of the MPL was not distributed with this
@@ -8,15 +8,20 @@
 
 package dev.proxyfox.database.records.misc
 
-import dev.proxyfox.database.*
+import dev.proxyfox.database.PkId
+import dev.proxyfox.database.etc.ktx.serializaton.InstantLongMillisecondSerializer
 import dev.proxyfox.database.records.MongoRecord
+import kotlinx.datetime.Clock
+import kotlinx.serialization.Contextual
+import kotlinx.serialization.Serializable
 import org.bson.types.ObjectId
-import java.time.OffsetDateTime
-import java.time.ZoneOffset
 
+@Serializable
 class ProxiedMessageRecord : MongoRecord {
+    @Contextual
     override var _id: ObjectId = ObjectId()
-    var creationDate = OffsetDateTime.now(ZoneOffset.UTC)
+    @Serializable(InstantLongMillisecondSerializer::class)
+    var creationDate = Clock.System.now()
     var memberName: String = ""
     var userId: ULong = 0UL
     var oldMessageId: ULong = 0UL

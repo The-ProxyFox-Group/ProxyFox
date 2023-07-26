@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2022, The ProxyFox Group
+ * Copyright (c) 2022-2023, The ProxyFox Group
  *
  * This Source Code is subject to the terms of the Mozilla Public
  * License, v. 2.0. If a copy of the MPL was not distributed with this
@@ -8,9 +8,17 @@
 
 package dev.proxyfox.common
 
+import dev.kord.common.entity.Snowflake
+import dev.kord.core.Kord
+import dev.kord.core.event.Event
+import dev.kord.core.on
+import dev.proxyfox.command.types.UnixList
+import org.slf4j.Logger
 import org.slf4j.LoggerFactory
+import java.io.StringReader
 import java.lang.management.*
 import java.nio.charset.Charset
+import java.util.*
 import kotlin.contracts.ExperimentalContracts
 import kotlin.contracts.InvocationKind
 import kotlin.contracts.contract
@@ -27,15 +35,19 @@ const val ellipsis = "…"
 
 fun printFancy(input: String) {
     val edges = "*".repeat(input.length + 4)
-    logger.info(edges)
-    logger.info("* $input *")
-    logger.info(edges)
+    logger..edges.."* $input *"..edges
 }
 
 fun printStep(input: String, step: Int) {
-    val add = "  ".repeat(step)
-    logger.info(step.toString() + add + input)
+    logger.."  " * step + input
 }
+
+operator fun Logger.rangeTo(string: String): Logger {
+    info(string)
+    return this
+}
+
+operator fun String.times(n: Int) = repeat(n)
 
 fun String?.toColor(): Int {
     return if (this == null || this == "") -1 else (toUIntOrNull(16)?.toInt() ?: Integer.decode(this)) and 0xFFFFFF
@@ -66,10 +78,25 @@ suspend inline fun <T> T.applyAsync(block: suspend T.() -> Unit): T {
     return this
 }
 
-//We just need a classloader to get a resource
-val hash = object {}.javaClass.getResource("/commit_hash.txt")?.readText(Charset.defaultCharset()) ?: "Unknown Hash"
+fun getGit(): Properties {
+    val input = logger.javaClass.getResource("/git.properties")?.readText(Charset.defaultCharset())!!
+    val properties = Properties()
+    properties.load(StringReader(input))
+    return properties
+}
 
-class DebugException: Exception("Debug Exception - Do Not Report")
+val gitProperties = getGit()
+
+val hash = gitProperties["hash"] as String
+
+val branch = gitProperties["branch"] as String
+
+val version = gitProperties["version"] as String
+
+val useragent =
+    "ProxyFox/$version@$branch#$hash (+https://github.com/The-ProxyFox-Group/ProxyFox/; +https://proxyfox.dev/)"
+
+class DebugException : Exception("Debug Exception - Do Not Report")
 
 val threadMXBean = ManagementFactory.getThreadMXBean()
 
@@ -82,3 +109,27 @@ fun getRamUsage(): Long = getMaxRam() - getFreeRam()
 fun getRamUsagePercentage(): Double = (getRamUsage().toDouble() / getMaxRam().toDouble()) * 100
 
 fun getThreadCount() = threadMXBean.threadCount
+
+fun Array<String>.trimEach() {
+    forEachIndexed { i, s ->
+        this[i] = s.trim()
+    }
+}
+
+fun Throwable?.throwIfPresent() {
+    throw this ?: return
+}
+
+inline fun <reified E : Event> Kord.onlyIf(
+    crossinline getter: E.() -> Any?,
+    compare: Any?,
+    crossinline executor: suspend E.() -> Unit
+) = on<E> {
+    if (getter() == compare) executor()
+}
+
+fun UnixList?.find(value: String) =
+    this?.list?.contains(value) ?: false
+
+val ULong.snowflake: Snowflake
+    get() = Snowflake(this)

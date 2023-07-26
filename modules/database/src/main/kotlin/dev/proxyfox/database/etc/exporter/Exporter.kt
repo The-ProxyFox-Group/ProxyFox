@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2022, The ProxyFox Group
+ * Copyright (c) 2022-2023, The ProxyFox Group
  *
  * This Source Code is subject to the terms of the Mozilla Public
  * License, v. 2.0. If a copy of the MPL was not distributed with this
@@ -11,16 +11,22 @@ package dev.proxyfox.database.etc.exporter
 import dev.proxyfox.database.Database
 import dev.proxyfox.database.database
 import dev.proxyfox.database.etc.types.*
-import dev.proxyfox.database.gson
-import dev.proxyfox.database.pkCompatibleIso8601
 import dev.proxyfox.database.records.member.MemberRecord
 import dev.proxyfox.database.records.system.SystemSwitchRecord
+import kotlinx.serialization.encodeToString
+import kotlinx.serialization.json.Json
+import org.jetbrains.annotations.TestOnly
 
 object Exporter {
     suspend inline fun export(userId: ULong) = export(database, userId)
 
     suspend fun export(database: Database, userId: ULong): String {
-        val system = database.fetchSystemFromUser(userId) ?: return ""
+        return exportToPkObject(database, userId)?.let { Json.Default.encodeToString(it) } ?: ""
+    }
+
+    @TestOnly
+    suspend fun exportToPkObject(database: Database, userId: ULong): PkSystem? {
+        val system = database.fetchSystemFromUser(userId) ?: return null
         val members = database.fetchMembersFromSystem(system.id)
         val memberIds = members?.mapTo(HashSet(), MemberRecord::id) ?: setOf()
 
@@ -32,7 +38,7 @@ object Exporter {
             // If retainAll modifies the list, take the slow route.
             if (existing.retainAll(memberIds)) {
                 return PkSwitch(
-                    timestamp = record.timestamp.pkCompatibleIso8601(),
+                    timestamp = record.timestamp.toString(),
                     members = existing.toList(),
 
                     proxyfox = PfSwitchExtension(
@@ -51,6 +57,6 @@ object Exporter {
             },
             switches = database.fetchSwitchesFromSystem(system.id)?.map(::toPkSwitch),
         )
-        return gson.toJson(pkSystem)
+        return pkSystem
     }
 }

@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2022, The ProxyFox Group
+ * Copyright (c) 2022-2023, The ProxyFox Group
  *
  * This Source Code is subject to the terms of the Mozilla Public
  * License, v. 2.0. If a copy of the MPL was not distributed with this
@@ -28,42 +28,66 @@ import dev.kord.core.entity.channel.TextChannel
 import dev.kord.core.entity.channel.thread.ThreadChannel
 import dev.kord.core.event.gateway.ReadyEvent
 import dev.kord.core.event.interaction.ButtonInteractionCreateEvent
+import dev.kord.core.event.interaction.ChatInputCommandInteractionCreateEvent
+import dev.kord.core.event.interaction.MessageCommandInteractionCreateEvent
+import dev.kord.core.event.interaction.ModalSubmitInteractionCreateEvent
 import dev.kord.core.event.message.MessageCreateEvent
+import dev.kord.core.event.message.MessageDeleteEvent
 import dev.kord.core.event.message.MessageUpdateEvent
 import dev.kord.core.event.message.ReactionAddEvent
 import dev.kord.core.on
 import dev.kord.gateway.Intent
 import dev.kord.gateway.PrivilegedIntent
 import dev.kord.gateway.builder.Shards
+import dev.kord.rest.builder.interaction.GlobalChatInputCreateBuilder
 import dev.kord.rest.builder.message.EmbedBuilder
+import dev.kord.rest.json.request.ApplicationCommandCreateRequest
 import dev.kord.rest.request.KtorRequestException
+import dev.proxyfox.bot.command.*
+import dev.proxyfox.bot.command.interaction.ProxyFoxChatInputCreateBuilderImpl
+import dev.proxyfox.bot.command.interaction.ProxyFoxMessageCommandCreateBuilderImpl
 import dev.proxyfox.common.*
 import dev.proxyfox.database.database
 import dev.proxyfox.database.records.member.MemberRecord
 import dev.proxyfox.database.records.system.SystemRecord
+import dev.proxyfox.markt.MarkdownParser
 import io.ktor.client.*
 import io.ktor.client.engine.cio.*
+import io.ktor.client.request.forms.*
 import io.ktor.http.*
-import kotlinx.coroutines.*
+import io.ktor.utils.io.jvm.javaio.*
+import kotlinx.coroutines.CoroutineScope
+import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.flow.count
 import kotlinx.coroutines.flow.fold
+import kotlinx.coroutines.launch
+import kotlinx.coroutines.runBlocking
 import kotlinx.datetime.Clock
 import kotlinx.datetime.Instant
 import kotlinx.serialization.SerializationException
 import java.lang.Integer.min
-import java.time.OffsetDateTime
-import java.util.*
 import java.util.concurrent.Executors
+import java.util.concurrent.ScheduledExecutorService
+import java.util.concurrent.TimeUnit
 import kotlin.contracts.ExperimentalContracts
 import kotlin.contracts.InvocationKind
 import kotlin.contracts.contract
 import kotlin.time.Duration
 import kotlin.time.Duration.Companion.milliseconds
 import kotlin.time.Duration.Companion.minutes
+import kotlin.time.DurationUnit
 
 const val UPLOAD_LIMIT = 1024 * 1024 * 25
 
 val scheduler = Executors.newScheduledThreadPool(Runtime.getRuntime().availableProcessors())
+
+suspend fun ScheduledExecutorService.schedule(duration: Duration, action: suspend () -> Unit) {
+    schedule({
+        runBlocking {
+            action()
+        }
+    }, duration.toLong(DurationUnit.SECONDS), TimeUnit.SECONDS)
+}
 
 private val idUrl = System.getenv("PROXYFOX_KEY").let { it.substring(0, it.indexOf('.')) }
 
@@ -82,6 +106,8 @@ val errorChannelId = try {
     null
 }
 var errorChannel: TextChannel? = null
+
+val markdownParser = MarkdownParser()
 
 @OptIn(PrivilegedIntent::class)
 suspend fun login() {
@@ -115,6 +141,10 @@ suspend fun login() {
         }
     }
 
+    kord.on<MessageDeleteEvent> {
+        onMessageDelete()
+    }
+
     kord.on<MessageUpdateEvent> {
         try {
             onMessageUpdate()
@@ -131,6 +161,19 @@ suspend fun login() {
         if (interaction.componentId == "free-delete") {
             interaction.message.delete("User requested deletion.")
         }
+    }
+
+    kord.on<ModalSubmitInteractionCreateEvent> {
+        handleModal()
+    }
+
+    kord.registerCommands()
+
+    kord.on<MessageCommandInteractionCreateEvent> {
+        onInteract()
+    }
+    kord.on<ChatInputCommandInteractionCreateEvent> {
+        onInteract()
     }
 
     var initialized = false
@@ -164,6 +207,40 @@ suspend fun login() {
     }
 }
 
+suspend fun Kord.registerCommands() {
+    printStep("Registering commands", 2)
+    deferredCommands.addAll(
+        listOf(
+            ProxyFoxMessageCommandCreateBuilderImpl("Delete Message").toRequest(),
+            ProxyFoxMessageCommandCreateBuilderImpl("Fetch Message Info").toRequest(),
+            ProxyFoxMessageCommandCreateBuilderImpl("Ping Message Author").toRequest(),
+            ProxyFoxMessageCommandCreateBuilderImpl("Edit Message").toRequest()
+        )
+    )
+    Commands {
+        +SystemCommands
+        +MemberCommands
+        +GroupCommands
+        +SwitchCommands
+        +MiscCommands
+    }
+
+    rest.interaction.createGlobalApplicationCommands(
+        resources.applicationId,
+        deferredCommands
+    )
+}
+
+val deferredCommands = arrayListOf<ApplicationCommandCreateRequest>()
+
+fun deferChatInputCommand(
+    name: String,
+    description: String,
+    builder: GlobalChatInputCreateBuilder.() -> Unit = {}
+) {
+    deferredCommands.add(ProxyFoxChatInputCreateBuilderImpl(name, description).apply(builder).toRequest())
+}
+
 suspend fun updatePresence() {
     startTime = Clock.System.now()
     scheduler.fixedRateAction(Duration.ZERO, 2.minutes) {
@@ -186,12 +263,17 @@ suspend fun updatePresence() {
             else -> throw AssertionError("Count ($count) not in 0..2")
         }
         kord.editPresence {
-            watching("for pf>help! $append")
+            watching("for /info help! $append")
         }
     }
 }
 
-suspend fun handleError(err: Throwable, message: MessageBehavior) {
+suspend fun handleError(err: Throwable, interaction: ChatInputCommandInteractionCreateEvent) =
+    handleError(err, interaction.interaction.channel)
+
+suspend fun handleError(err: Throwable, message: MessageBehavior) = handleError(err, message.channel)
+
+suspend fun handleError(err: Throwable, channel: MessageChannelBehavior) {
     // Catch any errors and log them
     val timestamp = System.currentTimeMillis()
     // Let the logger unwind the stacktrace.
@@ -203,13 +285,33 @@ suspend fun handleError(err: Throwable, message: MessageBehavior) {
     val reason = err.message?.replace(webhook, "[WEBHOOK]")?.replace(token, "[TOKEN]")
     var cause = ""
     err.stackTrace.forEach {
-        if (it.className.startsWith("dev.proxyfox"))
-            cause += "  at $it\n"
+        if (it.className.startsWith("dev.proxyfox."))
+            cause += "  at ${it.pfString()}\n"
     }
-    if (err !is SerializationException)
-        message.channel.createMessage(
-            "An unexpected error occurred.\nTimestamp: `$timestamp`\n```\n${err.javaClass.name}: $reason\n$cause```"
-        )
+    if(err !is SerializationException) {
+        for (suppressed in err.suppressed) {
+            var supCause = ""
+            val supReason = suppressed.message?.replace(webhook, "[WEBHOOK]")?.replace(token, "[TOKEN]")
+            suppressed.stackTrace.forEach {
+                if (it.className.startsWith("dev.proxyfox."))
+                    supCause += "    at ${it.pfString()}\n"
+            }
+            cause += "  Suppressed: ${suppressed.javaClass.name}: $supReason\n$supCause"
+        }
+        try {
+            channel.createMessage(
+                "An unexpected error occurred. Report this to us at https://discord.gg/q3yF8ay9V7\nTimestamp: `$timestamp`\n```\n${err.javaClass.name}: $reason\n$cause".let {
+                    if (it.length > 1997) {
+                        it.substring(0, it.lastIndexOf('\n', 1997)) + "```"
+                    } else {
+                        "$it```"
+                    }
+                }
+            )
+        } catch (any: Exception) {
+            logger.warn("Cannot send the error message to sender", any)
+        }
+    }
     if (err is DebugException) return
     if (errorChannel == null && errorChannelId != null)
         errorChannel = kord.getChannel(errorChannelId) as TextChannel
@@ -219,9 +321,19 @@ suspend fun handleError(err: Throwable, message: MessageBehavior) {
 
         errorChannel!!.createMessage {
             content = "`$timestamp`"
-            addFile("exception.log", cause.byteInputStream())
+            addFile("exception.log", ChannelProvider { cause.byteInputStream().toByteReadChannel() })
         }
     }
+}
+
+fun StackTraceElement.pfString(): String {
+    val names = className.split('.')
+    val clazz = names.last()
+    var path = ""
+
+    names.dropLast(1).forEach { path += it[0] + "." }
+
+    return "$path.$clazz($fileName:$lineNumber)"
 }
 
 fun findUnixValue(args: Array<String>, key: String): String? {
@@ -233,7 +345,14 @@ fun findUnixValue(args: Array<String>, key: String): String? {
     return null
 }
 
-fun OffsetDateTime.toKtInstant() = Instant.fromEpochSeconds(epochSeconds = toEpochSecond(), nanosecondAdjustment = nano)
+fun hasUnixValue(args: Array<String>, key: String): Boolean {
+    for (i in args.indices) {
+        if (args[i].startsWith(key)) {
+            return true
+        }
+    }
+    return true
+}
 
 fun Int.kordColor() = if (this < 0) null else Color(this)
 

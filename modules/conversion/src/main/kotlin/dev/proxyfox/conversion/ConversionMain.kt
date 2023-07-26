@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2022, The ProxyFox Group
+ * Copyright (c) 2022-2023, The ProxyFox Group
  *
  * This Source Code is subject to the terms of the Mozilla Public
  * License, v. 2.0. If a copy of the MPL was not distributed with this
@@ -8,22 +8,21 @@
 
 package dev.proxyfox.conversion
 
-import com.google.gson.stream.JsonReader
-import com.google.gson.stream.JsonToken
 import dev.proxyfox.database.Database
-import dev.proxyfox.database.JsonDatabase
 import dev.proxyfox.database.databaseFromString
-import dev.proxyfox.database.gson
-import dev.proxyfox.database.records.misc.ServerSettingsRecord
 import dev.proxyfox.database.etc.importer.PluralKitImporter
 import dev.proxyfox.database.etc.types.PkSystem
+import dev.proxyfox.database.records.misc.ServerSettingsRecord
+import kotlinx.serialization.ExperimentalSerializationApi
+import kotlinx.serialization.json.Json
+import kotlinx.serialization.json.decodeFromStream
 import org.slf4j.LoggerFactory
 import java.io.File
-import kotlin.io.path.Path
 import kotlin.system.exitProcess
 
 private val logger = LoggerFactory.getLogger("Converter")
 
+@OptIn(ExperimentalSerializationApi::class)
 suspend fun main(args: Array<String>) {
     var from: String? = null
     var to: String? = null
@@ -55,13 +54,6 @@ suspend fun main(args: Array<String>) {
         val systems = if (file.isFile) file else file.resolve("systems.json")
         val roles = (if (file.isFile) file.parentFile else file).resolve("roles.json")
 
-        // NIO is used here as it has a much stronger guarantee that ./systems.json will match correctly.
-        if (outputDatabase is JsonDatabase && Path("./systems.json") == systems.toPath()) {
-            logger.warn("JSON database selected as output while trying to import legacy database from current directory.")
-            logger.warn("Select either a different database or directory before importing.")
-            exit(2)
-        }
-
         if (!systems.exists() || !roles.exists()) exit(1, "No data to import at $file; does `systems.json` or `roles.json` exist?")
 
         logger.info("Converting legacy database... this may take a while.")
@@ -70,12 +62,8 @@ suspend fun main(args: Array<String>) {
             if (systems.exists()) {
                 logger.info("Importing systems.json...")
 
-                JsonReader(systems.reader()).use {
-                    val sysAdaptor = gson.getAdapter(PkSystem::class.java)
-                    it.beginObject()
-                    while (it.peek() != JsonToken.END_OBJECT) {
-                        val id = it.nextName().toULong()
-                        val obj = sysAdaptor.read(it) as PkSystem
+                systems.inputStream().use { input ->
+                    Json.decodeFromStream<Map<ULong, PkSystem>>(input).forEach { (id, obj) ->
                         try {
                             output.bulk {
                                 val pki = object : PluralKitImporter(directAllocation = true, ignoreUnfinished = true) {}
@@ -89,24 +77,19 @@ suspend fun main(args: Array<String>) {
                             throw Exception("Failed with $id -> $obj", e)
                         }
                     }
-                    it.endObject()
                 }
             }
 
             if (roles.exists()) {
                 logger.info("Importing roles.json...")
                 output.bulk {
-                    JsonReader(roles.reader()).use {
-                        it.beginObject()
-                        while (it.peek() != JsonToken.END_OBJECT) {
-                            val id = it.nextName().toULong()
-                            val role = it.nextLong().toULong()
+                    roles.inputStream().use { input ->
+                        Json.decodeFromStream<Map<ULong, ULong>>(input).forEach { (id, role) ->
                             createServerSettings(ServerSettingsRecord().apply {
                                 serverId = id
                                 proxyRole = role
                             })
                         }
-                        it.endObject()
                     }
                 }
             }

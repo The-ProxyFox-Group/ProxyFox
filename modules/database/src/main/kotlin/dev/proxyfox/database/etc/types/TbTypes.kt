@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2022, The ProxyFox Group
+ * Copyright (c) 2022-2023, The ProxyFox Group
  *
  * This Source Code is subject to the terms of the Mozilla Public
  * License, v. 2.0. If a copy of the MPL was not distributed with this
@@ -11,6 +11,7 @@ package dev.proxyfox.database.etc.types
 import dev.proxyfox.database.records.member.MemberRecord
 import dev.proxyfox.database.sanitise
 import dev.proxyfox.database.tryParseLocalDate
+import kotlinx.serialization.Serializable
 
 // Created 2022-29-09T22:20:20
 
@@ -18,11 +19,13 @@ import dev.proxyfox.database.tryParseLocalDate
  * @author Ampflower
  * @since ${version}
  **/
+@Serializable
 class TbSystem {
     var tuppers: List<TbMember>? = null
     var groups: List<TbGroup>? = null
 }
 
+@Serializable
 class TbMember {
     var id: Int = 0
     var name: String = ""
@@ -46,6 +49,7 @@ class TbMember {
     }
 }
 
+@Serializable
 class TbGroup {
     var id: Int = 0
     var name: String = ""

@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2022, The ProxyFox Group
+ * Copyright (c) 2022-2023, The ProxyFox Group
  *
  * This Source Code is subject to the terms of the Mozilla Public
  * License, v. 2.0. If a copy of the MPL was not distributed with this
@@ -8,7 +8,6 @@
 
 package dev.proxyfox.database.etc.importer
 
-import com.google.gson.JsonObject
 import dev.proxyfox.common.toColor
 import dev.proxyfox.database.*
 import dev.proxyfox.database.etc.types.PkMember
@@ -20,8 +19,12 @@ import dev.proxyfox.database.records.misc.AutoProxyMode
 import dev.proxyfox.database.records.system.SystemRecord
 import dev.proxyfox.database.records.system.SystemServerSettingsRecord
 import dev.proxyfox.database.records.system.SystemSwitchRecord
-import java.time.Instant
-import java.time.LocalDate
+import kotlinx.datetime.Instant
+import kotlinx.datetime.LocalDate
+import kotlinx.datetime.toInstant
+import kotlinx.serialization.json.Json
+import kotlinx.serialization.json.JsonObject
+import kotlinx.serialization.json.decodeFromJsonElement
 import java.time.format.DateTimeFormatter
 import java.util.*
 
@@ -45,7 +48,9 @@ open class PluralKitImporter protected constructor(
     constructor() : this(false, false)
 
     override suspend fun import(database: Database, json: JsonObject, userId: ULong) {
-        import(database, gson.fromJson(json, PkSystem::class.java), userId)
+        // Do lenient decoding
+        val decoder = Json { isLenient = true; coerceInputValues = true; ignoreUnknownKeys = true }
+        import(database, decoder.decodeFromJsonElement<PkSystem>(json), userId)
     }
 
     suspend fun import(database: Database, pkSystem: PkSystem, userId: ULong) {
@@ -102,7 +107,7 @@ open class PluralKitImporter protected constructor(
                 trust?.let(system.trust::putAll)
             }
             pkSystem.accounts?.let(system.users::addAll)
-            pkSystem.created.tryParseOffsetTimestamp()?.let { system.timestamp = it }
+            system.timestamp = pkSystem.created?.toInstant() ?: system.timestamp
         }
 
         database.updateSystem(system)
@@ -124,8 +129,8 @@ open class PluralKitImporter protected constructor(
                 val memberName = pkMember.name.sanitise().ifEmptyThen(pkMember.id) ?: findNextId(allocatedIds)
                 val member = run {
                     if (!fresh) {
-                        val record = pkMember.id?.let { database.fetchMemberFromSystem(system.id, it) }
-                            ?: database.fetchMemberFromSystemAndName(system.id, memberName, caseSensitive = false)
+                        val record = database.fetchMemberFromSystemAndName(system.id, memberName, caseSensitive = true)
+                            ?: pkMember.id?.let { database.fetchMemberFromSystem(system.id, it) }
                         if (record != null && seenMemberIds.add(record.id)) {
                             assert(record.name == memberName) { "$record did not match $pkMember" }
                             freshMember = false
@@ -180,7 +185,7 @@ open class PluralKitImporter protected constructor(
                     memberTags.forEach { database.dropProxyTag(it) }
                 }
                 if (directAllocation) {
-                    pkMember.created.tryParseOffsetTimestamp()?.let { member.timestamp = it }
+                    member.timestamp = pkMember.created?.let { Instant.parse(it) } ?: member.timestamp
                 }
 
                 val memberServerSettings = HashMap<ULong, PfMemberServerSettings>()
@@ -307,7 +312,7 @@ open class PluralKitImporter protected constructor(
             if (otherCount > expectedCount) {
                 for (pkMember in ambiguousBirthdays) {
                     // Not null assertion as it was already parsed successfully once.
-                    birthdays.computeIfPresent(pkMember) { _, (date, _) -> LocalDate.of(date.year, date.dayOfMonth, date.monthValue) to otherFormat }
+                    birthdays.computeIfPresent(pkMember) { _, (date, _) -> LocalDate(date.year, date.dayOfMonth, date.monthNumber) to otherFormat }
                 }
             }
         }

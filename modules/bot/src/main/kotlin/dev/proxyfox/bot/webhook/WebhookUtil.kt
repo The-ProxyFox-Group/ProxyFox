@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2022, The ProxyFox Group
+ * Copyright (c) 2022-2023, The ProxyFox Group
  *
  * This Source Code is subject to the terms of the Mozilla Public
  * License, v. 2.0. If a copy of the MPL was not distributed with this
@@ -35,6 +35,7 @@ object WebhookUtil {
         proxy: MemberProxyTagRecord?,
         serverMember: MemberServerSettingsRecord?,
         moderationDelay: Long = 500L,
+        enforceTag: Boolean = false
     ): ProxyContext? {
         var messageContent = content
         if (!member.keepProxy && proxy != null)
@@ -53,6 +54,7 @@ object WebhookUtil {
             resolvedUsername = serverMember?.nickname ?: member.displayName ?: member.name,
             resolvedAvatar = serverMember?.avatarUrl.httpUriOrNull() ?: member.avatarUrl.httpUriOrNull() ?: system.avatarUrl?.httpUri(),
             moderationDelay = max(moderationDelay, 0L),
+            enforceTag = enforceTag
         )
     }
 

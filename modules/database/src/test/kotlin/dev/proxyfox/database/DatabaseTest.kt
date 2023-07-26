@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2022, The ProxyFox Group
+ * Copyright (c) 2022-2023, The ProxyFox Group
  *
  * This Source Code is subject to the terms of the Mozilla Public
  * License, v. 2.0. If a copy of the MPL was not distributed with this
@@ -15,8 +15,7 @@ import dev.proxyfox.database.DatabaseTestUtil.seeded
 import kotlinx.coroutines.ExperimentalCoroutinesApi
 import kotlinx.coroutines.runBlocking
 import kotlinx.coroutines.test.runTest
-import org.testng.Assert.assertNotNull
-import org.testng.Assert.assertNull
+import org.testng.Assert.*
 import org.testng.annotations.*
 import java.nio.file.Files
 
@@ -176,7 +175,7 @@ class DatabaseTest @Factory(dataProvider = "constructorParameters") constructor(
         @DataProvider
         @JvmStatic
         fun constructorParameters() = arrayOf(
-            arrayOf("JSON", { JsonDatabase(test.resolve("systems-${System.nanoTime()}.json").toFile()) }),
+            arrayOf("InMemory", { InMemoryDatabase() }),
             arrayOf("MongoDB", { MongoDatabase("TestFoxy-" + System.nanoTime()) }),
         )
 

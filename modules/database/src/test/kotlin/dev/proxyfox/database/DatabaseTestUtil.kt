@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2022, The ProxyFox Group
+ * Copyright (c) 2022-2023, The ProxyFox Group
  *
  * This Source Code is subject to the terms of the Mozilla Public
  * License, v. 2.0. If a copy of the MPL was not distributed with this
@@ -12,10 +12,8 @@ import dev.kord.common.entity.Snowflake
 import dev.kord.core.entity.Entity
 import io.mockk.every
 import io.mockk.mockk
+import kotlinx.datetime.Instant
 import org.testng.annotations.DataProvider
-import java.time.Instant
-import java.time.OffsetDateTime
-import java.time.ZoneOffset
 import java.util.*
 import java.util.concurrent.TimeUnit
 import java.util.stream.IntStream
@@ -37,12 +35,13 @@ object DatabaseTestUtil {
     private val seed = System.getenv("TEST_SEED")?.toLongOrNull()
     private val rng = Random()
 
-    const val offsetDateTimeEpochString = "1970-01-01T00:00:00Z"
-    val offsetDateTimeEpoch = OffsetDateTime.of(1970, 1, 1, 0, 0, 0, 0, ZoneOffset.UTC)!!
-    val offsetDateTimeLastMicroOfEpochDay = OffsetDateTime.of(1970, 1, 1, 23, 59, 59, 999_999_000, ZoneOffset.UTC)!!
+    val instantEpoch = Instant.fromEpochSeconds(0L)
+    val instantLastMicroOfEpochDay = Instant.fromEpochSeconds(TimeUnit.DAYS.toSeconds(1) - 1L, 999_999_000L)
+    val instantLastNanoOfEpochDay = Instant.fromEpochSeconds(TimeUnit.DAYS.toSeconds(1) - 1L, 999_999_999L)
 
-    val instantEpoch = Instant.EPOCH!!
-    val instantLastMicroOfEpochDay = Instant.ofEpochSecond(TimeUnit.DAYS.toSeconds(1) - 1L, 999_999_000L)!!
+    val stringEpoch = "1970-01-01T00:00:00Z"
+    val stringLastMicroOfEpochDay = "1970-01-01T23:59:59.999999Z"
+    val stringLastNanoOfEpochDay = "1970-01-01T23:59:59.999999999Z"
 
     inline fun <reified T : Entity> entity(ret: ULong): T {
         return mockk {
