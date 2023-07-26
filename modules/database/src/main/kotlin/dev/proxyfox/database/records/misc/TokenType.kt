@@ -30,7 +30,7 @@ enum class TokenType(private val actualName: String) {
 
     companion object {
         fun of(name: String): TokenType? {
-            for (type in TokenType.values()) {
+            for (type in entries) {
                 if (type.toString() == name) return type
             }
             return null

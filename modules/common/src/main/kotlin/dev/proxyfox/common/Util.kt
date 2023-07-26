@@ -8,6 +8,7 @@
 
 package dev.proxyfox.common
 
+import dev.kord.common.entity.Snowflake
 import dev.kord.core.Kord
 import dev.kord.core.event.Event
 import dev.kord.core.on
@@ -129,3 +130,6 @@ inline fun <reified E : Event> Kord.onlyIf(
 
 fun UnixList?.find(value: String) =
     this?.list?.contains(value) ?: false
+
+val ULong.snowflake: Snowflake
+    get() = Snowflake(this)

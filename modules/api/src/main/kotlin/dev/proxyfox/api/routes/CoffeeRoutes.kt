@@ -15,6 +15,7 @@ import io.ktor.http.*
 import io.ktor.server.application.*
 import io.ktor.server.response.*
 import io.ktor.server.routing.*
+import kotlinx.coroutines.withTimeout
 
 var coffees = HashMap<String, Coffee>()
 
@@ -49,6 +50,10 @@ fun Route.coffeeRoutes() {
             )
 
             coffees[id] = coffee
+
+            withTimeout(600_000) {
+                coffees.remove(id)
+            }
 
             call.respond(HttpStatusCode.OK, coffee)
         }}

@@ -8,20 +8,34 @@
 
 package dev.proxyfox.api.models
 
+import dev.proxyfox.database.PkId
+import dev.proxyfox.database.etc.ktx.serializaton.InstantLongMillisecondSerializer
 import dev.proxyfox.database.records.system.SystemSwitchRecord
+import kotlinx.datetime.Instant
 import kotlinx.serialization.Serializable
 
+/**
+ * Represents a switch.
+ *
+ * Accessed via the `/systems/{sysid}/switches` or `/system/{sysid}/fronters` routes.
+ *
+ * Requires a token to access.
+ *
+ * @param id the Pk-formatted ID of the switch
+ * @param members the Pk-formatted IDs of the members in this switch
+ * @param timestamp the timestamp of switch creation
+ * */
 @Serializable
 data class Switch(
-    val id: String,
-    val members: List<String>,
-    val timestamp: String
+    val id: PkId,
+    val members: List<PkId>,
+    val timestamp: Instant
 ) {
     companion object {
         fun fromRecord(record: SystemSwitchRecord) = Switch(
             id = record.id,
             members = record.memberIds,
-            timestamp = record.timestamp.toString()
+            timestamp = record.timestamp
         )
     }
 }

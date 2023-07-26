@@ -9,15 +9,43 @@
 package dev.proxyfox.api.models
 
 import dev.proxyfox.common.fromColor
+import dev.proxyfox.database.PkId
 import dev.proxyfox.database.database
+import dev.proxyfox.database.etc.ktx.serializaton.InstantLongMillisecondSerializer
+import dev.proxyfox.database.etc.ktx.serializaton.LocalDateLongMillisecondSerializer
 import dev.proxyfox.database.records.member.MemberRecord
 import kotlinx.coroutines.runBlocking
+import kotlinx.datetime.Instant
+import kotlinx.datetime.LocalDate
 import kotlinx.serialization.SerialName
 import kotlinx.serialization.Serializable
 
+/**
+ * Represents a member.
+ *
+ * Accessed with the `/system/{sysid}/members` or
+ * `/system/{sysid}/members/{memid}` routes.
+ *
+ * Requires a token to access.
+ *
+ * @param id the Pk-compatible ID of the member
+ * @param name the name of the member
+ * @param displayName the display name of the member
+ * @param description the description of the member
+ * @param color the color of the member (in a hexadecimal RGB format)
+ * @param avatarUrl the URL for the member's avatar
+ * @param keepProxy whether the member keeps their proxy tags in proxied messages
+ * @param autoProxy whether autoproxy is enabled for this member
+ * @param messageCount the amount of messages this member has sent
+ * @param created the timestamp of the member creation
+ * @param birthday the member's birthday
+ * @param age the age of the member
+ * @param role the role of the member
+ * @param proxyTags the member's proxy tags
+ * */
 @Serializable
 data class Member(
-    val id: String,
+    val id: PkId,
     val name: String,
     @SerialName("display_name")
     val displayName: String?,
@@ -32,8 +60,8 @@ data class Member(
     val autoProxy: Boolean,
     @SerialName("message_count")
     val messageCount: ULong,
-    val created: String,
-    val birthday: String?,
+    val created: Instant,
+    val birthday: LocalDate?,
     val age: String?,
     val role: String?,
     @SerialName("proxy_tags")
@@ -51,8 +79,8 @@ data class Member(
             keepProxy = member.keepProxy,
             autoProxy = member.autoProxy,
             messageCount = member.messageCount,
-            created = member.timestamp.toString(),
-            birthday = member.birthday.toString(),
+            created = member.timestamp,
+            birthday = member.birthday,
             age = member.age,
             role = member.role,
             proxyTags = runBlocking { database.fetchProxiesFromSystemAndMember(member.systemId, member.id)?.map(ProxyTag::fromRecord) ?: emptyList() }

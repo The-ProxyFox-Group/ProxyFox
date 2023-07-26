@@ -8,16 +8,28 @@
 
 package dev.proxyfox.api.models
 
+import dev.proxyfox.database.PkId
 import dev.proxyfox.database.records.misc.TokenRecord
 import dev.proxyfox.database.records.misc.TokenType
 import kotlinx.serialization.SerialName
 import kotlinx.serialization.Serializable
 
+/**
+ * Represents a token
+ *
+ * Accessed via the `/tokens` route
+ *
+ * Requires a token to access.
+ *
+ * @param token the token
+ * @param systemId the ID for the system it's attached to
+ * @param type the type of token it is
+ * */
 @Serializable
 data class Token(
     val token: String,
     @SerialName("system_id")
-    val systemId: String,
+    val systemId: PkId,
     val type: TokenType
 ) {
     companion object {

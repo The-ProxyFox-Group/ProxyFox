@@ -12,6 +12,18 @@ import dev.proxyfox.database.records.member.MemberServerSettingsRecord
 import kotlinx.serialization.SerialName
 import kotlinx.serialization.Serializable
 
+/**
+ * Represents a member's guild settings.
+ *
+ * Accessed with the `/systems/{sysid}/members/{memid}/guilds/{guildid}` route.
+ *
+ * Requires a token to access.
+ *
+ * @param displayName the display name of this member for this guild
+ * @param avatarUrl the url for the avatar of this member for this guild
+ * @param autoProxy whether autoproxy is enabled for this member for this guild
+ * @param proxyEnabled whether proxying is enabled for this member for this guild
+ * */
 @Serializable
 data class MemberGuildSettings(
     @SerialName("display_name")

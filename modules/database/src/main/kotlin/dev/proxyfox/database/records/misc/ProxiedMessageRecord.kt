@@ -9,6 +9,7 @@
 package dev.proxyfox.database.records.misc
 
 import dev.proxyfox.database.PkId
+import dev.proxyfox.database.etc.ktx.serializaton.InstantLongMillisecondSerializer
 import dev.proxyfox.database.records.MongoRecord
 import kotlinx.datetime.Clock
 import kotlinx.serialization.Contextual
@@ -19,6 +20,7 @@ import org.bson.types.ObjectId
 class ProxiedMessageRecord : MongoRecord {
     @Contextual
     override var _id: ObjectId = ObjectId()
+    @Serializable(InstantLongMillisecondSerializer::class)
     var creationDate = Clock.System.now()
     var memberName: String = ""
     var userId: ULong = 0UL

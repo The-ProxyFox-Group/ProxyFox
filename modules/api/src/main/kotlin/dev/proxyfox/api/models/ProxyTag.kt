@@ -11,6 +11,12 @@ package dev.proxyfox.api.models
 import dev.proxyfox.database.records.member.MemberProxyTagRecord
 import kotlinx.serialization.Serializable
 
+/**
+ * Represents a proxy tag.
+ *
+ * @param prefix the prefix for the proxy
+ * @param suffix the suffix for the proxy
+ * */
 @Serializable
 data class ProxyTag(val prefix: String?, val suffix: String?) {
     companion object {
