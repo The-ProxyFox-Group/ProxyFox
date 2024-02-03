@@ -224,10 +224,12 @@ object MiscCommands {
     }
 
     private suspend fun export(ctx: MessageHolder): String {
-        database.fetchSystemFromUser(ctx.message.author)
+        val system = database.fetchSystemFromUser(ctx.message.author)
             ?: return "System does not exist. Create one using `pf>system new`"
         val export = Exporter.export(ctx.message.author!!.id.value)
         ctx.sendFiles(NamedFile("system.json", export.byteInputStream()))
+        system.exported = true
+        database.updateSystem(system)
         return "Check your DMs~"
     }
 

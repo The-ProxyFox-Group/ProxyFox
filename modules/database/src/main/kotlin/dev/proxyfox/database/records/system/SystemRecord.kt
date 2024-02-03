@@ -8,7 +8,7 @@
 
 package dev.proxyfox.database.records.system
 
-import dev.proxyfox.database.*
+import dev.proxyfox.database.PkId
 import dev.proxyfox.database.records.MongoRecord
 import dev.proxyfox.database.records.misc.AutoProxyMode
 import dev.proxyfox.database.records.misc.TrustLevel
@@ -41,5 +41,19 @@ class SystemRecord : MongoRecord {
     var autoType: AutoProxyMode = AutoProxyMode.OFF
     var trust: HashMap<ULong, TrustLevel> = HashMap()
 
+    var exported: Boolean? = false
+
     val showName get() = name?.let { "$it [`$id`]" } ?: "`$id`"
+
+    fun equivalent(other: SystemRecord): Boolean {
+        return id == other.id &&
+                users == other.users &&
+                name == other.name &&
+                description == other.description &&
+                tag == other.tag &&
+                pronouns == other.pronouns &&
+                color == other.color &&
+                avatarUrl == other.avatarUrl &&
+                timezone == other.timezone
+    }
 }

@@ -207,11 +207,13 @@ class MongoDatabase(private val dbName: String = "ProxyFox") : Database() {
         memberProxies.deleteMany(filter).awaitFirst()
         memberServers.deleteMany(filter).awaitFirst()
         members.deleteOneById(member._id).awaitFirst()
+        fetchSystemFromId(systemId)?.apply { this.exported = false; updateSystem(this) }
         return true
     }
 
     override suspend fun updateMember(member: MemberRecord) {
         members.replaceOneById(member._id, member, upsert()).awaitFirst()
+        fetchSystemFromId(member.systemId)?.apply { this.exported = false; updateSystem(this) }
     }
 
     override suspend fun updateMemberServerSettings(serverSettings: MemberServerSettingsRecord) {
@@ -219,6 +221,7 @@ class MongoDatabase(private val dbName: String = "ProxyFox") : Database() {
     }
 
     override suspend fun updateSystem(system: SystemRecord) {
+        fetchSystemFromId(system.id)?.apply { if (!system.equivalent(this)) system.exported = false }
         systems.replaceOneById(system._id, system, upsert()).awaitFirst()
     }
 
@@ -271,6 +274,7 @@ class MongoDatabase(private val dbName: String = "ProxyFox") : Database() {
 
     override suspend fun createProxyTag(record: MemberProxyTagRecord): Boolean {
         memberProxies.insertOne(record).awaitFirst()
+        fetchSystemFromId(record.systemId)?.apply { this.exported = false; updateSystem(this) }
         return true
     }
 
@@ -284,15 +288,18 @@ class MongoDatabase(private val dbName: String = "ProxyFox") : Database() {
         switch.memberIds = memberId
         timestamp?.let { switch.timestamp = it }
         systemSwitches.insertOne(switch).awaitFirst()
+        fetchSystemFromId(systemId)?.apply { this.exported = false; updateSystem(this) }
         return switch
     }
 
     override suspend fun dropSwitch(switch: SystemSwitchRecord) {
         systemSwitches.deleteOneById(switch._id).awaitFirst()
+        fetchSystemFromId(switch.systemId)?.apply { this.exported = false; updateSystem(this) }
     }
 
     override suspend fun updateSwitch(switch: SystemSwitchRecord) {
         systemSwitches.replaceOneById(switch._id, switch, upsert()).awaitFirst()
+        fetchSystemFromId(switch.systemId)?.apply { this.exported = false; updateSystem(this) }
     }
 
     override suspend fun fetchSwitchesFromSystem(systemId: String): List<SystemSwitchRecord> =
@@ -300,6 +307,7 @@ class MongoDatabase(private val dbName: String = "ProxyFox") : Database() {
 
     override suspend fun dropProxyTag(proxyTag: MemberProxyTagRecord) {
         memberProxies.deleteOne(and(proxyTag::systemId, proxyTag::memberId, proxyTag::prefix, proxyTag::suffix)).awaitFirst()
+        fetchSystemFromId(proxyTag.systemId)?.apply { this.exported = false; updateSystem(this) }
     }
 
     override suspend fun updateTrustLevel(systemId: String, trustee: ULong, level: TrustLevel): Boolean {

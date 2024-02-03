@@ -68,6 +68,8 @@ suspend fun ButtonInteractionCreateEvent.onInteraction() {
             addFile("system.json", export.byteInputStream())
         }
         ephemeral.respond { content = "Check your DMs~" }
+        system.exported = true
+        database.updateSystem(system)
         return
     } catch (e: Exception) {
         logger.warn("Unable to DM {}, falling back to ephemeral", interaction.user, e)
