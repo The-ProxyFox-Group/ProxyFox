@@ -130,6 +130,8 @@ suspend fun login() {
     kord.on<ButtonInteractionCreateEvent> {
         if (interaction.componentId == "free-delete") {
             interaction.message.delete("User requested deletion.")
+        } else {
+            onInteraction()
         }
     }
 

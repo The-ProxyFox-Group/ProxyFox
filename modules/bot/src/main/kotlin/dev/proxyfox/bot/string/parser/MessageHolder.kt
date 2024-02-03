@@ -8,10 +8,15 @@
 
 package dev.proxyfox.bot.string.parser
 
+import dev.kord.common.Color
+import dev.kord.common.entity.ButtonStyle
 import dev.kord.common.entity.Permission
 import dev.kord.core.behavior.channel.createMessage
+import dev.kord.core.builder.components.emoji
 import dev.kord.core.entity.Message
+import dev.kord.core.entity.ReactionEmoji
 import dev.kord.rest.NamedFile
+import dev.kord.rest.builder.component.ActionRowBuilder
 import dev.kord.rest.builder.message.EmbedBuilder
 import dev.proxyfox.common.applyAsync
 
@@ -27,9 +32,29 @@ data class MessageHolder(
         else message.channel
 
         return channel.createMessage {
-            if (msg.isNotBlank()) content = msg
-            // TODO: an `embedAsync` helper function
-            if (embed != null) embeds.add(EmbedBuilder().applyAsync(embed))
+            if (msg.isNotBlank()) {
+                content = "$msg\n---\n⚠️ I'm shutting down <t:1709316000:R>, export your system now?"
+            }
+
+            if (embed != null) {
+                // TODO: an `embedAsync` helper function
+                embeds.add(EmbedBuilder().applyAsync(embed))
+                embeds.add(EmbedBuilder().apply {
+                    color = Color(0xFFFF77)
+                    title = "⚠️ ProxyFox is shutting down"
+                    description = "I'm shutting down <t:1709316000:R>, export your system now?"
+                })
+            }
+
+            this.components.add(ActionRowBuilder().apply {
+                this.interactionButton(ButtonStyle.Secondary, "export") {
+                    label = "Export"
+                    emoji(ReactionEmoji.Unicode("\uD83D\uDCE4"))
+                }
+                this.linkButton("https://proxyfox.dev") {
+                    label = "Read More"
+                }
+            })
         }
     }
 

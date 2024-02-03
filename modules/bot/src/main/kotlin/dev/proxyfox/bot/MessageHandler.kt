@@ -8,20 +8,22 @@
 
 package dev.proxyfox.bot
 
-import dev.kord.common.entity.MessageType
-import dev.kord.common.entity.Permission
-import dev.kord.common.entity.Permissions
-import dev.kord.common.entity.Snowflake
+import dev.kord.common.entity.*
 import dev.kord.core.behavior.channel.asChannelOfOrNull
 import dev.kord.core.behavior.channel.createMessage
+import dev.kord.core.behavior.interaction.response.respond
+import dev.kord.core.builder.components.emoji
 import dev.kord.core.cache.data.AttachmentData
 import dev.kord.core.cache.data.EmbedData
 import dev.kord.core.entity.Attachment
 import dev.kord.core.entity.Embed
+import dev.kord.core.entity.ReactionEmoji
 import dev.kord.core.entity.channel.GuildChannel
+import dev.kord.core.event.interaction.ButtonInteractionCreateEvent
 import dev.kord.core.event.message.MessageCreateEvent
 import dev.kord.core.event.message.MessageUpdateEvent
 import dev.kord.core.event.message.ReactionAddEvent
+import dev.kord.rest.builder.component.ActionRowBuilder
 import dev.kord.rest.builder.message.create.embed
 import dev.proxyfox.bot.string.parser.parseString
 import dev.proxyfox.bot.webhook.GuildMessage
@@ -29,6 +31,7 @@ import dev.proxyfox.bot.webhook.WebhookUtil
 import dev.proxyfox.common.ellipsis
 import dev.proxyfox.database.database
 import dev.proxyfox.database.displayDate
+import dev.proxyfox.database.etc.exporter.Exporter
 import dev.proxyfox.database.records.member.MemberRecord
 import dev.proxyfox.database.records.misc.AutoProxyMode
 import dev.proxyfox.database.records.system.SystemRecord
@@ -38,6 +41,44 @@ import org.slf4j.LoggerFactory
 val prefixRegex = Regex("^(?:(<@!?${kord.selfId}>)|pf[>;!:])\\s*", RegexOption.IGNORE_CASE)
 
 private val logger = LoggerFactory.getLogger("MessageHandler")
+
+suspend fun ButtonInteractionCreateEvent.onInteraction() {
+    // This should only ever work for export.
+    if (interaction.componentId != "export") {
+        return
+    }
+
+    val ephemeral = interaction.deferEphemeralResponse()
+
+    val system = database.fetchSystemFromUser(interaction.user)
+
+    if (system == null) {
+        ephemeral.respond {
+            content = "You don't have a system registered."
+        }
+        return
+    }
+
+    val export = Exporter.export(interaction.user.id.value)
+
+    val dm = interaction.user.getDmChannelOrNull()
+    if (dm != null) try {
+        dm.createMessage {
+            content = "Here you go! Note: If you modify your system after this, the daily nag will resume."
+            addFile("system.json", export.byteInputStream())
+        }
+        ephemeral.respond { content = "Check your DMs~" }
+        return
+    } catch (e: Exception) {
+        logger.warn("Unable to DM {}, falling back to ephemeral", interaction.user, e)
+    }
+
+    ephemeral.respond {
+        content = "Here you go! Note: As I failed to DM you, you'll continue to get a daily nag."
+        addFile("system.json", export.byteInputStream())
+    }
+}
+
 
 suspend fun MessageCreateEvent.onMessageCreate() {
     val user = message.author ?: return
@@ -59,13 +100,37 @@ suspend fun MessageCreateEvent.onMessageCreate() {
         val contentWithoutRegex = content.substring(matcher.end())
 
         if (contentWithoutRegex.isBlank() && matcher.start(1) >= 0) {
-            channel.createMessage("Hi, I'm ProxyFox! My prefix is `pf>`.")
+            channel.createMessage {
+                this.content = """Hi, I'm ProxyFox! My prefix is `pf>`.
+                    |Unfortunately, I'm shutting down <t:1709316000:R>, on <t:1709316000:F>.
+                    |If you have a system registered with me, you can `pf;export` it now. [Click here to learn more](<https://proxyfox.dev>)""".trimMargin()
+                this.components.add(ActionRowBuilder().apply {
+                    this.interactionButton(ButtonStyle.Secondary, "export") {
+                        label = "Export"
+                        emoji(ReactionEmoji.Unicode("\uD83D\uDCE4"))
+                    }
+                    this.linkButton("https://proxyfox.dev") {
+                        label = "Read More"
+                    }
+                })
+            }
         } else {
             // Run the command
             val output = parseString(contentWithoutRegex, message) ?: return
             // Send output message if exists
             if (output.isNotBlank())
-                channel.createMessage(output)
+                channel.createMessage {
+                    this.content = "$output\n---\n⚠️ I'm shutting down <t:1709316000:R>, export your system now?"
+                    this.components.add(ActionRowBuilder().apply {
+                        this.interactionButton(ButtonStyle.Secondary, "export") {
+                            label = "Export"
+                            emoji(ReactionEmoji.Unicode("\uD83D\uDCE4"))
+                        }
+                        this.linkButton("https://proxyfox.dev") {
+                            label = "Read More"
+                        }
+                    })
+                }
         }
     } else if (guildChannel != null && guildChannel.selfHasPermissions(Permissions(Permission.ManageWebhooks, Permission.ManageMessages))) {
         val guild = guildChannel.getGuild()
