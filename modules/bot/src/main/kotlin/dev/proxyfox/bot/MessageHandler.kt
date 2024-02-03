@@ -122,16 +122,19 @@ suspend fun MessageCreateEvent.onMessageCreate() {
             // Send output message if exists
             if (output.isNotBlank())
                 channel.createMessage {
-                    this.content = "$output\n---\n⚠️ I'm shutting down <t:1709316000:R>, export your system now?"
-                    this.components.add(ActionRowBuilder().apply {
-                        this.interactionButton(ButtonStyle.Secondary, "export") {
-                            label = "Export"
-                            emoji(ReactionEmoji.Unicode("\uD83D\uDCE4"))
-                        }
-                        this.linkButton("https://proxyfox.dev") {
-                            label = "Read More"
-                        }
-                    })
+                    val nag = shouldNag(user, channel, output)
+                    this.content = if (nag != NagType.NONE) "$output\n---\n⚠️ ${nag.message}" else output
+                    if (nag != NagType.NONE) {
+                        this.components.add(ActionRowBuilder().apply {
+                            this.interactionButton(ButtonStyle.Secondary, "export") {
+                                label = "Export"
+                                emoji(ReactionEmoji.Unicode("\uD83D\uDCE4"))
+                            }
+                            this.linkButton("https://proxyfox.dev") {
+                                label = "Read More"
+                            }
+                        })
+                    }
                 }
         }
     } else if (guildChannel != null && guildChannel.selfHasPermissions(Permissions(Permission.ManageWebhooks, Permission.ManageMessages))) {

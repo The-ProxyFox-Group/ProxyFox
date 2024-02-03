@@ -18,6 +18,8 @@ import dev.kord.core.entity.ReactionEmoji
 import dev.kord.rest.NamedFile
 import dev.kord.rest.builder.component.ActionRowBuilder
 import dev.kord.rest.builder.message.EmbedBuilder
+import dev.proxyfox.bot.NagType
+import dev.proxyfox.bot.shouldNag
 import dev.proxyfox.common.applyAsync
 
 data class MessageHolder(
@@ -31,30 +33,36 @@ data class MessageHolder(
                 ?: message.channel
         else message.channel
 
+        val nag = shouldNag(message.author, channel, msg)
+
         return channel.createMessage {
             if (msg.isNotBlank()) {
-                content = "$msg\n---\n⚠️ I'm shutting down <t:1709316000:R>, export your system now?"
+                content = if (nag != NagType.NONE) "$msg\n---\n⚠️ ${nag.message}" else msg
             }
 
             if (embed != null) {
                 // TODO: an `embedAsync` helper function
                 embeds.add(EmbedBuilder().applyAsync(embed))
-                embeds.add(EmbedBuilder().apply {
-                    color = Color(0xFFFF77)
-                    title = "⚠️ ProxyFox is shutting down"
-                    description = "I'm shutting down <t:1709316000:R>, export your system now?"
-                })
+                if (nag != NagType.NONE) {
+                    embeds.add(EmbedBuilder().apply {
+                        color = Color(0xFFFF77)
+                        title = "⚠️ ProxyFox is shutting down"
+                        description = nag.message
+                    })
+                }
             }
 
-            this.components.add(ActionRowBuilder().apply {
-                this.interactionButton(ButtonStyle.Secondary, "export") {
-                    label = "Export"
-                    emoji(ReactionEmoji.Unicode("\uD83D\uDCE4"))
-                }
-                this.linkButton("https://proxyfox.dev") {
-                    label = "Read More"
-                }
-            })
+            if (nag != NagType.NONE) {
+                this.components.add(ActionRowBuilder().apply {
+                    this.interactionButton(ButtonStyle.Secondary, "export") {
+                        label = "Export"
+                        emoji(ReactionEmoji.Unicode("\uD83D\uDCE4"))
+                    }
+                    this.linkButton("https://proxyfox.dev") {
+                        label = "Read More"
+                    }
+                })
+            }
         }
     }
 

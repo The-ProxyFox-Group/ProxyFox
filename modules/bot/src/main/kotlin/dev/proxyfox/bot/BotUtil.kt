@@ -15,11 +15,13 @@ import dev.kord.common.entity.Permissions
 import dev.kord.common.entity.Snowflake
 import dev.kord.core.Kord
 import dev.kord.core.behavior.MessageBehavior
+import dev.kord.core.behavior.UserBehavior
 import dev.kord.core.behavior.channel.ChannelBehavior
 import dev.kord.core.behavior.channel.MessageChannelBehavior
 import dev.kord.core.behavior.channel.asChannelOfOrNull
 import dev.kord.core.behavior.channel.createMessage
 import dev.kord.core.builder.kord.KordBuilder
+import dev.kord.core.entity.Entity
 import dev.kord.core.entity.Member
 import dev.kord.core.entity.channel.Channel
 import dev.kord.core.entity.channel.GuildChannel
@@ -51,6 +53,7 @@ import kotlinx.datetime.Clock
 import kotlinx.datetime.Instant
 import kotlinx.serialization.SerializationException
 import java.lang.Integer.min
+import java.time.LocalDateTime
 import java.time.OffsetDateTime
 import java.util.*
 import java.util.concurrent.Executors
@@ -69,6 +72,9 @@ private val idUrl = System.getenv("PROXYFOX_KEY").let { it.substring(0, it.index
 
 private val webhook = Regex("https?://(?:[^./]\\.)?discord(?:app)?\\.com/api/(v\\d+/)?webhooks/\\d+/\\S+")
 private val token = Regex("$idUrl[a-z0-9=/+_-]*\\.[a-z0-9=/+_-]+\\.[a-z0-9=/+_-]", RegexOption.IGNORE_CASE)
+
+private val nagChannels = HashMap<Snowflake, LocalDateTime>()
+private val nagUsers = HashMap<Snowflake, LocalDateTime>()
 
 lateinit var scope: CoroutineScope
 lateinit var kord: Kord
@@ -224,6 +230,47 @@ suspend fun handleError(err: Throwable, message: MessageBehavior) {
             addFile("exception.log", cause.byteInputStream())
         }
     }
+}
+
+suspend fun shouldNag(author: UserBehavior?, channel: ChannelBehavior, message: String?): NagType {
+    if (author == null) {
+        return NagType.NONE
+    }
+
+    if (message?.startsWith('\u0000') == true) {
+        nagChannels.pushNag(channel)
+        nagUsers.pushNag(author)
+        return if (hasUnexportedSystem(author)) NagType.SYSTEM else NagType.HELP
+    }
+
+    if ((nagChannels[channel.id]?.plusMinutes(15) ?: LocalDateTime.MIN) > LocalDateTime.now()) {
+        return NagType.NONE
+    }
+
+    if ((nagUsers[channel.id]?.plusHours(12) ?: LocalDateTime.MIN) > LocalDateTime.now()) {
+        return NagType.NONE
+    }
+
+    nagUsers.pushNag(author)
+
+    if (hasUnexportedSystem(author)) {
+        nagChannels.pushNag(channel)
+        return NagType.SYSTEM
+    }
+
+    return NagType.NONE
+}
+
+private suspend fun hasUnexportedSystem(author: UserBehavior): Boolean {
+    val system = database.fetchSystemFromUser(author)
+    if (system?.exported == false) {
+        return true
+    }
+    return false
+}
+
+private fun HashMap<Snowflake, LocalDateTime>.pushNag(entity: Entity) {
+    this[entity.id] = LocalDateTime.now()
 }
 
 fun findUnixValue(args: Array<String>, key: String): String? {
@@ -409,4 +456,10 @@ inline fun <T> nullOn404(action: () -> T): T? {
         }
         throw e
     }
+}
+
+enum class NagType(val message: String = "") {
+    NONE,
+    HELP("I'm shutting down <t:1709316000:R>. If you have a system registered, export it now."),
+    SYSTEM("I'm shutting down <t:1709316000:R>, do you export your system now?")
 }

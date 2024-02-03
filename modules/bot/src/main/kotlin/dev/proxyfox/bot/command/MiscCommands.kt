@@ -239,18 +239,18 @@ object MiscCommands {
     }
 
     private fun help(ctx: MessageHolder): String =
-        """To view commands for ProxyFox, visit <https://github.com/The-ProxyFox-Group/ProxyFox/blob/master/commands.md>
+        '\u0000' + """To view commands for ProxyFox, visit <https://github.com/The-ProxyFox-Group/ProxyFox/blob/master/commands.md>
 For quick setup:
 - pf>system new name
 - pf>member new John Doe
 - pf>member "John Doe" proxy j:text"""
 
     private fun explain(ctx: MessageHolder): String =
-        """ProxyFox is modern Discord bot designed to help systems communicate.
+        '\u0000' + """ProxyFox is modern Discord bot designed to help systems communicate.
 It uses discord's webhooks to generate "pseudo-users" which different members of the system can use. Someone will likely be willing to explain further if need be."""
 
     private fun invite(ctx: MessageHolder): String =
-        """Use <https://discord.com/api/oauth2/authorize?client_id=${ctx.message.kord.selfId}&permissions=277696539728&scope=applications.commands+bot> to invite ProxyFox to your server!
+        '\u0000' + """Use <https://discord.com/api/oauth2/authorize?client_id=${ctx.message.kord.selfId}&permissions=277696539728&scope=applications.commands+bot> to invite ProxyFox to your server!
 To get support, head on over to https://discord.gg/q3yF8ay9V7"""
 
     private fun source(ctx: MessageHolder): String =
