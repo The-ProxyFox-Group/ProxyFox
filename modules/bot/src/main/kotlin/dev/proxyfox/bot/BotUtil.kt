@@ -12,6 +12,7 @@ import dev.kord.common.Color
 import dev.kord.common.EmptyBitSet
 import dev.kord.common.entity.Permission
 import dev.kord.common.entity.Permissions
+import dev.kord.common.entity.PresenceStatus
 import dev.kord.common.entity.Snowflake
 import dev.kord.core.Kord
 import dev.kord.core.behavior.MessageBehavior
@@ -47,7 +48,6 @@ import io.ktor.client.*
 import io.ktor.client.engine.cio.*
 import io.ktor.http.*
 import kotlinx.coroutines.*
-import kotlinx.coroutines.flow.count
 import kotlinx.coroutines.flow.fold
 import kotlinx.datetime.Clock
 import kotlinx.datetime.Instant
@@ -174,7 +174,8 @@ suspend fun login() {
 
 suspend fun updatePresence() {
     startTime = Clock.System.now()
-    scheduler.fixedRateAction(Duration.ZERO, 2.minutes) {
+    scheduler.fixedRateAction(Duration.ZERO, 30.minutes) {
+        /*
         count = (count + 1) % 3
         val append = when (count) {
             0 -> {
@@ -193,8 +194,10 @@ suspend fun updatePresence() {
 
             else -> throw AssertionError("Count ($count) not in 0..2")
         }
+        */
         kord.editPresence {
-            watching("for pf>help! $append")
+            status = PresenceStatus.Idle
+            watching("for pf>help! ProxyFox is shutting down, see https://proxyfox.dev")
         }
     }
 }
