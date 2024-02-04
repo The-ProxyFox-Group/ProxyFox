@@ -128,10 +128,6 @@ data class ProxyContext(
             }
             throw RuntimeException("Failed to proxy your message: $e", e)
         }
-        if (newMessage.content != messageContent && messageContent.isNotBlank())
-            webhook.edit(newMessage.id, threadId) {
-                content = messageContent
-            }
         member.messageCount++
         database.updateMember(member)
         val userId = if (reproxy)
